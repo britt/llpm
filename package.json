@@ -8,11 +8,18 @@
   },
   "scripts": {
     "start": "bun run index.ts",
-    "dev": "bun run index.ts"
+    "dev": "bun run index.ts",
+    "test": "vitest",
+    "test:watch": "vitest --watch",
+    "test:ui": "vitest --ui"
   },
   "devDependencies": {
+    "@testing-library/jest-dom": "^6.6.4",
+    "@testing-library/react": "^16.3.0",
     "@types/bun": "latest",
-    "@types/react": "^19.1.9"
+    "@types/react": "^19.1.9",
+    "jsdom": "^26.1.0",
+    "vitest": "^3.2.4"
   },
   "peerDependencies": {
     "typescript": "^5"
