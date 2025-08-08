@@ -5,7 +5,7 @@ import { quitCommand } from './quit';
 import { clearCommand } from './clear';
 import { projectCommand } from './project';
 import { projectsCommand } from './projects';
-import { switchCommand } from './switch';
+import { githubCommand } from './github';
 import { debug } from '../utils/logger';
 
 const commandRegistry: CommandRegistry = {
@@ -15,7 +15,7 @@ const commandRegistry: CommandRegistry = {
   clear: clearCommand,
   project: projectCommand,
   projects: projectsCommand,
-  switch: switchCommand,
+  github: githubCommand,
 };
 
 export function getCommandRegistry(): CommandRegistry {

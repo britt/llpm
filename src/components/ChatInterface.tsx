@@ -32,7 +32,7 @@ export function ChatInterface({ messages, onSendMessage, isLoading }: ChatInterf
       {/* Messages */}
       <Box flexDirection="column" flexGrow={1} paddingX={1} paddingY={1}>
         {messages.map((message, index) => (
-          <Box key={index} marginBottom={1}>
+          <Box key={message.id || `msg-${index}`} marginBottom={1}>
             <Text color={message.role === 'user' ? 'blue' : message.role === 'system' ? 'magenta' : 'green'} bold>
               {message.role === 'user' ? 'You: ' : message.role === 'system' ? 'System: ' : 'PM: '}
             </Text>

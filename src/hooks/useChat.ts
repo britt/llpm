@@ -5,6 +5,10 @@ import { debug } from '../utils/logger';
 import { parseCommand, executeCommand } from '../commands/registry';
 import { loadChatHistory, saveChatHistory } from '../utils/chatHistory';
 
+function generateMessageId(): string {
+  return `msg-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+}
+
 export function useChat() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -21,13 +25,18 @@ export function useChat() {
           // No saved history, use welcome message
           const welcomeMessage: Message = {
             role: 'assistant',
-            content: 'Hello! I\'m Claude PM, your AI assistant. How can I help you today?\n\n💡 Type /help to see available commands.'
+            content: 'Hello! I\'m Claude PM, your AI assistant. How can I help you today?\n\n💡 Type /help to see available commands.',
+            id: generateMessageId()
           };
           setMessages([welcomeMessage]);
           debug('No saved history found, using welcome message');
         } else {
-          // Load saved history
-          setMessages(savedMessages);
+          // Load saved history and ensure all messages have IDs
+          const messagesWithIds = savedMessages.map(msg => ({
+            ...msg,
+            id: msg.id || generateMessageId()
+          }));
+          setMessages(messagesWithIds);
           debug('Loaded', savedMessages.length, 'messages from history');
         }
       } catch (error) {
@@ -35,7 +44,8 @@ export function useChat() {
         // Fallback to welcome message
         const welcomeMessage: Message = {
           role: 'assistant',
-          content: 'Hello! I\'m Claude PM, your AI assistant. How can I help you today?\n\n💡 Type /help to see available commands.'
+          content: 'Hello! I\'m Claude PM, your AI assistant. How can I help you today?\n\n💡 Type /help to see available commands.',
+          id: generateMessageId()
         };
         setMessages([welcomeMessage]);
       } finally {
@@ -70,7 +80,8 @@ export function useChat() {
         const result = await executeCommand(parsed.command!, parsed.args!);
         const responseMessage: Message = {
           role: 'system',
-          content: result.content
+          content: result.content,
+          id: generateMessageId()
         };
         setMessages(prev => [...prev, responseMessage]);
         debug('Added command response to state');
@@ -78,7 +89,8 @@ export function useChat() {
         debug('Error executing command:', error);
         const errorMessage: Message = {
           role: 'system',
-          content: '❌ Failed to execute command. Please try again.'
+          content: '❌ Failed to execute command. Please try again.',
+          id: generateMessageId()
         };
         setMessages(prev => [...prev, errorMessage]);
       } finally {
@@ -88,7 +100,7 @@ export function useChat() {
     }
     
     // Handle regular chat messages
-    const userMessage: Message = { role: 'user', content };
+    const userMessage: Message = { role: 'user', content, id: generateMessageId() };
     
     debug('Adding user message to state');
     setMessages(prev => [...prev, userMessage]);
@@ -101,14 +113,15 @@ export function useChat() {
       const response = await generateResponse(allMessages);
       
       debug('Received response from LLM');
-      const assistantMessage: Message = { role: 'assistant', content: response };
+      const assistantMessage: Message = { role: 'assistant', content: response, id: generateMessageId() };
       setMessages(prev => [...prev, assistantMessage]);
       debug('Added assistant response to state');
     } catch (error) {
       debug('Error in sendMessage:', error);
       const errorMessage: Message = {
         role: 'assistant',
-        content: 'Sorry, I encountered an error. Please try again.'
+        content: 'Sorry, I encountered an error. Please try again.',
+        id: generateMessageId()
       };
       setMessages(prev => [...prev, errorMessage]);
       debug('Added error message to state');

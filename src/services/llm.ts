@@ -3,6 +3,7 @@ import { openai } from '@ai-sdk/openai';
 import type { Message } from '../types';
 import { debug } from '../utils/logger';
 import { getToolDefinitions, executeTool } from '../tools/registry';
+import { getSystemPrompt } from '../utils/systemPrompt';
 
 // You can switch providers by changing this:
 // import { anthropic } from '@ai-sdk/anthropic';
@@ -15,9 +16,10 @@ export async function generateResponse(messages: Message[]): Promise<string> {
   debug('Last message:', messages[messages.length - 1]);
   
   try {
+    const systemPromptContent = await getSystemPrompt();
     const systemMessage = {
       role: 'system' as const,
-      content: 'You are Claude PM, an AI-powered project manager assistant. You can help manage multiple projects and their configurations. When users ask about project management tasks, you can use the available tools to help them. You have access to tools for managing projects: getting current project info, listing projects, adding new projects, switching between projects, and removing projects. Always be helpful and provide clear explanations of what you\'re doing.'
+      content: systemPromptContent
     };
     
     const allMessages = [systemMessage, ...messages.map(msg => ({
