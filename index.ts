@@ -1,9 +1,17 @@
 #!/usr/bin/env bun
 import React from 'react';
-import { render, Text } from 'ink';
+import { render } from 'ink';
+import { ChatInterface } from './src/components/ChatInterface';
+import { useChat } from './src/hooks/useChat';
 
 export function App() {
-  return React.createElement(Text, null, 'Hello, World!');
+  const { messages, sendMessage, isLoading } = useChat();
+
+  return React.createElement(ChatInterface, {
+    messages,
+    onSendMessage: sendMessage,
+    isLoading
+  });
 }
 
 if (import.meta.main) {
