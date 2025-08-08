@@ -21,7 +21,7 @@ describe('useChat', () => {
     expect(result.current.messages).toHaveLength(1);
     expect(result.current.messages[0]).toEqual({
       role: 'assistant',
-      content: "Hello! I'm Claude PM, your AI assistant. How can I help you today?"
+      content: "Hello! I'm Claude PM, your AI assistant. How can I help you today?\n\n💡 Type /help to see available commands."
     });
     expect(result.current.isLoading).toBe(false);
   });

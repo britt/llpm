@@ -33,7 +33,7 @@ describe('App', () => {
 
   it('renders chat interface with initial assistant message', () => {
     const { getByText } = render(React.createElement(App));
-    expect(getByText("Hello! I'm Claude PM, your AI assistant. How can I help you today?")).toBeInTheDocument();
+    expect(getByText(/Hello! I'm Claude PM, your AI assistant/)).toBeInTheDocument();
   });
 
   it('renders the chat interface title', () => {

@@ -33,15 +33,15 @@ export function ChatInterface({ messages, onSendMessage, isLoading }: ChatInterf
       <Box flexDirection="column" flexGrow={1} paddingX={1} paddingY={1}>
         {messages.map((message, index) => (
           <Box key={index} marginBottom={1}>
-            <Text color={message.role === 'user' ? 'blue' : 'green'} bold>
-              {message.role === 'user' ? 'You: ' : 'Assistant: '}
+            <Text color={message.role === 'user' ? 'blue' : message.role === 'system' ? 'magenta' : 'green'} bold>
+              {message.role === 'user' ? 'You: ' : message.role === 'system' ? 'System: ' : 'PM: '}
             </Text>
             <Text>{message.content}</Text>
           </Box>
         ))}
         {isLoading && (
           <Box>
-            <Text color="yellow">Assistant is typing...</Text>
+            <Text color="yellow">PM is typing...</Text>
           </Box>
         )}
       </Box>
