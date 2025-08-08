@@ -1,5 +1,6 @@
 import { Octokit } from '@octokit/rest';
 import { debug } from '../utils/logger';
+import { execSync } from 'child_process';
 
 export interface GitHubRepo {
   id: number;
@@ -16,20 +17,49 @@ export interface GitHubRepo {
 
 let octokit: Octokit | null = null;
 
+async function getGitHubToken(): Promise<string> {
+  // Try environment variables first
+  const envToken = process.env.GITHUB_TOKEN || process.env.GH_TOKEN;
+  if (envToken) {
+    debug('Using GitHub token from environment variable');
+    return envToken;
+  }
+  
+  // Try to get token from gh CLI
+  try {
+    debug('Attempting to get GitHub token from gh CLI');
+    const token = execSync('gh auth token', { 
+      encoding: 'utf8',
+      timeout: 5000,
+      stdio: ['ignore', 'pipe', 'ignore'] // Suppress stderr to avoid noise
+    }).trim();
+    
+    if (token && token.length > 0) {
+      debug('Successfully retrieved GitHub token from gh CLI');
+      return token;
+    }
+  } catch (error) {
+    debug('Failed to get token from gh CLI:', error instanceof Error ? error.message : 'Unknown error');
+  }
+  
+  throw new Error('GitHub token not found. Please either:\n1. Set GITHUB_TOKEN or GH_TOKEN environment variable\n2. Run `gh auth login` to authenticate with GitHub CLI\n3. Install GitHub CLI (gh) if not available');
+}
+
 function getOctokit(): Octokit {
   if (!octokit) {
-    const token = process.env.GITHUB_TOKEN || process.env.GH_TOKEN;
-    
-    if (!token) {
-      throw new Error('GitHub token not found. Please set GITHUB_TOKEN or GH_TOKEN environment variable.');
-    }
-    
+    throw new Error('Octokit not initialized. Call initializeOctokit() first.');
+  }
+  
+  return octokit;
+}
+
+async function initializeOctokit(): Promise<void> {
+  if (!octokit) {
+    const token = await getGitHubToken();
     octokit = new Octokit({
       auth: token,
     });
   }
-  
-  return octokit;
 }
 
 export async function getUserRepos(options: {
@@ -41,6 +71,7 @@ export async function getUserRepos(options: {
   debug('Getting user repositories with options:', options);
   
   try {
+    await initializeOctokit();
     const octokit = getOctokit();
     
     const { data } = await octokit.rest.repos.listForAuthenticatedUser({
@@ -78,6 +109,7 @@ export async function getRepo(owner: string, repo: string): Promise<GitHubRepo> 
   debug('Getting specific repository:', owner, repo);
   
   try {
+    await initializeOctokit();
     const octokit = getOctokit();
     
     const { data } = await octokit.rest.repos.get({
@@ -117,6 +149,7 @@ export async function searchRepos(query: string, options: {
   debug('Searching repositories with query:', query, 'options:', options);
   
   try {
+    await initializeOctokit();
     const octokit = getOctokit();
     
     const { data } = await octokit.rest.search.repos({

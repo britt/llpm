@@ -2,6 +2,7 @@ import type { CommandRegistry } from './types';
 import { infoCommand } from './info';
 import { helpCommand } from './help';
 import { quitCommand } from './quit';
+import { exitCommand } from './exit';
 import { clearCommand } from './clear';
 import { projectCommand } from './project';
 import { projectsCommand } from './projects';
@@ -12,6 +13,7 @@ const commandRegistry: CommandRegistry = {
   info: infoCommand,
   help: helpCommand,
   quit: quitCommand,
+  exit: exitCommand,
   clear: clearCommand,
   project: projectCommand,
   projects: projectsCommand,
