@@ -8,7 +8,9 @@
   },
   "scripts": {
     "start": "bun run index.ts",
+    "start:verbose": "bun run index.ts --verbose",
     "dev": "bun run index.ts",
+    "dev:verbose": "bun run index.ts --verbose",
     "test": "vitest",
     "test:watch": "vitest --watch",
     "test:ui": "vitest --ui"

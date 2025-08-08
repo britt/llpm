@@ -11,14 +11,14 @@ interface ChatInterfaceProps {
 export function ChatInterface({ messages, onSendMessage, isLoading }: ChatInterfaceProps) {
   const [input, setInput] = useState('');
 
-  useInput((input, key) => {
+  useInput((inputChar, key) => {
     if (key.return && input.trim() && !isLoading) {
       onSendMessage(input.trim());
       setInput('');
     } else if (key.backspace || key.delete) {
       setInput(prev => prev.slice(0, -1));
-    } else if (!key.ctrl && !key.meta && input.length === 1) {
-      setInput(prev => prev + input);
+    } else if (!key.ctrl && !key.meta && !key.return && inputChar) {
+      setInput(prev => prev + inputChar);
     }
   });
 
@@ -47,10 +47,11 @@ export function ChatInterface({ messages, onSendMessage, isLoading }: ChatInterf
       </Box>
 
       {/* Input */}
-      <Box borderStyle="single" borderColor="gray" paddingX={1}>
+      <Box borderStyle="single" paddingX={1}>
         <Text>
           {'> '}
           {input}
+          <Text backgroundColor="white" color="black"> </Text>
         </Text>
       </Box>
     </Box>

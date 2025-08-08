@@ -42,10 +42,21 @@ bun start
 bun run index.ts
 ```
 
+### With verbose debug logging:
+```bash
+bun start:verbose
+# or
+bun run index.ts --verbose
+# or (short flag)
+bun run index.ts -v
+```
+
 ### Make it executable and run directly:
 ```bash
 chmod +x index.ts
 ./index.ts
+# With verbose mode
+./index.ts --verbose
 ```
 
 ### Install globally (optional):
@@ -69,10 +80,32 @@ bun run test
 
 ### Available scripts:
 - `bun start` - Start the CLI application
+- `bun start:verbose` - Start with debug logging enabled
 - `bun run dev` - Same as start (development mode)
+- `bun run dev:verbose` - Development mode with debug logging
 - `bun run test` - Run test suite
 - `bun run test:watch` - Run tests in watch mode
 - `bun run test:ui` - Run tests with UI
+
+### Debug Mode
+
+Enable verbose debug logging to troubleshoot issues:
+
+```bash
+# Using npm scripts
+bun start:verbose
+
+# Using flags directly
+bun run index.ts --verbose
+./index.ts -v
+```
+
+Debug logs include:
+- Environment validation steps
+- Chat message flow
+- API call details and responses
+- Loading state changes
+- Error details
 
 ## Architecture
 

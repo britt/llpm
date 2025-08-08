@@ -1,6 +1,7 @@
 import { generateText, streamText } from 'ai';
 import { openai } from '@ai-sdk/openai';
 import type { Message } from '../types';
+import { debug } from '../utils/logger';
 
 // You can switch providers by changing this:
 // import { anthropic } from '@ai-sdk/anthropic';
@@ -9,7 +10,11 @@ import type { Message } from '../types';
 const model = openai('gpt-4o-mini'); // or anthropic('claude-3-sonnet-20240229')
 
 export async function generateResponse(messages: Message[]): Promise<string> {
+  debug('generateResponse called with', messages.length, 'messages');
+  debug('Last message:', messages[messages.length - 1]);
+  
   try {
+    debug('Calling OpenAI API with model:', model.modelId);
     const { text } = await generateText({
       model,
       messages: messages.map(msg => ({
@@ -19,8 +24,11 @@ export async function generateResponse(messages: Message[]): Promise<string> {
       maxTokens: 1000,
     });
 
+    debug('Generated response length:', text.length);
+    debug('Generated response preview:', text.substring(0, 100));
     return text;
   } catch (error) {
+    debug('Error in generateResponse:', error);
     console.error('Error generating response:', error);
     return 'Sorry, I encountered an error while processing your request.';
   }

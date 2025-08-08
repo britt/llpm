@@ -135,6 +135,11 @@ For more information, read the Bun API docs in `node_modules/bun-types/docs/**.m
 - Use React patterns with `React.createElement()` for JSX compatibility
 - Input handling: `useInput()` hook for keyboard interactions
 - Terminal styling: Use `color` prop for text colors, `bold` for emphasis
+- **Input handling gotchas**:
+  - Avoid parameter name conflicts in `useInput((inputChar, key) => ...)` - don't use `input` as parameter name if you have an `input` state variable
+  - Check for `!key.return` when handling regular character input to avoid conflicts
+  - Use `inputChar` parameter for actual character input, not the conflicting variable name
+  - Always remove `borderColor` if borders disappear - stick to default border styling
 
 ### GitHub Integration
 - Use `@octokit/rest` for GitHub API interactions
@@ -151,6 +156,19 @@ For more information, read the Bun API docs in `node_modules/bun-types/docs/**.m
   
   // ❌ Bad - regular import for types
   import { Message } from '../types';
+  ```
+
+### Debug Logging
+- Use `debug()` function from `src/utils/logger` for debug output
+- Enable with `--verbose` or `-v` command line flag
+- Debug logs are written to stderr with timestamp and [DEBUG] prefix
+- Add debug logging to new features for better troubleshooting
+- Examples:
+  ```typescript
+  import { debug } from '../utils/logger';
+  
+  debug('Function called with:', parameter);
+  debug('API response received:', response.data);
   ```
 
 ### Development Workflow
