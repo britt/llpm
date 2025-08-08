@@ -141,4 +141,6 @@ For more information, read the Bun API docs in `node_modules/bun-types/docs/**.m
 - Always run lint/typecheck commands if available before committing
 - Use TodoWrite tool for complex multi-step tasks to track progress
 - Mark todos as completed immediately after finishing tasks
+- **Commit changes regularly**: After completing 2-3 related tasks or making significant progress, commit changes to maintain good version history
 - Commit with descriptive messages including Claude Code attribution
+- Push to GitHub repository after commits to keep remote updated
