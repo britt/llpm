@@ -24,6 +24,10 @@ export function getConfigPath(): string {
   return CONFIG_DIR;
 }
 
+export function getConfigDir(): string {
+  return CONFIG_DIR;
+}
+
 export function getChatHistoryPath(): string {
   return CHAT_HISTORY_FILE;
 }
