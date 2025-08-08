@@ -118,6 +118,10 @@ For more information, read the Bun API docs in `node_modules/bun-types/docs/**.m
 - Use `bun run test` to run Vitest tests (installed in this project)
 - Tests use React Testing Library with jsdom environment
 - Test files should use `.test.tsx` or `.spec.tsx` extensions
+- **Always add unit tests for new behaviors**: When implementing new features, validation logic, or significant changes, write corresponding unit tests
+- Mock external dependencies (APIs, services) in tests to ensure reliability
+- Use Vitest's `vi.mock()` for mocking modules and `vi.spyOn()` for spying on functions
+- Test both success and error cases for robust coverage
 
 ### AI/LLM Integration
 - Use Vercel AI SDK (`ai` package) for LLM integrations
@@ -136,6 +140,18 @@ For more information, read the Bun API docs in `node_modules/bun-types/docs/**.m
 - Use `@octokit/rest` for GitHub API interactions
 - Create repositories: `gh repo create` command
 - Environment variable: `GITHUB_TOKEN` for authentication
+
+### TypeScript Best Practices
+- **Always use `import type` for type-only imports**: Use `import type { MyType } from './types'` instead of `import { MyType } from './types'` when importing interfaces, types, or other TypeScript-only constructs
+- This improves build performance and makes the distinction between runtime and compile-time imports clear
+- Examples:
+  ```typescript
+  // ✅ Good - type-only import
+  import type { Message } from '../types';
+  
+  // ❌ Bad - regular import for types
+  import { Message } from '../types';
+  ```
 
 ### Development Workflow
 - Always run lint/typecheck commands if available before committing

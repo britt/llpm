@@ -1,6 +1,6 @@
 import { generateText, streamText } from 'ai';
 import { openai } from '@ai-sdk/openai';
-import { Message } from '../types';
+import type { Message } from '../types';
 
 // You can switch providers by changing this:
 // import { anthropic } from '@ai-sdk/anthropic';

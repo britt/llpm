@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Box, Text, useInput } from 'ink';
-import { Message } from '../types';
+import type { Message } from '../types';
 
 interface ChatInterfaceProps {
   messages: Message[];
@@ -47,11 +47,10 @@ export function ChatInterface({ messages, onSendMessage, isLoading }: ChatInterf
       </Box>
 
       {/* Input */}
-      <Box borderStyle="single" paddingX={1}>
+      <Box borderStyle="single" borderColor="gray" paddingX={1}>
         <Text>
           {'> '}
           {input}
-          <Text inverse> </Text>
         </Text>
       </Box>
     </Box>

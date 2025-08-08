@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { Message } from '../types';
+import type { Message } from '../types';
 import { generateResponse } from '../services/llm';
 
 export function useChat() {
