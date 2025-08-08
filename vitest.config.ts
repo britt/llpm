@@ -6,4 +6,9 @@ export default defineConfig({
     setupFiles: ['./test/setup.ts'],
     globals: true,
   },
+  esbuild: {
+    jsx: 'transform',
+    jsxFactory: 'React.createElement',
+    jsxFragment: 'React.Fragment',
+  },
 });

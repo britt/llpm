@@ -2,8 +2,10 @@
 import React from 'react';
 import { render, Text } from 'ink';
 
-function App() {
-  return <Text>Hello, World!</Text>;
+export function App() {
+  return React.createElement(Text, null, 'Hello, World!');
 }
 
-render(<App />);
+if (import.meta.main) {
+  render(React.createElement(App));
+}

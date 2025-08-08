@@ -25,6 +25,8 @@
     "typescript": "^5"
   },
   "dependencies": {
+    "@octokit/rest": "^22.0.0",
+    "ai": "^5.0.8",
     "ink": "^6.1.0",
     "react": "^19.1.1"
   }
