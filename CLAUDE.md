@@ -141,6 +141,23 @@ For more information, read the Bun API docs in `node_modules/bun-types/docs/**.m
   - Use `inputChar` parameter for actual character input, not the conflicting variable name
   - Always remove `borderColor` if borders disappear - stick to default border styling
 
+### Slash Command System
+- Commands start with `/` and are processed locally (not sent to LLM)
+- Command structure: `/command [args]`
+- Built-in commands: `/info`, `/help`, `/quit`
+- Create new commands in `src/commands/` directory
+- Register commands in `src/commands/registry.ts`
+- Command interface:
+  ```typescript
+  export interface Command {
+    name: string;
+    description: string;
+    execute: (args: string[]) => Promise<CommandResult> | CommandResult;
+  }
+  ```
+- System messages use 'system' role with magenta color
+- Commands are parsed before being sent to chat hook
+
 ### GitHub Integration
 - Use `@octokit/rest` for GitHub API interactions
 - Create repositories: `gh repo create` command

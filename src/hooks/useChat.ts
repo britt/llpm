@@ -1,17 +1,60 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import type { Message } from '../types';
 import { generateResponse } from '../services/llm';
 import { debug } from '../utils/logger';
 import { parseCommand, executeCommand } from '../commands/registry';
+import { loadChatHistory, saveChatHistory } from '../utils/chatHistory';
 
 export function useChat() {
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      role: 'assistant',
-      content: 'Hello! I\'m Claude PM, your AI assistant. How can I help you today?\n\n💡 Type /help to see available commands.'
-    }
-  ]);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [historyLoaded, setHistoryLoaded] = useState(false);
+  
+  // Load chat history on component mount
+  useEffect(() => {
+    const initializeChatHistory = async () => {
+      debug('Initializing chat history');
+      try {
+        const savedMessages = await loadChatHistory();
+        
+        if (savedMessages.length === 0) {
+          // No saved history, use welcome message
+          const welcomeMessage: Message = {
+            role: 'assistant',
+            content: 'Hello! I\'m Claude PM, your AI assistant. How can I help you today?\n\n💡 Type /help to see available commands.'
+          };
+          setMessages([welcomeMessage]);
+          debug('No saved history found, using welcome message');
+        } else {
+          // Load saved history
+          setMessages(savedMessages);
+          debug('Loaded', savedMessages.length, 'messages from history');
+        }
+      } catch (error) {
+        debug('Error loading chat history:', error);
+        // Fallback to welcome message
+        const welcomeMessage: Message = {
+          role: 'assistant',
+          content: 'Hello! I\'m Claude PM, your AI assistant. How can I help you today?\n\n💡 Type /help to see available commands.'
+        };
+        setMessages([welcomeMessage]);
+      } finally {
+        setHistoryLoaded(true);
+      }
+    };
+    
+    initializeChatHistory();
+  }, []);
+  
+  // Save messages whenever they change (after history is loaded)
+  useEffect(() => {
+    if (historyLoaded && messages.length > 0) {
+      debug('Saving updated chat history');
+      saveChatHistory(messages).catch(error => {
+        debug('Failed to save chat history:', error);
+      });
+    }
+  }, [messages, historyLoaded]);
 
   const sendMessage = useCallback(async (content: string) => {
     debug('sendMessage called with:', content);

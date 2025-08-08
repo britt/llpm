@@ -8,6 +8,12 @@ vi.mock('../services/llm', () => ({
   generateResponse: vi.fn()
 }));
 
+// Mock chat history utilities
+vi.mock('../utils/chatHistory', () => ({
+  loadChatHistory: vi.fn().mockResolvedValue([]),
+  saveChatHistory: vi.fn().mockResolvedValue(undefined)
+}));
+
 const mockGenerateResponse = vi.mocked(generateResponse);
 
 describe('useChat', () => {
@@ -15,8 +21,13 @@ describe('useChat', () => {
     vi.clearAllMocks();
   });
 
-  it('should initialize with welcome message', () => {
+  it('should initialize with welcome message', async () => {
     const { result } = renderHook(() => useChat());
+    
+    // Wait for the async history loading to complete
+    await act(async () => {
+      await new Promise(resolve => setTimeout(resolve, 0));
+    });
     
     expect(result.current.messages).toHaveLength(1);
     expect(result.current.messages[0]).toEqual({
@@ -30,6 +41,11 @@ describe('useChat', () => {
     mockGenerateResponse.mockResolvedValueOnce('AI response');
     
     const { result } = renderHook(() => useChat());
+    
+    // Wait for initialization
+    await act(async () => {
+      await new Promise(resolve => setTimeout(resolve, 0));
+    });
     
     await act(async () => {
       await result.current.sendMessage('Hello');
@@ -50,6 +66,11 @@ describe('useChat', () => {
     mockGenerateResponse.mockRejectedValueOnce(new Error('API Error'));
     
     const { result } = renderHook(() => useChat());
+    
+    // Wait for initialization
+    await act(async () => {
+      await new Promise(resolve => setTimeout(resolve, 0));
+    });
     
     await act(async () => {
       await result.current.sendMessage('Hello');

@@ -8,6 +8,12 @@ vi.mock('./src/services/llm', () => ({
   generateResponse: vi.fn().mockResolvedValue('Hello! How can I help you?')
 }));
 
+// Mock chat history utilities
+vi.mock('./src/utils/chatHistory', () => ({
+  loadChatHistory: vi.fn().mockResolvedValue([]),
+  saveChatHistory: vi.fn().mockResolvedValue(undefined)
+}));
+
 // Mock Ink's useInput hook to avoid terminal input handling in tests
 vi.mock('ink', async () => {
   const actual = await vi.importActual('ink');
@@ -31,8 +37,10 @@ describe('App', () => {
     vi.clearAllMocks();
   });
 
-  it('renders chat interface with initial assistant message', () => {
+  it('renders chat interface with initial assistant message', async () => {
     const { getByText } = render(React.createElement(App));
+    // Wait for async loading
+    await new Promise(resolve => setTimeout(resolve, 100));
     expect(getByText(/Hello! I'm Claude PM, your AI assistant/)).toBeInTheDocument();
   });
 

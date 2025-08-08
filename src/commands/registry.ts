@@ -2,12 +2,14 @@ import type { CommandRegistry } from './types';
 import { infoCommand } from './info';
 import { helpCommand } from './help';
 import { quitCommand } from './quit';
+import { clearCommand } from './clear';
 import { debug } from '../utils/logger';
 
 const commandRegistry: CommandRegistry = {
   info: infoCommand,
   help: helpCommand,
   quit: quitCommand,
+  clear: clearCommand,
 };
 
 export function getCommandRegistry(): CommandRegistry {
