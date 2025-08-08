@@ -3,6 +3,9 @@ import { infoCommand } from './info';
 import { helpCommand } from './help';
 import { quitCommand } from './quit';
 import { clearCommand } from './clear';
+import { projectCommand } from './project';
+import { projectsCommand } from './projects';
+import { switchCommand } from './switch';
 import { debug } from '../utils/logger';
 
 const commandRegistry: CommandRegistry = {
@@ -10,6 +13,9 @@ const commandRegistry: CommandRegistry = {
   help: helpCommand,
   quit: quitCommand,
   clear: clearCommand,
+  project: projectCommand,
+  projects: projectsCommand,
+  switch: switchCommand,
 };
 
 export function getCommandRegistry(): CommandRegistry {

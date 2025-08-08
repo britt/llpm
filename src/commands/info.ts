@@ -1,21 +1,25 @@
 import type { Command, CommandResult } from './types';
 import { debug } from '../utils/logger';
+import { getCurrentProject } from '../utils/projectConfig';
 
 const packageInfo = {
   name: 'Claude PM',
-  version: '1.0.0',
+  version: '0.1.0',
   description: 'AI-powered CLI project manager similar to Claude Code'
 };
 
 export const infoCommand: Command = {
   name: 'info',
   description: 'Show information about the application',
-  execute: (): CommandResult => {
+  execute: async (): Promise<CommandResult> => {
     debug('Executing /info command');
     
     const modelInfo = 'OpenAI GPT-4o-mini';
     const runtimeInfo = `Bun ${process.versions.bun || 'unknown'}`;
     const nodeInfo = `Node.js ${process.version}`;
+    
+    // Get current project info
+    const currentProject = await getCurrentProject();
     
     const info = [
       `📱 ${packageInfo.name} v${packageInfo.version}`,
@@ -24,14 +28,26 @@ export const infoCommand: Command = {
       `🤖 Model: ${modelInfo}`,
       `⚡ Runtime: ${runtimeInfo}`,
       `🟢 Node: ${nodeInfo}`,
-      '',
-      `💡 Type /help for available commands`
-    ].join('\n');
+      ''
+    ];
+    
+    // Add current project information if available
+    if (currentProject) {
+      info.push(`📁 Current Project: ${currentProject.name}`);
+      info.push(`📂 Repository: ${currentProject.repository}`);
+      info.push(`📍 Path: ${currentProject.path}`);
+      info.push('');
+    } else {
+      info.push('📁 No active project (use /project to set one)');
+      info.push('');
+    }
+    
+    info.push('💡 Type /help for available commands');
 
-    debug('Info command result:', info);
+    debug('Info command result with project info');
     
     return {
-      content: info,
+      content: info.join('\n'),
       success: true
     };
   }

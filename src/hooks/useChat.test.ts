@@ -4,9 +4,12 @@ import { useChat } from './useChat';
 import { generateResponse } from '../services/llm';
 
 // Mock the LLM service
-vi.mock('../services/llm', () => ({
-  generateResponse: vi.fn()
-}));
+vi.mock('../services/llm', () => {
+  const { vi } = require('vitest');
+  return {
+    generateResponse: vi.fn()
+  };
+});
 
 // Mock chat history utilities
 vi.mock('../utils/chatHistory', () => ({
