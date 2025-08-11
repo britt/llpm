@@ -1,6 +1,7 @@
 import { Octokit } from '@octokit/rest';
 import { debug } from '../utils/logger';
 import { execSync } from 'child_process';
+import { getUserReposViaGhCli, searchReposViaGhCli, getRepoViaGhCli } from './githubCli';
 
 export interface GitHubRepo {
   id: number;
@@ -25,18 +26,34 @@ async function getGitHubToken(): Promise<string> {
     return envToken;
   }
   
-  // Try to get token from gh CLI
+  // Try to test if gh CLI works first
   try {
-    debug('Attempting to get GitHub token from gh CLI');
-    const token = execSync('gh auth token', { 
+    debug('Testing if gh CLI is authenticated');
+    execSync('gh api user', { 
       encoding: 'utf8',
       timeout: 5000,
-      stdio: ['ignore', 'pipe', 'ignore'] // Suppress stderr to avoid noise
-    }).trim();
+      stdio: ['ignore', 'pipe', 'pipe']
+    });
+    debug('gh CLI is authenticated, but gh auth token might return wrong token');
+    
+    // Try to get token from gh CLI
+    debug('Attempting to get GitHub token from gh CLI');
+    const rawToken = execSync('gh auth token', { 
+      encoding: 'utf8',
+      timeout: 5000,
+      stdio: ['ignore', 'pipe', 'ignore']
+    });
+    debug('Raw token from gh CLI:', JSON.stringify(rawToken));
+    
+    const token = rawToken.trim();
+    debug('Trimmed token length:', token.length);
     
     if (token && token.length > 0) {
       debug('Successfully retrieved GitHub token from gh CLI');
+      debug('Token starts with:', token.substring(0, 10));
       return token;
+    } else {
+      debug('Token is empty after trimming');
     }
   } catch (error) {
     debug('Failed to get token from gh CLI:', error instanceof Error ? error.message : 'Unknown error');
@@ -97,11 +114,18 @@ export async function getUserRepos(options: {
     debug('Retrieved', repos.length, 'repositories');
     return repos;
   } catch (error) {
-    debug('Error retrieving repositories:', error);
-    if (error instanceof Error) {
-      throw new Error(`Failed to retrieve GitHub repositories: ${error.message}`);
+    debug('Octokit failed, trying gh CLI fallback:', error instanceof Error ? error.message : 'Unknown error');
+    
+    // Try gh CLI as fallback
+    try {
+      return await getUserReposViaGhCli(options);
+    } catch (ghError) {
+      debug('gh CLI fallback also failed:', ghError);
+      if (error instanceof Error) {
+        throw new Error(`Failed to retrieve GitHub repositories: ${error.message}`);
+      }
+      throw new Error('Failed to retrieve GitHub repositories: Unknown error');
     }
-    throw new Error('Failed to retrieve GitHub repositories: Unknown error');
   }
 }
 
@@ -133,11 +157,18 @@ export async function getRepo(owner: string, repo: string): Promise<GitHubRepo> 
     debug('Retrieved repository:', repoData.full_name);
     return repoData;
   } catch (error) {
-    debug('Error retrieving repository:', error);
-    if (error instanceof Error) {
-      throw new Error(`Failed to retrieve repository ${owner}/${repo}: ${error.message}`);
+    debug('Octokit failed, trying gh CLI fallback:', error instanceof Error ? error.message : 'Unknown error');
+    
+    // Try gh CLI as fallback
+    try {
+      return await getRepoViaGhCli(owner, repo);
+    } catch (ghError) {
+      debug('gh CLI fallback also failed:', ghError);
+      if (error instanceof Error) {
+        throw new Error(`Failed to retrieve repository ${owner}/${repo}: ${error.message}`);
+      }
+      throw new Error(`Failed to retrieve repository ${owner}/${repo}: Unknown error`);
     }
-    throw new Error(`Failed to retrieve repository ${owner}/${repo}: Unknown error`);
   }
 }
 
@@ -175,10 +206,17 @@ export async function searchRepos(query: string, options: {
     debug('Found', repos.length, 'repositories in search');
     return repos;
   } catch (error) {
-    debug('Error searching repositories:', error);
-    if (error instanceof Error) {
-      throw new Error(`Failed to search GitHub repositories: ${error.message}`);
+    debug('Octokit failed, trying gh CLI fallback:', error instanceof Error ? error.message : 'Unknown error');
+    
+    // Try gh CLI as fallback
+    try {
+      return await searchReposViaGhCli(query, options);
+    } catch (ghError) {
+      debug('gh CLI fallback also failed:', ghError);
+      if (error instanceof Error) {
+        throw new Error(`Failed to search GitHub repositories: ${error.message}`);
+      }
+      throw new Error('Failed to search GitHub repositories: Unknown error');
     }
-    throw new Error('Failed to search GitHub repositories: Unknown error');
   }
 }
