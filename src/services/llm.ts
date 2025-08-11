@@ -1,7 +1,7 @@
 import { generateText, streamText } from 'ai';
 import { openai } from '@ai-sdk/openai';
 import type { Message } from '../types';
-import { debug } from '../utils/logger';
+import { debug, getVerbose } from '../utils/logger';
 import { getToolDefinitions, executeTool } from '../tools/registry';
 import { getSystemPrompt } from '../utils/systemPrompt';
 
@@ -80,7 +80,17 @@ export async function generateResponse(messages: Message[]): Promise<string> {
   } catch (error) {
     debug('Error in generateResponse:', error);
     console.error('Error generating response:', error);
-    return 'Sorry, I encountered an error while processing your request.';
+    
+    let errorMessage = 'Sorry, I encountered an error while processing your request.';
+    
+    if (getVerbose() && error instanceof Error) {
+      errorMessage += `\n\n🔍 Debug Details:\n${error.name}: ${error.message}`;
+      if (error.stack) {
+        errorMessage += `\n\nStack trace:\n${error.stack}`;
+      }
+    }
+    
+    return errorMessage;
   }
 }
 
@@ -100,6 +110,16 @@ export async function* streamResponse(messages: Message[]) {
     }
   } catch (error) {
     console.error('Error streaming response:', error);
-    yield 'Sorry, I encountered an error while processing your request.';
+    
+    let errorMessage = 'Sorry, I encountered an error while processing your request.';
+    
+    if (getVerbose() && error instanceof Error) {
+      errorMessage += `\n\n🔍 Debug Details:\n${error.name}: ${error.message}`;
+      if (error.stack) {
+        errorMessage += `\n\nStack trace:\n${error.stack}`;
+      }
+    }
+    
+    yield errorMessage;
   }
 }

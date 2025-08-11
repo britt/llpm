@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import type { Message } from '../types';
 import { generateResponse } from '../services/llm';
-import { debug } from '../utils/logger';
+import { debug, getVerbose } from '../utils/logger';
 import { parseCommand, executeCommand } from '../commands/registry';
 import { loadChatHistory, saveChatHistory } from '../utils/chatHistory';
 
@@ -87,9 +87,19 @@ export function useChat() {
         debug('Added command response to state');
       } catch (error) {
         debug('Error executing command:', error);
+        
+        let errorContent = '❌ Failed to execute command. Please try again.';
+        
+        if (getVerbose() && error instanceof Error) {
+          errorContent += `\n\n🔍 Debug Details:\n${error.name}: ${error.message}`;
+          if (error.stack) {
+            errorContent += `\n\nStack trace:\n${error.stack}`;
+          }
+        }
+        
         const errorMessage: Message = {
           role: 'system',
-          content: '❌ Failed to execute command. Please try again.',
+          content: errorContent,
           id: generateMessageId()
         };
         setMessages(prev => [...prev, errorMessage]);
@@ -118,9 +128,19 @@ export function useChat() {
       debug('Added assistant response to state');
     } catch (error) {
       debug('Error in sendMessage:', error);
+      
+      let errorContent = 'Sorry, I encountered an error. Please try again.';
+      
+      if (getVerbose() && error instanceof Error) {
+        errorContent += `\n\n🔍 Debug Details:\n${error.name}: ${error.message}`;
+        if (error.stack) {
+          errorContent += `\n\nStack trace:\n${error.stack}`;
+        }
+      }
+      
       const errorMessage: Message = {
         role: 'assistant',
-        content: 'Sorry, I encountered an error. Please try again.',
+        content: errorContent,
         id: generateMessageId()
       };
       setMessages(prev => [...prev, errorMessage]);
