@@ -1,6 +1,7 @@
 import type { ToolRegistry } from './types';
 import { getCurrentProjectTool, listProjectsTool, addProjectTool, setCurrentProjectTool, removeProjectTool } from './projectTools';
 import { listGitHubReposTool, searchGitHubReposTool, getGitHubRepoTool } from './githubTools';
+import { debug } from '../utils/logger';
 
 const toolRegistry: ToolRegistry = {
   get_current_project: getCurrentProjectTool,
@@ -19,24 +20,35 @@ export function getToolRegistry(): ToolRegistry {
 
 export function getToolDefinitions() {
   const registry = getToolRegistry();
-  return Object.values(registry).map(tool => ({
-    type: 'function',
-    function: {
-      name: tool.name,
-      description: tool.description,
-      parameters: {
-        type: 'object',
-        properties: tool.parameters.reduce((props, param) => {
-          props[param.name] = {
-            type: param.type,
-            description: param.description
-          };
-          return props;
-        }, {} as Record<string, any>),
-        required: tool.parameters.filter(p => p.required).map(p => p.name)
+  const definitions = Object.values(registry).map(tool => {
+    const properties = tool.parameters.reduce((props, param) => {
+      props[param.name] = {
+        type: param.type,
+        description: param.description
+      };
+      return props;
+    }, {} as Record<string, any>);
+
+    const requiredParams = tool.parameters.filter(p => p.required).map(p => p.name);
+
+    return {
+      type: 'function',
+      function: {
+        name: tool.name,
+        description: tool.description,
+        parameters: {
+          type: 'object',
+          properties: properties,
+          ...(requiredParams.length > 0 ? { required: requiredParams } : {})
+        }
       }
-    }
-  }));
+    };
+  });
+  
+  // Add debug logging to see what we're generating
+  debug('Generated tool definitions:', JSON.stringify(definitions, null, 2));
+  
+  return definitions;
 }
 
 export async function executeTool(toolName: string, params: Record<string, any>): Promise<string> {
