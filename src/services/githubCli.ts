@@ -1,5 +1,5 @@
 import { execSync } from 'child_process';
-import { debug } from '../utils/logger';
+import { debug, getVerbose } from '../utils/logger';
 import type { GitHubRepo } from './github';
 
 export async function getUserReposViaGhCli(options: {
@@ -21,16 +21,35 @@ export async function getUserReposViaGhCli(options: {
     const url = `user/repos?${params.toString()}`;
     debug('Calling gh api with URL:', url);
     
+    if (getVerbose()) {
+      debug('🌐 GitHub CLI API Call: gh api', url);
+      debug('📋 Query Parameters:', params.toString());
+    }
+    
     const output = execSync(`gh api "${url}"`, {
       encoding: 'utf8',
       timeout: 30000,
       stdio: ['ignore', 'pipe', 'pipe']
     });
     
+    if (getVerbose()) {
+      debug('✅ GitHub CLI Raw Response length:', output.length, 'characters');
+    }
+    
     const data = JSON.parse(output);
     
     if (!Array.isArray(data)) {
       throw new Error('Invalid response format from GitHub API');
+    }
+    
+    if (getVerbose()) {
+      debug('📊 GitHub CLI Response: received', data.length, 'repositories');
+      debug('📊 Response data preview:', JSON.stringify(data.slice(0, 2).map(repo => ({
+        name: repo.name,
+        full_name: repo.full_name,
+        private: repo.private,
+        language: repo.language
+      })), null, 2));
     }
     
     const repos: GitHubRepo[] = data.map(repo => ({
@@ -75,16 +94,37 @@ export async function searchReposViaGhCli(query: string, options: {
     const url = `search/repositories?${params.toString()}`;
     debug('Calling gh api with URL:', url);
     
+    if (getVerbose()) {
+      debug('🌐 GitHub CLI API Call: gh api', url);
+      debug('📋 Query Parameters:', params.toString());
+    }
+    
     const output = execSync(`gh api "${url}"`, {
       encoding: 'utf8',
       timeout: 30000,
       stdio: ['ignore', 'pipe', 'pipe']
     });
     
+    if (getVerbose()) {
+      debug('✅ GitHub CLI Raw Response length:', output.length, 'characters');
+    }
+    
     const data = JSON.parse(output);
     
     if (!data.items || !Array.isArray(data.items)) {
       throw new Error('Invalid response format from GitHub search API');
+    }
+    
+    if (getVerbose()) {
+      debug('📊 GitHub CLI Search Response: found', data.total_count || 'unknown', 'total results');
+      debug('📊 Returned', data.items.length, 'results');
+      debug('📊 Response preview:', JSON.stringify(data.items.slice(0, 2).map((repo: any) => ({
+        name: repo.name,
+        full_name: repo.full_name,
+        description: repo.description,
+        stars: repo.stargazers_count,
+        language: repo.language
+      })), null, 2));
     }
     
     const repos: GitHubRepo[] = data.items.map((repo: { id: any; name: any; full_name: any; description: any; html_url: any; clone_url: any; ssh_url: any; private: any; language: any; updated_at: any; }) => ({
@@ -118,13 +158,35 @@ export async function getRepoViaGhCli(owner: string, repo: string): Promise<GitH
     const url = `repos/${owner}/${repo}`;
     debug('Calling gh api with URL:', url);
     
+    if (getVerbose()) {
+      debug('🌐 GitHub CLI API Call: gh api', url);
+      debug('📋 Repository:', `${owner}/${repo}`);
+    }
+    
     const output = execSync(`gh api "${url}"`, {
       encoding: 'utf8',
       timeout: 30000,
       stdio: ['ignore', 'pipe', 'pipe']
     });
     
+    if (getVerbose()) {
+      debug('✅ GitHub CLI Raw Response length:', output.length, 'characters');
+    }
+    
     const data = JSON.parse(output);
+    
+    if (getVerbose()) {
+      debug('📊 GitHub CLI Repo Response: repository details retrieved');
+      debug('📊 Response data:', JSON.stringify({
+        name: data.name,
+        full_name: data.full_name,
+        description: data.description,
+        private: data.private,
+        language: data.language,
+        stars: data.stargazers_count,
+        forks: data.forks_count
+      }, null, 2));
+    }
     
     const repoData: GitHubRepo = {
       id: data.id,

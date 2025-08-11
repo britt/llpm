@@ -1,5 +1,5 @@
 import { Octokit } from '@octokit/rest';
-import { debug } from '../utils/logger';
+import { debug, getVerbose } from '../utils/logger';
 import { execSync } from 'child_process';
 import { getUserReposViaGhCli, searchReposViaGhCli, getRepoViaGhCli } from './githubCli';
 
@@ -91,12 +91,29 @@ export async function getUserRepos(options: {
     await initializeOctokit();
     const octokit = getOctokit();
     
-    const { data } = await octokit.rest.repos.listForAuthenticatedUser({
+    const apiParams = {
       type: options.type || 'owner',
       sort: options.sort || 'updated',
       direction: options.direction || 'desc',
       per_page: options.per_page || 100,
-    });
+    };
+    
+    if (getVerbose()) {
+      debug('🌐 GitHub API Call: GET /user/repos');
+      debug('📋 Parameters:', JSON.stringify(apiParams, null, 2));
+    }
+    
+    const { data } = await octokit.rest.repos.listForAuthenticatedUser(apiParams);
+    
+    if (getVerbose()) {
+      debug('✅ GitHub API Response: received', data.length, 'repositories');
+      debug('📊 Response data preview:', JSON.stringify(data.slice(0, 2).map(repo => ({
+        name: repo.name,
+        full_name: repo.full_name,
+        private: repo.private,
+        language: repo.language
+      })), null, 2));
+    }
     
     const repos: GitHubRepo[] = data.map(repo => ({
       id: repo.id,
@@ -136,10 +153,27 @@ export async function getRepo(owner: string, repo: string): Promise<GitHubRepo> 
     await initializeOctokit();
     const octokit = getOctokit();
     
-    const { data } = await octokit.rest.repos.get({
-      owner,
-      repo,
-    });
+    const apiParams = { owner, repo };
+    
+    if (getVerbose()) {
+      debug('🌐 GitHub API Call: GET /repos/:owner/:repo');
+      debug('📋 Parameters:', JSON.stringify(apiParams, null, 2));
+    }
+    
+    const { data } = await octokit.rest.repos.get(apiParams);
+    
+    if (getVerbose()) {
+      debug('✅ GitHub API Response: repository details retrieved');
+      debug('📊 Response data:', JSON.stringify({
+        name: data.name,
+        full_name: data.full_name,
+        description: data.description,
+        private: data.private,
+        language: data.language,
+        stars: data.stargazers_count,
+        forks: data.forks_count
+      }, null, 2));
+    }
     
     const repoData: GitHubRepo = {
       id: data.id,
@@ -183,12 +217,31 @@ export async function searchRepos(query: string, options: {
     await initializeOctokit();
     const octokit = getOctokit();
     
-    const { data } = await octokit.rest.search.repos({
+    const apiParams = {
       q: query,
       sort: options.sort || 'updated',
       order: options.order || 'desc',
       per_page: options.per_page || 30,
-    });
+    };
+    
+    if (getVerbose()) {
+      debug('🌐 GitHub API Call: GET /search/repositories');
+      debug('📋 Parameters:', JSON.stringify(apiParams, null, 2));
+    }
+    
+    const { data } = await octokit.rest.search.repos(apiParams);
+    
+    if (getVerbose()) {
+      debug('✅ GitHub API Response: found', data.total_count, 'repositories');
+      debug('📊 Returned', data.items.length, 'results');
+      debug('📊 Response preview:', JSON.stringify(data.items.slice(0, 2).map(repo => ({
+        name: repo.name,
+        full_name: repo.full_name,
+        description: repo.description,
+        stars: repo.stargazers_count,
+        language: repo.language
+      })), null, 2));
+    }
     
     const repos: GitHubRepo[] = data.items.map(repo => ({
       id: repo.id,
