@@ -1,7 +1,9 @@
 import { readFile, writeFile } from 'fs/promises';
 import { existsSync } from 'fs';
+import { join } from 'path';
 import type { Message } from '../types';
-import { getChatHistoryPath, ensureConfigDir } from './config';
+import { getConfigDir, ensureConfigDir } from './config';
+import { getCurrentProject } from './projectConfig';
 import { debug } from './logger';
 
 interface ChatSession {
@@ -15,12 +17,42 @@ interface ChatHistoryData {
   currentSessionId?: string;
 }
 
+async function getChatHistoryPath(): Promise<string> {
+  const currentProject = await getCurrentProject();
+  const configDir = getConfigDir();
+  
+  if (currentProject) {
+    // Use project-specific chat history
+    const projectDir = join(configDir, 'projects', currentProject.id);
+    return join(projectDir, 'chat-history.json');
+  } else {
+    // Use global chat history when no project is selected
+    return join(configDir, 'global-chat-history.json');
+  }
+}
+
+async function ensureProjectDir(projectId: string): Promise<void> {
+  const projectDir = join(getConfigDir(), 'projects', projectId);
+  if (!existsSync(projectDir)) {
+    const { mkdir } = require('fs/promises');
+    await mkdir(projectDir, { recursive: true });
+    debug('Created project directory:', projectDir);
+  }
+}
+
 export async function loadChatHistory(): Promise<Message[]> {
   debug('Loading chat history from disk');
   
   try {
     await ensureConfigDir();
-    const historyPath = getChatHistoryPath();
+    
+    // Check if we have a current project and ensure its directory exists
+    const currentProject = await getCurrentProject();
+    if (currentProject) {
+      await ensureProjectDir(currentProject.id);
+    }
+    
+    const historyPath = await getChatHistoryPath();
     
     if (!existsSync(historyPath)) {
       debug('No chat history file found, starting with empty history');
@@ -58,7 +90,14 @@ export async function saveChatHistory(messages: Message[]): Promise<void> {
   
   try {
     await ensureConfigDir();
-    const historyPath = getChatHistoryPath();
+    
+    // Check if we have a current project and ensure its directory exists
+    const currentProject = await getCurrentProject();
+    if (currentProject) {
+      await ensureProjectDir(currentProject.id);
+    }
+    
+    const historyPath = await getChatHistoryPath();
     
     // Load existing history
     let history: ChatHistoryData = { sessions: [] };
@@ -114,7 +153,14 @@ export async function createNewSession(): Promise<void> {
   
   try {
     await ensureConfigDir();
-    const historyPath = getChatHistoryPath();
+    
+    // Check if we have a current project and ensure its directory exists
+    const currentProject = await getCurrentProject();
+    if (currentProject) {
+      await ensureProjectDir(currentProject.id);
+    }
+    
+    const historyPath = await getChatHistoryPath();
     
     let history: ChatHistoryData = { sessions: [] };
     

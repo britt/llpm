@@ -4,6 +4,7 @@ import { generateResponse } from '../services/llm';
 import { debug, getVerbose } from '../utils/logger';
 import { parseCommand, executeCommand } from '../commands/registry';
 import { loadChatHistory, saveChatHistory } from '../utils/chatHistory';
+import { getCurrentProject } from '../utils/projectConfig';
 
 function generateMessageId(): string {
   return `msg-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
@@ -13,12 +14,23 @@ export function useChat() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [historyLoaded, setHistoryLoaded] = useState(false);
+  const [currentProjectId, setCurrentProjectId] = useState<string | null>(null);
   
-  // Load chat history on component mount
+  // Load chat history on component mount and when project changes
   useEffect(() => {
     const initializeChatHistory = async () => {
       debug('Initializing chat history');
       try {
+        // Check if project changed
+        const currentProject = await getCurrentProject();
+        const newProjectId = currentProject?.id || null;
+        
+        if (currentProjectId !== newProjectId) {
+          debug('Project changed from', currentProjectId, 'to', newProjectId);
+          setCurrentProjectId(newProjectId);
+          setHistoryLoaded(false);
+        }
+        
         const savedMessages = await loadChatHistory();
         
         if (savedMessages.length === 0) {
@@ -54,7 +66,27 @@ export function useChat() {
     };
     
     initializeChatHistory();
-  }, []);
+  }, [currentProjectId]);
+  
+  // Check for project changes periodically (every 2 seconds)
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      try {
+        const currentProject = await getCurrentProject();
+        const newProjectId = currentProject?.id || null;
+        
+        if (currentProjectId !== newProjectId) {
+          debug('Project changed detected, reloading chat history');
+          setCurrentProjectId(newProjectId);
+          // The dependency array will trigger the above useEffect to reload history
+        }
+      } catch (error) {
+        debug('Error checking for project changes:', error);
+      }
+    }, 2000);
+    
+    return () => clearInterval(interval);
+  }, [currentProjectId]);
   
   // Save messages whenever they change (after history is loaded)
   useEffect(() => {

@@ -1,36 +1,19 @@
-import type { ToolDefinition } from './types';
+import { tool } from 'ai';
+import { z } from 'zod';
 import { getUserRepos, searchRepos, getRepo } from '../services/github';
 import { debug } from '../utils/logger';
 
-export const listGitHubReposTool: ToolDefinition = {
-  name: 'list_github_repos',
+export const listGitHubReposTool = tool({
   description: 'List GitHub repositories for the authenticated user',
-  parameters: [
-    {
-      name: 'type',
-      type: 'string',
-      description: 'Repository type: owner, public, private, or member (default: owner)',
-      required: false
-    },
-    {
-      name: 'sort',
-      type: 'string',
-      description: 'Sort by: created, updated, pushed, or full_name (default: updated)',
-      required: false
-    },
-    {
-      name: 'limit',
-      type: 'number',
-      description: 'Maximum number of repositories to return (default: 30)',
-      required: false
-    }
-  ],
-  execute: async (params: Record<string, any>): Promise<string> => {
-    debug('Executing list_github_repos tool with params:', params);
+  inputSchema: z.object({
+    type: z.string().optional().describe('Repository type: owner, public, private, or member (default: owner)'),
+    sort: z.string().optional().describe('Sort by: created, updated, pushed, or full_name (default: updated)'),
+    limit: z.number().optional().describe('Maximum number of repositories to return (default: 30)')
+  }),
+  execute: async ({ type = 'owner', sort = 'updated', limit = 30 }) => {
+    debug('Executing list_github_repos tool with params:', { type, sort, limit });
     
     try {
-      const { type = 'owner', sort = 'updated', limit = 30 } = params;
-      
       const repos = await getUserRepos({
         type: type as 'owner' | 'public' | 'private' | 'member',
         sort: sort as 'created' | 'updated' | 'pushed' | 'full_name',
@@ -61,42 +44,17 @@ export const listGitHubReposTool: ToolDefinition = {
       });
     }
   }
-};
+});
 
-export const searchGitHubReposTool: ToolDefinition = {
-  name: 'search_github_repos',
+export const searchGitHubReposTool = tool({
   description: 'Search for GitHub repositories',
-  parameters: [
-    {
-      name: 'query',
-      type: 'string',
-      description: 'Search query for repositories',
-      required: true
-    },
-    {
-      name: 'sort',
-      type: 'string',
-      description: 'Sort by: stars, forks, help-wanted-issues, or updated (default: updated)',
-      required: false
-    },
-    {
-      name: 'limit',
-      type: 'number',
-      description: 'Maximum number of repositories to return (default: 10)',
-      required: false
-    }
-  ],
-  execute: async (params: Record<string, any>): Promise<string> => {
-    debug('Executing search_github_repos tool with params:', params);
-    
-    const { query, sort = 'updated', limit = 10 } = params;
-    
-    if (!query) {
-      return JSON.stringify({
-        success: false,
-        error: 'Missing required parameter: query'
-      });
-    }
+  inputSchema: z.object({
+    query: z.string().describe('Search query for repositories'),
+    sort: z.string().optional().describe('Sort by: stars, forks, help-wanted-issues, or updated (default: updated)'),
+    limit: z.number().optional().describe('Maximum number of repositories to return (default: 10)')
+  }),
+  execute: async ({ query, sort = 'updated', limit = 10 }) => {
+    debug('Executing search_github_repos tool with params:', { query, sort, limit });
     
     try {
       const repos = await searchRepos(query, {
@@ -128,36 +86,16 @@ export const searchGitHubReposTool: ToolDefinition = {
       });
     }
   }
-};
+});
 
-export const getGitHubRepoTool: ToolDefinition = {
-  name: 'get_github_repo',
+export const getGitHubRepoTool = tool({
   description: 'Get detailed information about a specific GitHub repository',
-  parameters: [
-    {
-      name: 'owner',
-      type: 'string',
-      description: 'Repository owner/organization name',
-      required: true
-    },
-    {
-      name: 'repo',
-      type: 'string',
-      description: 'Repository name',
-      required: true
-    }
-  ],
-  execute: async (params: Record<string, any>): Promise<string> => {
-    debug('Executing get_github_repo tool with params:', params);
-    
-    const { owner, repo } = params;
-    
-    if (!owner || !repo) {
-      return JSON.stringify({
-        success: false,
-        error: 'Missing required parameters: owner and repo are both required'
-      });
-    }
+  inputSchema: z.object({
+    owner: z.string().describe('Repository owner/organization name'),
+    repo: z.string().describe('Repository name')
+  }),
+  execute: async ({ owner, repo }) => {
+    debug('Executing get_github_repo tool with params:', { owner, repo });
     
     try {
       const repoData = await getRepo(owner, repo);
@@ -183,4 +121,4 @@ export const getGitHubRepoTool: ToolDefinition = {
       });
     }
   }
-};
+});

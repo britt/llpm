@@ -108,7 +108,7 @@ export async function getUserRepos(options: {
       ssh_url: repo.ssh_url,
       private: repo.private,
       language: repo.language,
-      updated_at: repo.updated_at,
+      updated_at: repo.updated_at || '',
     }));
     
     debug('Retrieved', repos.length, 'repositories');

@@ -87,7 +87,7 @@ export async function searchReposViaGhCli(query: string, options: {
       throw new Error('Invalid response format from GitHub search API');
     }
     
-    const repos: GitHubRepo[] = data.items.map(repo => ({
+    const repos: GitHubRepo[] = data.items.map((repo: { id: any; name: any; full_name: any; description: any; html_url: any; clone_url: any; ssh_url: any; private: any; language: any; updated_at: any; }) => ({
       id: repo.id,
       name: repo.name,
       full_name: repo.full_name,

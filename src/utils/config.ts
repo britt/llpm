@@ -5,7 +5,6 @@ import { homedir } from 'os';
 import { debug } from './logger';
 
 export const CONFIG_DIR = join(homedir(), '.claude-pm');
-export const CHAT_HISTORY_FILE = join(CONFIG_DIR, 'chat-history.json');
 export const CONFIG_FILE = join(CONFIG_DIR, 'config.json');
 
 export async function ensureConfigDir(): Promise<void> {
@@ -28,9 +27,6 @@ export function getConfigDir(): string {
   return CONFIG_DIR;
 }
 
-export function getChatHistoryPath(): string {
-  return CHAT_HISTORY_FILE;
-}
 
 export function getConfigFilePath(): string {
   return CONFIG_FILE;

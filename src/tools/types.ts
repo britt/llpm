@@ -1,17 +1,6 @@
-export interface ToolParameter {
-  name: string;
-  type: 'string' | 'number' | 'boolean';
-  description: string;
-  required?: boolean;
-}
+import type { Tool as CoreTool } from 'ai';
 
-export interface ToolDefinition {
-  name: string;
-  description: string;
-  parameters: ToolParameter[];
-  execute: (params: Record<string, any>) => Promise<string>;
-}
-
+// Use the AI SDK's CoreTool type instead of custom types
 export interface ToolRegistry {
-  [key: string]: ToolDefinition;
+  [key: string]: CoreTool;
 }

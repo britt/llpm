@@ -2,14 +2,10 @@ import { generateText, streamText } from 'ai';
 import { openai } from '@ai-sdk/openai';
 import type { Message } from '../types';
 import { debug, getVerbose } from '../utils/logger';
-import { getToolDefinitions, executeTool } from '../tools/registry';
+import { getToolRegistry } from '../tools/registry';
 import { getSystemPrompt } from '../utils/systemPrompt';
 
-// You can switch providers by changing this:
-// import { anthropic } from '@ai-sdk/anthropic';
-// import { google } from '@ai-sdk/google';
-
-const model = openai('gpt-4o-mini'); // or anthropic('claude-3-sonnet-20240229')
+const model = openai('gpt-4o-mini');
 
 export async function generateResponse(messages: Message[]): Promise<string> {
   debug('generateResponse called with', messages.length, 'messages');
@@ -27,52 +23,18 @@ export async function generateResponse(messages: Message[]): Promise<string> {
       content: msg.content
     }))];
     
-    debug('Calling OpenAI API with model:', model.modelId, 'and tools');
+    const tools = getToolRegistry();
+    debug('Calling OpenAI API with model:', model.modelId, 'and', Object.keys(tools).length, 'tools');
+    
     const result = await generateText({
       model,
       messages: allMessages,
-      tools: getToolDefinitions(),
-      maxTokens: 1000,
+      tools,
+      toolChoice: 'auto',
     });
 
-    // Handle tool calls
+    // The AI SDK handles tool calls automatically when using the tool() helper
     let finalResponse = result.text;
-    
-    if (result.toolCalls && result.toolCalls.length > 0) {
-      debug('Processing', result.toolCalls.length, 'tool calls');
-      
-      const toolResults = [];
-      for (const toolCall of result.toolCalls) {
-        debug('Executing tool:', toolCall.toolName, 'with params:', toolCall.args);
-        const toolResult = await executeTool(toolCall.toolName, toolCall.args);
-        toolResults.push(toolResult);
-      }
-      
-      // If we have tool results, we need to make another call to get the final response
-      if (toolResults.length > 0) {
-        const toolMessages = [
-          ...allMessages,
-          {
-            role: 'assistant' as const,
-            content: result.text,
-            toolCalls: result.toolCalls
-          },
-          ...result.toolCalls.map((toolCall, index) => ({
-            role: 'tool' as const,
-            content: toolResults[index],
-            toolCallId: toolCall.toolCallId
-          }))
-        ];
-        
-        const finalResult = await generateText({
-          model,
-          messages: toolMessages,
-          maxTokens: 1000,
-        });
-        
-        finalResponse = finalResult.text;
-      }
-    }
 
     debug('Generated response length:', finalResponse.length);
     debug('Generated response preview:', finalResponse.substring(0, 100));
