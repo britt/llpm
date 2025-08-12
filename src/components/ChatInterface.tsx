@@ -47,8 +47,10 @@ export function ChatInterface({ messages, onSendMessage, isLoading }: ChatInterf
         const newIndex = Math.min(historyIndex + 1, inputHistory.length - 1);
         setHistoryIndex(newIndex);
         const historyText = inputHistory[newIndex];
-        setInput(historyText);
-        setCursorPos(historyText.length);
+        if (historyText) {
+          setInput(historyText);
+          setCursorPos(historyText.length);
+        }
       }
     } else if (key.downArrow) {
       // Navigate down in history
@@ -61,8 +63,10 @@ export function ChatInterface({ messages, onSendMessage, isLoading }: ChatInterf
         } else {
           setHistoryIndex(newIndex);
           const historyText = inputHistory[newIndex];
-          setInput(historyText);
-          setCursorPos(historyText.length);
+          if (historyText) {
+            setInput(historyText);
+            setCursorPos(historyText.length);
+          }
         }
       }
     } else if (key.ctrl && inputChar === 'u') {

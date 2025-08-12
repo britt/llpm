@@ -1,7 +1,19 @@
 import type { ToolRegistry } from './types';
-import { getCurrentProjectTool, listProjectsTool, addProjectTool, setCurrentProjectTool, removeProjectTool } from './projectTools';
+import {
+  getCurrentProjectTool,
+  listProjectsTool,
+  addProjectTool,
+  setCurrentProjectTool,
+  removeProjectTool
+} from './projectTools';
 import { listGitHubReposTool, searchGitHubReposTool, getGitHubRepoTool } from './githubTools';
-import { createGitHubIssueTool, listGitHubIssuesTool, updateGitHubIssueTool, commentOnGitHubIssueTool, searchGitHubIssuesTool } from './githubIssueTools';
+import {
+  createGitHubIssueTool,
+  listGitHubIssuesTool,
+  updateGitHubIssueTool,
+  commentOnGitHubIssueTool,
+  searchGitHubIssuesTool
+} from './githubIssueTools';
 
 const toolRegistry: ToolRegistry = {
   get_current_project: getCurrentProjectTool,
@@ -16,7 +28,7 @@ const toolRegistry: ToolRegistry = {
   list_github_issues: listGitHubIssuesTool,
   update_github_issue: updateGitHubIssueTool,
   comment_on_github_issue: commentOnGitHubIssueTool,
-  search_github_issues: searchGitHubIssuesTool,
+  search_github_issues: searchGitHubIssuesTool
 };
 
 export function getToolRegistry(): ToolRegistry {

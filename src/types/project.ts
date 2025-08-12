@@ -3,6 +3,7 @@ export interface Project {
   name: string;
   repository: string;
   path: string;
+  github_repo?: string;
   createdAt: string;
   updatedAt: string;
 }

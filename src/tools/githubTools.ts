@@ -6,20 +6,26 @@ import { debug } from '../utils/logger';
 export const listGitHubReposTool = tool({
   description: 'List GitHub repositories for the authenticated user',
   inputSchema: z.object({
-    type: z.string().optional().describe('Repository type: owner, public, private, or member (default: owner)'),
-    sort: z.string().optional().describe('Sort by: created, updated, pushed, or full_name (default: updated)'),
+    type: z
+      .string()
+      .optional()
+      .describe('Repository type: owner, public, private, or member (default: owner)'),
+    sort: z
+      .string()
+      .optional()
+      .describe('Sort by: created, updated, pushed, or full_name (default: updated)'),
     limit: z.number().optional().describe('Maximum number of repositories to return (default: 30)')
   }),
   execute: async ({ type = 'owner', sort = 'updated', limit = 30 }) => {
     debug('Executing list_github_repos tool with params:', { type, sort, limit });
-    
+
     try {
       const repos = await getUserRepos({
         type: type as 'owner' | 'public' | 'private' | 'member',
         sort: sort as 'created' | 'updated' | 'pushed' | 'full_name',
         per_page: Math.min(limit, 100) // GitHub API limit is 100
       });
-      
+
       const repoList = repos.slice(0, limit).map(repo => ({
         name: repo.name,
         full_name: repo.full_name,
@@ -30,7 +36,7 @@ export const listGitHubReposTool = tool({
         language: repo.language,
         updated_at: repo.updated_at
       }));
-      
+
       return {
         success: true,
         repositories: repoList,
@@ -50,18 +56,21 @@ export const searchGitHubReposTool = tool({
   description: 'Search for GitHub repositories',
   inputSchema: z.object({
     query: z.string().describe('Search query for repositories'),
-    sort: z.string().optional().describe('Sort by: stars, forks, help-wanted-issues, or updated (default: updated)'),
+    sort: z
+      .string()
+      .optional()
+      .describe('Sort by: stars, forks, help-wanted-issues, or updated (default: updated)'),
     limit: z.number().optional().describe('Maximum number of repositories to return (default: 10)')
   }),
   execute: async ({ query, sort = 'updated', limit = 10 }) => {
     debug('Executing search_github_repos tool with params:', { query, sort, limit });
-    
+
     try {
       const repos = await searchRepos(query, {
         sort: sort as 'stars' | 'forks' | 'help-wanted-issues' | 'updated',
         per_page: Math.min(limit, 30) // GitHub search API limit is 100, but we'll be more conservative
       });
-      
+
       const repoList = repos.slice(0, limit).map(repo => ({
         name: repo.name,
         full_name: repo.full_name,
@@ -72,7 +81,7 @@ export const searchGitHubReposTool = tool({
         language: repo.language,
         updated_at: repo.updated_at
       }));
-      
+
       return {
         success: true,
         repositories: repoList,
@@ -96,10 +105,10 @@ export const getGitHubRepoTool = tool({
   }),
   execute: async ({ owner, repo }) => {
     debug('Executing get_github_repo tool with params:', { owner, repo });
-    
+
     try {
       const repoData = await getRepo(owner, repo);
-      
+
       return {
         success: true,
         repository: {

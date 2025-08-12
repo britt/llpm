@@ -7,10 +7,10 @@ export const helpCommand: Command = {
   description: 'Show available commands',
   execute: (): CommandResult => {
     debug('Executing /help command');
-    
+
     const registry = getCommandRegistry();
     const commands = Object.values(registry);
-    
+
     const helpText = [
       '🔧 Available Commands:',
       '',
@@ -21,7 +21,7 @@ export const helpCommand: Command = {
     ].join('\n');
 
     debug('Help command result with', commands.length, 'commands');
-    
+
     return {
       content: helpText,
       success: true

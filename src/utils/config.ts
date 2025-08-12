@@ -9,7 +9,7 @@ export const CONFIG_FILE = join(CONFIG_DIR, 'config.json');
 
 export async function ensureConfigDir(): Promise<void> {
   debug('Ensuring config directory exists:', CONFIG_DIR);
-  
+
   if (!existsSync(CONFIG_DIR)) {
     debug('Creating config directory:', CONFIG_DIR);
     await mkdir(CONFIG_DIR, { recursive: true });
@@ -26,7 +26,6 @@ export function getConfigPath(): string {
 export function getConfigDir(): string {
   return CONFIG_DIR;
 }
-
 
 export function getConfigFilePath(): string {
   return CONFIG_FILE;

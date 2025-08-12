@@ -1,6 +1,12 @@
 import { tool } from 'ai';
 import { z } from 'zod';
-import { getCurrentProject, setCurrentProject, addProject, listProjects, removeProject } from '../utils/projectConfig';
+import {
+  getCurrentProject,
+  setCurrentProject,
+  addProject,
+  listProjects,
+  removeProject
+} from '../utils/projectConfig';
 import { debug } from '../utils/logger';
 
 export const getCurrentProjectTool = tool({
@@ -8,9 +14,9 @@ export const getCurrentProjectTool = tool({
   inputSchema: z.object({}),
   execute: async () => {
     debug('Executing get_current_project tool');
-    
+
     const currentProject = await getCurrentProject();
-    
+
     if (currentProject) {
       return {
         success: true,
@@ -38,11 +44,11 @@ export const listProjectsTool = tool({
   inputSchema: z.object({}),
   execute: async () => {
     debug('Executing list_projects tool');
-    
+
     try {
       const projects = await listProjects();
       const currentProject = await getCurrentProject();
-      
+
       const projectList = projects.map(project => ({
         id: project.id,
         name: project.name,
@@ -52,7 +58,7 @@ export const listProjectsTool = tool({
         createdAt: project.createdAt,
         updatedAt: project.updatedAt
       }));
-      
+
       return {
         success: true,
         projects: projectList,
@@ -76,10 +82,10 @@ export const addProjectTool = tool({
   }),
   execute: async ({ name, repository, path }) => {
     debug('Executing add_project tool with params:', { name, repository, path });
-    
+
     try {
       const newProject = await addProject({ name, repository, path });
-      
+
       return {
         success: true,
         project: {
@@ -108,10 +114,10 @@ export const setCurrentProjectTool = tool({
   }),
   execute: async ({ projectId }) => {
     debug('Executing set_current_project tool with params:', { projectId });
-    
+
     try {
       await setCurrentProject(projectId);
-      
+
       return {
         success: true,
         projectId,
@@ -133,10 +139,10 @@ export const removeProjectTool = tool({
   }),
   execute: async ({ projectId }) => {
     debug('Executing remove_project tool with params:', { projectId });
-    
+
     try {
       await removeProject(projectId);
-      
+
       return {
         success: true,
         projectId,

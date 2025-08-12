@@ -6,15 +6,15 @@ export const quitCommand: Command = {
   description: 'Exit the application',
   execute: (): CommandResult => {
     debug('Executing /quit command');
-    
+
     const message = '👋 Goodbye! Thanks for using Claude PM.';
-    
+
     // Exit after a short delay to allow the message to be displayed
     setTimeout(() => {
       debug('Exiting application');
       process.exit(0);
     }, 100);
-    
+
     return {
       content: message,
       success: true

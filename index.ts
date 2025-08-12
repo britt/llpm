@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 import React from 'react';
-import { render, Text, Box } from 'ink';
+import { render } from 'ink';
 import { ChatInterface } from './src/components/ChatInterface';
 import { useChat } from './src/hooks/useChat';
 import { setVerbose, debug } from './src/utils/logger';
@@ -44,16 +44,16 @@ if (import.meta.main) {
   // Parse command line arguments
   const args = process.argv.slice(2);
   const isVerbose = args.includes('--verbose') || args.includes('-v');
-  
+
   if (isVerbose) {
     setVerbose(true);
     debug('Verbose mode enabled');
     debug('Command line args:', args);
   }
-  
+
   debug('Starting Claude PM CLI');
   validateEnvironment();
-  
+
   // Check if raw mode is supported
   if (!isRawModeSupported()) {
     console.error('❌ Error: Raw mode is not supported on this terminal.');
@@ -69,7 +69,7 @@ if (import.meta.main) {
     console.error('3. Try running directly: bun run index.ts');
     process.exit(1);
   }
-  
+
   debug('Raw mode supported, rendering React app');
   render(React.createElement(App));
 }

@@ -7,12 +7,13 @@ export const clearCommand: Command = {
   description: 'Start a new chat session (clears current conversation)',
   execute: async (): Promise<CommandResult> => {
     debug('Executing /clear command');
-    
+
     try {
       await createNewSession();
-      
+
       return {
-        content: '🧹 Chat session cleared! Starting fresh conversation.\n\n💡 Your previous conversations are saved in ~/.claude-pm',
+        content:
+          '🧹 Chat session cleared! Starting fresh conversation.\n\n💡 Your previous conversations are saved in ~/.claude-pm',
         success: true
       };
     } catch (error) {

@@ -33,12 +33,12 @@ Always ask for clarification if you need more information to help effectively.`;
 
 export async function getSystemPrompt(): Promise<string> {
   debug('Loading system prompt');
-  
+
   try {
     await ensureConfigDir();
     const configDir = getConfigDir();
     const promptPath = join(configDir, 'system-prompt.txt');
-    
+
     if (existsSync(promptPath)) {
       debug('Loading custom system prompt from config directory');
       const customPrompt = await readFile(promptPath, 'utf-8');
@@ -55,12 +55,12 @@ export async function getSystemPrompt(): Promise<string> {
 
 export async function saveSystemPrompt(prompt: string): Promise<void> {
   debug('Saving custom system prompt');
-  
+
   try {
     await ensureConfigDir();
     const configDir = getConfigDir();
     const promptPath = join(configDir, 'system-prompt.txt');
-    
+
     await writeFile(promptPath, prompt.trim(), 'utf-8');
     debug('System prompt saved successfully');
   } catch (error) {

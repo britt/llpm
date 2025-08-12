@@ -1,26 +1,36 @@
 import { tool } from 'ai';
 import { z } from 'zod';
 import { getCurrentProject } from '../utils/projectConfig';
-import { createIssue, listIssues, updateIssue, commentOnIssue, searchIssues } from '../services/github';
+import {
+  createIssue,
+  listIssues,
+  updateIssue,
+  commentOnIssue,
+  searchIssues
+} from '../services/github';
 import { debug } from '../utils/logger';
 
 async function getProjectRepoInfo() {
   const project = await getCurrentProject();
   if (!project || !project.github_repo) {
-    throw new Error('No active project with GitHub repository. Use /project to set an active project first.');
+    throw new Error(
+      'No active project with GitHub repository. Use /project to set an active project first.'
+    );
   }
-  
+
   // Parse owner/repo from github_repo (e.g., "owner/repo")
   const [owner, repo] = project.github_repo.split('/');
   if (!owner || !repo) {
-    throw new Error(`Invalid GitHub repository format: ${project.github_repo}. Expected format: owner/repo`);
+    throw new Error(
+      `Invalid GitHub repository format: ${project.github_repo}. Expected format: owner/repo`
+    );
   }
-  
+
   return { owner, repo, projectName: project.name };
 }
 
 export const createGitHubIssueTool = tool({
-  description: 'Create a new GitHub issue in the active project\'s repository',
+  description: "Create a new GitHub issue in the active project's repository",
   inputSchema: z.object({
     title: z.string().describe('The issue title'),
     body: z.string().optional().describe('The issue body/description'),
@@ -30,9 +40,9 @@ export const createGitHubIssueTool = tool({
     try {
       const { owner, repo, projectName } = await getProjectRepoInfo();
       debug(`Creating issue in ${owner}/${repo} for project ${projectName}`);
-      
+
       const issue = await createIssue(owner, repo, title, body, labels);
-      
+
       return {
         success: true,
         message: `Created issue #${issue.number}: ${issue.title}`,
@@ -55,9 +65,13 @@ export const createGitHubIssueTool = tool({
 });
 
 export const listGitHubIssuesTool = tool({
-  description: 'List GitHub issues in the active project\'s repository',
+  description: "List GitHub issues in the active project's repository",
   inputSchema: z.object({
-    state: z.enum(['open', 'closed', 'all']).optional().default('open').describe('Issue state filter'),
+    state: z
+      .enum(['open', 'closed', 'all'])
+      .optional()
+      .default('open')
+      .describe('Issue state filter'),
     labels: z.string().optional().describe('Comma-separated list of labels to filter by'),
     limit: z.number().optional().default(30).describe('Maximum number of issues to return')
   }),
@@ -65,13 +79,13 @@ export const listGitHubIssuesTool = tool({
     try {
       const { owner, repo, projectName } = await getProjectRepoInfo();
       debug(`Listing issues in ${owner}/${repo} for project ${projectName}`);
-      
+
       const issues = await listIssues(owner, repo, {
         state,
         labels,
         per_page: limit
       });
-      
+
       return {
         success: true,
         message: `Found ${issues.length} ${state} issues`,
@@ -97,7 +111,7 @@ export const listGitHubIssuesTool = tool({
 });
 
 export const updateGitHubIssueTool = tool({
-  description: 'Update a GitHub issue in the active project\'s repository',
+  description: "Update a GitHub issue in the active project's repository",
   inputSchema: z.object({
     issueNumber: z.number().describe('The issue number to update'),
     title: z.string().optional().describe('New issue title'),
@@ -109,15 +123,15 @@ export const updateGitHubIssueTool = tool({
     try {
       const { owner, repo, projectName } = await getProjectRepoInfo();
       debug(`Updating issue #${issueNumber} in ${owner}/${repo} for project ${projectName}`);
-      
+
       const updates: any = {};
       if (title !== undefined) updates.title = title;
       if (body !== undefined) updates.body = body;
       if (state !== undefined) updates.state = state;
       if (labels !== undefined) updates.labels = labels;
-      
+
       const issue = await updateIssue(owner, repo, issueNumber, updates);
-      
+
       return {
         success: true,
         message: `Updated issue #${issue.number}: ${issue.title}`,
@@ -140,7 +154,7 @@ export const updateGitHubIssueTool = tool({
 });
 
 export const commentOnGitHubIssueTool = tool({
-  description: 'Add a comment to a GitHub issue in the active project\'s repository',
+  description: "Add a comment to a GitHub issue in the active project's repository",
   inputSchema: z.object({
     issueNumber: z.number().describe('The issue number to comment on'),
     body: z.string().describe('The comment body/text')
@@ -148,10 +162,12 @@ export const commentOnGitHubIssueTool = tool({
   execute: async ({ issueNumber, body }) => {
     try {
       const { owner, repo, projectName } = await getProjectRepoInfo();
-      debug(`Adding comment to issue #${issueNumber} in ${owner}/${repo} for project ${projectName}`);
-      
+      debug(
+        `Adding comment to issue #${issueNumber} in ${owner}/${repo} for project ${projectName}`
+      );
+
       const comment = await commentOnIssue(owner, repo, issueNumber, body);
-      
+
       return {
         success: true,
         message: `Added comment to issue #${issueNumber}`,
@@ -173,10 +189,14 @@ export const commentOnGitHubIssueTool = tool({
 });
 
 export const searchGitHubIssuesTool = tool({
-  description: 'Search GitHub issues in the active project\'s repository',
+  description: "Search GitHub issues in the active project's repository",
   inputSchema: z.object({
     query: z.string().describe('Search query (e.g., "bug", "feature request", etc.)'),
-    state: z.enum(['open', 'closed', 'all']).optional().default('all').describe('Issue state filter'),
+    state: z
+      .enum(['open', 'closed', 'all'])
+      .optional()
+      .default('all')
+      .describe('Issue state filter'),
     labels: z.string().optional().describe('Label to filter by'),
     limit: z.number().optional().default(30).describe('Maximum number of issues to return')
   }),
@@ -184,13 +204,13 @@ export const searchGitHubIssuesTool = tool({
     try {
       const { owner, repo, projectName } = await getProjectRepoInfo();
       debug(`Searching issues in ${owner}/${repo} for project ${projectName} with query: ${query}`);
-      
+
       const issues = await searchIssues(owner, repo, query, {
         state,
         labels,
         per_page: limit
       });
-      
+
       return {
         success: true,
         message: `Found ${issues.length} issues matching "${query}"`,
