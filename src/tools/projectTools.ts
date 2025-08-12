@@ -12,7 +12,7 @@ export const getCurrentProjectTool = tool({
     const currentProject = await getCurrentProject();
     
     if (currentProject) {
-      return JSON.stringify({
+      return {
         success: true,
         project: {
           id: currentProject.id,
@@ -22,13 +22,13 @@ export const getCurrentProjectTool = tool({
           createdAt: currentProject.createdAt,
           updatedAt: currentProject.updatedAt
         }
-      });
+      };
     } else {
-      return JSON.stringify({
+      return {
         success: true,
         project: null,
         message: 'No active project set'
-      });
+      };
     }
   }
 });
@@ -53,16 +53,16 @@ export const listProjectsTool = tool({
         updatedAt: project.updatedAt
       }));
       
-      return JSON.stringify({
+      return {
         success: true,
         projects: projectList,
         count: projects.length
-      });
+      };
     } catch (error) {
-      return JSON.stringify({
+      return {
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error'
-      });
+      };
     }
   }
 });
@@ -80,7 +80,7 @@ export const addProjectTool = tool({
     try {
       const newProject = await addProject({ name, repository, path });
       
-      return JSON.stringify({
+      return {
         success: true,
         project: {
           id: newProject.id,
@@ -91,12 +91,12 @@ export const addProjectTool = tool({
           updatedAt: newProject.updatedAt
         },
         message: `Successfully added project "${newProject.name}"`
-      });
+      };
     } catch (error) {
-      return JSON.stringify({
+      return {
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error'
-      });
+      };
     }
   }
 });
@@ -112,16 +112,16 @@ export const setCurrentProjectTool = tool({
     try {
       await setCurrentProject(projectId);
       
-      return JSON.stringify({
+      return {
         success: true,
         projectId,
         message: `Successfully set current project to ${projectId}`
-      });
+      };
     } catch (error) {
-      return JSON.stringify({
+      return {
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error'
-      });
+      };
     }
   }
 });
@@ -137,16 +137,16 @@ export const removeProjectTool = tool({
     try {
       await removeProject(projectId);
       
-      return JSON.stringify({
+      return {
         success: true,
         projectId,
         message: `Successfully removed project ${projectId}`
-      });
+      };
     } catch (error) {
-      return JSON.stringify({
+      return {
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error'
-      });
+      };
     }
   }
 });

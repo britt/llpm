@@ -31,14 +31,15 @@ export async function generateResponse(messages: Message[]): Promise<string> {
       messages: allMessages,
       tools,
       toolChoice: 'auto',
+      maxTokens: 1000,
+      temperature: 0.7,
     });
 
-    // The AI SDK handles tool calls automatically when using the tool() helper
-    let finalResponse = result.text;
-
-    debug('Generated response length:', finalResponse.length);
-    debug('Generated response preview:', finalResponse.substring(0, 100));
-    return finalResponse;
+    debug('AI SDK result text:', JSON.stringify(result.text));
+    debug('Tool calls present:', result.toolCalls?.length || 0);
+    debug('Tool results present:', result.toolResults?.length || 0);
+    
+    return result.text;
   } catch (error) {
     debug('Error in generateResponse:', error);
     console.error('Error generating response:', error);

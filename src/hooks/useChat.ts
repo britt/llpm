@@ -6,8 +6,10 @@ import { parseCommand, executeCommand } from '../commands/registry';
 import { loadChatHistory, saveChatHistory } from '../utils/chatHistory';
 import { getCurrentProject } from '../utils/projectConfig';
 
+let messageCounter = 0;
 function generateMessageId(): string {
-  return `msg-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+  messageCounter += 1;
+  return `msg-${Date.now()}-${messageCounter}-${Math.random().toString(36).substr(2, 9)}`;
 }
 
 export function useChat() {
@@ -43,10 +45,10 @@ export function useChat() {
           setMessages([welcomeMessage]);
           debug('No saved history found, using welcome message');
         } else {
-          // Load saved history and ensure all messages have IDs
-          const messagesWithIds = savedMessages.map(msg => ({
+          // Load saved history and ensure all messages have unique IDs
+          const messagesWithIds = savedMessages.map((msg, index) => ({
             ...msg,
-            id: msg.id || generateMessageId()
+            id: msg.id && msg.id.trim() ? msg.id : `loaded-${index}-${generateMessageId()}`
           }));
           setMessages(messagesWithIds);
           debug('Loaded', savedMessages.length, 'messages from history');
@@ -167,8 +169,15 @@ export function useChat() {
       debug('Sending', allMessages.length, 'messages to LLM');
       const response = await generateResponse(allMessages);
       
-      debug('Received response from LLM');
-      const assistantMessage: Message = { role: 'assistant', content: response, id: generateMessageId() };
+      debug('Received response from LLM, length:', response?.length || 0);
+      debug('Response content preview:', response?.substring(0, 50) || 'EMPTY');
+      
+      // Ensure we have a response before adding it
+      const responseContent = response && response.trim() 
+        ? response 
+        : "I processed your request but don't have anything specific to report.";
+      
+      const assistantMessage: Message = { role: 'assistant', content: responseContent, id: generateMessageId() };
       setMessages(prev => [...prev, assistantMessage]);
       debug('Added assistant response to state');
     } catch (error) {

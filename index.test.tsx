@@ -4,12 +4,9 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { App } from './index';
 
 // Mock the LLM service to avoid API calls in tests
-vi.mock('./src/services/llm', () => {
-  const { vi } = require('vitest');
-  return {
-    generateResponse: vi.fn().mockResolvedValue('Hello! How can I help you?')
-  };
-});
+vi.mock('./src/services/llm', () => ({
+  generateResponse: vi.fn().mockResolvedValue('Hello! How can I help you?')
+}));
 
 // Mock chat history utilities
 vi.mock('./src/utils/chatHistory', () => ({

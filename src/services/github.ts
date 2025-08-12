@@ -16,6 +16,25 @@ export interface GitHubRepo {
   updated_at: string;
 }
 
+export interface GitHubIssue {
+  id: number;
+  number: number;
+  title: string;
+  body: string | null;
+  state: 'open' | 'closed';
+  html_url: string;
+  user: {
+    login: string;
+    html_url: string;
+  };
+  labels: Array<{
+    name: string;
+    color: string;
+  }>;
+  created_at: string;
+  updated_at: string;
+}
+
 let octokit: Octokit | null = null;
 
 async function getGitHubToken(): Promise<string> {
@@ -271,5 +290,330 @@ export async function searchRepos(query: string, options: {
       }
       throw new Error('Failed to search GitHub repositories: Unknown error');
     }
+  }
+}
+
+export async function createIssue(owner: string, repo: string, title: string, body?: string, labels?: string[]): Promise<GitHubIssue> {
+  debug('Creating GitHub issue:', owner, repo, title);
+  
+  try {
+    await initializeOctokit();
+    const octokit = getOctokit();
+    
+    const apiParams = {
+      owner,
+      repo,
+      title,
+      ...(body && { body }),
+      ...(labels && labels.length > 0 && { labels })
+    };
+    
+    if (getVerbose()) {
+      debug('🌐 GitHub API Call: POST /repos/:owner/:repo/issues');
+      debug('📋 Parameters:', JSON.stringify(apiParams, null, 2));
+    }
+    
+    const { data } = await octokit.rest.issues.create(apiParams);
+    
+    if (getVerbose()) {
+      debug('✅ GitHub API Response: issue created');
+      debug('📊 Response data:', JSON.stringify({
+        number: data.number,
+        title: data.title,
+        state: data.state,
+        html_url: data.html_url,
+        user: data.user?.login
+      }, null, 2));
+    }
+    
+    const issue: GitHubIssue = {
+      id: data.id,
+      number: data.number,
+      title: data.title,
+      body: data.body,
+      state: data.state as 'open' | 'closed',
+      html_url: data.html_url,
+      user: {
+        login: data.user?.login || 'unknown',
+        html_url: data.user?.html_url || ''
+      },
+      labels: data.labels?.map(label => ({
+        name: typeof label === 'string' ? label : label.name || '',
+        color: typeof label === 'string' ? '' : label.color || ''
+      })) || [],
+      created_at: data.created_at,
+      updated_at: data.updated_at
+    };
+    
+    debug('Created issue #' + issue.number + ':', issue.title);
+    return issue;
+  } catch (error) {
+    debug('Error creating GitHub issue:', error instanceof Error ? error.message : 'Unknown error');
+    if (error instanceof Error) {
+      throw new Error(`Failed to create GitHub issue: ${error.message}`);
+    }
+    throw new Error('Failed to create GitHub issue: Unknown error');
+  }
+}
+
+export async function listIssues(owner: string, repo: string, options: {
+  state?: 'open' | 'closed' | 'all';
+  labels?: string;
+  sort?: 'created' | 'updated' | 'comments';
+  direction?: 'asc' | 'desc';
+  per_page?: number;
+} = {}): Promise<GitHubIssue[]> {
+  debug('Listing GitHub issues:', owner, repo, 'options:', options);
+  
+  try {
+    await initializeOctokit();
+    const octokit = getOctokit();
+    
+    const apiParams = {
+      owner,
+      repo,
+      state: options.state || 'open',
+      ...(options.labels && { labels: options.labels }),
+      sort: options.sort || 'created',
+      direction: options.direction || 'desc',
+      per_page: options.per_page || 30
+    };
+    
+    if (getVerbose()) {
+      debug('🌐 GitHub API Call: GET /repos/:owner/:repo/issues');
+      debug('📋 Parameters:', JSON.stringify(apiParams, null, 2));
+    }
+    
+    const { data } = await octokit.rest.issues.listForRepo(apiParams);
+    
+    if (getVerbose()) {
+      debug('✅ GitHub API Response: received', data.length, 'issues');
+      debug('📊 Response data preview:', JSON.stringify(data.slice(0, 2).map(issue => ({
+        number: issue.number,
+        title: issue.title,
+        state: issue.state,
+        user: issue.user?.login,
+        labels: issue.labels?.length
+      })), null, 2));
+    }
+    
+    const issues: GitHubIssue[] = data.map(issue => ({
+      id: issue.id,
+      number: issue.number,
+      title: issue.title,
+      body: issue.body,
+      state: issue.state as 'open' | 'closed',
+      html_url: issue.html_url,
+      user: {
+        login: issue.user?.login || 'unknown',
+        html_url: issue.user?.html_url || ''
+      },
+      labels: issue.labels?.map(label => ({
+        name: typeof label === 'string' ? label : label.name || '',
+        color: typeof label === 'string' ? '' : label.color || ''
+      })) || [],
+      created_at: issue.created_at,
+      updated_at: issue.updated_at
+    }));
+    
+    debug('Retrieved', issues.length, 'issues');
+    return issues;
+  } catch (error) {
+    debug('Error listing GitHub issues:', error instanceof Error ? error.message : 'Unknown error');
+    if (error instanceof Error) {
+      throw new Error(`Failed to list GitHub issues: ${error.message}`);
+    }
+    throw new Error('Failed to list GitHub issues: Unknown error');
+  }
+}
+
+export async function updateIssue(owner: string, repo: string, issueNumber: number, updates: {
+  title?: string;
+  body?: string;
+  state?: 'open' | 'closed';
+  labels?: string[];
+}): Promise<GitHubIssue> {
+  debug('Updating GitHub issue:', owner, repo, issueNumber);
+  
+  try {
+    await initializeOctokit();
+    const octokit = getOctokit();
+    
+    const apiParams = {
+      owner,
+      repo,
+      issue_number: issueNumber,
+      ...updates
+    };
+    
+    if (getVerbose()) {
+      debug('🌐 GitHub API Call: PATCH /repos/:owner/:repo/issues/:issue_number');
+      debug('📋 Parameters:', JSON.stringify(apiParams, null, 2));
+    }
+    
+    const { data } = await octokit.rest.issues.update(apiParams);
+    
+    if (getVerbose()) {
+      debug('✅ GitHub API Response: issue updated');
+      debug('📊 Response data:', JSON.stringify({
+        number: data.number,
+        title: data.title,
+        state: data.state,
+        html_url: data.html_url
+      }, null, 2));
+    }
+    
+    const issue: GitHubIssue = {
+      id: data.id,
+      number: data.number,
+      title: data.title,
+      body: data.body,
+      state: data.state as 'open' | 'closed',
+      html_url: data.html_url,
+      user: {
+        login: data.user?.login || 'unknown',
+        html_url: data.user?.html_url || ''
+      },
+      labels: data.labels?.map(label => ({
+        name: typeof label === 'string' ? label : label.name || '',
+        color: typeof label === 'string' ? '' : label.color || ''
+      })) || [],
+      created_at: data.created_at,
+      updated_at: data.updated_at
+    };
+    
+    debug('Updated issue #' + issue.number + ':', issue.title);
+    return issue;
+  } catch (error) {
+    debug('Error updating GitHub issue:', error instanceof Error ? error.message : 'Unknown error');
+    if (error instanceof Error) {
+      throw new Error(`Failed to update GitHub issue: ${error.message}`);
+    }
+    throw new Error('Failed to update GitHub issue: Unknown error');
+  }
+}
+
+export async function commentOnIssue(owner: string, repo: string, issueNumber: number, body: string): Promise<{id: number; html_url: string; created_at: string}> {
+  debug('Adding comment to GitHub issue:', owner, repo, issueNumber);
+  
+  try {
+    await initializeOctokit();
+    const octokit = getOctokit();
+    
+    const apiParams = {
+      owner,
+      repo,
+      issue_number: issueNumber,
+      body
+    };
+    
+    if (getVerbose()) {
+      debug('🌐 GitHub API Call: POST /repos/:owner/:repo/issues/:issue_number/comments');
+      debug('📋 Parameters:', JSON.stringify(apiParams, null, 2));
+    }
+    
+    const { data } = await octokit.rest.issues.createComment(apiParams);
+    
+    if (getVerbose()) {
+      debug('✅ GitHub API Response: comment created');
+      debug('📊 Response data:', JSON.stringify({
+        id: data.id,
+        html_url: data.html_url,
+        body_preview: data.body?.substring(0, 100) + '...'
+      }, null, 2));
+    }
+    
+    const comment = {
+      id: data.id,
+      html_url: data.html_url,
+      created_at: data.created_at
+    };
+    
+    debug('Created comment #' + comment.id + ' on issue #' + issueNumber);
+    return comment;
+  } catch (error) {
+    debug('Error commenting on GitHub issue:', error instanceof Error ? error.message : 'Unknown error');
+    if (error instanceof Error) {
+      throw new Error(`Failed to comment on GitHub issue: ${error.message}`);
+    }
+    throw new Error('Failed to comment on GitHub issue: Unknown error');
+  }
+}
+
+export async function searchIssues(owner: string, repo: string, query: string, options: {
+  state?: 'open' | 'closed' | 'all';
+  labels?: string;
+  sort?: 'created' | 'updated' | 'comments';
+  order?: 'asc' | 'desc';
+  per_page?: number;
+} = {}): Promise<GitHubIssue[]> {
+  debug('Searching GitHub issues:', owner, repo, 'query:', query, 'options:', options);
+  
+  try {
+    await initializeOctokit();
+    const octokit = getOctokit();
+    
+    // Build search query
+    let searchQuery = `${query} repo:${owner}/${repo}`;
+    if (options.state && options.state !== 'all') {
+      searchQuery += ` state:${options.state}`;
+    }
+    if (options.labels) {
+      searchQuery += ` label:${options.labels}`;
+    }
+    
+    const apiParams = {
+      q: searchQuery,
+      sort: options.sort || 'updated',
+      order: options.order || 'desc',
+      per_page: options.per_page || 30
+    };
+    
+    if (getVerbose()) {
+      debug('🌐 GitHub API Call: GET /search/issues');
+      debug('📋 Parameters:', JSON.stringify(apiParams, null, 2));
+    }
+    
+    const { data } = await octokit.rest.search.issues(apiParams);
+    
+    if (getVerbose()) {
+      debug('✅ GitHub API Response: found', data.total_count, 'issues');
+      debug('📊 Returned', data.items.length, 'results');
+      debug('📊 Response preview:', JSON.stringify(data.items.slice(0, 2).map(issue => ({
+        number: issue.number,
+        title: issue.title,
+        state: issue.state,
+        user: issue.user?.login,
+        labels: issue.labels?.length
+      })), null, 2));
+    }
+    
+    const issues: GitHubIssue[] = data.items.map(issue => ({
+      id: issue.id,
+      number: issue.number,
+      title: issue.title,
+      body: issue.body,
+      state: issue.state as 'open' | 'closed',
+      html_url: issue.html_url,
+      user: {
+        login: issue.user?.login || 'unknown',
+        html_url: issue.user?.html_url || ''
+      },
+      labels: issue.labels?.map(label => ({
+        name: typeof label === 'string' ? label : label.name || '',
+        color: typeof label === 'string' ? '' : label.color || ''
+      })) || [],
+      created_at: issue.created_at,
+      updated_at: issue.updated_at
+    }));
+    
+    debug('Found', issues.length, 'issues in search');
+    return issues;
+  } catch (error) {
+    debug('Error searching GitHub issues:', error instanceof Error ? error.message : 'Unknown error');
+    if (error instanceof Error) {
+      throw new Error(`Failed to search GitHub issues: ${error.message}`);
+    }
+    throw new Error('Failed to search GitHub issues: Unknown error');
   }
 }

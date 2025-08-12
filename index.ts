@@ -30,6 +30,16 @@ export function App() {
   });
 }
 
+// Check if raw mode is supported
+function isRawModeSupported(): boolean {
+  try {
+    // Check if we're in a TTY and stdin supports raw mode
+    return process.stdin.isTTY && typeof process.stdin.setRawMode === 'function';
+  } catch {
+    return false;
+  }
+}
+
 if (import.meta.main) {
   // Parse command line arguments
   const args = process.argv.slice(2);
@@ -43,6 +53,23 @@ if (import.meta.main) {
   
   debug('Starting Claude PM CLI');
   validateEnvironment();
-  debug('Rendering React app');
+  
+  // Check if raw mode is supported
+  if (!isRawModeSupported()) {
+    console.error('❌ Error: Raw mode is not supported on this terminal.');
+    console.error('');
+    console.error('This typically happens when:');
+    console.error('1. Running in a non-interactive environment (pipes, scripts, etc.)');
+    console.error('2. Terminal does not support raw input mode');
+    console.error('3. Running in certain CI/CD environments');
+    console.error('');
+    console.error('To fix this:');
+    console.error('1. Run in an interactive terminal (like Terminal.app, iTerm2, etc.)');
+    console.error('2. Ensure stdin is connected to a terminal');
+    console.error('3. Try running directly: bun run index.ts');
+    process.exit(1);
+  }
+  
+  debug('Raw mode supported, rendering React app');
   render(React.createElement(App));
 }

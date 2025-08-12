@@ -31,17 +31,17 @@ export const listGitHubReposTool = tool({
         updated_at: repo.updated_at
       }));
       
-      return JSON.stringify({
+      return {
         success: true,
         repositories: repoList,
         count: repoList.length,
         total_available: repos.length
-      });
+      };
     } catch (error) {
-      return JSON.stringify({
+      return {
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error'
-      });
+      };
     }
   }
 });
@@ -73,17 +73,17 @@ export const searchGitHubReposTool = tool({
         updated_at: repo.updated_at
       }));
       
-      return JSON.stringify({
+      return {
         success: true,
         repositories: repoList,
         count: repoList.length,
         query
-      });
+      };
     } catch (error) {
-      return JSON.stringify({
+      return {
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error'
-      });
+      };
     }
   }
 });
@@ -100,7 +100,7 @@ export const getGitHubRepoTool = tool({
     try {
       const repoData = await getRepo(owner, repo);
       
-      return JSON.stringify({
+      return {
         success: true,
         repository: {
           name: repoData.name,
@@ -113,12 +113,12 @@ export const getGitHubRepoTool = tool({
           language: repoData.language,
           updated_at: repoData.updated_at
         }
-      });
+      };
     } catch (error) {
-      return JSON.stringify({
+      return {
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error'
-      });
+      };
     }
   }
 });
