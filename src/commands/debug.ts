@@ -7,7 +7,7 @@ export const debugCommand: Command = {
   execute: (args: string[]): CommandResult => {
     debug('Executing /debug command with args:', args);
 
-    const count = args.length > 0 ? parseInt(args[0]!, 10) : 10;
+    const count = args.length > 0 && args[0] ? parseInt(args[0], 10) : 10;
     
     if (isNaN(count) || count <= 0) {
       return {

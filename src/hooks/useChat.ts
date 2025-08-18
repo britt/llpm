@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import type { Message } from '../types';
 import { generateResponse } from '../services/llm';
 import { debug, getVerbose } from '../utils/logger';
@@ -9,7 +9,7 @@ import { getCurrentProject } from '../utils/projectConfig';
 let messageCounter = 0;
 function generateMessageId(): string {
   messageCounter += 1;
-  return `msg-${Date.now()}-${messageCounter}-${Math.random().toString(36).substr(2, 9)}`;
+  return `msg-${messageCounter}-${Math.random().toString(36).substr(2, 9)}`;
 }
 
 export function useChat() {
@@ -17,6 +17,12 @@ export function useChat() {
   const [isLoading, setIsLoading] = useState(false);
   const [historyLoaded, setHistoryLoaded] = useState(false);
   const [currentProjectId, setCurrentProjectId] = useState<string | null>(null);
+  const messagesRef = useRef<Message[]>([]);
+  
+  // Keep ref in sync with messages
+  useEffect(() => {
+    messagesRef.current = messages;
+  }, [messages]);
 
   // Load chat history on component mount and when project changes
   useEffect(() => {
@@ -72,7 +78,7 @@ export function useChat() {
     initializeChatHistory();
   }, [currentProjectId]);
 
-  // Check for project changes periodically (every 2 seconds)
+  // Check for project changes periodically (every 10 seconds to reduce UI churn)
   useEffect(() => {
     const interval = setInterval(async () => {
       try {
@@ -87,7 +93,7 @@ export function useChat() {
       } catch (error) {
         debug('Error checking for project changes:', error);
       }
-    }, 2000);
+    }, 10000);
 
     return () => clearInterval(interval);
   }, [currentProjectId]);
@@ -169,7 +175,7 @@ export function useChat() {
       debug('Set loading state to true');
 
       try {
-        const allMessages = [...messages, userMessage];
+        const allMessages = [...messagesRef.current, userMessage];
         debug('Sending', allMessages.length, 'messages to LLM');
         const response = await generateResponse(allMessages);
 
@@ -213,7 +219,7 @@ export function useChat() {
         debug('Set loading state to false');
       }
     },
-    [messages]
+    [] // Remove messages dependency to prevent recreation on every message
   );
 
   return {

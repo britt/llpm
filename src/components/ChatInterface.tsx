@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, memo, useMemo } from 'react';
 import { Box, Text, useInput } from 'ink';
 import type { Message } from '../types';
 import { loadInputHistory, saveInputHistory } from '../utils/inputHistory';
@@ -9,7 +9,7 @@ interface ChatInterfaceProps {
   isLoading: boolean;
 }
 
-export function ChatInterface({ messages, onSendMessage, isLoading }: ChatInterfaceProps) {
+export const ChatInterface = memo(function ChatInterface({ messages, onSendMessage, isLoading }: ChatInterfaceProps) {
   const [input, setInput] = useState('');
   const [inputHistory, setInputHistory] = useState<string[]>([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
@@ -21,6 +21,32 @@ export function ChatInterface({ messages, onSendMessage, isLoading }: ChatInterf
       setInputHistory(history);
     });
   }, []);
+
+  // Memoize cursor display to prevent unnecessary rerenders
+  const cursorDisplay = useMemo(() => {
+    return (
+      <Text>
+        {'> '}
+        {input.slice(0, cursorPos)}
+        <Text backgroundColor="white" color="black">
+          {cursorPos < input.length ? input[cursorPos] : ' '}
+        </Text>
+        {input.slice(cursorPos + 1)}
+      </Text>
+    );
+  }, [input, cursorPos]);
+
+  // Memoize messages display to prevent unnecessary rerenders
+  const messagesDisplay = useMemo(() => {
+    return messages.map((message, index) => (
+      <Box key={message.id || `fallback-${index}`} marginBottom={1}>
+        <Text color={message.role === 'user' ? 'blue' : message.role === 'system' ? 'magenta' : 'green'} bold>
+          {message.role === 'user' ? 'You: ' : message.role === 'system' ? 'System: ' : 'PM: '}
+        </Text>
+        <Text>{message.content}</Text>
+      </Box>
+    ));
+  }, [messages]);
 
   useInput((inputChar, key) => {
     if (key.return && input.trim() && !isLoading) {
@@ -141,14 +167,7 @@ export function ChatInterface({ messages, onSendMessage, isLoading }: ChatInterf
 
       {/* Messages */}
       <Box flexDirection="column" flexGrow={1} paddingX={1} paddingY={1}>
-        {messages.map((message, index) => (
-          <Box key={message.id || `fallback-${index}-${Date.now()}`} marginBottom={1}>
-            <Text color={message.role === 'user' ? 'blue' : message.role === 'system' ? 'magenta' : 'green'} bold>
-              {message.role === 'user' ? 'You: ' : message.role === 'system' ? 'System: ' : 'PM: '}
-            </Text>
-            <Text>{message.content}</Text>
-          </Box>
-        ))}
+        {messagesDisplay}
         {isLoading && (
           <Box>
             <Text color="yellow">PM is typing...</Text>
@@ -158,15 +177,8 @@ export function ChatInterface({ messages, onSendMessage, isLoading }: ChatInterf
 
       {/* Input */}
       <Box borderStyle="single" paddingX={1}>
-        <Text>
-          {'> '}
-          {input.slice(0, cursorPos)}
-          <Text backgroundColor="white" color="black">
-            {cursorPos < input.length ? input[cursorPos] : ' '}
-          </Text>
-          {input.slice(cursorPos + 1)}
-        </Text>
+        {cursorDisplay}
       </Box>
     </Box>
   );
-}
+});
