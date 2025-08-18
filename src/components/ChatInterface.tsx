@@ -1,4 +1,4 @@
-import React, { useState, useEffect, memo, useMemo } from 'react';
+import React, { useState, useEffect, memo, useMemo, useCallback } from 'react';
 import { Box, Text, useInput } from 'ink';
 import type { Message } from '../types';
 import { loadInputHistory, saveInputHistory } from '../utils/inputHistory';
@@ -36,17 +36,15 @@ export const ChatInterface = memo(function ChatInterface({ messages, onSendMessa
     );
   }, [input, cursorPos]);
 
-  // Memoize messages display to prevent unnecessary rerenders
-  const messagesDisplay = useMemo(() => {
-    return messages.map((message, index) => (
-      <Box key={message.id || `fallback-${index}`} marginBottom={1}>
-        <Text color={message.role === 'user' ? 'blue' : message.role === 'system' ? 'magenta' : 'green'} bold>
-          {message.role === 'user' ? 'You: ' : message.role === 'system' ? 'System: ' : 'PM: '}
-        </Text>
-        <Text>{message.content}</Text>
-      </Box>
-    ));
-  }, [messages]);
+  // Individual message component to prevent full rerenders
+  const MessageItem = memo(({ message, index }: { message: Message; index: number }) => (
+    <Box key={message.id || `fallback-${index}`} marginBottom={1}>
+      <Text color={message.role === 'user' ? 'blue' : message.role === 'system' ? 'magenta' : 'green'} bold>
+        {message.role === 'user' ? 'You: ' : message.role === 'system' ? 'System: ' : 'PM: '}
+      </Text>
+      <Text>{message.content}</Text>
+    </Box>
+  ));
 
   useInput((inputChar, key) => {
     if (key.return && input.trim() && !isLoading) {
@@ -160,14 +158,11 @@ export const ChatInterface = memo(function ChatInterface({ messages, onSendMessa
 
   return (
     <Box flexDirection="column" height="100%">
-      {/* Header */}
-      <Box borderStyle="single" paddingX={1}>
-        <Text bold>Claude PM - AI Assistant</Text>
-      </Box>
-
-      {/* Messages */}
-      <Box flexDirection="column" flexGrow={1} paddingX={1} paddingY={1}>
-        {messagesDisplay}
+      {/* Messages - no border, fills available space */}
+      <Box flexDirection="column" flexGrow={1} paddingX={1}>
+        {messages.map((message, index) => (
+          <MessageItem key={message.id || `fallback-${index}`} message={message} index={index} />
+        ))}
         {isLoading && (
           <Box>
             <Text color="yellow">PM is typing...</Text>
