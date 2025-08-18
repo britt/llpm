@@ -3,6 +3,7 @@ import { existsSync } from 'fs';
 import type { Project, ProjectConfig } from '../types/project';
 import { getConfigFilePath, ensureConfigDir } from './config';
 import { debug } from './logger';
+import { URL } from 'url';
 
 export async function loadProjectConfig(): Promise<ProjectConfig> {
   debug('Loading project configuration');
@@ -83,6 +84,14 @@ export async function setCurrentProject(projectId: string): Promise<void> {
   debug('Current project updated to:', projectId);
 }
 
+function getGithubRepo(project: Omit<Project, 'id' | 'createdAt' | 'updatedAt'>): string {
+  if (project.github_repo) {
+    return project.github_repo;
+  }
+  const repoURL = new URL(project.repository);
+  return repoURL.pathname.slice(1);
+}
+
 export async function addProject(
   project: Omit<Project, 'id' | 'createdAt' | 'updatedAt'>
 ): Promise<Project> {
@@ -92,8 +101,11 @@ export async function addProject(
   const now = new Date().toISOString();
   const projectId = `${project.name.toLowerCase().replace(/\s+/g, '-')}-${Date.now()}`;
 
+  const gh_repo = getGithubRepo(project);
+
   const newProject: Project = {
     ...project,
+    github_repo: gh_repo,
     id: projectId,
     createdAt: now,
     updatedAt: now
