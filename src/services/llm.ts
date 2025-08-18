@@ -1,11 +1,12 @@
-import { generateText, streamText } from 'ai';
+import { generateText, streamText, stepCountIs } from 'ai';
 import { openai } from '@ai-sdk/openai';
 import type { Message } from '../types';
 import { debug, getVerbose } from '../utils/logger';
 import { getToolRegistry } from '../tools/registry';
 import { getSystemPrompt } from '../utils/systemPrompt';
 
-const model = openai('gpt-4o-mini');
+const model = openai('gpt-4.1-mini');
+const MAX_STEPS = 10;
 
 export async function generateResponse(messages: Message[]): Promise<string> {
   debug('generateResponse called with', messages.length, 'messages');
@@ -39,7 +40,8 @@ export async function generateResponse(messages: Message[]): Promise<string> {
       model,
       messages: allMessages,
       tools,
-      toolChoice: 'auto'
+      toolChoice: 'auto',
+      stopWhen: [stepCountIs(MAX_STEPS)]
     });
 
     debug('AI SDK result text:', JSON.stringify(result.text));
