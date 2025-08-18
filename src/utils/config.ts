@@ -17,6 +17,8 @@ export async function ensureConfigDir(): Promise<void> {
   } else {
     debug('Config directory already exists');
   }
+  // TODO: ensure config file exists
+  // TODO: ensure system prompt file exists
 }
 
 export function getConfigPath(): string {

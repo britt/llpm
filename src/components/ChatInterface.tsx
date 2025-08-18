@@ -1,4 +1,4 @@
-import React, { useState, useEffect, memo, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, memo, useMemo } from 'react';
 import { Box, Text, useInput } from 'ink';
 import type { Message } from '../types';
 import { loadInputHistory, saveInputHistory } from '../utils/inputHistory';
