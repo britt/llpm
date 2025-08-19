@@ -3,6 +3,43 @@ import { modelRegistry } from '../services/modelRegistry';
 import type { ModelProvider } from '../types/models';
 import { debug } from '../utils/logger';
 
+function showInteractiveModelSelector(): CommandResult {
+  const configuredProviders = modelRegistry.getConfiguredProviders();
+  
+  if (configuredProviders.length === 0) {
+    return {
+      content: '❌ No providers are configured. Please check your API keys in .env file.\n\n💡 Use `/model providers` to see configuration requirements.',
+      success: false
+    };
+  }
+  
+  const models: Array<{id: string, label: string, value: string}> = [];
+  const currentModel = modelRegistry.getCurrentModel();
+  
+  for (const provider of configuredProviders) {
+    const providerModels = modelRegistry.getModelsForProvider(provider);
+    for (const model of providerModels) {
+      const isCurrent = currentModel.modelId === model.modelId && currentModel.provider === model.provider;
+      const currentMarker = isCurrent ? ' 👉 ' : '   ';
+      
+      models.push({
+        id: `${model.provider}/${model.modelId}`,
+        label: `${currentMarker}${model.displayName} (${model.provider})`,
+        value: `${model.provider}/${model.modelId}`
+      });
+    }
+  }
+  
+  return {
+    content: 'Select a model to switch to:',
+    success: true,
+    interactive: {
+      type: 'model-select',
+      models
+    }
+  };
+}
+
 export const modelCommand: Command = {
   name: 'model',
   description: 'Switch between AI models or view current model info',
@@ -31,10 +68,8 @@ export const modelCommand: Command = {
       case 'switch':
       case 'set':
         if (args.length < 2) {
-          return {
-            content: '❌ Please specify a model to switch to.\nUsage: /model switch <provider>/<model-id>\nExample: /model switch openai/gpt-4o',
-            success: false
-          };
+          // Show interactive model selector for configured providers
+          return showInteractiveModelSelector();
         }
         return await switchModel(args[1]!);
       

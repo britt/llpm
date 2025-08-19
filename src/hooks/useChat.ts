@@ -17,6 +17,10 @@ export function useChat() {
   const [isLoading, setIsLoading] = useState(false);
   const [historyLoaded, setHistoryLoaded] = useState(false);
   const [currentProjectId, setCurrentProjectId] = useState<string | null>(null);
+  const [interactiveCommand, setInteractiveCommand] = useState<{ 
+    type: 'model-select'; 
+    models: Array<{id: string, label: string, value: string}> 
+  } | null>(null);
   const messagesRef = useRef<Message[]>([]);
   
   // Keep ref in sync with messages
@@ -121,6 +125,16 @@ export function useChat() {
 
         try {
           const result = await executeCommand(parsed.command as string, parsed.args as string[]);
+
+          // Check for interactive command results
+          if (result.interactive && result.interactive.type === 'model-select') {
+            setInteractiveCommand({
+              type: 'model-select',
+              models: result.interactive.models
+            });
+            debug('Showing interactive model selector');
+            return;
+          }
 
           // Special handling for clear command
           if (parsed.command === 'clear' && result.success) {
@@ -232,10 +246,47 @@ export function useChat() {
     debug('Added system message');
   }, []);
 
+  const handleModelSelect = useCallback(async (modelValue: string) => {
+    debug('Model selected:', modelValue);
+    setInteractiveCommand(null);
+    setIsLoading(true);
+    
+    try {
+      const result = await executeCommand('model', ['switch', modelValue]);
+      
+      const responseMessage: Message = {
+        role: 'system',
+        content: result.content,
+        id: generateMessageId()
+      };
+      setMessages(prev => [...prev, responseMessage]);
+      debug('Model switch completed');
+    } catch (error) {
+      debug('Error switching model:', error);
+      
+      const errorMessage: Message = {
+        role: 'system',
+        content: '❌ Failed to switch model. Please try again.',
+        id: generateMessageId()
+      };
+      setMessages(prev => [...prev, errorMessage]);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  const cancelModelSelection = useCallback(() => {
+    debug('Model selection cancelled');
+    setInteractiveCommand(null);
+  }, []);
+
   return {
     messages,
     sendMessage,
     addSystemMessage,
-    isLoading
+    isLoading,
+    interactiveCommand,
+    handleModelSelect,
+    cancelModelSelection
   };
 }

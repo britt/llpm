@@ -14,9 +14,23 @@ interface ChatInterfaceProps {
   onSendMessage: (message: string) => void;
   onAddSystemMessage: (message: string) => void;
   isLoading: boolean;
+  interactiveCommand?: {
+    type: 'model-select';
+    models: Array<{id: string, label: string, value: string}>;
+  } | null;
+  onModelSelect?: (modelValue: string) => void;
+  onCancelModelSelection?: () => void;
 }
 
-export const ChatInterface = memo(function ChatInterface({ messages, onSendMessage, onAddSystemMessage, isLoading }: ChatInterfaceProps) {
+export const ChatInterface = memo(function ChatInterface({ 
+  messages, 
+  onSendMessage, 
+  onAddSystemMessage, 
+  isLoading, 
+  interactiveCommand,
+  onModelSelect,
+  onCancelModelSelection 
+}: ChatInterfaceProps) {
   const [input, setInput] = useState('');
   const [inputHistory, setInputHistory] = useState<string[]>([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
@@ -206,8 +220,14 @@ To add a new project, complete the command with these parameters:
       return;
     }
 
-    // Skip normal input handling when project selector is shown
-    if (showProjectSelector) {
+    // Handle ESC to cancel model selector
+    if (key.escape && interactiveCommand?.type === 'model-select') {
+      onCancelModelSelection?.();
+      return;
+    }
+
+    // Skip normal input handling when selectors are shown
+    if (showProjectSelector || interactiveCommand?.type === 'model-select') {
       return;
     }
 
@@ -239,6 +259,58 @@ To add a new project, complete the command with these parameters:
       }
     }
   });
+
+  if (interactiveCommand?.type === 'model-select') {
+    const modelItems = interactiveCommand.models.map(model => ({
+      label: model.label,
+      value: model.value
+    }));
+
+    return (
+      <Box flexDirection="column" height="100%">
+        {/* Messages - no border, fills available space */}
+        <Box flexDirection="column" flexGrow={1} paddingX={1}>
+          {messages.map((message, index) => (
+            <MessageItem key={message.id || `fallback-${index}`} message={message} index={index} />
+          ))}
+          {isLoading && (
+            <Box>
+              <Text color="yellow">
+                <Spinner type="dots" />
+                {' '}PM is thinking...
+              </Text>
+            </Box>
+          )}
+        </Box>
+
+        {/* Model Selector */}
+        <Box borderStyle="single" paddingX={1}>
+          <Box flexDirection="column">
+            <Text color="green" bold>Select Model (ESC to cancel):</Text>
+            <SelectInput
+              items={modelItems}
+              onSelect={(item) => onModelSelect?.(item.value)}
+              onHighlight={() => {}}
+            />
+            <Box marginTop={1}>
+              <Text color="gray" dimColor>
+                💡 Only configured providers are shown. Use /model providers to see configuration status.
+              </Text>
+            </Box>
+          </Box>
+        </Box>
+
+        {/* Project Status */}
+        <Box paddingX={1} paddingY={0}>
+          {currentProject && (
+            <Text color="blue" dimColor>
+              📁 {currentProject.name} | 🗂️ {currentProject.path}
+            </Text>
+          )}
+        </Box>
+      </Box>
+    );
+  }
 
   if (showProjectSelector) {
     return (

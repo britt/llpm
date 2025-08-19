@@ -46,13 +46,24 @@ export function validateEnvironment() {
 }
 
 export function App() {
-  const { messages, sendMessage, addSystemMessage, isLoading } = useChat();
+  const { 
+    messages, 
+    sendMessage, 
+    addSystemMessage, 
+    isLoading,
+    interactiveCommand,
+    handleModelSelect,
+    cancelModelSelection 
+  } = useChat();
 
   return React.createElement(ChatInterface, {
     messages,
     onSendMessage: sendMessage,
     onAddSystemMessage: addSystemMessage,
-    isLoading
+    isLoading,
+    interactiveCommand,
+    onModelSelect: handleModelSelect,
+    onCancelModelSelection: cancelModelSelection
   });
 }
 
