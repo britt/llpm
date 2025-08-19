@@ -44,8 +44,9 @@ describe('App', () => {
     expect(getByText(/Hello! I'm Claude PM, your AI assistant/)).toBeInTheDocument();
   });
 
-  it('renders the chat interface title', () => {
+  it('renders the chat interface with project indicator', () => {
     const { getByText } = render(React.createElement(App));
-    expect(getByText('Claude PM - AI Assistant')).toBeInTheDocument();
+    expect(getByText(/project:/)).toBeInTheDocument();
+    expect(getByText(/none/)).toBeInTheDocument();
   });
 });
