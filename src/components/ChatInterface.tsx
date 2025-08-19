@@ -250,7 +250,7 @@ export const ChatInterface = memo(function ChatInterface({ messages, onSendMessa
             />
             <Box marginTop={1}>
               <Text color="gray" dimColor>
-                💡 Create New: Use format "/project add <name> <repository> <path>"
+                💡 Create New: Use format "/project add {'<name> <repository> <path>'}"
               </Text>
             </Box>
           </Box>
