@@ -1,6 +1,8 @@
 # Claude PM
 
-AI-powered CLI project manager similar to Claude Code. Chat with an LLM assistant directly in your terminal using a clean, interactive interface built with Ink. Manage multiple projects with GitHub integration and persistent configuration.
+A modern, AI-powered project management CLI that brings intelligent assistance directly to your terminal. Built with Ink for a polished terminal UI, Claude PM combines natural language interaction with structured project management, offering seamless GitHub integration and persistent workspace configuration.
+
+Perfect for developers who want to organize multiple projects, interact with GitHub repositories, and leverage AI assistance without leaving the command line.
 
 ## Features
 
@@ -33,9 +35,9 @@ AI-powered CLI project manager similar to Claude Code. Chat with an LLM assistan
 - `/help` - Display all available commands
 - `/quit` - Exit the application
 - `/clear` - Start a new chat session
-- `/project` - Manage projects (add, switch, remove)
-- `/projects` - List all configured projects
+- `/project` - Manage projects (add, list, switch, remove)
 - `/github` - Browse and search GitHub repositories
+- `/debug` - Show recent debug logs for troubleshooting
 
 ## Prerequisites
 
@@ -129,7 +131,7 @@ claude-pm
    /project switch project-id
    # or
    /project switch  # to see available projects to switch to
-   /projects        # to list all available projects with details
+   /project list    # to list all available projects with details
    ```
 
 4. **Natural language project management:**
@@ -146,7 +148,7 @@ You can use either approach:
 **Slash commands** (direct, immediate):
 
 - `/info` - Quick system information
-- `/projects` - List all projects
+- `/project list` - List all projects
 - `/project switch` - Switch between projects
 - `/github search typescript` - Search repositories
 
