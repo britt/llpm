@@ -42,29 +42,39 @@ export const ChatInterface = memo(function ChatInterface({ messages, onSendMessa
   const renderContentWithLinks = useMemo(() => {
     return (content: string) => {
       const urlRegex = /https?:\/\/[^\s<>"{}|\\^`\[\]]+/gi;
-      const parts = content.split(urlRegex);
       const urls = content.match(urlRegex) || [];
       
       if (urls.length === 0) {
-        return <Text>{content}</Text>;
+        return content;
       }
       
       const result: React.ReactNode[] = [];
+      let lastIndex = 0;
       
-      for (let i = 0; i < parts.length; i++) {
-        if (parts[i]) {
-          result.push(<Text key={`text-${i}`}>{parts[i]}</Text>);
+      urls.forEach((url, index) => {
+        const urlIndex = content.indexOf(url, lastIndex);
+        
+        // Add text before the URL
+        if (urlIndex > lastIndex) {
+          result.push(content.slice(lastIndex, urlIndex));
         }
-        if (urls[i]) {
-          result.push(
-            <Link key={`link-${i}`} url={urls[i]}>
-              <Text color="cyan" underline>{urls[i]}</Text>
-            </Link>
-          );
-        }
+        
+        // Add the link
+        result.push(
+          <Link key={`link-${index}`} url={url}>
+            <Text color="cyan" underline>{url}</Text>
+          </Link>
+        );
+        
+        lastIndex = urlIndex + url.length;
+      });
+      
+      // Add remaining text after the last URL
+      if (lastIndex < content.length) {
+        result.push(content.slice(lastIndex));
       }
       
-      return <>{result}</>;
+      return result;
     };
   }, []);
 
@@ -73,8 +83,8 @@ export const ChatInterface = memo(function ChatInterface({ messages, onSendMessa
     <Box key={message.id || `fallback-${index}`} marginBottom={1}>
       <Text color={message.role === 'user' ? 'blue' : message.role === 'system' ? 'magenta' : 'green'} bold>
         {message.role === 'user' ? 'You: ' : message.role === 'system' ? 'System: ' : 'PM: '}
+        {renderContentWithLinks(message.content)}
       </Text>
-      {renderContentWithLinks(message.content)}
     </Box>
   ));
 
