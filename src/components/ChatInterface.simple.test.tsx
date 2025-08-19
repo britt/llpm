@@ -24,6 +24,8 @@ describe('ChatInterface Basic Tests', () => {
 
   it('should be a valid React component', () => {
     expect(ChatInterface).toBeDefined();
-    expect(typeof ChatInterface).toBe('function');
+    // ChatInterface is a memo component, so it's an object with type property
+    expect(typeof ChatInterface).toBe('object');
+    expect(ChatInterface.type).toBeDefined();
   });
 });
