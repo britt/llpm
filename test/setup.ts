@@ -6,17 +6,16 @@ import { cleanup } from '@testing-library/react';
 beforeAll(() => {
   // Ensure we have a proper DOM environment
   if (typeof (global as any).document === 'undefined') {
-    // Try to setup basic DOM globals if they're missing
-    const { JSDOM } = require('jsdom');
-    const dom = new JSDOM('<!DOCTYPE html><html><body></body></html>', {
-      url: 'http://localhost',
-      pretendToBeVisual: true,
-      resources: 'usable'
+    // Use happy-dom which works better with Bun
+    const { Window } = require('happy-dom');
+    const window = new Window({
+      url: 'http://localhost'
     });
     
-    (global as any).window = dom.window;
-    (global as any).document = dom.window.document;
-    (global as any).navigator = dom.window.navigator;
+    (global as any).window = window;
+    (global as any).document = window.document;
+    (global as any).navigator = window.navigator;
+    (global as any).HTMLElement = window.HTMLElement;
   }
 });
 

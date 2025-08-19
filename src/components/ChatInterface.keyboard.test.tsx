@@ -1,36 +1,11 @@
-// Simple mock that doesn't rely on vi.mock hoisting issues
-const mockLoadInputHistory = vi.fn().mockResolvedValue(['previous command', 'another command']);
-const mockSaveInputHistory = vi.fn().mockResolvedValue(undefined);
-const mockGetCurrentProject = vi.fn().mockResolvedValue(null);
-const mockListProjects = vi.fn().mockResolvedValue([]);
-const mockSetCurrentProject = vi.fn().mockResolvedValue(undefined);
-const mockUseInput = vi.fn();
-
-// Mock modules after imports
-vi.mock('../utils/inputHistory', () => ({
-  loadInputHistory: mockLoadInputHistory,
-  saveInputHistory: mockSaveInputHistory
-}));
-
-vi.mock('../utils/projectConfig', () => ({
-  getCurrentProject: mockGetCurrentProject,
-  listProjects: mockListProjects,
-  setCurrentProject: mockSetCurrentProject
-}));
-
-vi.mock('ink', async () => {
-  const actual = await vi.importActual('ink');
-  return {
-    ...actual,
-    useInput: mockUseInput
-  };
-});
-
 import React from 'react';
 import { render, act } from '@testing-library/react';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { ChatInterface } from './ChatInterface';
 import type { Message } from '../types';
+import * as inputHistory from '../utils/inputHistory';
+import * as projectConfig from '../utils/projectConfig';
+import * as ink from 'ink';
 
 describe('ChatInterface Keyboard Shortcuts', () => {
   const messages: Message[] = [
@@ -48,13 +23,37 @@ describe('ChatInterface Keyboard Shortcuts', () => {
   };
 
   let useInputCallback: ((inputChar: string, key: any) => void) | null = null;
+  let loadInputHistorySpy: any;
+  let saveInputHistorySpy: any;
+  let getCurrentProjectSpy: any;
+  let listProjectsSpy: any;
+  let setCurrentProjectSpy: any;
+  let useInputSpy: any;
 
   beforeEach(() => {
-    vi.clearAllMocks();
-    useInputCallback = null;
-    mockUseInput.mockImplementation((callback) => {
+    // Spy on input history functions
+    loadInputHistorySpy = vi.spyOn(inputHistory, 'loadInputHistory').mockResolvedValue(['previous command', 'another command']);
+    saveInputHistorySpy = vi.spyOn(inputHistory, 'saveInputHistory').mockResolvedValue(undefined);
+    
+    // Spy on project config functions  
+    getCurrentProjectSpy = vi.spyOn(projectConfig, 'getCurrentProject').mockResolvedValue(null);
+    listProjectsSpy = vi.spyOn(projectConfig, 'listProjects').mockResolvedValue([]);
+    setCurrentProjectSpy = vi.spyOn(projectConfig, 'setCurrentProject' as any).mockResolvedValue(undefined);
+    
+    // Spy on useInput hook
+    useInputSpy = vi.spyOn(ink, 'useInput').mockImplementation((callback) => {
       useInputCallback = callback;
     });
+  });
+
+  afterEach(() => {
+    loadInputHistorySpy.mockRestore();
+    saveInputHistorySpy.mockRestore();
+    getCurrentProjectSpy.mockRestore();
+    listProjectsSpy.mockRestore();
+    setCurrentProjectSpy.mockRestore();
+    useInputSpy.mockRestore();
+    useInputCallback = null;
   });
 
   const simulateKeyPress = (inputChar: string, key: any) => {
