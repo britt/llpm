@@ -51,7 +51,12 @@ export const ChatInterface = memo(function ChatInterface({ messages, onSendMessa
   // Handle project selection
   const handleProjectSelect = async (item: { label: string; value: string }) => {
     try {
-      if (item.value === '') {
+      if (item.value === '__create_new__') {
+        // Handle "Create New Project" option
+        setInput('/project add ');
+        setShowProjectSelector(false);
+        return;
+      } else if (item.value === '') {
         // Clear current project by setting it to empty
         const { loadProjectConfig, saveProjectConfig } = await import('../utils/projectConfig');
         const config = await loadProjectConfig();
@@ -76,6 +81,12 @@ export const ChatInterface = memo(function ChatInterface({ messages, onSendMessa
       label: project.name,
       value: project.id
     }));
+    
+    // Add "Create New" option
+    items.unshift({
+      label: '(Create New Project)',
+      value: '__create_new__'
+    });
     
     // Add "None" option to clear current project
     items.unshift({
@@ -237,6 +248,11 @@ export const ChatInterface = memo(function ChatInterface({ messages, onSendMessa
               onSelect={handleProjectSelect}
               onHighlight={() => {}}
             />
+            <Box marginTop={1}>
+              <Text color="gray" dimColor>
+                💡 Create New: Use format "/project add <name> <repository> <path>"
+              </Text>
+            </Box>
           </Box>
         </Box>
 
