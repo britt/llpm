@@ -56,12 +56,6 @@ export const ChatInterface = memo(function ChatInterface({ messages, onSendMessa
         setInput('/project add ');
         setShowProjectSelector(false);
         return;
-      } else if (item.value === '') {
-        // Clear current project by setting it to empty
-        const { loadProjectConfig, saveProjectConfig } = await import('../utils/projectConfig');
-        const config = await loadProjectConfig();
-        config.currentProject = undefined;
-        await saveProjectConfig(config);
       } else {
         await setCurrentProjectConfig(item.value);
       }
@@ -86,12 +80,6 @@ export const ChatInterface = memo(function ChatInterface({ messages, onSendMessa
     items.unshift({
       label: '(Create New Project)',
       value: '__create_new__'
-    });
-    
-    // Add "None" option to clear current project
-    items.unshift({
-      label: '(None)',
-      value: ''
     });
     
     return items;
