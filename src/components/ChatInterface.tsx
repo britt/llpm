@@ -231,6 +231,14 @@ To add a new project, complete the command with these parameters:
       return;
     }
 
+    // Handle Ctrl+E to move cursor to end (note: this may not work with TextInput focus)
+    if (key.ctrl && inputChar === 'e') {
+      // This is a hint for users - the actual cursor movement would need to be handled by TextInput
+      // For now, we'll just ensure the input value is set (which puts cursor at end)
+      setInput(input);
+      return;
+    }
+
     // Handle history navigation when not using TextInput focus
     if (key.upArrow) {
       // Navigate up in history

@@ -1,6 +1,7 @@
 import type { Command, CommandResult } from './types';
 import { debug } from '../utils/logger';
 import { getCurrentProject } from '../utils/projectConfig';
+import { modelRegistry } from '../services/modelRegistry';
 
 const packageInfo = {
   name: 'LLPM',
@@ -14,7 +15,8 @@ export const infoCommand: Command = {
   execute: async (): Promise<CommandResult> => {
     debug('Executing /info command');
 
-    const modelInfo = 'OpenAI GPT-4o-mini';
+    const currentModel = modelRegistry.getCurrentModel();
+    const modelInfo = `${currentModel.displayName} (${currentModel.provider})`;
     const runtimeInfo = `Bun ${process.versions.bun || 'unknown'}`;
     const nodeInfo = `Node.js ${process.version}`;
 
