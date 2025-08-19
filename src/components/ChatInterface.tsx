@@ -1,5 +1,7 @@
 import React, { useState, useEffect, memo, useMemo } from 'react';
 import { Box, Text, useInput } from 'ink';
+import Spinner from 'ink-spinner';
+import Link from 'ink-link';
 import type { Message } from '../types';
 import { loadInputHistory, saveInputHistory } from '../utils/inputHistory';
 
@@ -36,13 +38,43 @@ export const ChatInterface = memo(function ChatInterface({ messages, onSendMessa
     );
   }, [input, cursorPos]);
 
+  // Function to parse content and render URLs as links
+  const renderContentWithLinks = useMemo(() => {
+    return (content: string) => {
+      const urlRegex = /https?:\/\/[^\s<>"{}|\\^`\[\]]+/gi;
+      const parts = content.split(urlRegex);
+      const urls = content.match(urlRegex) || [];
+      
+      if (urls.length === 0) {
+        return <Text>{content}</Text>;
+      }
+      
+      const result: React.ReactNode[] = [];
+      
+      for (let i = 0; i < parts.length; i++) {
+        if (parts[i]) {
+          result.push(<Text key={`text-${i}`}>{parts[i]}</Text>);
+        }
+        if (urls[i]) {
+          result.push(
+            <Link key={`link-${i}`} url={urls[i]}>
+              <Text color="cyan" underline>{urls[i]}</Text>
+            </Link>
+          );
+        }
+      }
+      
+      return <>{result}</>;
+    };
+  }, []);
+
   // Individual message component to prevent full rerenders
   const MessageItem = memo(({ message, index }: { message: Message; index: number }) => (
     <Box key={message.id || `fallback-${index}`} marginBottom={1}>
       <Text color={message.role === 'user' ? 'blue' : message.role === 'system' ? 'magenta' : 'green'} bold>
         {message.role === 'user' ? 'You: ' : message.role === 'system' ? 'System: ' : 'PM: '}
       </Text>
-      <Text>{message.content}</Text>
+      {renderContentWithLinks(message.content)}
     </Box>
   ));
 
@@ -165,7 +197,10 @@ export const ChatInterface = memo(function ChatInterface({ messages, onSendMessa
         ))}
         {isLoading && (
           <Box>
-            <Text color="yellow">PM is typing...</Text>
+            <Text color="yellow">
+              <Spinner type="dots" />
+              {' '}PM is thinking...
+            </Text>
           </Box>
         )}
       </Box>
