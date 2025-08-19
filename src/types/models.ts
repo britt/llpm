@@ -84,12 +84,6 @@ export const DEFAULT_MODELS: Record<ModelProvider, ModelConfig[]> = {
       modelId: 'claude-3-5-haiku-20241022',
       displayName: 'Claude 3.5 Haiku',
       description: 'Fast Claude 3.5 model'
-    },
-    {
-      provider: 'anthropic',
-      modelId: 'claude-3-haiku-20240307',
-      displayName: 'Claude 3 Haiku',
-      description: 'Fast and efficient Claude model'
     }
   ],
   groq: [
