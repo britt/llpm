@@ -1,0 +1,37 @@
+name: Coverage Report
+
+on:
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  coverage:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup Bun
+      uses: oven-sh/setup-bun@v2
+      with:
+        bun-version: latest
+
+    - name: Install dependencies
+      run: bun install
+
+    - name: Run tests with coverage
+      env:
+        # Provide test environment variables to prevent validation errors
+        OPENAI_API_KEY: test-key-for-coverage
+        ANTHROPIC_API_KEY: test-key-for-coverage
+        GROQ_API_KEY: test-key-for-coverage
+        GOOGLE_VERTEX_PROJECT_ID: test-project-for-coverage
+      run: bun run test --coverage
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./coverage/lcov.info
+        flags: unittests
+        name: codecov-umbrella
+        fail_ci_if_error: false
