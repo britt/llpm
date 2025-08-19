@@ -19,6 +19,8 @@ interface ChatInterfaceProps {
   } | null;
   onModelSelect?: (modelValue: string) => void;
   onCancelModelSelection?: () => void;
+  queueLength?: number;
+  isProcessing?: boolean;
 }
 
 export const ChatInterface = memo(function ChatInterface({ 
@@ -28,7 +30,9 @@ export const ChatInterface = memo(function ChatInterface({
   isLoading, 
   interactiveCommand,
   onModelSelect,
-  onCancelModelSelection 
+  onCancelModelSelection,
+  queueLength = 0,
+  isProcessing = false
 }: ChatInterfaceProps) {
   const [displayInput, setDisplayInput] = useState('');
   const [inputHistory, setInputHistory] = useState<string[]>([]);
@@ -79,7 +83,10 @@ export const ChatInterface = memo(function ChatInterface({
     try {
       if (item.value === '__create_new__') {
         // Handle "Create New Project" option
-        setInput('/project add ');
+        inputRef.current = '/project add ';
+        cursorRef.current = inputRef.current.length;
+        setDisplayInput(inputRef.current);
+        setDisplayCursor(inputRef.current.length);
         setShowProjectSelector(false);
         
         // Add system message with rich formatting and instructions
@@ -380,11 +387,14 @@ To add a new project, complete the command with these parameters:
           {messages.map((message, index) => (
             <MessageItem key={message.id || `fallback-${index}`} message={message} index={index} />
           ))}
-          {isLoading && (
+          {(isLoading || isProcessing) && (
             <Box>
               <Text color="red">
                 <Spinner type="aesthetic" />
                 {' '}PM is thinking...
+                {queueLength > 0 && (
+                  <Text color="yellow"> ({queueLength} message{queueLength !== 1 ? 's' : ''} queued)</Text>
+                )}
               </Text>
             </Box>
           )}
@@ -427,11 +437,14 @@ To add a new project, complete the command with these parameters:
           {messages.map((message, index) => (
             <MessageItem key={message.id || `fallback-${index}`} message={message} index={index} />
           ))}
-          {isLoading && (
+          {(isLoading || isProcessing) && (
             <Box>
               <Text color="red">
                 <Spinner type="aesthetic" />
                 {' '}PM is thinking...
+                {queueLength > 0 && (
+                  <Text color="yellow"> ({queueLength} message{queueLength !== 1 ? 's' : ''} queued)</Text>
+                )}
               </Text>
             </Box>
           )}
@@ -473,11 +486,14 @@ To add a new project, complete the command with these parameters:
       {/* Messages - no border, fills available space */}
       <Box flexDirection="column" flexGrow={1} paddingX={1}>
         {renderedMessages}
-        {isLoading && (
+        {(isLoading || isProcessing) && (
           <Box>
             <Text color="red">
               <Spinner type="aesthetic" />
               {' '}PM is thinking...
+              {queueLength > 0 && (
+                <Text color="yellow"> ({queueLength} message{queueLength !== 1 ? 's' : ''} queued)</Text>
+              )}
             </Text>
           </Box>
         )}

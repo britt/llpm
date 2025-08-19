@@ -4,6 +4,7 @@ import { render } from 'ink';
 import { ChatInterface } from './src/components/ChatInterface';
 import { useChat } from './src/hooks/useChat';
 import { setVerbose, debug } from './src/utils/logger';
+import { ensureDefaultSystemPromptFile } from './src/utils/systemPrompt';
 
 export function validateEnvironment() {
   debug('Validating environment variables');
@@ -53,7 +54,9 @@ export function App() {
     isLoading,
     interactiveCommand,
     handleModelSelect,
-    cancelModelSelection 
+    cancelModelSelection,
+    queueLength,
+    isProcessing
   } = useChat();
 
   return React.createElement(ChatInterface, {
@@ -63,7 +66,9 @@ export function App() {
     isLoading,
     interactiveCommand,
     onModelSelect: handleModelSelect,
-    onCancelModelSelection: cancelModelSelection
+    onCancelModelSelection: cancelModelSelection,
+    queueLength,
+    isProcessing
   });
 }
 
@@ -78,35 +83,46 @@ function isRawModeSupported(): boolean {
 }
 
 if (import.meta.main) {
-  // Parse command line arguments
-  const args = process.argv.slice(2);
-  const isVerbose = args.includes('--verbose') || args.includes('-v');
+  (async () => {
+    // Parse command line arguments
+    const args = process.argv.slice(2);
+    const isVerbose = args.includes('--verbose') || args.includes('-v');
 
-  if (isVerbose) {
-    setVerbose(true);
-    debug('Verbose mode enabled');
-    debug('Command line args:', args);
-  }
+    if (isVerbose) {
+      setVerbose(true);
+      debug('Verbose mode enabled');
+      debug('Command line args:', args);
+    }
 
-  debug('Starting LLPM CLI');
-  validateEnvironment();
+    debug('Starting LLPM CLI');
+    validateEnvironment();
 
-  // Check if raw mode is supported
-  if (!isRawModeSupported()) {
-    console.error('❌ Error: Raw mode is not supported on this terminal.');
-    console.error('');
-    console.error('This typically happens when:');
-    console.error('1. Running in a non-interactive environment (pipes, scripts, etc.)');
-    console.error('2. Terminal does not support raw input mode');
-    console.error('3. Running in certain CI/CD environments');
-    console.error('');
-    console.error('To fix this:');
-    console.error('1. Run in an interactive terminal (like Terminal.app, iTerm2, etc.)');
-    console.error('2. Ensure stdin is connected to a terminal');
-    console.error('3. Try running directly: bun run index.ts');
-    process.exit(1);
-  }
+    // Ensure default system prompt file exists
+    try {
+      await ensureDefaultSystemPromptFile();
+      debug('System prompt file initialization completed');
+    } catch (error) {
+      debug('Failed to initialize system prompt file:', error);
+      // Don't exit on this error - it's not critical for the app to run
+    }
 
-  debug('Raw mode supported, rendering React app');
-  render(React.createElement(App));
+    // Check if raw mode is supported
+    if (!isRawModeSupported()) {
+      console.error('❌ Error: Raw mode is not supported on this terminal.');
+      console.error('');
+      console.error('This typically happens when:');
+      console.error('1. Running in a non-interactive environment (pipes, scripts, etc.)');
+      console.error('2. Terminal does not support raw input mode');
+      console.error('3. Running in certain CI/CD environments');
+      console.error('');
+      console.error('To fix this:');
+      console.error('1. Run in an interactive terminal (like Terminal.app, iTerm2, etc.)');
+      console.error('2. Ensure stdin is connected to a terminal');
+      console.error('3. Try running directly: bun run index.ts');
+      process.exit(1);
+    }
+
+    debug('Raw mode supported, rendering React app');
+    render(React.createElement(App));
+  })();
 }

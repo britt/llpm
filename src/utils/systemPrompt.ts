@@ -37,7 +37,7 @@ export async function getSystemPrompt(): Promise<string> {
   try {
     await ensureConfigDir();
     const configDir = getConfigDir();
-    const promptPath = join(configDir, 'system-prompt.txt');
+    const promptPath = join(configDir, 'system_prompt.txt');
 
     if (existsSync(promptPath)) {
       debug('Loading custom system prompt from config directory');
@@ -59,7 +59,7 @@ export async function saveSystemPrompt(prompt: string): Promise<void> {
   try {
     await ensureConfigDir();
     const configDir = getConfigDir();
-    const promptPath = join(configDir, 'system-prompt.txt');
+    const promptPath = join(configDir, 'system_prompt.txt');
 
     await writeFile(promptPath, prompt.trim(), 'utf-8');
     debug('System prompt saved successfully');
@@ -71,4 +71,25 @@ export async function saveSystemPrompt(prompt: string): Promise<void> {
 
 export function getDefaultSystemPrompt(): string {
   return DEFAULT_SYSTEM_PROMPT;
+}
+
+export async function ensureDefaultSystemPromptFile(): Promise<void> {
+  debug('Ensuring default system prompt file exists');
+
+  try {
+    await ensureConfigDir();
+    const configDir = getConfigDir();
+    const promptPath = join(configDir, 'system_prompt.txt');
+
+    if (!existsSync(promptPath)) {
+      debug('Creating default system prompt file');
+      await writeFile(promptPath, DEFAULT_SYSTEM_PROMPT, 'utf-8');
+      debug('Default system prompt file created successfully');
+    } else {
+      debug('System prompt file already exists, skipping creation');
+    }
+  } catch (error) {
+    debug('Error ensuring default system prompt file:', error);
+    throw error;
+  }
 }
