@@ -3,7 +3,6 @@ import { Box, Text, useInput } from 'ink';
 import Spinner from 'ink-spinner';
 import Link from 'ink-link';
 import SelectInput from 'ink-select-input';
-import TextInput from 'ink-text-input';
 import type { Message } from '../types';
 import { loadInputHistory, saveInputHistory } from '../utils/inputHistory';
 import { getCurrentProject, listProjects, setCurrentProject as setCurrentProjectConfig } from '../utils/projectConfig';
@@ -37,11 +36,12 @@ export const ChatInterface = memo(function ChatInterface({
   const [currentProject, setCurrentProject] = useState<Project | null>(null);
   const [showProjectSelector, setShowProjectSelector] = useState(false);
   const [availableProjects, setAvailableProjects] = useState<Project[]>([]);
+  const [cursorPosition, setCursorPosition] = useState(0);
   
-  // Optimized input change handler that minimizes re-renders
-  const handleInputChange = useCallback((value: string) => {
-    setInput(value);
-  }, []);
+  // Update cursor position when input changes
+  useEffect(() => {
+    setCursorPosition(Math.min(cursorPosition, input.length));
+  }, [input.length]);
 
   // Load input history on mount
   useEffect(() => {
@@ -126,11 +126,11 @@ To add a new project, complete the command with these parameters:
   }, [availableProjects]);
 
   // Handle input submission - memoized to prevent re-creation
-  const handleInputSubmit = useCallback((value: string) => {
-    if (value.trim() && !isLoading) {
+  const handleInputSubmit = useCallback(() => {
+    if (input.trim() && !isLoading) {
       // Add to history (avoid duplicates)
       setInputHistory(prev => {
-        const newHistory = [value, ...prev.filter(h => h !== value)];
+        const newHistory = [input, ...prev.filter(h => h !== input)];
         const limitedHistory = newHistory.slice(0, 100); // Keep last 100 commands
         
         // Save to disk asynchronously
@@ -139,11 +139,12 @@ To add a new project, complete the command with these parameters:
         return limitedHistory;
       });
       
-      onSendMessage(value.trim());
+      onSendMessage(input.trim());
       setInput('');
+      setCursorPosition(0);
       setHistoryIndex(-1);
     }
-  }, [isLoading, onSendMessage]);
+  }, [input, isLoading, onSendMessage]);
 
   // Memoized function to parse content and render URLs as links
   const renderContentWithLinks = useCallback((content: string) => {
@@ -222,7 +223,7 @@ To add a new project, complete the command with these parameters:
   }, [messages]);
 
 
-  // Global shortcuts that work when NOT in selectors
+  // Fast input handler - handles ALL input directly, no TextInput bullshit
   useInput((inputChar, key) => {
     // Skip all input handling when selectors are shown
     if (showProjectSelector || interactiveCommand?.type === 'model-select') {
@@ -250,35 +251,43 @@ To add a new project, complete the command with these parameters:
       return;
     }
 
-    // Handle Ctrl+U to clear input - this works because useInput gets it before TextInput
+    // Handle Enter - submit input
+    if (key.return) {
+      handleInputSubmit();
+      return;
+    }
+
+    // Handle Ctrl+U - clear input
     if (key.ctrl && inputChar === 'u') {
       setInput('');
+      setCursorPosition(0);
       setHistoryIndex(-1);
       return;
     }
 
-    // Handle Ctrl+E - force TextInput to end by setting value
+    // Handle Ctrl+E - move cursor to end
     if (key.ctrl && inputChar === 'e') {
-      // Force re-render to move cursor to end
-      const currentValue = input;
-      setInput('');
-      setTimeout(() => setInput(currentValue), 0);
+      setCursorPosition(input.length);
       return;
     }
 
-    // Handle Ctrl+A - move cursor to beginning (select all)
+    // Handle Ctrl+A - move cursor to beginning
     if (key.ctrl && inputChar === 'a') {
-      // Force re-render to move cursor to beginning
-      const currentValue = input;
-      setInput(currentValue + ' '); // Add temp char to force change
-      setTimeout(() => {
-        setInput(''); // Clear first to reset cursor
-        setTimeout(() => setInput(currentValue), 0); // Then set back to move cursor to start
-      }, 0);
+      setCursorPosition(0);
       return;
     }
 
-    // Handle history navigation - only when TextInput doesn't handle it
+    // Handle arrow keys for cursor movement and history
+    if (key.leftArrow) {
+      setCursorPosition(Math.max(0, cursorPosition - 1));
+      return;
+    }
+
+    if (key.rightArrow) {
+      setCursorPosition(Math.min(input.length, cursorPosition + 1));
+      return;
+    }
+
     if (key.upArrow && !key.ctrl && !key.shift) {
       // Navigate up in history
       if (inputHistory.length > 0) {
@@ -287,6 +296,7 @@ To add a new project, complete the command with these parameters:
         if (historyText) {
           setHistoryIndex(newIndex);
           setInput(historyText);
+          setCursorPosition(historyText.length);
         }
       }
       return;
@@ -299,14 +309,34 @@ To add a new project, complete the command with these parameters:
         if (newIndex < 0) {
           setHistoryIndex(-1);
           setInput('');
+          setCursorPosition(0);
         } else {
           const historyText = inputHistory[newIndex];
           if (historyText) {
             setHistoryIndex(newIndex);
             setInput(historyText);
+            setCursorPosition(historyText.length);
           }
         }
       }
+      return;
+    }
+
+    // Handle backspace
+    if (key.backspace || key.delete) {
+      if (cursorPosition > 0) {
+        const newInput = input.slice(0, cursorPosition - 1) + input.slice(cursorPosition);
+        setInput(newInput);
+        setCursorPosition(cursorPosition - 1);
+      }
+      return;
+    }
+
+    // Handle regular character input
+    if (inputChar && !key.ctrl && !key.meta && inputChar.length === 1) {
+      const newInput = input.slice(0, cursorPosition) + inputChar + input.slice(cursorPosition);
+      setInput(newInput);
+      setCursorPosition(cursorPosition + 1);
       return;
     }
   });
@@ -429,12 +459,23 @@ To add a new project, complete the command with these parameters:
 
       {/* Input */}
       <Box borderStyle="single" paddingX={1}>
-        <TextInput
-          value={input}
-          onChange={handleInputChange}
-          onSubmit={handleInputSubmit}
-          placeholder="Type your message..."
-        />
+        {/* Custom fast input rendering */}
+        <Text>
+          {input.length > 0 || cursorPosition > 0 ? (
+            <>
+              {input.slice(0, cursorPosition)}
+              <Text backgroundColor="white" color="black">
+                {input[cursorPosition] || ' '}
+              </Text>
+              {input.slice(cursorPosition + 1)}
+            </>
+          ) : (
+            <>
+              <Text backgroundColor="white" color="black"> </Text>
+              <Text dimColor>Type your message...</Text>
+            </>
+          )}
+        </Text>
       </Box>
 
       {/* Project Status */}
