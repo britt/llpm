@@ -11,7 +11,13 @@ export default defineConfig({
       reporter: ['text', 'json', 'html']
     },
     // Enable mock hoisting so vi.mock works properly
-    hoistMocks: true
+    hoistMocks: true,
+    // Ensure DOM globals are available
+    environmentOptions: {
+      jsdom: {
+        resources: 'usable'
+      }
+    }
   },
   esbuild: {
     target: 'node14'
