@@ -382,8 +382,8 @@ To add a new project, complete the command with these parameters:
           ))}
           {isLoading && (
             <Box>
-              <Text color="yellow">
-                <Spinner type="dots" />
+              <Text color="red">
+                <Spinner type="aesthetic" />
                 {' '}PM is thinking...
               </Text>
             </Box>
@@ -429,8 +429,8 @@ To add a new project, complete the command with these parameters:
           ))}
           {isLoading && (
             <Box>
-              <Text color="yellow">
-                <Spinner type="dots" />
+              <Text color="red">
+                <Spinner type="aesthetic" />
                 {' '}PM is thinking...
               </Text>
             </Box>
@@ -475,8 +475,8 @@ To add a new project, complete the command with these parameters:
         {renderedMessages}
         {isLoading && (
           <Box>
-            <Text color="yellow">
-              <Spinner type="dots" />
+            <Text color="red">
+              <Spinner type="aesthetic" />
               {' '}PM is thinking...
             </Text>
           </Box>
@@ -487,6 +487,7 @@ To add a new project, complete the command with these parameters:
       <Box borderStyle="single" paddingX={1}>
         {/* BLAZING FAST input rendering with batched updates */}
         <Text>
+          <Text color="cyan" bold>&gt; </Text>
           {displayInput.length > 0 || displayCursor > 0 ? (
             <>
               {displayInput.slice(0, displayCursor)}
