@@ -1,10 +1,6 @@
-import React from 'react';
-import { render, screen } from '@testing-library/react';
-import { describe, it, expect, vi } from 'vitest';
-import { ChatInterface } from './ChatInterface';
-import type { Message } from '../types';
+import { vi } from 'vitest';
 
-// Mock external dependencies
+// Mock external dependencies BEFORE other imports
 vi.mock('../utils/inputHistory', () => ({
   loadInputHistory: vi.fn().mockResolvedValue([]),
   saveInputHistory: vi.fn().mockResolvedValue(undefined)
@@ -24,6 +20,12 @@ vi.mock('ink', async () => {
     useInput: vi.fn(() => {})
   };
 });
+
+import React from 'react';
+import { render, screen } from '@testing-library/react';
+import { describe, it, expect } from 'vitest';
+import { ChatInterface } from './ChatInterface';
+import type { Message } from '../types';
 
 describe('ChatInterface Performance', () => {
   const createMessages = (count: number): Message[] => {
