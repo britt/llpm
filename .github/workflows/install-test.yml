@@ -41,6 +41,7 @@ jobs:
         LLPM_TEST_MODE: true
         
     - name: Test CLI stub
+      shell: bash
       run: |
         # Test that CLI stub fails gracefully when binary missing
         if node bin/llpm.cjs --help 2>/dev/null; then
@@ -69,9 +70,10 @@ jobs:
         
     # Test 3: Verify stub script exists and is executable
     - name: Verify installation files
+      shell: bash
       run: |
         ls -la bin/
-        file bin/llpm.cjs
+        file bin/llpm.cjs || echo "file command not available"
         # Test that CLI stub fails gracefully when binary missing
         if node bin/llpm.cjs --version 2>/dev/null; then
           echo "❌ CLI stub should fail when binary missing"
@@ -93,7 +95,7 @@ jobs:
         node-version: 20
         
     - name: Install dependencies for testing
-      run: npm install --ignore-scripts
+      run: npm install --ignore-scripts --legacy-peer-deps
       
     - name: Test postinstall script functions
       run: |
