@@ -25,10 +25,17 @@ export const debugCommand: Command = {
       };
     }
 
+    // Colorize log entries with timestamp in gray and message in white
+    const colorizedLogs = logs.map(log => {
+      const timestamp = log.timestamp;
+      const time = timestamp.split('T')[1]?.split('.')[0] || timestamp; // Extract time part
+      return `\x1b[90m[${time}]\x1b[0m \x1b[37m${log.message}\x1b[0m`;
+    });
+
     const debugOutput = [
       `🐛 Last ${logs.length} debug log${logs.length === 1 ? '' : 's'}:`,
       '',
-      ...logs.map(log => `[${log.timestamp}] ${log.message}`)
+      ...colorizedLogs
     ].join('\n');
 
     debug('Debug command showing', logs.length, 'log entries');
