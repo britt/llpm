@@ -41,7 +41,14 @@ jobs:
         LLPM_TEST_MODE: true
         
     - name: Test CLI stub
-      run: node bin/llpm.cjs --help || echo "Expected failure - binary not installed yet"
+      run: |
+        # Test that CLI stub fails gracefully when binary missing
+        if node bin/llpm.cjs --help 2>/dev/null; then
+          echo "❌ CLI stub should fail when binary missing"
+          exit 1
+        else
+          echo "✅ CLI stub correctly reports missing binary"
+        fi
       
     # Test 2: Simulate npm install in a clean environment
     - name: Create test project
@@ -65,7 +72,13 @@ jobs:
       run: |
         ls -la bin/
         file bin/llpm.cjs
-        node bin/llpm.cjs --version || echo "Expected failure - no binary available"
+        # Test that CLI stub fails gracefully when binary missing
+        if node bin/llpm.cjs --version 2>/dev/null; then
+          echo "❌ CLI stub should fail when binary missing"
+          exit 1
+        else
+          echo "✅ CLI stub correctly reports missing binary"
+        fi
         
   test-postinstall-script:
     runs-on: ubuntu-latest
@@ -80,7 +93,7 @@ jobs:
         node-version: 20
         
     - name: Install dependencies for testing
-      run: npm install --only=dev
+      run: npm install --ignore-scripts
       
     - name: Test postinstall script functions
       run: |

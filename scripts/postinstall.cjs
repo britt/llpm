@@ -201,21 +201,31 @@ async function main() {
   try {
     log('Starting binary download and installation');
     
-    // Check if running in test mode
-    if (process.env.LLPM_TEST_MODE) {
-      log('Running in test mode - skipping actual download');
+    // Skip in development environments
+    if (process.env.NODE_ENV === 'development' || 
+        process.env.CI === 'true' || 
+        process.env.GITHUB_ACTIONS === 'true' ||
+        process.env.LLPM_TEST_MODE ||
+        // Skip if we're in the source repository (has src/ directory)
+        fs.existsSync(path.join(__dirname, '..', 'src'))) {
       
-      // Just test the functions work
-      const { platform, arch } = detectPlatform();
-      log(`Detected platform: ${platform}-${arch}`);
+      log('Skipping binary installation (development/CI environment)');
       
-      const version = getPackageVersion();
-      log(`Package version: ${version}`);
-      
-      const downloadUrl = constructDownloadUrl(version, platform, arch);
-      log(`Would download: ${downloadUrl}`);
-      
-      log('✅ Test mode completed successfully');
+      // In test mode, still test the functions
+      if (process.env.LLPM_TEST_MODE) {
+        const { platform, arch } = detectPlatform();
+        log(`Detected platform: ${platform}-${arch}`);
+        
+        const version = getPackageVersion();
+        log(`Package version: ${version}`);
+        
+        const downloadUrl = constructDownloadUrl(version, platform, arch);
+        log(`Would download: ${downloadUrl}`);
+        
+        log('✅ Test mode completed successfully');
+      } else {
+        log('✅ Skipped successfully');
+      }
       return;
     }
     
