@@ -109,15 +109,21 @@ export const DEFAULT_MODELS: Record<ModelProvider, ModelConfig[]> = {
   'google-vertex': [
     {
       provider: 'google-vertex',
-      modelId: 'gemini-1.5-pro',
-      displayName: 'Gemini 1.5 Pro',
+      modelId: 'gemini-2.5-pro',
+      displayName: 'Gemini 2.5 Pro',
       description: 'Most capable Gemini model'
     },
     {
       provider: 'google-vertex',
-      modelId: 'gemini-1.5-flash',
-      displayName: 'Gemini 1.5 Flash',
-      description: 'Fast Gemini model'
+      modelId: 'gemini-2.5-flash',
+      displayName: 'Gemini 2.5 Flash',
+      description: 'Fast and efficient Gemini model'
+    },
+    {
+      provider: 'google-vertex',
+      modelId: 'gemini-2.5-ultra',
+      displayName: 'Gemini 2.5 Ultra',
+      description: 'Highest performance Gemini model'
     }
   ]
 };
