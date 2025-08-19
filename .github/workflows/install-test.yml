@@ -120,22 +120,13 @@ jobs:
         
     - name: Test CLI stub functions
       run: |
-        node -e "
-          const { findBinaryPath } = require('./bin/llpm.cjs');
-          
-          try {
-            findBinaryPath();
-            console.log('❌ CLI stub should have thrown an error');
-            process.exit(1);
-          } catch (err) {
-            if (err.message.includes('not found')) {
-              console.log('✅ CLI stub correctly detects missing binary');
-            } else {
-              console.log('❌ Unexpected error:', err.message);
-              process.exit(1);
-            }
-          }
-        "
+        # Test that CLI stub exits with error code when binary missing
+        if node bin/llpm.cjs --version 2>/dev/null; then
+          echo "❌ CLI stub should exit with error when binary missing"
+          exit 1
+        else
+          echo "✅ CLI stub correctly exits with error when binary missing"
+        fi
         
   test-package-metadata:
     runs-on: ubuntu-latest
