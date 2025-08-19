@@ -1,4 +1,4 @@
-import React, { useState, useEffect, memo, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, memo, useMemo, useCallback, useRef } from 'react';
 import { Box, Text, useInput } from 'ink';
 import Spinner from 'ink-spinner';
 import Link from 'ink-link';
@@ -30,18 +30,24 @@ export const ChatInterface = memo(function ChatInterface({
   onModelSelect,
   onCancelModelSelection 
 }: ChatInterfaceProps) {
-  const [input, setInput] = useState('');
+  const [displayInput, setDisplayInput] = useState('');
   const [inputHistory, setInputHistory] = useState<string[]>([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
   const [currentProject, setCurrentProject] = useState<Project | null>(null);
   const [showProjectSelector, setShowProjectSelector] = useState(false);
   const [availableProjects, setAvailableProjects] = useState<Project[]>([]);
-  const [cursorPosition, setCursorPosition] = useState(0);
+  const [displayCursor, setDisplayCursor] = useState(0);
   
-  // Update cursor position when input changes
-  useEffect(() => {
-    setCursorPosition(Math.min(cursorPosition, input.length));
-  }, [input.length]);
+  // Use refs to avoid re-renders during typing
+  const inputRef = useRef('');
+  const cursorRef = useRef(0);
+  const updateTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  
+  // Immediate update function for lightning fast response
+  const updateDisplay = useCallback(() => {
+    setDisplayInput(inputRef.current);
+    setDisplayCursor(cursorRef.current);
+  }, []);
 
   // Load input history on mount
   useEffect(() => {
@@ -127,10 +133,11 @@ To add a new project, complete the command with these parameters:
 
   // Handle input submission - memoized to prevent re-creation
   const handleInputSubmit = useCallback(() => {
-    if (input.trim() && !isLoading) {
+    const currentInput = inputRef.current;
+    if (currentInput.trim() && !isLoading) {
       // Add to history (avoid duplicates)
       setInputHistory(prev => {
-        const newHistory = [input, ...prev.filter(h => h !== input)];
+        const newHistory = [currentInput, ...prev.filter(h => h !== currentInput)];
         const limitedHistory = newHistory.slice(0, 100); // Keep last 100 commands
         
         // Save to disk asynchronously
@@ -139,12 +146,14 @@ To add a new project, complete the command with these parameters:
         return limitedHistory;
       });
       
-      onSendMessage(input.trim());
-      setInput('');
-      setCursorPosition(0);
+      onSendMessage(currentInput.trim());
+      inputRef.current = '';
+      cursorRef.current = 0;
+      setDisplayInput('');
+      setDisplayCursor(0);
       setHistoryIndex(-1);
     }
-  }, [input, isLoading, onSendMessage]);
+  }, [isLoading, onSendMessage]);
 
   // Memoized function to parse content and render URLs as links
   const renderContentWithLinks = useCallback((content: string) => {
@@ -223,7 +232,7 @@ To add a new project, complete the command with these parameters:
   }, [messages]);
 
 
-  // Fast input handler - handles ALL input directly, no TextInput bullshit
+  // BLAZING FAST input handler - uses refs to avoid React re-renders
   useInput((inputChar, key) => {
     // Skip all input handling when selectors are shown
     if (showProjectSelector || interactiveCommand?.type === 'model-select') {
@@ -259,32 +268,38 @@ To add a new project, complete the command with these parameters:
 
     // Handle Ctrl+U - clear input
     if (key.ctrl && inputChar === 'u') {
-      setInput('');
-      setCursorPosition(0);
+      inputRef.current = '';
+      cursorRef.current = 0;
+      setDisplayInput('');
+      setDisplayCursor(0);
       setHistoryIndex(-1);
       return;
     }
 
     // Handle Ctrl+E - move cursor to end
     if (key.ctrl && inputChar === 'e') {
-      setCursorPosition(input.length);
+      cursorRef.current = inputRef.current.length;
+      updateDisplay();
       return;
     }
 
     // Handle Ctrl+A - move cursor to beginning
     if (key.ctrl && inputChar === 'a') {
-      setCursorPosition(0);
+      cursorRef.current = 0;
+      updateDisplay();
       return;
     }
 
-    // Handle arrow keys for cursor movement and history
+    // Handle arrow keys for cursor movement
     if (key.leftArrow) {
-      setCursorPosition(Math.max(0, cursorPosition - 1));
+      cursorRef.current = Math.max(0, cursorRef.current - 1);
+      updateDisplay();
       return;
     }
 
     if (key.rightArrow) {
-      setCursorPosition(Math.min(input.length, cursorPosition + 1));
+      cursorRef.current = Math.min(inputRef.current.length, cursorRef.current + 1);
+      updateDisplay();
       return;
     }
 
@@ -295,8 +310,10 @@ To add a new project, complete the command with these parameters:
         const historyText = inputHistory[newIndex];
         if (historyText) {
           setHistoryIndex(newIndex);
-          setInput(historyText);
-          setCursorPosition(historyText.length);
+          inputRef.current = historyText;
+          cursorRef.current = historyText.length;
+          setDisplayInput(historyText);
+          setDisplayCursor(historyText.length);
         }
       }
       return;
@@ -308,14 +325,18 @@ To add a new project, complete the command with these parameters:
         const newIndex = historyIndex - 1;
         if (newIndex < 0) {
           setHistoryIndex(-1);
-          setInput('');
-          setCursorPosition(0);
+          inputRef.current = '';
+          cursorRef.current = 0;
+          setDisplayInput('');
+          setDisplayCursor(0);
         } else {
           const historyText = inputHistory[newIndex];
           if (historyText) {
             setHistoryIndex(newIndex);
-            setInput(historyText);
-            setCursorPosition(historyText.length);
+            inputRef.current = historyText;
+            cursorRef.current = historyText.length;
+            setDisplayInput(historyText);
+            setDisplayCursor(historyText.length);
           }
         }
       }
@@ -324,19 +345,24 @@ To add a new project, complete the command with these parameters:
 
     // Handle backspace
     if (key.backspace || key.delete) {
-      if (cursorPosition > 0) {
-        const newInput = input.slice(0, cursorPosition - 1) + input.slice(cursorPosition);
-        setInput(newInput);
-        setCursorPosition(cursorPosition - 1);
+      if (cursorRef.current > 0) {
+        const currentInput = inputRef.current;
+        const newInput = currentInput.slice(0, cursorRef.current - 1) + currentInput.slice(cursorRef.current);
+        inputRef.current = newInput;
+        cursorRef.current = cursorRef.current - 1;
+        updateDisplay();
       }
       return;
     }
 
-    // Handle regular character input
+    // Handle regular character input - FASTEST PATH
     if (inputChar && !key.ctrl && !key.meta && inputChar.length === 1) {
-      const newInput = input.slice(0, cursorPosition) + inputChar + input.slice(cursorPosition);
-      setInput(newInput);
-      setCursorPosition(cursorPosition + 1);
+      const currentInput = inputRef.current;
+      const cursor = cursorRef.current;
+      const newInput = currentInput.slice(0, cursor) + inputChar + currentInput.slice(cursor);
+      inputRef.current = newInput;
+      cursorRef.current = cursor + 1;
+      updateDisplay();
       return;
     }
   });
@@ -459,15 +485,15 @@ To add a new project, complete the command with these parameters:
 
       {/* Input */}
       <Box borderStyle="single" paddingX={1}>
-        {/* Custom fast input rendering */}
+        {/* BLAZING FAST input rendering with batched updates */}
         <Text>
-          {input.length > 0 || cursorPosition > 0 ? (
+          {displayInput.length > 0 || displayCursor > 0 ? (
             <>
-              {input.slice(0, cursorPosition)}
+              {displayInput.slice(0, displayCursor)}
               <Text backgroundColor="white" color="black">
-                {input[cursorPosition] || ' '}
+                {displayInput[displayCursor] || ' '}
               </Text>
-              {input.slice(cursorPosition + 1)}
+              {displayInput.slice(displayCursor + 1)}
             </>
           ) : (
             <>
