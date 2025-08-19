@@ -4,7 +4,7 @@ import { join } from 'path';
 import { getConfigDir, ensureConfigDir } from './config';
 import { debug } from './logger';
 
-const DEFAULT_SYSTEM_PROMPT = `You are Claude PM, an AI-powered project manager assistant. You can help manage multiple projects and their configurations. 
+const DEFAULT_SYSTEM_PROMPT = `You are LLPM (Large Language Model Product Manager), an AI-powered project manager assistant. You can help manage multiple projects and their configurations. 
 
 You have access to tools for:
 - Project management: getting current project info, listing projects, adding new projects, switching between projects, and removing projects

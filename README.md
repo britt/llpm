@@ -1,6 +1,6 @@
-# Claude PM
+# LLPM
 
-A modern, AI-powered project management CLI that brings intelligent assistance directly to your terminal. Built with Ink for a polished terminal UI, Claude PM combines natural language interaction with structured project management, offering seamless GitHub integration and persistent workspace configuration.
+A modern, AI-powered project management CLI that brings intelligent assistance directly to your terminal. Built with Ink for a polished terminal UI, LLPM combines natural language interaction with structured project management, offering seamless GitHub integration and persistent workspace configuration.
 
 Perfect for developers who want to organize multiple projects, interact with GitHub repositories, and leverage AI assistance without leaving the command line.
 
@@ -20,7 +20,7 @@ Perfect for developers who want to organize multiple projects, interact with Git
 - 🔄 Easy project switching and management
 - 📂 GitHub repository integration for project setup
 - 🛠️ LLM tools for natural language project management
-- 💾 Configuration stored in `~/.claude-pm/`
+- 💾 Configuration stored in `~/.llpm/`
 
 ### GitHub Integration
 
@@ -98,7 +98,7 @@ chmod +x index.ts
 
 ```bash
 bun link
-claude-pm
+llpm
 ```
 
 ## Usage
@@ -200,7 +200,7 @@ Debug logs include:
 
 ## Configuration
 
-Claude PM stores configuration in `~/.claude-pm/`:
+LLPM stores configuration in `~/.llpm/`:
 
 - `config.json` - Project configurations and current project
 - `chat-sessions/` - Persistent chat history by session
@@ -212,10 +212,10 @@ You can customize the AI assistant's behavior by creating a custom system prompt
 
 ```bash
 # Create or edit the system prompt
-echo "Your custom system prompt here..." > ~/.claude-pm/system-prompt.txt
+echo "Your custom system prompt here..." > ~/.llpm/system-prompt.txt
 ```
 
-If no custom prompt exists, Claude PM uses a comprehensive default prompt focused on project management and GitHub integration.
+If no custom prompt exists, LLPM uses a comprehensive default prompt focused on project management and GitHub integration.
 
 ## Architecture
 
@@ -230,7 +230,7 @@ If no custom prompt exists, Claude PM uses a comprehensive default prompt focuse
 
 ### Project Management System
 
-- **Project Config**: Persistent storage in `~/.claude-pm/config.json`
+- **Project Config**: Persistent storage in `~/.llpm/config.json`
 - **Multi-project Support**: Each project has ID, name, repository, and path
 - **GitHub Integration**: Repository browsing and search capabilities
 - **LLM Tools**: Function calling for natural language project operations

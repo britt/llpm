@@ -114,6 +114,8 @@ For more information, read the Bun API docs in `node_modules/bun-types/docs/**.m
 
 **IMPORTANT**: When you discover new useful practices or install new tools during development, add instructions to this CLAUDE.md file so that you remember to use them in future sessions.
 
+**NOTE**: This project has been renamed from Claude PM to LLPM (Large Language Model Product Manager). All references to "Claude PM" should be replaced with "LLPM".
+
 **IMPORTANT**: Always answer questions and fulfill requests honestly. Do not just be compliant. If you cannot do something or don't know an answer say so.
 
 ### Testing

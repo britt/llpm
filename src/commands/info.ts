@@ -3,9 +3,9 @@ import { debug } from '../utils/logger';
 import { getCurrentProject } from '../utils/projectConfig';
 
 const packageInfo = {
-  name: 'Claude PM',
+  name: 'LLPM',
   version: '0.1.0',
-  description: 'AI-powered CLI project manager similar to Claude Code'
+  description: 'AI-powered Large Language Model Product Manager'
 };
 
 export const infoCommand: Command = {

@@ -44,7 +44,7 @@ describe('useChat', () => {
     expect(result.current.messages[0]).toMatchObject({
       role: 'assistant',
       content:
-        "Hello! I'm Claude PM, your AI assistant. How can I help you today?\n\n💡 Type /help to see available commands."
+        "Hello! I'm LLPM, your AI-powered project manager. How can I help you today?\n\n💡 Type /help to see available commands."
     });
     expect(result.current.messages[0]).toHaveProperty('id');
     expect(result.current.isLoading).toBe(false);

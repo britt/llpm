@@ -41,7 +41,7 @@ describe('App', () => {
     const { getByText } = render(React.createElement(App));
     // Wait for async loading
     await new Promise(resolve => setTimeout(resolve, 100));
-    expect(getByText(/Hello! I'm Claude PM, your AI assistant/)).toBeInTheDocument();
+    expect(getByText(/Hello! I'm LLPM, your AI-powered project manager/)).toBeInTheDocument();
   });
 
   it('renders the chat interface with project indicator', () => {

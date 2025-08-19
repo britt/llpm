@@ -46,7 +46,7 @@ export function useChat() {
           const welcomeMessage: Message = {
             role: 'assistant',
             content:
-              "Hello! I'm Claude PM, your AI assistant. How can I help you today?\n\n💡 Type /help to see available commands.",
+              "Hello! I'm LLPM, your AI-powered project manager. How can I help you today?\n\n💡 Type /help to see available commands.",
             id: generateMessageId()
           };
           setMessages([welcomeMessage]);
@@ -66,7 +66,7 @@ export function useChat() {
         const welcomeMessage: Message = {
           role: 'assistant',
           content:
-            "Hello! I'm Claude PM, your AI assistant. How can I help you today?\n\n💡 Type /help to see available commands.",
+            "Hello! I'm LLPM, your AI-powered project manager. How can I help you today?\n\n💡 Type /help to see available commands.",
           id: generateMessageId()
         };
         setMessages([welcomeMessage]);
@@ -128,7 +128,7 @@ export function useChat() {
             const welcomeMessage: Message = {
               role: 'assistant',
               content:
-                "Hello! I'm Claude PM, your AI assistant. How can I help you today?\n\n💡 Type /help to see available commands.",
+                "Hello! I'm LLPM, your AI-powered project manager. How can I help you today?\n\n💡 Type /help to see available commands.",
               id: generateMessageId()
             };
             setMessages([welcomeMessage]);

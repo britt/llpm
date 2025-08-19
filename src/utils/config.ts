@@ -4,7 +4,7 @@ import { join } from 'path';
 import { homedir } from 'os';
 import { debug } from './logger';
 
-export const CONFIG_DIR = join(homedir(), '.claude-pm');
+export const CONFIG_DIR = join(homedir(), '.llpm');
 export const CONFIG_FILE = join(CONFIG_DIR, 'config.json');
 
 export async function ensureConfigDir(): Promise<void> {
