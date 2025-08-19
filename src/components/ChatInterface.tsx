@@ -167,14 +167,24 @@ To add a new project, complete the command with these parameters:
   }, []);
 
   // Individual message component to prevent full rerenders
-  const MessageItem = memo(({ message, index }: { message: Message; index: number }) => (
-    <Box key={message.id || `fallback-${index}`} marginBottom={1}>
-      <Text color={message.role === 'user' ? 'blue' : message.role === 'system' ? 'magenta' : 'white'} bold>
-        {message.role === 'user' ? '👤 You:    ' : message.role === 'system' ? '⚙️ System: ' : '🤖 PM:     '}
-        {renderContentWithLinks(message.content)}
-      </Text>
-    </Box>
-  ));
+  const MessageItem = memo(({ message, index }: { message: Message; index: number }) => {
+    const speakerIndicator = message.role === 'user' ? '👤 You:    ' : message.role === 'system' ? '⚙️ System: ' : '🤖 PM:     ';
+    
+    return (
+      <Box key={message.id || `fallback-${index}`} marginBottom={1}>
+        <Box flexDirection="row">
+          <Text color={message.role === 'user' ? 'blue' : message.role === 'system' ? 'magenta' : 'white'} bold>
+            {speakerIndicator}
+          </Text>
+          <Box flexDirection="column" flexShrink={1}>
+            <Text color={message.role === 'user' ? 'blue' : message.role === 'system' ? 'magenta' : 'white'} bold>
+              {renderContentWithLinks(message.content)}
+            </Text>
+          </Box>
+        </Box>
+      </Box>
+    );
+  });
 
   useInput((inputChar, key) => {
     // Handle project selector
