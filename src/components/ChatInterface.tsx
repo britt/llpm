@@ -3,6 +3,7 @@ import { Box, Text, useInput } from 'ink';
 import Spinner from 'ink-spinner';
 import Link from 'ink-link';
 import SelectInput from 'ink-select-input';
+import TextInput from 'ink-text-input';
 import type { Message } from '../types';
 import { loadInputHistory, saveInputHistory } from '../utils/inputHistory';
 import { getCurrentProject, listProjects, setCurrentProject as setCurrentProjectConfig } from '../utils/projectConfig';
@@ -18,7 +19,6 @@ export const ChatInterface = memo(function ChatInterface({ messages, onSendMessa
   const [input, setInput] = useState('');
   const [inputHistory, setInputHistory] = useState<string[]>([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
-  const [cursorPos, setCursorPos] = useState(0);
   const [currentProject, setCurrentProject] = useState<Project | null>(null);
   const [showProjectSelector, setShowProjectSelector] = useState(false);
   const [availableProjects, setAvailableProjects] = useState<Project[]>([]);
@@ -86,19 +86,25 @@ export const ChatInterface = memo(function ChatInterface({ messages, onSendMessa
     return items;
   }, [availableProjects]);
 
-  // Memoize cursor display to prevent unnecessary rerenders
-  const cursorDisplay = useMemo(() => {
-    return (
-      <Text>
-        {'> '}
-        {input.slice(0, cursorPos)}
-        <Text backgroundColor="white" color="black">
-          {cursorPos < input.length ? input[cursorPos] : ' '}
-        </Text>
-        {input.slice(cursorPos + 1)}
-      </Text>
-    );
-  }, [input, cursorPos]);
+  // Handle input submission
+  const handleInputSubmit = (value: string) => {
+    if (value.trim() && !isLoading) {
+      // Add to history (avoid duplicates)
+      setInputHistory(prev => {
+        const newHistory = [value, ...prev.filter(h => h !== value)];
+        const limitedHistory = newHistory.slice(0, 100); // Keep last 100 commands
+        
+        // Save to disk asynchronously
+        saveInputHistory(limitedHistory);
+        
+        return limitedHistory;
+      });
+      
+      onSendMessage(value.trim());
+      setInput('');
+      setHistoryIndex(-1);
+    }
+  };
 
   // Function to parse content and render URLs as links
   const renderContentWithLinks = useMemo(() => {
@@ -175,33 +181,15 @@ export const ChatInterface = memo(function ChatInterface({ messages, onSendMessa
       return;
     }
 
-    if (key.return && input.trim() && !isLoading) {
-      const message = input.trim();
-      
-      // Add to history (avoid duplicates)
-      setInputHistory(prev => {
-        const newHistory = [message, ...prev.filter(h => h !== message)];
-        const limitedHistory = newHistory.slice(0, 100); // Keep last 100 commands
-        
-        // Save to disk asynchronously
-        saveInputHistory(limitedHistory);
-        
-        return limitedHistory;
-      });
-      
-      onSendMessage(message);
-      setInput('');
-      setCursorPos(0);
-      setHistoryIndex(-1);
-    } else if (key.upArrow) {
+    // Handle history navigation when not using TextInput focus
+    if (key.upArrow) {
       // Navigate up in history
       if (inputHistory.length > 0) {
         const newIndex = Math.min(historyIndex + 1, inputHistory.length - 1);
-        setHistoryIndex(newIndex);
         const historyText = inputHistory[newIndex];
         if (historyText) {
+          setHistoryIndex(newIndex);
           setInput(historyText);
-          setCursorPos(historyText.length);
         }
       }
     } else if (key.downArrow) {
@@ -211,76 +199,14 @@ export const ChatInterface = memo(function ChatInterface({ messages, onSendMessa
         if (newIndex < 0) {
           setHistoryIndex(-1);
           setInput('');
-          setCursorPos(0);
         } else {
-          setHistoryIndex(newIndex);
           const historyText = inputHistory[newIndex];
           if (historyText) {
+            setHistoryIndex(newIndex);
             setInput(historyText);
-            setCursorPos(historyText.length);
           }
         }
       }
-    } else if (key.ctrl && inputChar === 'u') {
-      // Ctrl+U: Clear line from cursor to beginning
-      setInput(prev => prev.slice(cursorPos));
-      setCursorPos(0);
-      setHistoryIndex(-1);
-    } else if (key.ctrl && inputChar === 'k') {
-      // Ctrl+K: Clear line from cursor to end
-      setInput(prev => prev.slice(0, cursorPos));
-      setHistoryIndex(-1);
-    } else if (key.ctrl && inputChar === 'a') {
-      // Ctrl+A: Move cursor to beginning of line
-      setCursorPos(0);
-    } else if (key.ctrl && inputChar === 'e') {
-      // Ctrl+E: Move cursor to end of line
-      setCursorPos(input.length);
-    } else if (key.ctrl && inputChar === 'w') {
-      // Ctrl+W: Delete word backwards
-      const beforeCursor = input.slice(0, cursorPos);
-      const afterCursor = input.slice(cursorPos);
-      const words = beforeCursor.split(/\s+/);
-      words.pop(); // Remove last word
-      const newBeforeCursor = words.join(' ');
-      const newInput = newBeforeCursor + (newBeforeCursor ? ' ' : '') + afterCursor;
-      setInput(newInput.trim());
-      setCursorPos(newBeforeCursor.length + (newBeforeCursor ? 1 : 0));
-      setHistoryIndex(-1);
-    } else if (key.ctrl && inputChar === 'l') {
-      // Ctrl+L: Clear screen (handled by sending /clear command)
-      onSendMessage('/clear');
-      setInput('');
-      setCursorPos(0);
-      setHistoryIndex(-1);
-    } else if (key.leftArrow) {
-      // Left arrow: Move cursor left
-      setCursorPos(Math.max(0, cursorPos - 1));
-    } else if (key.rightArrow) {
-      // Right arrow: Move cursor right  
-      setCursorPos(Math.min(input.length, cursorPos + 1));
-    } else if (key.ctrl && (inputChar === 'b' || key.leftArrow)) {
-      // Ctrl+B: Move cursor left (alternative)
-      setCursorPos(Math.max(0, cursorPos - 1));
-    } else if (key.ctrl && (inputChar === 'f' || key.rightArrow)) {
-      // Ctrl+F: Move cursor right (alternative)
-      setCursorPos(Math.min(input.length, cursorPos + 1));
-    } else if (key.ctrl && inputChar === 'd') {
-      // Ctrl+D: Delete character at cursor
-      setInput(prev => prev.slice(0, cursorPos) + prev.slice(cursorPos + 1));
-      setHistoryIndex(-1);
-    } else if (key.backspace || key.delete) {
-      // Backspace: Delete character before cursor
-      if (cursorPos > 0) {
-        setInput(prev => prev.slice(0, cursorPos - 1) + prev.slice(cursorPos));
-        setCursorPos(cursorPos - 1);
-        setHistoryIndex(-1);
-      }
-    } else if (!key.ctrl && !key.meta && !key.return && inputChar) {
-      // Regular character input: Insert at cursor position
-      setInput(prev => prev.slice(0, cursorPos) + inputChar + prev.slice(cursorPos));
-      setCursorPos(cursorPos + 1);
-      setHistoryIndex(-1);
     }
   });
 
@@ -347,7 +273,12 @@ export const ChatInterface = memo(function ChatInterface({ messages, onSendMessa
 
       {/* Input */}
       <Box borderStyle="single" paddingX={1}>
-        {cursorDisplay}
+        <TextInput
+          value={input}
+          onChange={setInput}
+          onSubmit={handleInputSubmit}
+          placeholder="Type your message..."
+        />
       </Box>
 
       {/* Project Status */}
