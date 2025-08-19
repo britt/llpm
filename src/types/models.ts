@@ -125,6 +125,18 @@ export const DEFAULT_MODELS: Record<ModelProvider, ModelConfig[]> = {
   groq: [
     {
       provider: 'groq',
+      modelId: 'meta-llama/llama-4-maverick-17b-128e-instruct',
+      displayName: 'Llama 4 Maverick 17B',
+      description: 'Next-generation Llama model with extended context'
+    },
+    {
+      provider: 'groq',
+      modelId: 'llama-3.3-70b-versatile',
+      displayName: 'Llama 3.3 70B',
+      description: 'Latest large Llama model on Groq'
+    },
+    {
+      provider: 'groq',
       modelId: 'llama-3.1-70b-versatile',
       displayName: 'Llama 3.1 70B',
       description: 'Large Llama model on Groq'
@@ -134,6 +146,36 @@ export const DEFAULT_MODELS: Record<ModelProvider, ModelConfig[]> = {
       modelId: 'llama-3.1-8b-instant',
       displayName: 'Llama 3.1 8B',
       description: 'Fast Llama model on Groq'
+    },
+    {
+      provider: 'groq',
+      modelId: 'deepseek-r1-distill-llama-70b',
+      displayName: 'DeepSeek R1 Distill Llama 70B',
+      description: 'DeepSeek reasoning model distilled to Llama'
+    },
+    {
+      provider: 'groq',
+      modelId: 'moonshotai/kimi-k2-instruct',
+      displayName: 'Kimi K2 Instruct',
+      description: 'MoonShot AI instruction-tuned model'
+    },
+    {
+      provider: 'groq',
+      modelId: 'openai/gpt-oss-120b',
+      displayName: 'GPT-OSS 120B',
+      description: 'Open source GPT model (120B parameters)'
+    },
+    {
+      provider: 'groq',
+      modelId: 'openai/gpt-oss-20b',
+      displayName: 'GPT-OSS 20B',
+      description: 'Open source GPT model (20B parameters)'
+    },
+    {
+      provider: 'groq',
+      modelId: 'qwen/qwen3-32b',
+      displayName: 'Qwen3 32B',
+      description: 'Alibaba Qwen 3 model (32B parameters)'
     }
   ],
   'google-vertex': [
