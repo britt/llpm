@@ -1,0 +1,11 @@
+{
+  "version": "0.2.0",
+  "checksums": {
+    "llpm-windows-x64.tar.gz": "placeholder-sha256-hash-will-be-generated-during-build",
+    "llpm-windows-arm64.tar.gz": "placeholder-sha256-hash-will-be-generated-during-build",
+    "llpm-macos-x64.tar.gz": "placeholder-sha256-hash-will-be-generated-during-build", 
+    "llpm-macos-arm64.tar.gz": "placeholder-sha256-hash-will-be-generated-during-build",
+    "llpm-linux-x64.tar.gz": "placeholder-sha256-hash-will-be-generated-during-build",
+    "llpm-linux-arm64.tar.gz": "placeholder-sha256-hash-will-be-generated-during-build"
+  }
+}

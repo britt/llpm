@@ -1,13 +1,26 @@
 {
   "name": "llpm",
-  "version": "0.1.0",
+  "version": "0.2.0",
+  "description": "Large Language Model Product Manager - AI-powered CLI for software development",
+  "keywords": ["llm", "ai", "cli", "product-manager", "development", "tools"],
+  "author": "britt",
+  "license": "MIT",
+  "homepage": "https://github.com/britt/llpm#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/britt/llpm.git"
+  },
+  "bugs": {
+    "url": "https://github.com/britt/llpm/issues"
+  },
   "module": "index.ts",
   "type": "module",
-  "private": true,
+  "private": false,
   "bin": {
-    "llpm": "./index.ts"
+    "llpm": "./bin/llpm.cjs"
   },
   "scripts": {
+    "postinstall": "node scripts/postinstall.cjs",
     "start": "bun run index.ts",
     "start:verbose": "bun run index.ts --verbose",
     "dev": "bun run index.ts",
