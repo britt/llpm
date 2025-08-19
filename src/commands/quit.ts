@@ -7,7 +7,7 @@ export const quitCommand: Command = {
   execute: (): CommandResult => {
     debug('Executing /quit command');
 
-    const message = '👋 Goodbye! Thanks for using Claude PM.';
+    const message = '👋 Goodbye! Thanks for using LLPM.';
 
     // Exit after a short delay to allow the message to be displayed
     setTimeout(() => {

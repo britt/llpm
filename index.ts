@@ -52,7 +52,7 @@ if (import.meta.main) {
     debug('Command line args:', args);
   }
 
-  debug('Starting Claude PM CLI');
+  debug('Starting LLPM CLI');
   validateEnvironment();
 
   // Check if raw mode is supported

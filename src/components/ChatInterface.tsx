@@ -168,7 +168,7 @@ To add a new project, complete the command with these parameters:
 
   // Individual message component to prevent full rerenders
   const MessageItem = memo(({ message, index }: { message: Message; index: number }) => {
-    const speakerIndicator = message.role === 'user' ? '👤 You:    ' : message.role === 'system' ? '⚙️ System: ' : '🤖 PM:     ';
+    const speakerIndicator = message.role === 'user' ? '👤 You:   ' : message.role === 'system' ? '⚙️ System: ' : '🤖 PM:    ';
     
     return (
       <Box key={message.id || `fallback-${index}`} marginBottom={1}>

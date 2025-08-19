@@ -1,11 +1,11 @@
 {
-  "name": "claude-pm",
+  "name": "llpm",
   "version": "0.1.0",
   "module": "index.ts",
   "type": "module",
   "private": true,
   "bin": {
-    "claude-pm": "./index.ts"
+    "llpm": "./index.ts"
   },
   "scripts": {
     "start": "bun run index.ts",

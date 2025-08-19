@@ -9,6 +9,14 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html']
+    },
+    // Enable mock hoisting so vi.mock works properly
+    hoistMocks: true,
+    // Ensure DOM globals are available
+    environmentOptions: {
+      jsdom: {
+        resources: 'usable'
+      }
     }
   },
   esbuild: {

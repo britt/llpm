@@ -13,7 +13,7 @@ export const clearCommand: Command = {
 
       return {
         content:
-          '🧹 Chat session cleared! Starting fresh conversation.\n\n💡 Your previous conversations are saved in ~/.claude-pm',
+          '🧹 Chat session cleared! Starting fresh conversation.\n\n💡 Your previous conversations are saved in ~/.llpm',
         success: true
       };
     } catch (error) {
