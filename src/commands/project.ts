@@ -26,7 +26,7 @@ export const projectCommand: Command = {
       } else {
         return {
           content:
-            '📁 No active project set.\n\n💡 Use /project add <name> <repository> <path> to add a new project\n💡 Use /project switch to see and switch between projects\n💡 Use /project list to list all available projects',
+            '📁 No active project set.\n\n💡 Use /project add <name> <repository> <path> to add a new project\n💡 Use /project switch to see and switch between projects\n💡 Use /project list to list all available projects\n💡 Press shift+tab for quick project switching',
           success: true
         };
       }
@@ -83,7 +83,7 @@ export const projectCommand: Command = {
           const projectList = projects.map(project => `• ${project.name} (${project.id})`);
 
           return {
-            content: `📂 Available projects to switch to:\n\n${projectList.join('\n')}\n\n💡 Use /project switch <project-id> to switch`,
+            content: `📂 Available projects to switch to:\n\n${projectList.join('\n')}\n\n💡 Use /project switch <project-id> to switch\n💡 Or press shift+tab for interactive project selector`,
             success: true
           };
         }
@@ -131,7 +131,7 @@ export const projectCommand: Command = {
           });
 
           const header = `📂 Available Projects (${projects.length}):\n\n`;
-          const footer = '\n\n💡 Use /project set <project-id> to switch projects';
+          const footer = '\n\n💡 Use /project set <project-id> to switch projects\n💡 Or press shift+tab for interactive project selector';
 
           return {
             content: header + projectList.join('\n\n') + footer,
