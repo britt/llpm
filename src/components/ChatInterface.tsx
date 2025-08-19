@@ -256,10 +256,21 @@ To add a new project, complete the command with these parameters:
       return;
     }
 
-    // Handle Ctrl+E to move cursor to end (note: this may not work with TextInput focus)
+    // Handle Ctrl+E to move cursor to end
     if (key.ctrl && inputChar === 'e') {
-      // This is a hint for users - the actual cursor movement would need to be handled by TextInput
-      // No need to setInput(input) as it's redundant and causes unnecessary re-renders
+      // Since TextInput doesn't expose cursor position control, we simulate it
+      // by re-setting the input value which places cursor at end
+      const currentValue = inputRef.current;
+      setInput('');
+      // Use setTimeout to ensure the empty state is rendered before setting the value back
+      setTimeout(() => setInput(currentValue), 0);
+      return;
+    }
+
+    // Handle Ctrl+U to clear input line
+    if (key.ctrl && inputChar === 'u') {
+      setInput('');
+      setHistoryIndex(-1); // Reset history navigation
       return;
     }
 
