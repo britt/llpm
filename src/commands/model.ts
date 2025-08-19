@@ -118,7 +118,8 @@ function listAvailableModels(showAll: boolean = false): CommandResult {
     content += `**${provider.toUpperCase()}** ${providerStatus}\n`;
     
     for (const model of models) {
-      const isCurrent = modelRegistry.getCurrentModel().modelId === model.modelId && isConfigured;
+      const currentModel = modelRegistry.getCurrentModel();
+      const isCurrent = currentModel.modelId === model.modelId && currentModel.provider === model.provider;
       const currentMarker = isCurrent ? '👉 ' : '   ';
       const usableStatus = isConfigured ? '🟢' : '🔴';
       
