@@ -16,8 +16,16 @@ export const helpCommand: Command = {
       '',
       ...commands.map(cmd => `/${cmd.name} - ${cmd.description}`),
       '',
+      '⌨️  Keyboard Shortcuts:',
+      '• Ctrl+A - Move cursor to beginning of input',
+      '• Ctrl+E - Move cursor to end of input',
+      '• Ctrl+U - Clear input line',
+      '• Shift+Tab - Switch project',
+      '• Up/Down arrows - Navigate input history',
+      '• Ctrl+C - Exit application',
+      '',
       '💬 Regular messages are sent to the AI assistant.',
-      '⌨️  Use Ctrl+C to exit or type /quit'
+      '📝 Type /quit to exit gracefully'
     ].join('\n');
 
     debug('Help command result with', commands.length, 'commands');

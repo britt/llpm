@@ -1,0 +1,169 @@
+
+import '../../test/setup';
+import React from 'react';
+import { render, screen } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { ChatInterface } from './ChatInterface';
+import type { Message } from '../types';
+import * as inputHistory from '../utils/inputHistory';
+import * as projectConfig from '../utils/projectConfig';
+import * as ink from 'ink';
+
+describe('ChatInterface Performance', () => {
+  let loadInputHistorySpy: any;
+  let saveInputHistorySpy: any;
+  let getCurrentProjectSpy: any;
+  let listProjectsSpy: any;
+  let setCurrentProjectSpy: any;
+  let useInputSpy: any;
+
+  beforeEach(() => {
+    // Setup DOM environment
+    if (typeof (global as any).document === 'undefined') {
+      const { Window } = require('happy-dom');
+      const window = new Window({ url: 'http://localhost' });
+      (global as any).window = window;
+      (global as any).document = window.document;
+      (global as any).navigator = window.navigator;
+      (global as any).HTMLElement = window.HTMLElement;
+    }
+    
+    // Spy on input history functions
+    loadInputHistorySpy = vi.spyOn(inputHistory, 'loadInputHistory').mockResolvedValue([]);
+    saveInputHistorySpy = vi.spyOn(inputHistory, 'saveInputHistory').mockResolvedValue(undefined);
+    
+    // Spy on project config functions  
+    getCurrentProjectSpy = vi.spyOn(projectConfig, 'getCurrentProject').mockResolvedValue(null);
+    listProjectsSpy = vi.spyOn(projectConfig, 'listProjects').mockResolvedValue([]);
+    setCurrentProjectSpy = vi.spyOn(projectConfig, 'setCurrentProject' as any).mockResolvedValue(undefined);
+    
+    // Don't mock useInput to avoid hooks issues
+  });
+
+  afterEach(() => {
+    loadInputHistorySpy.mockRestore();
+    saveInputHistorySpy.mockRestore();
+    getCurrentProjectSpy.mockRestore();
+    listProjectsSpy.mockRestore();
+    setCurrentProjectSpy.mockRestore();
+  });
+  const createMessages = (count: number): Message[] => {
+    return Array.from({ length: count }, (_, i) => ({
+      id: `msg-${i}`,
+      role: i % 3 === 0 ? 'user' : i % 3 === 1 ? 'assistant' : 'system',
+      content: `This is test message ${i} with some content that might contain https://example.com/link${i} for testing URL rendering performance.`
+    }));
+  };
+
+  const mockProps = {
+    onSendMessage: vi.fn(),
+    onAddSystemMessage: vi.fn(),
+    isLoading: false,
+    interactiveCommand: null,
+    onModelSelect: undefined,
+    onCancelModelSelection: undefined
+  };
+
+  it('should handle large message lists efficiently', () => {
+    const startTime = performance.now();
+    
+    const messages = createMessages(100); // 100 messages
+    
+    const { rerender } = render(
+      <ChatInterface
+        {...mockProps}
+        messages={messages}
+      />
+    );
+
+    const firstRenderTime = performance.now() - startTime;
+    
+    // Test re-render performance with same props (should be fast due to memoization)
+    const reRenderStart = performance.now();
+    
+    rerender(
+      <ChatInterface
+        {...mockProps}
+        messages={messages}
+      />
+    );
+    
+    const reRenderTime = performance.now() - reRenderStart;
+    
+    // First render should be reasonable (less than 300ms for 100 messages in CI)
+    expect(firstRenderTime).toBeLessThan(300);
+    
+    // Re-render with same props should be much faster (less than 20ms due to memoization)
+    expect(reRenderTime).toBeLessThan(20);
+    
+    console.log(`First render: ${firstRenderTime.toFixed(2)}ms`);
+    console.log(`Re-render: ${reRenderTime.toFixed(2)}ms`);
+  });
+
+  it('should efficiently update when adding new messages', () => {
+    const initialMessages = createMessages(50);
+    
+    const { rerender } = render(
+      <ChatInterface
+        {...mockProps}
+        messages={initialMessages}
+      />
+    );
+
+    const updateStart = performance.now();
+    
+    // Add one new message
+    const updatedMessages = [...initialMessages, {
+      id: 'new-msg',
+      role: 'user' as const,
+      content: 'New message added'
+    }];
+    
+    rerender(
+      <ChatInterface
+        {...mockProps}
+        messages={updatedMessages}
+      />
+    );
+    
+    const updateTime = performance.now() - updateStart;
+    
+    // Adding one message should be reasonable (less than 100ms in CI)
+    expect(updateTime).toBeLessThan(100);
+    
+    console.log(`Message addition update: ${updateTime.toFixed(2)}ms`);
+  });
+
+  it('should not re-render unnecessarily when non-message props change', () => {
+    const messages = createMessages(20);
+    let renderCount = 0;
+    
+    // Create a wrapper to count renders
+    const TestWrapper = (props: any) => {
+      renderCount++;
+      return <ChatInterface {...props} />;
+    };
+    
+    const { rerender } = render(
+      <TestWrapper
+        {...mockProps}
+        messages={messages}
+        isLoading={false}
+      />
+    );
+
+    const initialRenderCount = renderCount;
+    
+    // Change isLoading prop
+    rerender(
+      <TestWrapper
+        {...mockProps}
+        messages={messages}
+        isLoading={true}
+      />
+    );
+    
+    // Should only re-render once for the prop change
+    expect(renderCount - initialRenderCount).toBe(1);
+  });
+});

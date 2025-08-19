@@ -1,9 +1,8 @@
-import React, { useState, useEffect, memo, useMemo } from 'react';
+import React, { useState, useEffect, memo, useMemo, useCallback, useRef } from 'react';
 import { Box, Text, useInput } from 'ink';
 import Spinner from 'ink-spinner';
 import Link from 'ink-link';
 import SelectInput from 'ink-select-input';
-import TextInput from 'ink-text-input';
 import type { Message } from '../types';
 import { loadInputHistory, saveInputHistory } from '../utils/inputHistory';
 import { getCurrentProject, listProjects, setCurrentProject as setCurrentProjectConfig } from '../utils/projectConfig';
@@ -31,12 +30,24 @@ export const ChatInterface = memo(function ChatInterface({
   onModelSelect,
   onCancelModelSelection 
 }: ChatInterfaceProps) {
-  const [input, setInput] = useState('');
+  const [displayInput, setDisplayInput] = useState('');
   const [inputHistory, setInputHistory] = useState<string[]>([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
   const [currentProject, setCurrentProject] = useState<Project | null>(null);
   const [showProjectSelector, setShowProjectSelector] = useState(false);
   const [availableProjects, setAvailableProjects] = useState<Project[]>([]);
+  const [displayCursor, setDisplayCursor] = useState(0);
+  
+  // Use refs to avoid re-renders during typing
+  const inputRef = useRef('');
+  const cursorRef = useRef(0);
+  const updateTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  
+  // Immediate update function for lightning fast response
+  const updateDisplay = useCallback(() => {
+    setDisplayInput(inputRef.current);
+    setDisplayCursor(cursorRef.current);
+  }, []);
 
   // Load input history on mount
   useEffect(() => {
@@ -58,13 +69,13 @@ export const ChatInterface = memo(function ChatInterface({
 
     loadCurrentProject();
 
-    // Check for project changes every 10 seconds
-    const interval = setInterval(loadCurrentProject, 10000);
+    // Check for project changes every 30 seconds (reduced frequency)
+    const interval = setInterval(loadCurrentProject, 30000);
     return () => clearInterval(interval);
   }, []);
 
-  // Handle project selection
-  const handleProjectSelect = async (item: { label: string; value: string }) => {
+  // Handle project selection - memoized to prevent re-creation
+  const handleProjectSelect = useCallback(async (item: { label: string; value: string }) => {
     try {
       if (item.value === '__create_new__') {
         // Handle "Create New Project" option
@@ -102,7 +113,7 @@ To add a new project, complete the command with these parameters:
       console.error('Failed to set current project:', error);
       setShowProjectSelector(false);
     }
-  };
+  }, [onAddSystemMessage]);
 
   // Memoize project selector items
   const projectItems = useMemo(() => {
@@ -120,12 +131,13 @@ To add a new project, complete the command with these parameters:
     return items;
   }, [availableProjects]);
 
-  // Handle input submission
-  const handleInputSubmit = (value: string) => {
-    if (value.trim() && !isLoading) {
+  // Handle input submission - memoized to prevent re-creation
+  const handleInputSubmit = useCallback(() => {
+    const currentInput = inputRef.current;
+    if (currentInput.trim() && !isLoading) {
       // Add to history (avoid duplicates)
       setInputHistory(prev => {
-        const newHistory = [value, ...prev.filter(h => h !== value)];
+        const newHistory = [currentInput, ...prev.filter(h => h !== currentInput)];
         const limitedHistory = newHistory.slice(0, 100); // Keep last 100 commands
         
         // Save to disk asynchronously
@@ -134,65 +146,77 @@ To add a new project, complete the command with these parameters:
         return limitedHistory;
       });
       
-      onSendMessage(value.trim());
-      setInput('');
+      onSendMessage(currentInput.trim());
+      inputRef.current = '';
+      cursorRef.current = 0;
+      setDisplayInput('');
+      setDisplayCursor(0);
       setHistoryIndex(-1);
     }
-  };
+  }, [isLoading, onSendMessage]);
 
-  // Function to parse content and render URLs as links
-  const renderContentWithLinks = useMemo(() => {
-    return (content: string) => {
-      const urlRegex = /https?:\/\/[^\s<>"{}|\\^`\[\]]+/gi;
-      const urls = content.match(urlRegex) || [];
+  // Memoized function to parse content and render URLs as links
+  const renderContentWithLinks = useCallback((content: string) => {
+    const urlRegex = /https?:\/\/[^\s<>"{}|\\^`\[\]]+/gi;
+    const urls = content.match(urlRegex) || [];
+    
+    if (urls.length === 0) {
+      return content;
+    }
+    
+    const result: React.ReactNode[] = [];
+    let lastIndex = 0;
+    
+    urls.forEach((url, index) => {
+      const urlIndex = content.indexOf(url, lastIndex);
       
-      if (urls.length === 0) {
-        return content;
+      // Add text before the URL
+      if (urlIndex > lastIndex) {
+        result.push(content.slice(lastIndex, urlIndex));
       }
       
-      const result: React.ReactNode[] = [];
-      let lastIndex = 0;
+      // Add the link
+      result.push(
+        <Link key={`link-${index}`} url={url}>
+          <Text color="cyan" underline>{url}</Text>
+        </Link>
+      );
       
-      urls.forEach((url, index) => {
-        const urlIndex = content.indexOf(url, lastIndex);
-        
-        // Add text before the URL
-        if (urlIndex > lastIndex) {
-          result.push(content.slice(lastIndex, urlIndex));
-        }
-        
-        // Add the link
-        result.push(
-          <Link key={`link-${index}`} url={url}>
-            <Text color="cyan" underline>{url}</Text>
-          </Link>
-        );
-        
-        lastIndex = urlIndex + url.length;
-      });
-      
-      // Add remaining text after the last URL
-      if (lastIndex < content.length) {
-        result.push(content.slice(lastIndex));
-      }
-      
-      return result;
-    };
+      lastIndex = urlIndex + url.length;
+    });
+    
+    // Add remaining text after the last URL
+    if (lastIndex < content.length) {
+      result.push(content.slice(lastIndex));
+    }
+    
+    return result;
   }, []);
 
   // Individual message component to prevent full rerenders
   const MessageItem = memo(({ message, index }: { message: Message; index: number }) => {
-    const speakerIndicator = message.role === 'user' ? '👤 You:   ' : message.role === 'system' ? '⚙️ System: ' : '🤖 PM:    ';
+    const speakerIndicator = useMemo(() => {
+      return message.role === 'user' ? '👤 You:   ' : message.role === 'system' ? '⚙️ System: ' : '🤖 PM:    ';
+    }, [message.role]);
+    
+    const messageColor = useMemo(() => {
+      return message.role === 'user' ? 'blue' : message.role === 'system' ? 'magenta' : 'white';
+    }, [message.role]);
+    
+    // Memoize rendered content to prevent re-processing on every render
+    const renderedContent = useMemo(() => {
+      return renderContentWithLinks(message.content);
+    }, [message.content, renderContentWithLinks]);
     
     return (
       <Box key={message.id || `fallback-${index}`} marginBottom={1}>
         <Box flexDirection="row">
-          <Text color={message.role === 'user' ? 'blue' : message.role === 'system' ? 'magenta' : 'white'} bold>
+          <Text color={messageColor} bold>
             {speakerIndicator}
           </Text>
           <Box flexDirection="column" flexShrink={1}>
-            <Text color={message.role === 'user' ? 'blue' : message.role === 'system' ? 'magenta' : 'white'} bold>
-              {renderContentWithLinks(message.content)}
+            <Text color={messageColor} bold>
+              {renderedContent}
             </Text>
           </Box>
         </Box>
@@ -200,7 +224,29 @@ To add a new project, complete the command with these parameters:
     );
   });
 
+  // Memoize the rendered messages list to prevent unnecessary re-renders
+  const renderedMessages = useMemo(() => {
+    return messages.map((message, index) => (
+      <MessageItem key={message.id || `fallback-${index}`} message={message} index={index} />
+    ));
+  }, [messages]);
+
+
+  // BLAZING FAST input handler - uses refs to avoid React re-renders
   useInput((inputChar, key) => {
+    // Skip all input handling when selectors are shown
+    if (showProjectSelector || interactiveCommand?.type === 'model-select') {
+      // Handle ESC to cancel project selector
+      if (key.escape && showProjectSelector) {
+        setShowProjectSelector(false);
+      }
+      // Handle ESC to cancel model selector
+      if (key.escape && interactiveCommand?.type === 'model-select') {
+        onCancelModelSelection?.();
+      }
+      return;
+    }
+
     // Handle project selector
     if (key.shift && key.tab) {
       setShowProjectSelector(true);
@@ -214,57 +260,110 @@ To add a new project, complete the command with these parameters:
       return;
     }
 
-    // Handle ESC to cancel project selector
-    if (key.escape && showProjectSelector) {
-      setShowProjectSelector(false);
+    // Handle Enter - submit input
+    if (key.return) {
+      handleInputSubmit();
       return;
     }
 
-    // Handle ESC to cancel model selector
-    if (key.escape && interactiveCommand?.type === 'model-select') {
-      onCancelModelSelection?.();
+    // Handle Ctrl+U - clear input
+    if (key.ctrl && inputChar === 'u') {
+      inputRef.current = '';
+      cursorRef.current = 0;
+      setDisplayInput('');
+      setDisplayCursor(0);
+      setHistoryIndex(-1);
       return;
     }
 
-    // Skip normal input handling when selectors are shown
-    if (showProjectSelector || interactiveCommand?.type === 'model-select') {
-      return;
-    }
-
-    // Handle Ctrl+E to move cursor to end (note: this may not work with TextInput focus)
+    // Handle Ctrl+E - move cursor to end
     if (key.ctrl && inputChar === 'e') {
-      // This is a hint for users - the actual cursor movement would need to be handled by TextInput
-      // For now, we'll just ensure the input value is set (which puts cursor at end)
-      setInput(input);
+      cursorRef.current = inputRef.current.length;
+      updateDisplay();
       return;
     }
 
-    // Handle history navigation when not using TextInput focus
-    if (key.upArrow) {
+    // Handle Ctrl+A - move cursor to beginning
+    if (key.ctrl && inputChar === 'a') {
+      cursorRef.current = 0;
+      updateDisplay();
+      return;
+    }
+
+    // Handle arrow keys for cursor movement
+    if (key.leftArrow) {
+      cursorRef.current = Math.max(0, cursorRef.current - 1);
+      updateDisplay();
+      return;
+    }
+
+    if (key.rightArrow) {
+      cursorRef.current = Math.min(inputRef.current.length, cursorRef.current + 1);
+      updateDisplay();
+      return;
+    }
+
+    if (key.upArrow && !key.ctrl && !key.shift) {
       // Navigate up in history
       if (inputHistory.length > 0) {
         const newIndex = Math.min(historyIndex + 1, inputHistory.length - 1);
         const historyText = inputHistory[newIndex];
         if (historyText) {
           setHistoryIndex(newIndex);
-          setInput(historyText);
+          inputRef.current = historyText;
+          cursorRef.current = historyText.length;
+          setDisplayInput(historyText);
+          setDisplayCursor(historyText.length);
         }
       }
-    } else if (key.downArrow) {
+      return;
+    }
+
+    if (key.downArrow && !key.ctrl && !key.shift) {
       // Navigate down in history
       if (historyIndex >= 0) {
         const newIndex = historyIndex - 1;
         if (newIndex < 0) {
           setHistoryIndex(-1);
-          setInput('');
+          inputRef.current = '';
+          cursorRef.current = 0;
+          setDisplayInput('');
+          setDisplayCursor(0);
         } else {
           const historyText = inputHistory[newIndex];
           if (historyText) {
             setHistoryIndex(newIndex);
-            setInput(historyText);
+            inputRef.current = historyText;
+            cursorRef.current = historyText.length;
+            setDisplayInput(historyText);
+            setDisplayCursor(historyText.length);
           }
         }
       }
+      return;
+    }
+
+    // Handle backspace
+    if (key.backspace || key.delete) {
+      if (cursorRef.current > 0) {
+        const currentInput = inputRef.current;
+        const newInput = currentInput.slice(0, cursorRef.current - 1) + currentInput.slice(cursorRef.current);
+        inputRef.current = newInput;
+        cursorRef.current = cursorRef.current - 1;
+        updateDisplay();
+      }
+      return;
+    }
+
+    // Handle regular character input - FASTEST PATH
+    if (inputChar && !key.ctrl && !key.meta && inputChar.length === 1) {
+      const currentInput = inputRef.current;
+      const cursor = cursorRef.current;
+      const newInput = currentInput.slice(0, cursor) + inputChar + currentInput.slice(cursor);
+      inputRef.current = newInput;
+      cursorRef.current = cursor + 1;
+      updateDisplay();
+      return;
     }
   });
 
@@ -373,9 +472,7 @@ To add a new project, complete the command with these parameters:
     <Box flexDirection="column" height="100%">
       {/* Messages - no border, fills available space */}
       <Box flexDirection="column" flexGrow={1} paddingX={1}>
-        {messages.map((message, index) => (
-          <MessageItem key={message.id || `fallback-${index}`} message={message} index={index} />
-        ))}
+        {renderedMessages}
         {isLoading && (
           <Box>
             <Text color="yellow">
@@ -388,12 +485,23 @@ To add a new project, complete the command with these parameters:
 
       {/* Input */}
       <Box borderStyle="single" paddingX={1}>
-        <TextInput
-          value={input}
-          onChange={setInput}
-          onSubmit={handleInputSubmit}
-          placeholder="Type your message..."
-        />
+        {/* BLAZING FAST input rendering with batched updates */}
+        <Text>
+          {displayInput.length > 0 || displayCursor > 0 ? (
+            <>
+              {displayInput.slice(0, displayCursor)}
+              <Text backgroundColor="white" color="black">
+                {displayInput[displayCursor] || ' '}
+              </Text>
+              {displayInput.slice(displayCursor + 1)}
+            </>
+          ) : (
+            <>
+              <Text backgroundColor="white" color="black"> </Text>
+              <Text dimColor>Type your message...</Text>
+            </>
+          )}
+        </Text>
       </Box>
 
       {/* Project Status */}
