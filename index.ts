@@ -7,27 +7,63 @@ import { setVerbose, debug } from './src/utils/logger';
 
 export function validateEnvironment() {
   debug('Validating environment variables');
-  if (!process.env.OPENAI_API_KEY) {
-    debug('OPENAI_API_KEY not found in environment');
-    console.error('❌ Error: OPENAI_API_KEY environment variable is required');
+  
+  const hasOpenAI = !!process.env.OPENAI_API_KEY;
+  const hasAnthropic = !!process.env.ANTHROPIC_API_KEY;
+  const hasGroq = !!process.env.GROQ_API_KEY;
+  const hasVertex = !!process.env.GOOGLE_VERTEX_PROJECT_ID;
+  
+  if (!hasOpenAI && !hasAnthropic && !hasGroq && !hasVertex) {
+    debug('No AI provider API keys found in environment');
+    console.error('❌ Error: At least one AI provider API key is required');
     console.error('');
-    console.error('Please set your OpenAI API key:');
+    console.error('Please configure at least one provider:');
+    console.error('');
+    console.error('OpenAI:');
+    console.error('  OPENAI_API_KEY=your-key-here');
+    console.error('  Get key from: https://platform.openai.com/api-keys');
+    console.error('');
+    console.error('Anthropic:');
+    console.error('  ANTHROPIC_API_KEY=your-key-here');
+    console.error('  Get key from: https://console.anthropic.com/');
+    console.error('');
+    console.error('Groq:');
+    console.error('  GROQ_API_KEY=your-key-here');
+    console.error('  Get key from: https://console.groq.com/keys');
+    console.error('');
+    console.error('Google Vertex AI:');
+    console.error('  GOOGLE_VERTEX_PROJECT_ID=your-project-id');
+    console.error('  GOOGLE_VERTEX_REGION=us-central1  # optional');
+    console.error('');
+    console.error('Setup:');
     console.error('1. Copy .env.example to .env: cp .env.example .env');
-    console.error('2. Edit .env and add your API key: OPENAI_API_KEY=your-key-here');
-    console.error('3. Get your API key from: https://platform.openai.com/api-keys');
+    console.error('2. Edit .env and add your API key(s)');
     process.exit(1);
   }
+  
   debug('Environment validation passed');
+  debug('Available providers:', { hasOpenAI, hasAnthropic, hasGroq, hasVertex });
 }
 
 export function App() {
-  const { messages, sendMessage, addSystemMessage, isLoading } = useChat();
+  const { 
+    messages, 
+    sendMessage, 
+    addSystemMessage, 
+    isLoading,
+    interactiveCommand,
+    handleModelSelect,
+    cancelModelSelection 
+  } = useChat();
 
   return React.createElement(ChatInterface, {
     messages,
     onSendMessage: sendMessage,
     onAddSystemMessage: addSystemMessage,
-    isLoading
+    isLoading,
+    interactiveCommand,
+    onModelSelect: handleModelSelect,
+    onCancelModelSelection: cancelModelSelection
   });
 }
 

@@ -1,11 +1,10 @@
 import { generateText, streamText, stepCountIs } from 'ai';
-import { openai } from '@ai-sdk/openai';
 import type { Message } from '../types';
 import { debug, getVerbose } from '../utils/logger';
 import { getToolRegistry } from '../tools/registry';
 import { getSystemPrompt } from '../utils/systemPrompt';
+import { modelRegistry } from './modelRegistry';
 
-const model = openai('gpt-4.1-mini');
 const MAX_STEPS = 10;
 
 export async function generateResponse(messages: Message[]): Promise<string> {
@@ -13,6 +12,9 @@ export async function generateResponse(messages: Message[]): Promise<string> {
   debug('Last message:', messages[messages.length - 1]);
 
   try {
+    const model = await modelRegistry.createLanguageModel();
+    const currentModel = modelRegistry.getCurrentModel();
+    
     const systemPromptContent = await getSystemPrompt();
     const systemMessage = {
       role: 'system' as const,
@@ -29,8 +31,9 @@ export async function generateResponse(messages: Message[]): Promise<string> {
 
     const tools = getToolRegistry();
     debug(
-      'Calling OpenAI API with model:',
-      model.modelId,
+      'Calling AI API with model:',
+      currentModel.displayName,
+      '(' + currentModel.provider + '/' + currentModel.modelId + ')',
       'and',
       Object.keys(tools).length,
       'tools'
@@ -68,6 +71,8 @@ export async function generateResponse(messages: Message[]): Promise<string> {
 
 export async function* streamResponse(messages: Message[]) {
   try {
+    const model = await modelRegistry.createLanguageModel();
+    
     const { textStream } = await streamText({
       model,
       messages: messages.map(msg => ({

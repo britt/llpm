@@ -23,6 +23,12 @@ jobs:
       run: bun install
       
     - name: Run tests
+      env:
+        # Provide test environment variables to prevent validation errors
+        OPENAI_API_KEY: test-key-for-actions
+        ANTHROPIC_API_KEY: test-key-for-actions
+        GROQ_API_KEY: test-key-for-actions
+        GOOGLE_VERTEX_PROJECT_ID: test-project-for-actions
       run: bun test --coverage
       
     - name: Upload coverage reports
