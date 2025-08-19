@@ -81,7 +81,7 @@ export const ChatInterface = memo(function ChatInterface({ messages, onSendMessa
   // Individual message component to prevent full rerenders
   const MessageItem = memo(({ message, index }: { message: Message; index: number }) => (
     <Box key={message.id || `fallback-${index}`} marginBottom={1}>
-      <Text color={message.role === 'user' ? 'blue' : message.role === 'system' ? 'magenta' : 'green'} bold>
+      <Text color={message.role === 'user' ? 'blue' : message.role === 'system' ? 'magenta' : 'whiteBright'} bold>
         {message.role === 'user' ? 'You: ' : message.role === 'system' ? 'System: ' : 'PM: '}
         {renderContentWithLinks(message.content)}
       </Text>
