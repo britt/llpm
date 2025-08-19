@@ -26,7 +26,7 @@ export const projectCommand: Command = {
       } else {
         return {
           content:
-            '📁 No active project set.\n\n💡 Use /project add <name> <repository> <path> to add a new project\n💡 Use /project switch to see and switch between projects\n💡 Use /projects to list all available projects',
+            '📁 No active project set.\n\n💡 Use /project add <name> <repository> <path> to add a new project\n💡 Use /project switch to see and switch between projects\n💡 Use /project list to list all available projects\n💡 Press shift+tab for quick project switching',
           success: true
         };
       }
@@ -83,7 +83,7 @@ export const projectCommand: Command = {
           const projectList = projects.map(project => `• ${project.name} (${project.id})`);
 
           return {
-            content: `📂 Available projects to switch to:\n\n${projectList.join('\n')}\n\n💡 Use /project switch <project-id> to switch`,
+            content: `📂 Available projects to switch to:\n\n${projectList.join('\n')}\n\n💡 Use /project switch <project-id> to switch\n💡 Or press shift+tab for interactive project selector`,
             success: true
           };
         }
@@ -92,7 +92,7 @@ export const projectCommand: Command = {
         if (!projectId) {
           return {
             content:
-              '❌ Usage: /project switch <project-id>\n\n💡 Use /projects to see available project IDs',
+              '❌ Usage: /project switch <project-id>\n\n💡 Use /project list to see available project IDs',
             success: false
           };
         }
@@ -105,7 +105,41 @@ export const projectCommand: Command = {
           };
         } catch (error) {
           return {
-            content: `❌ Failed to switch project: ${error instanceof Error ? error.message : 'Unknown error'}\n\n💡 Use /projects to see available project IDs`,
+            content: `❌ Failed to switch project: ${error instanceof Error ? error.message : 'Unknown error'}\n\n💡 Use /project list to see available project IDs`,
+            success: false
+          };
+        }
+      }
+
+      case 'list': {
+        try {
+          const projects = await listProjects();
+          const currentProject = await getCurrentProject();
+
+          if (projects.length === 0) {
+            return {
+              content:
+                '📂 No projects configured.\n\n💡 Use /project add <name> <repository> <path> to add your first project',
+              success: true
+            };
+          }
+
+          const projectList = projects.map(project => {
+            const isCurrent = currentProject?.id === project.id;
+            const indicator = isCurrent ? '👉 ' : '   ';
+            return `${indicator}${project.name} (${project.id})\n    📂 ${project.repository}\n    📍 ${project.path}`;
+          });
+
+          const header = `📂 Available Projects (${projects.length}):\n\n`;
+          const footer = '\n\n💡 Use /project set <project-id> to switch projects\n💡 Or press shift+tab for interactive project selector';
+
+          return {
+            content: header + projectList.join('\n\n') + footer,
+            success: true
+          };
+        } catch (error) {
+          return {
+            content: `❌ Failed to list projects: ${error instanceof Error ? error.message : 'Unknown error'}`,
             success: false
           };
         }
@@ -115,7 +149,7 @@ export const projectCommand: Command = {
         if (args.length < 2) {
           return {
             content:
-              '❌ Usage: /project remove <project-id>\n\n💡 Use /projects to see available project IDs',
+              '❌ Usage: /project remove <project-id>\n\n💡 Use /project list to see available project IDs',
             success: false
           };
         }
@@ -124,7 +158,7 @@ export const projectCommand: Command = {
         if (!projectId) {
           return {
             content:
-              '❌ Usage: /project remove <project-id>\n\n💡 Use /projects to see available project IDs',
+              '❌ Usage: /project remove <project-id>\n\n💡 Use /project list to see available project IDs',
             success: false
           };
         }
@@ -145,7 +179,7 @@ export const projectCommand: Command = {
 
       default:
         return {
-          content: `❌ Unknown subcommand: ${subCommand}\n\nAvailable subcommands:\n• add <name> <repository> <path> - Add a new project\n• switch <project-id> - Switch to a different project\n• set <project-id> - Set current project (alias for switch)\n• remove <project-id> - Remove a project`,
+          content: `❌ Unknown subcommand: ${subCommand}\n\nAvailable subcommands:\n• add <name> <repository> <path> - Add a new project\n• list - List all available projects\n• switch <project-id> - Switch to a different project\n• set <project-id> - Set current project (alias for switch)\n• remove <project-id> - Remove a project`,
           success: false
         };
     }

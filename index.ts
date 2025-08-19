@@ -21,11 +21,12 @@ export function validateEnvironment() {
 }
 
 export function App() {
-  const { messages, sendMessage, isLoading } = useChat();
+  const { messages, sendMessage, addSystemMessage, isLoading } = useChat();
 
   return React.createElement(ChatInterface, {
     messages,
     onSendMessage: sendMessage,
+    onAddSystemMessage: addSystemMessage,
     isLoading
   });
 }

@@ -5,6 +5,13 @@ export default defineConfig({
   test: {
     environment: 'jsdom',
     setupFiles: ['./test/setup.ts'],
-    globals: true
+    globals: true,
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'json', 'html']
+    }
+  },
+  esbuild: {
+    target: 'node14'
   }
 });

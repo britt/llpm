@@ -222,9 +222,20 @@ export function useChat() {
     [] // Remove messages dependency to prevent recreation on every message
   );
 
+  const addSystemMessage = useCallback((content: string) => {
+    const systemMessage: Message = {
+      role: 'system',
+      content,
+      id: generateMessageId()
+    };
+    setMessages(prev => [...prev, systemMessage]);
+    debug('Added system message');
+  }, []);
+
   return {
     messages,
     sendMessage,
+    addSystemMessage,
     isLoading
   };
 }

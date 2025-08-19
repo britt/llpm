@@ -14,6 +14,10 @@ import {
   commentOnGitHubIssueTool,
   searchGitHubIssuesTool
 } from './githubIssueTools';
+import {
+  listGitHubPullRequestsTool,
+  createGitHubPullRequestTool
+} from './githubPullRequestTools';
 
 const toolRegistry: ToolRegistry = {
   get_current_project: getCurrentProjectTool,
@@ -28,7 +32,9 @@ const toolRegistry: ToolRegistry = {
   list_github_issues: listGitHubIssuesTool,
   update_github_issue: updateGitHubIssueTool,
   comment_on_github_issue: commentOnGitHubIssueTool,
-  search_github_issues: searchGitHubIssuesTool
+  search_github_issues: searchGitHubIssuesTool,
+  list_github_pull_requests: listGitHubPullRequestsTool,
+  create_github_pull_request: createGitHubPullRequestTool
 };
 
 export function getToolRegistry(): ToolRegistry {

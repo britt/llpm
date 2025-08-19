@@ -5,7 +5,6 @@ import { quitCommand } from './quit';
 import { exitCommand } from './exit';
 import { clearCommand } from './clear';
 import { projectCommand } from './project';
-import { projectsCommand } from './projects';
 import { githubCommand } from './github';
 import { debugCommand } from './debug';
 import { debug } from '../utils/logger';
@@ -17,7 +16,6 @@ const commandRegistry: CommandRegistry = {
   exit: exitCommand,
   clear: clearCommand,
   project: projectCommand,
-  projects: projectsCommand,
   github: githubCommand,
   debug: debugCommand
 };
