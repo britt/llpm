@@ -1,33 +1,34 @@
-import { vi } from 'vitest';
+// Simple mock that doesn't rely on vi.mock hoisting issues
+const mockLoadInputHistory = vi.fn().mockResolvedValue(['previous command', 'another command']);
+const mockSaveInputHistory = vi.fn().mockResolvedValue(undefined);
+const mockGetCurrentProject = vi.fn().mockResolvedValue(null);
+const mockListProjects = vi.fn().mockResolvedValue([]);
+const mockSetCurrentProject = vi.fn().mockResolvedValue(undefined);
+const mockUseInput = vi.fn();
 
-// Mock external dependencies BEFORE other imports
+// Mock modules after imports
 vi.mock('../utils/inputHistory', () => ({
-  loadInputHistory: vi.fn().mockResolvedValue(['previous command', 'another command']),
-  saveInputHistory: vi.fn().mockResolvedValue(undefined)
+  loadInputHistory: mockLoadInputHistory,
+  saveInputHistory: mockSaveInputHistory
 }));
 
 vi.mock('../utils/projectConfig', () => ({
-  getCurrentProject: vi.fn().mockResolvedValue(null),
-  listProjects: vi.fn().mockResolvedValue([]),
-  setCurrentProject: vi.fn().mockResolvedValue(undefined)
+  getCurrentProject: mockGetCurrentProject,
+  listProjects: mockListProjects,
+  setCurrentProject: mockSetCurrentProject
 }));
-
-// Mock ink components and capture useInput callback
-let useInputCallback: ((inputChar: string, key: any) => void) | null = null;
 
 vi.mock('ink', async () => {
   const actual = await vi.importActual('ink');
   return {
     ...actual,
-    useInput: vi.fn((callback) => {
-      useInputCallback = callback;
-    })
+    useInput: mockUseInput
   };
 });
 
 import React from 'react';
 import { render, act } from '@testing-library/react';
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { ChatInterface } from './ChatInterface';
 import type { Message } from '../types';
 
@@ -46,9 +47,14 @@ describe('ChatInterface Keyboard Shortcuts', () => {
     onCancelModelSelection: undefined
   };
 
+  let useInputCallback: ((inputChar: string, key: any) => void) | null = null;
+
   beforeEach(() => {
     vi.clearAllMocks();
     useInputCallback = null;
+    mockUseInput.mockImplementation((callback) => {
+      useInputCallback = callback;
+    });
   });
 
   const simulateKeyPress = (inputChar: string, key: any) => {
