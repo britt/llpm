@@ -170,7 +170,7 @@ To add a new project, complete the command with these parameters:
   const MessageItem = memo(({ message, index }: { message: Message; index: number }) => (
     <Box key={message.id || `fallback-${index}`} marginBottom={1}>
       <Text color={message.role === 'user' ? 'blue' : message.role === 'system' ? 'magenta' : 'white'} bold>
-        {message.role === 'user' ? '👤 You: ' : message.role === 'system' ? '⚙️ System: ' : '🤖 PM: '}
+        {message.role === 'user' ? '👤 You:    ' : message.role === 'system' ? '⚙️ System: ' : '🤖 PM:     '}
         {renderContentWithLinks(message.content)}
       </Text>
     </Box>
