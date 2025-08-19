@@ -4,6 +4,8 @@ import Spinner from 'ink-spinner';
 import Link from 'ink-link';
 import type { Message } from '../types';
 import { loadInputHistory, saveInputHistory } from '../utils/inputHistory';
+import { getCurrentProject } from '../utils/projectConfig';
+import type { Project } from '../types/project';
 
 interface ChatInterfaceProps {
   messages: Message[];
@@ -16,12 +18,31 @@ export const ChatInterface = memo(function ChatInterface({ messages, onSendMessa
   const [inputHistory, setInputHistory] = useState<string[]>([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
   const [cursorPos, setCursorPos] = useState(0);
+  const [currentProject, setCurrentProject] = useState<Project | null>(null);
 
   // Load input history on mount
   useEffect(() => {
     loadInputHistory().then(history => {
       setInputHistory(history);
     });
+  }, []);
+
+  // Load current project on mount and periodically
+  useEffect(() => {
+    const loadCurrentProject = async () => {
+      try {
+        const project = await getCurrentProject();
+        setCurrentProject(project);
+      } catch (error) {
+        console.error('Failed to load current project:', error);
+      }
+    };
+
+    loadCurrentProject();
+
+    // Check for project changes every 10 seconds
+    const interval = setInterval(loadCurrentProject, 10000);
+    return () => clearInterval(interval);
   }, []);
 
   // Memoize cursor display to prevent unnecessary rerenders
@@ -218,6 +239,17 @@ export const ChatInterface = memo(function ChatInterface({ messages, onSendMessa
       {/* Input */}
       <Box borderStyle="single" paddingX={1}>
         {cursorDisplay}
+      </Box>
+
+      {/* Project Status */}
+      <Box paddingX={1} paddingY={0}>
+        <Text dimColor>
+          Project: {currentProject ? (
+            <Text color="cyan" bold>{currentProject.name}</Text>
+          ) : (
+            <Text color="gray">None</Text>
+          )}
+        </Text>
       </Box>
     </Box>
   );
