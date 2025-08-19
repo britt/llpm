@@ -8,7 +8,8 @@ Perfect for developers who want to organize multiple projects, interact with Git
 
 ### Core Features
 
-- 🤖 Chat with AI assistant (OpenAI GPT-4o-mini by default) with tool support
+- 🤖 Chat with AI assistant (GPT-4.1 Mini by default) with multi-provider support
+- 🔄 Dynamic model switching between OpenAI, Anthropic, Groq, and Google Vertex AI
 - 💬 Interactive terminal chat interface with real-time input handling
 - 🎨 Clean, styled terminal UI built with Ink
 - 📝 Persistent chat history per session
@@ -37,12 +38,13 @@ Perfect for developers who want to organize multiple projects, interact with Git
 - `/clear` - Start a new chat session
 - `/project` - Manage projects (add, list, switch, remove)
 - `/github` - Browse and search GitHub repositories
+- `/model` - Switch between AI models and view provider status
 - `/debug` - Show recent debug logs for troubleshooting
 
 ## Prerequisites
 
 - [Bun](https://bun.com) runtime
-- OpenAI API key
+- At least one AI provider API key (see configuration below)
 
 ## Setup
 
@@ -58,12 +60,21 @@ Perfect for developers who want to organize multiple projects, interact with Git
    cp .env.example .env
    ```
 
-   Then edit `.env` and add your API keys:
+   Then edit `.env` and configure at least one AI provider:
 
    ```bash
+   # AI Providers (configure at least one)
    OPENAI_API_KEY=your-openai-api-key-here
-   GITHUB_TOKEN=your-github-token-here  # Optional, for GitHub features
+   ANTHROPIC_API_KEY=your-anthropic-api-key-here
+   GROQ_API_KEY=your-groq-api-key-here
+   GOOGLE_VERTEX_PROJECT_ID=your-google-cloud-project-id
+   GOOGLE_VERTEX_REGION=us-central1  # Optional, defaults to us-central1
+
+   # Optional integrations
+   GITHUB_TOKEN=your-github-token-here  # For GitHub features
    ```
+
+   **📖 For detailed provider configuration instructions, see [Model Providers Documentation](MODELS.md)**
 
 ## Running the CLI
 
@@ -140,6 +151,15 @@ llpm
    - "Switch to my web app project"
    - "Add my latest GitHub repo as a new project"
    - "Remove the old project"
+
+5. **Switch between AI models:**
+
+   ```
+   /model switch           # Interactive model selector
+   /model switch openai/gpt-4o         # Direct model switch
+   /model list             # Show available models
+   /model providers        # Check provider configuration
+   ```
 
 ### Chat Commands vs Natural Language
 
