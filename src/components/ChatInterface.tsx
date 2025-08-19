@@ -2,9 +2,10 @@ import React, { useState, useEffect, memo, useMemo } from 'react';
 import { Box, Text, useInput } from 'ink';
 import Spinner from 'ink-spinner';
 import Link from 'ink-link';
+import SelectInput from 'ink-select-input';
 import type { Message } from '../types';
 import { loadInputHistory, saveInputHistory } from '../utils/inputHistory';
-import { getCurrentProject } from '../utils/projectConfig';
+import { getCurrentProject, listProjects, setCurrentProject as setCurrentProjectConfig } from '../utils/projectConfig';
 import type { Project } from '../types/project';
 
 interface ChatInterfaceProps {
@@ -19,6 +20,8 @@ export const ChatInterface = memo(function ChatInterface({ messages, onSendMessa
   const [historyIndex, setHistoryIndex] = useState(-1);
   const [cursorPos, setCursorPos] = useState(0);
   const [currentProject, setCurrentProject] = useState<Project | null>(null);
+  const [showProjectSelector, setShowProjectSelector] = useState(false);
+  const [availableProjects, setAvailableProjects] = useState<Project[]>([]);
 
   // Load input history on mount
   useEffect(() => {
@@ -44,6 +47,44 @@ export const ChatInterface = memo(function ChatInterface({ messages, onSendMessa
     const interval = setInterval(loadCurrentProject, 10000);
     return () => clearInterval(interval);
   }, []);
+
+  // Handle project selection
+  const handleProjectSelect = async (item: { label: string; value: string }) => {
+    try {
+      if (item.value === '') {
+        // Clear current project by setting it to empty
+        const { loadProjectConfig, saveProjectConfig } = await import('../utils/projectConfig');
+        const config = await loadProjectConfig();
+        config.currentProject = undefined;
+        await saveProjectConfig(config);
+      } else {
+        await setCurrentProjectConfig(item.value);
+      }
+      
+      const updatedProject = await getCurrentProject();
+      setCurrentProject(updatedProject);
+      setShowProjectSelector(false);
+    } catch (error) {
+      console.error('Failed to set current project:', error);
+      setShowProjectSelector(false);
+    }
+  };
+
+  // Memoize project selector items
+  const projectItems = useMemo(() => {
+    const items = availableProjects.map(project => ({
+      label: project.name,
+      value: project.id
+    }));
+    
+    // Add "None" option to clear current project
+    items.unshift({
+      label: '(None)',
+      value: ''
+    });
+    
+    return items;
+  }, [availableProjects]);
 
   // Memoize cursor display to prevent unnecessary rerenders
   const cursorDisplay = useMemo(() => {
@@ -102,7 +143,7 @@ export const ChatInterface = memo(function ChatInterface({ messages, onSendMessa
   // Individual message component to prevent full rerenders
   const MessageItem = memo(({ message, index }: { message: Message; index: number }) => (
     <Box key={message.id || `fallback-${index}`} marginBottom={1}>
-      <Text color={message.role === 'user' ? 'blue' : message.role === 'system' ? 'magenta' : 'whiteBright'} bold>
+      <Text color={message.role === 'user' ? 'blue' : message.role === 'system' ? 'magenta' : 'gray'} bold>
         {message.role === 'user' ? 'You: ' : message.role === 'system' ? 'System: ' : 'PM: '}
         {renderContentWithLinks(message.content)}
       </Text>
@@ -110,6 +151,30 @@ export const ChatInterface = memo(function ChatInterface({ messages, onSendMessa
   ));
 
   useInput((inputChar, key) => {
+    // Handle project selector
+    if (key.shift && key.tab) {
+      setShowProjectSelector(true);
+      // Load available projects
+      listProjects().then(projects => {
+        setAvailableProjects(projects);
+      }).catch(error => {
+        console.error('Failed to load projects:', error);
+        setAvailableProjects([]);
+      });
+      return;
+    }
+
+    // Handle ESC to cancel project selector
+    if (key.escape && showProjectSelector) {
+      setShowProjectSelector(false);
+      return;
+    }
+
+    // Skip normal input handling when project selector is shown
+    if (showProjectSelector) {
+      return;
+    }
+
     if (key.return && input.trim() && !isLoading) {
       const message = input.trim();
       
@@ -219,6 +284,50 @@ export const ChatInterface = memo(function ChatInterface({ messages, onSendMessa
     }
   });
 
+  if (showProjectSelector) {
+    return (
+      <Box flexDirection="column" height="100%">
+        {/* Messages - no border, fills available space */}
+        <Box flexDirection="column" flexGrow={1} paddingX={1}>
+          {messages.map((message, index) => (
+            <MessageItem key={message.id || `fallback-${index}`} message={message} index={index} />
+          ))}
+          {isLoading && (
+            <Box>
+              <Text color="yellow">
+                <Spinner type="dots" />
+                {' '}PM is thinking...
+              </Text>
+            </Box>
+          )}
+        </Box>
+
+        {/* Project Selector */}
+        <Box borderStyle="single" paddingX={1}>
+          <Box flexDirection="column">
+            <Text color="cyan" bold>Select Project (ESC to cancel):</Text>
+            <SelectInput
+              items={projectItems}
+              onSelect={handleProjectSelect}
+              onHighlight={() => {}}
+            />
+          </Box>
+        </Box>
+
+        {/* Project Status */}
+        <Box paddingX={1} paddingY={0}>
+          <Text dimColor>
+            Project: {currentProject ? (
+              <Text color="cyan" bold>{currentProject.name}</Text>
+            ) : (
+              <Text color="gray">None</Text>
+            )}
+          </Text>
+        </Box>
+      </Box>
+    );
+  }
+
   return (
     <Box flexDirection="column" height="100%">
       {/* Messages - no border, fills available space */}
@@ -244,11 +353,11 @@ export const ChatInterface = memo(function ChatInterface({ messages, onSendMessa
       {/* Project Status */}
       <Box paddingX={1} paddingY={0}>
         <Text dimColor>
-          Project: {currentProject ? (
+          project: {currentProject ? (
             <Text color="cyan" bold>{currentProject.name}</Text>
           ) : (
-            <Text color="gray">None</Text>
-          )}
+            <Text color="gray">none</Text>
+          )} <Text color="blackBright">(shift+tab: switch project)</Text>
         </Text>
       </Box>
     </Box>
