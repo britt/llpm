@@ -75,9 +75,27 @@ export const DEFAULT_MODELS: Record<ModelProvider, ModelConfig[]> = {
   anthropic: [
     {
       provider: 'anthropic',
-      modelId: 'claude-4',
-      displayName: 'Claude 4',
-      description: 'Next-generation Claude model'
+      modelId: 'claude-4-opus',
+      displayName: 'Claude 4 Opus',
+      description: 'Most powerful Claude 4 model for complex tasks'
+    },
+    {
+      provider: 'anthropic',
+      modelId: 'claude-4-sonnet',
+      displayName: 'Claude 4 Sonnet',
+      description: 'Balanced Claude 4 model for general use'
+    },
+    {
+      provider: 'anthropic',
+      modelId: 'claude-4.1-opus',
+      displayName: 'Claude 4.1 Opus',
+      description: 'Most powerful Claude 4.1 model for complex tasks'
+    },
+    {
+      provider: 'anthropic',
+      modelId: 'claude-4.1-sonnet',
+      displayName: 'Claude 4.1 Sonnet',
+      description: 'Balanced Claude 4.1 model for general use'
     },
     {
       provider: 'anthropic',
