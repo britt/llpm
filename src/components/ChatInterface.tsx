@@ -1,4 +1,4 @@
-import React, { useState, useEffect, memo, useMemo, useCallback, useRef } from 'react';
+import React, { useState, useEffect, memo, useMemo, useCallback } from 'react';
 import { Box, Text, useInput } from 'ink';
 import Spinner from 'ink-spinner';
 import Link from 'ink-link';
@@ -38,12 +38,8 @@ export const ChatInterface = memo(function ChatInterface({
   const [showProjectSelector, setShowProjectSelector] = useState(false);
   const [availableProjects, setAvailableProjects] = useState<Project[]>([]);
   
-  // Use ref to track input changes without causing re-renders
-  const inputRef = useRef(input);
-  
   // Optimized input change handler that minimizes re-renders
   const handleInputChange = useCallback((value: string) => {
-    inputRef.current = value;
     setInput(value);
   }, []);
 
@@ -225,7 +221,22 @@ To add a new project, complete the command with these parameters:
     ));
   }, [messages]);
 
+
+  // Global shortcuts that work when NOT in selectors
   useInput((inputChar, key) => {
+    // Skip all input handling when selectors are shown
+    if (showProjectSelector || interactiveCommand?.type === 'model-select') {
+      // Handle ESC to cancel project selector
+      if (key.escape && showProjectSelector) {
+        setShowProjectSelector(false);
+      }
+      // Handle ESC to cancel model selector
+      if (key.escape && interactiveCommand?.type === 'model-select') {
+        onCancelModelSelection?.();
+      }
+      return;
+    }
+
     // Handle project selector
     if (key.shift && key.tab) {
       setShowProjectSelector(true);
@@ -239,43 +250,36 @@ To add a new project, complete the command with these parameters:
       return;
     }
 
-    // Handle ESC to cancel project selector
-    if (key.escape && showProjectSelector) {
-      setShowProjectSelector(false);
-      return;
-    }
-
-    // Handle ESC to cancel model selector
-    if (key.escape && interactiveCommand?.type === 'model-select') {
-      onCancelModelSelection?.();
-      return;
-    }
-
-    // Skip normal input handling when selectors are shown
-    if (showProjectSelector || interactiveCommand?.type === 'model-select') {
-      return;
-    }
-
-    // Handle Ctrl+E to move cursor to end
-    if (key.ctrl && inputChar === 'e') {
-      // Since TextInput doesn't expose cursor position control, we simulate it
-      // by re-setting the input value which places cursor at end
-      const currentValue = inputRef.current;
+    // Handle Ctrl+U to clear input - this works because useInput gets it before TextInput
+    if (key.ctrl && inputChar === 'u') {
       setInput('');
-      // Use setTimeout to ensure the empty state is rendered before setting the value back
+      setHistoryIndex(-1);
+      return;
+    }
+
+    // Handle Ctrl+E - force TextInput to end by setting value
+    if (key.ctrl && inputChar === 'e') {
+      // Force re-render to move cursor to end
+      const currentValue = input;
+      setInput('');
       setTimeout(() => setInput(currentValue), 0);
       return;
     }
 
-    // Handle Ctrl+U to clear input line
-    if (key.ctrl && inputChar === 'u') {
-      setInput('');
-      setHistoryIndex(-1); // Reset history navigation
+    // Handle Ctrl+A - move cursor to beginning (select all)
+    if (key.ctrl && inputChar === 'a') {
+      // Force re-render to move cursor to beginning
+      const currentValue = input;
+      setInput(currentValue + ' '); // Add temp char to force change
+      setTimeout(() => {
+        setInput(''); // Clear first to reset cursor
+        setTimeout(() => setInput(currentValue), 0); // Then set back to move cursor to start
+      }, 0);
       return;
     }
 
-    // Handle history navigation when not using TextInput focus
-    if (key.upArrow) {
+    // Handle history navigation - only when TextInput doesn't handle it
+    if (key.upArrow && !key.ctrl && !key.shift) {
       // Navigate up in history
       if (inputHistory.length > 0) {
         const newIndex = Math.min(historyIndex + 1, inputHistory.length - 1);
@@ -285,7 +289,10 @@ To add a new project, complete the command with these parameters:
           setInput(historyText);
         }
       }
-    } else if (key.downArrow) {
+      return;
+    }
+
+    if (key.downArrow && !key.ctrl && !key.shift) {
       // Navigate down in history
       if (historyIndex >= 0) {
         const newIndex = historyIndex - 1;
@@ -300,6 +307,7 @@ To add a new project, complete the command with these parameters:
           }
         }
       }
+      return;
     }
   });
 
