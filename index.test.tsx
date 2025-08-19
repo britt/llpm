@@ -1,10 +1,6 @@
-import React from 'react';
-import { render } from '@testing-library/react';
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import * as llmService from './src/services/llm';
-import * as chatHistory from './src/utils/chatHistory';
+import { vi } from 'vitest';
 
-// Mock ink module at the top level
+// Mock ink module at the very top, before any other imports
 vi.mock('ink', async () => {
   const actual = await vi.importActual('ink');
   return {
@@ -13,6 +9,11 @@ vi.mock('ink', async () => {
   };
 });
 
+import React from 'react';
+import { render } from '@testing-library/react';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import * as llmService from './src/services/llm';
+import * as chatHistory from './src/utils/chatHistory';
 import { App } from './index';
 
 describe('App', () => {
