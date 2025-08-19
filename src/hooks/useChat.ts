@@ -385,6 +385,7 @@ export function useChat() {
     cancelModelSelection,
     // Queue status for UI indicators
     queueLength: messageQueue.length,
-    isProcessing
+    isProcessing,
+    queuedMessages: messageQueue
   };
 }

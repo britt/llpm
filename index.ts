@@ -56,7 +56,8 @@ export function App() {
     handleModelSelect,
     cancelModelSelection,
     queueLength,
-    isProcessing
+    isProcessing,
+    queuedMessages
   } = useChat();
 
   return React.createElement(ChatInterface, {
@@ -68,7 +69,8 @@ export function App() {
     onModelSelect: handleModelSelect,
     onCancelModelSelection: cancelModelSelection,
     queueLength,
-    isProcessing
+    isProcessing,
+    queuedMessages
   });
 }
 

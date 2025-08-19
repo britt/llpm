@@ -21,6 +21,7 @@ interface ChatInterfaceProps {
   onCancelModelSelection?: () => void;
   queueLength?: number;
   isProcessing?: boolean;
+  queuedMessages?: Array<{id: string, content: string, timestamp: number}>;
 }
 
 export const ChatInterface = memo(function ChatInterface({ 
@@ -32,7 +33,8 @@ export const ChatInterface = memo(function ChatInterface({
   onModelSelect,
   onCancelModelSelection,
   queueLength = 0,
-  isProcessing = false
+  isProcessing = false,
+  queuedMessages = []
 }: ChatInterfaceProps) {
   const [displayInput, setDisplayInput] = useState('');
   const [inputHistory, setInputHistory] = useState<string[]>([]);
@@ -141,7 +143,7 @@ To add a new project, complete the command with these parameters:
   // Handle input submission - memoized to prevent re-creation
   const handleInputSubmit = useCallback(() => {
     const currentInput = inputRef.current;
-    if (currentInput.trim() && !isLoading) {
+    if (currentInput.trim()) {
       // Add to history (avoid duplicates)
       setInputHistory(prev => {
         const newHistory = [currentInput, ...prev.filter(h => h !== currentInput)];
@@ -160,7 +162,7 @@ To add a new project, complete the command with these parameters:
       setDisplayCursor(0);
       setHistoryIndex(-1);
     }
-  }, [isLoading, onSendMessage]);
+  }, [onSendMessage]);
 
   // Memoized function to parse content and render URLs as links
   const renderContentWithLinks = useCallback((content: string) => {
@@ -387,6 +389,23 @@ To add a new project, complete the command with these parameters:
           {messages.map((message, index) => (
             <MessageItem key={message.id || `fallback-${index}`} message={message} index={index} />
           ))}
+          
+          {/* Show queued messages in light text */}
+          {queuedMessages.map((queuedMsg, index) => (
+            <Box key={queuedMsg.id} marginBottom={1}>
+              <Box flexDirection="row">
+                <Text color="blue" bold dimColor>
+                  👤 You:   
+                </Text>
+                <Box flexDirection="column" flexShrink={1}>
+                  <Text color="blue" bold dimColor>
+                    {queuedMsg.content}
+                  </Text>
+                </Box>
+              </Box>
+            </Box>
+          ))}
+          
           {(isLoading || isProcessing) && (
             <Box>
               <Text color="red">
@@ -437,6 +456,23 @@ To add a new project, complete the command with these parameters:
           {messages.map((message, index) => (
             <MessageItem key={message.id || `fallback-${index}`} message={message} index={index} />
           ))}
+          
+          {/* Show queued messages in light text */}
+          {queuedMessages.map((queuedMsg, index) => (
+            <Box key={queuedMsg.id} marginBottom={1}>
+              <Box flexDirection="row">
+                <Text color="blue" bold dimColor>
+                  👤 You:   
+                </Text>
+                <Box flexDirection="column" flexShrink={1}>
+                  <Text color="blue" bold dimColor>
+                    {queuedMsg.content}
+                  </Text>
+                </Box>
+              </Box>
+            </Box>
+          ))}
+          
           {(isLoading || isProcessing) && (
             <Box>
               <Text color="red">
@@ -486,6 +522,23 @@ To add a new project, complete the command with these parameters:
       {/* Messages - no border, fills available space */}
       <Box flexDirection="column" flexGrow={1} paddingX={1}>
         {renderedMessages}
+        
+        {/* Show queued messages in light text */}
+        {queuedMessages.map((queuedMsg, index) => (
+          <Box key={queuedMsg.id} marginBottom={1}>
+            <Box flexDirection="row">
+              <Text color="blue" bold dimColor>
+                👤 You:   
+              </Text>
+              <Box flexDirection="column" flexShrink={1}>
+                <Text color="blue" bold dimColor>
+                  {queuedMsg.content}
+                </Text>
+              </Box>
+            </Box>
+          </Box>
+        ))}
+        
         {(isLoading || isProcessing) && (
           <Box>
             <Text color="red">
