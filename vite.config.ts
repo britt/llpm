@@ -9,7 +9,9 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html']
-    }
+    },
+    // Enable mock hoisting so vi.mock works properly
+    hoistMocks: true
   },
   esbuild: {
     target: 'node14'

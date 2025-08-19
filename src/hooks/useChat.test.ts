@@ -1,35 +1,34 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
+
+// Import modules to be mocked
+import * as llmService from '../services/llm';
+import * as chatHistory from '../utils/chatHistory';
+import * as projectConfig from '../utils/projectConfig';
+import * as commandRegistry from '../commands/registry';
 import { useChat } from './useChat';
-import { generateResponse } from '../services/llm';
 
-// Mock the LLM service
-vi.mock('../services/llm', () => ({
-  generateResponse: vi.fn()
-}));
-
-// Mock chat history utilities
-vi.mock('../utils/chatHistory', () => ({
-  loadChatHistory: vi.fn().mockResolvedValue([]),
-  saveChatHistory: vi.fn().mockResolvedValue(undefined)
-}));
-
-// Mock project configuration utilities
-vi.mock('../utils/projectConfig', () => ({
-  getCurrentProject: vi.fn().mockResolvedValue(null)
-}));
-
-// Mock command registry
-vi.mock('../commands/registry', () => ({
-  parseCommand: vi.fn().mockReturnValue({ isCommand: false }),
-  executeCommand: vi.fn().mockResolvedValue({ success: true, content: 'Command executed' })
-}));
-
-const mockGenerateResponse = vi.mocked(generateResponse);
+// Create mocked functions that we'll set up in beforeEach
+let mockGenerateResponse: any;
+let mockLoadChatHistory: any;
+let mockSaveChatHistory: any;
+let mockGetCurrentProject: any;
+let mockParseCommand: any;
+let mockExecuteCommand: any;
 
 describe('useChat', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    // Mock all the dependencies using vi.spyOn
+    mockGenerateResponse = vi.spyOn(llmService, 'generateResponse').mockResolvedValue('AI response');
+    mockLoadChatHistory = vi.spyOn(chatHistory, 'loadChatHistory').mockResolvedValue([]);
+    mockSaveChatHistory = vi.spyOn(chatHistory, 'saveChatHistory').mockResolvedValue(undefined);
+    mockGetCurrentProject = vi.spyOn(projectConfig, 'getCurrentProject').mockResolvedValue(null);
+    mockParseCommand = vi.spyOn(commandRegistry, 'parseCommand').mockReturnValue({ isCommand: false });
+    mockExecuteCommand = vi.spyOn(commandRegistry, 'executeCommand').mockResolvedValue({ success: true, content: 'Command executed' });
+  });
+  
+  afterEach(() => {
+    vi.restoreAllMocks();
   });
 
   it('should initialize with welcome message', async () => {

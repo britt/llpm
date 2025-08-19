@@ -1,27 +1,10 @@
 import React from 'react';
 import { render } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import * as llmService from './src/services/llm';
+import * as chatHistory from './src/utils/chatHistory';
+import * as ink from 'ink';
 import { App } from './index';
-
-// Mock the LLM service to avoid API calls in tests
-vi.mock('./src/services/llm', () => ({
-  generateResponse: vi.fn().mockResolvedValue('Hello! How can I help you?')
-}));
-
-// Mock chat history utilities
-vi.mock('./src/utils/chatHistory', () => ({
-  loadChatHistory: vi.fn().mockResolvedValue([]),
-  saveChatHistory: vi.fn().mockResolvedValue(undefined)
-}));
-
-// Mock Ink's useInput hook to avoid terminal input handling in tests
-vi.mock('ink', async () => {
-  const actual = await vi.importActual('ink');
-  return {
-    ...actual,
-    useInput: vi.fn()
-  };
-});
 
 describe('App', () => {
   let originalEnv: NodeJS.ProcessEnv;
@@ -30,11 +13,17 @@ describe('App', () => {
     originalEnv = process.env;
     // Set API key for tests
     process.env.OPENAI_API_KEY = 'test-api-key';
+    
+    // Mock dependencies
+    vi.spyOn(llmService, 'generateResponse').mockResolvedValue('Hello! How can I help you?');
+    vi.spyOn(chatHistory, 'loadChatHistory').mockResolvedValue([]);
+    vi.spyOn(chatHistory, 'saveChatHistory').mockResolvedValue(undefined);
+    vi.spyOn(ink, 'useInput').mockImplementation(() => {});
   });
 
   afterEach(() => {
     process.env = originalEnv;
-    vi.clearAllMocks();
+    vi.restoreAllMocks();
   });
 
   it('renders chat interface with initial assistant message', async () => {
