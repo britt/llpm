@@ -3,7 +3,16 @@ import { render } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import * as llmService from './src/services/llm';
 import * as chatHistory from './src/utils/chatHistory';
-import * as ink from 'ink';
+
+// Mock ink module at the top level
+vi.mock('ink', async () => {
+  const actual = await vi.importActual('ink');
+  return {
+    ...actual,
+    useInput: vi.fn(() => {})
+  };
+});
+
 import { App } from './index';
 
 describe('App', () => {
@@ -11,14 +20,16 @@ describe('App', () => {
 
   beforeEach(() => {
     originalEnv = process.env;
-    // Set API key for tests
+    // Set API keys for tests to pass validation
     process.env.OPENAI_API_KEY = 'test-api-key';
+    process.env.ANTHROPIC_API_KEY = 'test-anthropic-key';
+    process.env.GROQ_API_KEY = 'test-groq-key';
+    process.env.GOOGLE_VERTEX_PROJECT_ID = 'test-project';
     
     // Mock dependencies
     vi.spyOn(llmService, 'generateResponse').mockResolvedValue('Hello! How can I help you?');
     vi.spyOn(chatHistory, 'loadChatHistory').mockResolvedValue([]);
     vi.spyOn(chatHistory, 'saveChatHistory').mockResolvedValue(undefined);
-    vi.spyOn(ink, 'useInput').mockImplementation(() => {});
   });
 
   afterEach(() => {
@@ -34,7 +45,8 @@ describe('App', () => {
   });
 
   it('validates environment variables are checked', () => {
-    // Test that our environment setup works
+    // Test that our environment setup works for multi-provider validation
     expect(process.env.OPENAI_API_KEY).toBe('test-api-key');
+    expect(process.env.ANTHROPIC_API_KEY).toBe('test-anthropic-key');
   });
 });

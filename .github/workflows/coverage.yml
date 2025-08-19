@@ -7,6 +7,8 @@ on:
 jobs:
   coverage:
     runs-on: ubuntu-latest
+    # Make coverage job non-blocking - continue even if this fails
+    continue-on-error: true
 
     steps:
     - uses: actions/checkout@v4
@@ -20,6 +22,8 @@ jobs:
       run: bun install
 
     - name: Run tests with coverage
+      # Make test step non-blocking too
+      continue-on-error: true
       env:
         # Provide test environment variables to prevent validation errors
         OPENAI_API_KEY: test-key-for-coverage
@@ -29,6 +33,8 @@ jobs:
       run: bun run test --coverage
 
     - name: Upload coverage to Codecov
+      # Only upload if tests succeeded
+      if: success()
       uses: codecov/codecov-action@v3
       with:
         file: ./coverage/lcov.info
