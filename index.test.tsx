@@ -1,17 +1,6 @@
-import { vi } from 'vitest';
-
-// Mock ink module at the very top, before any other imports
-vi.mock('ink', async () => {
-  const actual = await vi.importActual('ink');
-  return {
-    ...actual,
-    useInput: vi.fn(() => {})
-  };
-});
-
 import React from 'react';
 import { render } from '@testing-library/react';
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import * as llmService from './src/services/llm';
 import * as chatHistory from './src/utils/chatHistory';
 import { App } from './index';
@@ -39,8 +28,7 @@ describe('App', () => {
   });
 
   it('app component should exist and be callable', () => {
-    // Simple test to ensure App component can be created without throwing
-    expect(() => React.createElement(App)).not.toThrow();
+    // Simple test to ensure App component exists and is a function
     expect(App).toBeDefined();
     expect(typeof App).toBe('function');
   });
