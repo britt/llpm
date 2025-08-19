@@ -12,10 +12,11 @@ import type { Project } from '../types/project';
 interface ChatInterfaceProps {
   messages: Message[];
   onSendMessage: (message: string) => void;
+  onAddSystemMessage: (message: string) => void;
   isLoading: boolean;
 }
 
-export const ChatInterface = memo(function ChatInterface({ messages, onSendMessage, isLoading }: ChatInterfaceProps) {
+export const ChatInterface = memo(function ChatInterface({ messages, onSendMessage, onAddSystemMessage, isLoading }: ChatInterfaceProps) {
   const [input, setInput] = useState('');
   const [inputHistory, setInputHistory] = useState<string[]>([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
@@ -55,6 +56,26 @@ export const ChatInterface = memo(function ChatInterface({ messages, onSendMessa
         // Handle "Create New Project" option
         setInput('/project add ');
         setShowProjectSelector(false);
+        
+        // Add system message with rich formatting and instructions
+        const instructionMessage = `📝 **Creating a New Project**
+
+To add a new project, complete the command with these parameters:
+
+**Command Format:**
+\`/project add <name> <repository> <path>\`
+
+**Parameters:**
+• **name** - A descriptive name for your project (e.g., "My Web App")
+• **repository** - GitHub repository URL (e.g., "https://github.com/user/repo")
+• **path** - Local file system path (e.g., "/Users/you/projects/my-app")
+
+**Example:**
+\`/project add "E-commerce Site" "https://github.com/myuser/shop" "/Users/john/projects/shop"\`
+
+💡 **Tip:** Use quotes around names with spaces`;
+        
+        onAddSystemMessage(instructionMessage);
         return;
       } else {
         await setCurrentProjectConfig(item.value);
