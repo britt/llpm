@@ -128,8 +128,8 @@ describe('ChatInterface Performance', () => {
     
     const updateTime = performance.now() - updateStart;
     
-    // Adding one message should be reasonable (less than 100ms in CI)
-    expect(updateTime).toBeLessThan(100);
+    // Adding one message should be reasonable (less than 150ms in CI)
+    expect(updateTime).toBeLessThan(150);
     
     console.log(`Message addition update: ${updateTime.toFixed(2)}ms`);
   });

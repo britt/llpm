@@ -59,6 +59,7 @@ jobs:
         npm init -y
         
     - name: Test package installation (dry run)
+      shell: bash
       run: |
         cd test-install
         # Create a local tarball to test installation
@@ -124,11 +125,14 @@ jobs:
           
           try {
             findBinaryPath();
+            console.log('❌ CLI stub should have thrown an error');
+            process.exit(1);
           } catch (err) {
             if (err.message.includes('not found')) {
               console.log('✅ CLI stub correctly detects missing binary');
             } else {
-              throw err;
+              console.log('❌ Unexpected error:', err.message);
+              process.exit(1);
             }
           }
         "
