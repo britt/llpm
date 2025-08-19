@@ -7,6 +7,7 @@ import { clearCommand } from './clear';
 import { projectCommand } from './project';
 import { githubCommand } from './github';
 import { debugCommand } from './debug';
+import { modelCommand } from './model';
 import { debug } from '../utils/logger';
 
 const commandRegistry: CommandRegistry = {
@@ -17,7 +18,8 @@ const commandRegistry: CommandRegistry = {
   clear: clearCommand,
   project: projectCommand,
   github: githubCommand,
-  debug: debugCommand
+  debug: debugCommand,
+  model: modelCommand
 };
 
 export function getCommandRegistry(): CommandRegistry {

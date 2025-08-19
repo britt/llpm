@@ -1,0 +1,105 @@
+export type ModelProvider = 'openai' | 'anthropic' | 'groq' | 'google-vertex';
+
+export interface ModelConfig {
+  provider: ModelProvider;
+  modelId: string;
+  displayName: string;
+  description?: string;
+}
+
+export interface ModelProviderConfig {
+  provider: ModelProvider;
+  apiKey?: string;
+  baseURL?: string;
+  region?: string; // For Google Vertex
+  projectId?: string; // For Google Vertex
+}
+
+export const DEFAULT_MODELS: Record<ModelProvider, ModelConfig[]> = {
+  openai: [
+    {
+      provider: 'openai',
+      modelId: 'gpt-5',
+      displayName: 'GPT-5',
+      description: 'Next-generation OpenAI model'
+    },
+    {
+      provider: 'openai',
+      modelId: 'gpt-4o',
+      displayName: 'GPT-4o',
+      description: 'Most capable GPT-4 model'
+    },
+    {
+      provider: 'openai',
+      modelId: 'gpt-4o-mini',
+      displayName: 'GPT-4o Mini',
+      description: 'Fast and efficient model'
+    },
+    {
+      provider: 'openai',
+      modelId: 'gpt-4.1-mini',
+      displayName: 'GPT-4.1 Mini',
+      description: 'Improved GPT-4 model'
+    },
+    {
+      provider: 'openai',
+      modelId: 'gpt-4.1-turbo',
+      displayName: 'GPT-4.1 Turbo',
+      description: 'High-performance GPT-4.1 model'
+    },
+    {
+      provider: 'openai',
+      modelId: 'gpt-4-turbo',
+      displayName: 'GPT-4 Turbo',
+      description: 'High-performance GPT-4 model'
+    }
+  ],
+  anthropic: [
+    {
+      provider: 'anthropic',
+      modelId: 'claude-3-5-sonnet-20241022',
+      displayName: 'Claude 3.5 Sonnet',
+      description: 'Most capable Claude model'
+    },
+    {
+      provider: 'anthropic',
+      modelId: 'claude-3-haiku-20240307',
+      displayName: 'Claude 3 Haiku',
+      description: 'Fast and efficient Claude model'
+    }
+  ],
+  groq: [
+    {
+      provider: 'groq',
+      modelId: 'llama-3.1-70b-versatile',
+      displayName: 'Llama 3.1 70B',
+      description: 'Large Llama model on Groq'
+    },
+    {
+      provider: 'groq',
+      modelId: 'llama-3.1-8b-instant',
+      displayName: 'Llama 3.1 8B',
+      description: 'Fast Llama model on Groq'
+    }
+  ],
+  'google-vertex': [
+    {
+      provider: 'google-vertex',
+      modelId: 'gemini-1.5-pro',
+      displayName: 'Gemini 1.5 Pro',
+      description: 'Most capable Gemini model'
+    },
+    {
+      provider: 'google-vertex',
+      modelId: 'gemini-1.5-flash',
+      displayName: 'Gemini 1.5 Flash',
+      description: 'Fast Gemini model'
+    }
+  ]
+};
+
+export interface ModelState {
+  currentModel: ModelConfig;
+  availableModels: ModelConfig[];
+  providerConfigs: Record<ModelProvider, ModelProviderConfig>;
+}

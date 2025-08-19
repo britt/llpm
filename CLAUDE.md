@@ -152,7 +152,7 @@ For more information, read the Bun API docs in `node_modules/bun-types/docs/**.m
 
 - Commands start with `/` and are processed locally (not sent to LLM)
 - Command structure: `/command [args]`
-- Built-in commands: `/info`, `/help`, `/quit`
+- Built-in commands: `/info`, `/help`, `/quit`, `/model`
 - Create new commands in `src/commands/` directory
 - Register commands in `src/commands/registry.ts`
 - Command interface:
@@ -165,6 +165,50 @@ For more information, read the Bun API docs in `node_modules/bun-types/docs/**.m
   ```
 - System messages use 'system' role with magenta color
 - Commands are parsed before being sent to chat hook
+
+### Model Switching System
+
+- **Multi-provider support**: OpenAI, Anthropic, Groq, Google Vertex AI
+- **Dynamic switching**: Change models during conversation without restart
+- **Persistent selection**: Model choice saved to `~/.llpm/model-config.json`
+- **Environment-based config**: Uses API keys from environment variables
+- **Command interface**: `/model` command with multiple subcommands
+
+#### Model Commands
+
+- `/model` - Show current model and available providers
+- `/model list` - List available models from configured providers only
+- `/model list --all` - List all models regardless of configuration status
+- `/model current` - Show detailed current model information
+- `/model providers` - Show provider configuration status
+- `/model switch <provider>/<model-id>` - Switch to specific model
+- `/model <model-spec>` - Quick switch (shorthand)
+
+#### Model Status Indicators
+
+- 🟢 = Model is usable (provider configured)
+- 🔴 = Model needs configuration (API key missing)
+- ✅ = Provider is properly configured
+- ❌ = Provider needs configuration
+- 👉 = Currently selected model
+
+#### Model Configuration
+
+Environment variables (configure at least one):
+```env
+OPENAI_API_KEY=your-openai-key
+ANTHROPIC_API_KEY=your-anthropic-key
+GROQ_API_KEY=your-groq-key
+GOOGLE_VERTEX_PROJECT_ID=your-project-id
+GOOGLE_VERTEX_REGION=us-central1  # optional
+```
+
+#### Architecture
+
+- **ModelRegistry**: Central service managing model providers and configurations
+- **Model persistence**: Automatic saving/loading of selected model
+- **Provider factory**: Creates appropriate AI SDK instances based on provider
+- **Type-safe configuration**: Full TypeScript support for model configurations
 
 ### GitHub Integration
 

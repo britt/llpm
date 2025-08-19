@@ -10,8 +10,6 @@ export default defineConfig({
       provider: 'v8',
       reporter: ['text', 'json', 'html']
     },
-    // Enable mock hoisting so vi.mock works properly
-    hoistMocks: true,
     // Ensure DOM globals are available
     environmentOptions: {
       jsdom: {
