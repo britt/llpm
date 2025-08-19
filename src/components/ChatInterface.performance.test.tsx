@@ -1,4 +1,5 @@
 
+import '../../test/setup';
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
@@ -17,6 +18,16 @@ describe('ChatInterface Performance', () => {
   let useInputSpy: any;
 
   beforeEach(() => {
+    // Setup DOM environment
+    if (typeof (global as any).document === 'undefined') {
+      const { Window } = require('happy-dom');
+      const window = new Window({ url: 'http://localhost' });
+      (global as any).window = window;
+      (global as any).document = window.document;
+      (global as any).navigator = window.navigator;
+      (global as any).HTMLElement = window.HTMLElement;
+    }
+    
     // Spy on input history functions
     loadInputHistorySpy = vi.spyOn(inputHistory, 'loadInputHistory').mockResolvedValue([]);
     saveInputHistorySpy = vi.spyOn(inputHistory, 'saveInputHistory').mockResolvedValue(undefined);
@@ -26,8 +37,7 @@ describe('ChatInterface Performance', () => {
     listProjectsSpy = vi.spyOn(projectConfig, 'listProjects').mockResolvedValue([]);
     setCurrentProjectSpy = vi.spyOn(projectConfig, 'setCurrentProject' as any).mockResolvedValue(undefined);
     
-    // Spy on useInput hook
-    useInputSpy = vi.spyOn(ink, 'useInput').mockImplementation(() => {});
+    // Don't mock useInput to avoid hooks issues
   });
 
   afterEach(() => {
@@ -36,7 +46,6 @@ describe('ChatInterface Performance', () => {
     getCurrentProjectSpy.mockRestore();
     listProjectsSpy.mockRestore();
     setCurrentProjectSpy.mockRestore();
-    useInputSpy.mockRestore();
   });
   const createMessages = (count: number): Message[] => {
     return Array.from({ length: count }, (_, i) => ({
