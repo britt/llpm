@@ -35,6 +35,32 @@ export interface GitHubIssue {
   updated_at: string;
 }
 
+export interface GitHubPullRequest {
+  id: number;
+  number: number;
+  title: string;
+  body: string | null;
+  state: 'open' | 'closed' | 'merged';
+  html_url: string;
+  user: {
+    login: string;
+    html_url: string;
+  };
+  head: {
+    ref: string;
+    sha: string;
+  };
+  base: {
+    ref: string;
+    sha: string;
+  };
+  draft: boolean;
+  mergeable: boolean | null;
+  created_at: string;
+  updated_at: string;
+  merged_at: string | null;
+}
+
 let octokit: Octokit | null = null;
 
 async function getGitHubToken(): Promise<string> {
@@ -725,5 +751,188 @@ export async function searchIssues(
       throw new Error(`Failed to search GitHub issues: ${error.message}`);
     }
     throw new Error('Failed to search GitHub issues: Unknown error');
+  }
+}
+
+export async function listPullRequests(
+  owner: string,
+  repo: string,
+  options: {
+    state?: 'open' | 'closed' | 'all';
+    head?: string;
+    base?: string;
+    sort?: 'created' | 'updated' | 'popularity' | 'long-running';
+    direction?: 'asc' | 'desc';
+    per_page?: number;
+  } = {}
+): Promise<GitHubPullRequest[]> {
+  debug('Listing GitHub pull requests:', owner, repo, 'options:', options);
+
+  try {
+    await initializeOctokit();
+    const octokit = getOctokit();
+
+    const apiParams = {
+      owner,
+      repo,
+      state: options.state || 'open',
+      ...(options.head && { head: options.head }),
+      ...(options.base && { base: options.base }),
+      sort: options.sort || 'created',
+      direction: options.direction || 'desc',
+      per_page: options.per_page || 30
+    };
+
+    if (getVerbose()) {
+      debug('🌐 GitHub API Call: GET /repos/:owner/:repo/pulls');
+      debug('📋 Parameters:', JSON.stringify(apiParams, null, 2));
+    }
+
+    const { data } = await octokit.rest.pulls.list(apiParams);
+
+    if (getVerbose()) {
+      debug('✅ GitHub API Response: received', data.length, 'pull requests');
+      debug(
+        '📊 Response data preview:',
+        JSON.stringify(
+          data.slice(0, 2).map(pr => ({
+            number: pr.number,
+            title: pr.title,
+            state: pr.state,
+            user: pr.user?.login,
+            head: pr.head.ref,
+            base: pr.base.ref,
+            draft: pr.draft
+          })),
+          null,
+          2
+        )
+      );
+    }
+
+    const pullRequests: GitHubPullRequest[] = data.map(pr => ({
+      id: pr.id,
+      number: pr.number,
+      title: pr.title,
+      body: pr.body || null,
+      state: pr.merged_at ? 'merged' : (pr.state as 'open' | 'closed'),
+      html_url: pr.html_url,
+      user: {
+        login: pr.user?.login || 'unknown',
+        html_url: pr.user?.html_url || ''
+      },
+      head: {
+        ref: pr.head.ref,
+        sha: pr.head.sha
+      },
+      base: {
+        ref: pr.base.ref,
+        sha: pr.base.sha
+      },
+      draft: pr.draft || false,
+      mergeable: (pr as any).mergeable,
+      created_at: pr.created_at,
+      updated_at: pr.updated_at,
+      merged_at: pr.merged_at
+    }));
+
+    debug('Retrieved', pullRequests.length, 'pull requests');
+    return pullRequests;
+  } catch (error) {
+    debug('Error listing GitHub pull requests:', error instanceof Error ? error.message : 'Unknown error');
+    if (error instanceof Error) {
+      throw new Error(`Failed to list GitHub pull requests: ${error.message}`);
+    }
+    throw new Error('Failed to list GitHub pull requests: Unknown error');
+  }
+}
+
+export async function createPullRequest(
+  owner: string,
+  repo: string,
+  title: string,
+  head: string,
+  base: string,
+  body?: string,
+  draft?: boolean
+): Promise<GitHubPullRequest> {
+  debug('Creating GitHub pull request:', owner, repo, title, `${head} -> ${base}`);
+
+  try {
+    await initializeOctokit();
+    const octokit = getOctokit();
+
+    const apiParams = {
+      owner,
+      repo,
+      title,
+      head,
+      base,
+      ...(body && { body }),
+      ...(draft !== undefined && { draft })
+    };
+
+    if (getVerbose()) {
+      debug('🌐 GitHub API Call: POST /repos/:owner/:repo/pulls');
+      debug('📋 Parameters:', JSON.stringify(apiParams, null, 2));
+    }
+
+    const { data } = await octokit.rest.pulls.create(apiParams);
+
+    if (getVerbose()) {
+      debug('✅ GitHub API Response: pull request created');
+      debug(
+        '📊 Response data:',
+        JSON.stringify(
+          {
+            number: data.number,
+            title: data.title,
+            state: data.state,
+            html_url: data.html_url,
+            user: data.user?.login,
+            head: data.head.ref,
+            base: data.base.ref,
+            draft: data.draft
+          },
+          null,
+          2
+        )
+      );
+    }
+
+    const pullRequest: GitHubPullRequest = {
+      id: data.id,
+      number: data.number,
+      title: data.title,
+      body: data.body || null,
+      state: data.merged_at ? 'merged' : (data.state as 'open' | 'closed'),
+      html_url: data.html_url,
+      user: {
+        login: data.user?.login || 'unknown',
+        html_url: data.user?.html_url || ''
+      },
+      head: {
+        ref: data.head.ref,
+        sha: data.head.sha
+      },
+      base: {
+        ref: data.base.ref,
+        sha: data.base.sha
+      },
+      draft: data.draft || false,
+      mergeable: (data as any).mergeable,
+      created_at: data.created_at,
+      updated_at: data.updated_at,
+      merged_at: data.merged_at
+    };
+
+    debug('Created pull request #' + pullRequest.number + ':', pullRequest.title);
+    return pullRequest;
+  } catch (error) {
+    debug('Error creating GitHub pull request:', error instanceof Error ? error.message : 'Unknown error');
+    if (error instanceof Error) {
+      throw new Error(`Failed to create GitHub pull request: ${error.message}`);
+    }
+    throw new Error('Failed to create GitHub pull request: Unknown error');
   }
 }
