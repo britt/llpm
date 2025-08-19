@@ -15,7 +15,7 @@ class ModelRegistry {
 
   constructor() {
     // Default to GPT-4o mini, but will be overridden by init()
-    this.currentModel = DEFAULT_MODEL_CONFIGS.openai[1]!;
+    this.currentModel = DEFAULT_MODEL_CONFIGS.openai.find(m => m.modelId === 'gpt-4o-mini')!;
     
     this.providerConfigs = {
       openai: {
