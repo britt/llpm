@@ -6,6 +6,12 @@ import { parseCommand, executeCommand } from '../commands/registry';
 import { loadChatHistory, saveChatHistory } from '../utils/chatHistory';
 import { getCurrentProject } from '../utils/projectConfig';
 
+interface QueuedMessage {
+  id: string;
+  content: string;
+  timestamp: number;
+}
+
 let messageCounter = 0;
 function generateMessageId(): string {
   messageCounter += 1;
@@ -21,12 +27,23 @@ export function useChat() {
     type: 'model-select'; 
     models: Array<{id: string, label: string, value: string}> 
   } | null>(null);
-  const messagesRef = useRef<Message[]>([]);
   
-  // Keep ref in sync with messages
+  // Message queue state
+  const [messageQueue, setMessageQueue] = useState<QueuedMessage[]>([]);
+  const [isProcessing, setIsProcessing] = useState(false);
+  
+  const messagesRef = useRef<Message[]>([]);
+  const processingRef = useRef(false);
+  
+  // Keep refs in sync with state
   useEffect(() => {
     messagesRef.current = messages;
   }, [messages]);
+
+  useEffect(() => {
+    processingRef.current = isProcessing;
+  }, [isProcessing]);
+
 
   // Load chat history on component mount and when project changes
   useEffect(() => {
@@ -112,9 +129,10 @@ export function useChat() {
     }
   }, [messages, historyLoaded]);
 
-  const sendMessage = useCallback(
+  // Process a message immediately (internal function)
+  const processMessageImmediate = useCallback(
     async (content: string) => {
-      debug('sendMessage called with:', content);
+      debug('processMessageImmediate called with:', content);
 
       // Check if this is a command
       const parsed = parseCommand(content);
@@ -210,7 +228,7 @@ export function useChat() {
         setMessages(prev => [...prev, assistantMessage]);
         debug('Added assistant response to state');
       } catch (error) {
-        debug('Error in sendMessage:', error);
+        debug('Error in processMessageImmediate:', error);
 
         let errorContent = 'Sorry, I encountered an error. Please try again.';
 
@@ -233,7 +251,84 @@ export function useChat() {
         debug('Set loading state to false');
       }
     },
-    [] // Remove messages dependency to prevent recreation on every message
+    []
+  );
+
+  // Auto-process queue when processing completes and messages are queued
+  useEffect(() => {
+    if (!isProcessing && messageQueue.length > 0) {
+      debug('Processing completed and queue has messages, triggering processNextMessage');
+      // Process next message from queue inline
+      (async () => {
+        if (processingRef.current || messageQueue.length === 0) {
+          debug('processNextMessage: skipping - processing:', processingRef.current, 'queue length:', messageQueue.length);
+          return;
+        }
+
+        debug('processNextMessage: dequeuing next message');
+        setIsProcessing(true);
+
+        // Get and remove the first message from queue
+        const nextMessage = messageQueue[0];
+        if (!nextMessage) {
+          debug('processNextMessage: no message found in queue');
+          setIsProcessing(false);
+          return;
+        }
+        
+        setMessageQueue(prev => prev.slice(1));
+
+        try {
+          await processMessageImmediate(nextMessage.content);
+          debug('processNextMessage: completed processing message:', nextMessage.id);
+        } catch (error) {
+          debug('processNextMessage: error processing message:', error);
+        } finally {
+          setIsProcessing(false);
+          debug('processNextMessage: set processing to false');
+        }
+      })();
+    }
+  }, [isProcessing, messageQueue, processMessageImmediate]);
+
+  const sendMessage = useCallback(
+    async (content: string) => {
+      debug('sendMessage called with:', content);
+
+      // Don't process empty messages
+      const trimmedContent = content.trim();
+      if (!trimmedContent) {
+        debug('sendMessage: ignoring empty message');
+        return;
+      }
+
+      const queuedMessage: QueuedMessage = {
+        id: generateMessageId(),
+        content: trimmedContent,
+        timestamp: Date.now()
+      };
+
+      // If not currently processing, process immediately
+      if (!processingRef.current && messageQueue.length === 0) {
+        debug('sendMessage: processing immediately (not busy)');
+        setIsProcessing(true);
+        
+        try {
+          await processMessageImmediate(queuedMessage.content);
+          debug('sendMessage: completed immediate processing');
+        } catch (error) {
+          debug('sendMessage: error in immediate processing:', error);
+        } finally {
+          setIsProcessing(false);
+        }
+      } else {
+        // Add to queue and wait for processing
+        debug('sendMessage: adding to queue (currently processing or queue not empty)');
+        setMessageQueue(prev => [...prev, queuedMessage]);
+        debug('sendMessage: queue length after adding:', messageQueue.length + 1);
+      }
+    },
+    [messageQueue, processMessageImmediate]
   );
 
   const addSystemMessage = useCallback((content: string) => {
@@ -287,6 +382,10 @@ export function useChat() {
     isLoading,
     interactiveCommand,
     handleModelSelect,
-    cancelModelSelection
+    cancelModelSelection,
+    // Queue status for UI indicators
+    queueLength: messageQueue.length,
+    isProcessing,
+    queuedMessages: messageQueue
   };
 }
