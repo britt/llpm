@@ -19,9 +19,27 @@ export const DEFAULT_MODELS: Record<ModelProvider, ModelConfig[]> = {
   openai: [
     {
       provider: 'openai',
+      modelId: 'o4-mini',
+      displayName: 'o4 Mini',
+      description: 'Fast and efficient reasoning model'
+    },
+    {
+      provider: 'openai',
       modelId: 'gpt-5',
       displayName: 'GPT-5',
       description: 'Next-generation OpenAI model'
+    },
+    {
+      provider: 'openai',
+      modelId: 'gpt-5-mini',
+      displayName: 'GPT-5 Mini',
+      description: 'Fast and efficient GPT-5 model'
+    },
+    {
+      provider: 'openai',
+      modelId: 'gpt-5-nano',
+      displayName: 'GPT-5 Nano',
+      description: 'Ultra-lightweight GPT-5 model'
     },
     {
       provider: 'openai',
