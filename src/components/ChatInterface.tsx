@@ -1,4 +1,4 @@
-import React, { useState, useEffect, memo, useMemo } from 'react';
+import React, { useState, useEffect, memo, useMemo, useCallback, useRef } from 'react';
 import { Box, Text, useInput } from 'ink';
 import Spinner from 'ink-spinner';
 import Link from 'ink-link';
@@ -37,6 +37,15 @@ export const ChatInterface = memo(function ChatInterface({
   const [currentProject, setCurrentProject] = useState<Project | null>(null);
   const [showProjectSelector, setShowProjectSelector] = useState(false);
   const [availableProjects, setAvailableProjects] = useState<Project[]>([]);
+  
+  // Use ref to track input changes without causing re-renders
+  const inputRef = useRef(input);
+  
+  // Optimized input change handler that minimizes re-renders
+  const handleInputChange = useCallback((value: string) => {
+    inputRef.current = value;
+    setInput(value);
+  }, []);
 
   // Load input history on mount
   useEffect(() => {
@@ -58,13 +67,13 @@ export const ChatInterface = memo(function ChatInterface({
 
     loadCurrentProject();
 
-    // Check for project changes every 10 seconds
-    const interval = setInterval(loadCurrentProject, 10000);
+    // Check for project changes every 30 seconds (reduced frequency)
+    const interval = setInterval(loadCurrentProject, 30000);
     return () => clearInterval(interval);
   }, []);
 
-  // Handle project selection
-  const handleProjectSelect = async (item: { label: string; value: string }) => {
+  // Handle project selection - memoized to prevent re-creation
+  const handleProjectSelect = useCallback(async (item: { label: string; value: string }) => {
     try {
       if (item.value === '__create_new__') {
         // Handle "Create New Project" option
@@ -102,7 +111,7 @@ To add a new project, complete the command with these parameters:
       console.error('Failed to set current project:', error);
       setShowProjectSelector(false);
     }
-  };
+  }, [onAddSystemMessage]);
 
   // Memoize project selector items
   const projectItems = useMemo(() => {
@@ -120,8 +129,8 @@ To add a new project, complete the command with these parameters:
     return items;
   }, [availableProjects]);
 
-  // Handle input submission
-  const handleInputSubmit = (value: string) => {
+  // Handle input submission - memoized to prevent re-creation
+  const handleInputSubmit = useCallback((value: string) => {
     if (value.trim() && !isLoading) {
       // Add to history (avoid duplicates)
       setInputHistory(prev => {
@@ -138,67 +147,83 @@ To add a new project, complete the command with these parameters:
       setInput('');
       setHistoryIndex(-1);
     }
-  };
+  }, [isLoading, onSendMessage]);
 
-  // Function to parse content and render URLs as links
-  const renderContentWithLinks = useMemo(() => {
-    return (content: string) => {
-      const urlRegex = /https?:\/\/[^\s<>"{}|\\^`\[\]]+/gi;
-      const urls = content.match(urlRegex) || [];
+  // Memoized function to parse content and render URLs as links
+  const renderContentWithLinks = useCallback((content: string) => {
+    const urlRegex = /https?:\/\/[^\s<>"{}|\\^`\[\]]+/gi;
+    const urls = content.match(urlRegex) || [];
+    
+    if (urls.length === 0) {
+      return content;
+    }
+    
+    const result: React.ReactNode[] = [];
+    let lastIndex = 0;
+    
+    urls.forEach((url, index) => {
+      const urlIndex = content.indexOf(url, lastIndex);
       
-      if (urls.length === 0) {
-        return content;
+      // Add text before the URL
+      if (urlIndex > lastIndex) {
+        result.push(content.slice(lastIndex, urlIndex));
       }
       
-      const result: React.ReactNode[] = [];
-      let lastIndex = 0;
+      // Add the link
+      result.push(
+        <Link key={`link-${index}`} url={url}>
+          <Text color="cyan" underline>{url}</Text>
+        </Link>
+      );
       
-      urls.forEach((url, index) => {
-        const urlIndex = content.indexOf(url, lastIndex);
-        
-        // Add text before the URL
-        if (urlIndex > lastIndex) {
-          result.push(content.slice(lastIndex, urlIndex));
-        }
-        
-        // Add the link
-        result.push(
-          <Link key={`link-${index}`} url={url}>
-            <Text color="cyan" underline>{url}</Text>
-          </Link>
-        );
-        
-        lastIndex = urlIndex + url.length;
-      });
-      
-      // Add remaining text after the last URL
-      if (lastIndex < content.length) {
-        result.push(content.slice(lastIndex));
-      }
-      
-      return result;
-    };
+      lastIndex = urlIndex + url.length;
+    });
+    
+    // Add remaining text after the last URL
+    if (lastIndex < content.length) {
+      result.push(content.slice(lastIndex));
+    }
+    
+    return result;
   }, []);
 
   // Individual message component to prevent full rerenders
   const MessageItem = memo(({ message, index }: { message: Message; index: number }) => {
-    const speakerIndicator = message.role === 'user' ? '👤 You:   ' : message.role === 'system' ? '⚙️ System: ' : '🤖 PM:    ';
+    const speakerIndicator = useMemo(() => {
+      return message.role === 'user' ? '👤 You:   ' : message.role === 'system' ? '⚙️ System: ' : '🤖 PM:    ';
+    }, [message.role]);
+    
+    const messageColor = useMemo(() => {
+      return message.role === 'user' ? 'blue' : message.role === 'system' ? 'magenta' : 'white';
+    }, [message.role]);
+    
+    // Memoize rendered content to prevent re-processing on every render
+    const renderedContent = useMemo(() => {
+      return renderContentWithLinks(message.content);
+    }, [message.content, renderContentWithLinks]);
     
     return (
       <Box key={message.id || `fallback-${index}`} marginBottom={1}>
         <Box flexDirection="row">
-          <Text color={message.role === 'user' ? 'blue' : message.role === 'system' ? 'magenta' : 'white'} bold>
+          <Text color={messageColor} bold>
             {speakerIndicator}
           </Text>
           <Box flexDirection="column" flexShrink={1}>
-            <Text color={message.role === 'user' ? 'blue' : message.role === 'system' ? 'magenta' : 'white'} bold>
-              {renderContentWithLinks(message.content)}
+            <Text color={messageColor} bold>
+              {renderedContent}
             </Text>
           </Box>
         </Box>
       </Box>
     );
   });
+
+  // Memoize the rendered messages list to prevent unnecessary re-renders
+  const renderedMessages = useMemo(() => {
+    return messages.map((message, index) => (
+      <MessageItem key={message.id || `fallback-${index}`} message={message} index={index} />
+    ));
+  }, [messages]);
 
   useInput((inputChar, key) => {
     // Handle project selector
@@ -234,8 +259,7 @@ To add a new project, complete the command with these parameters:
     // Handle Ctrl+E to move cursor to end (note: this may not work with TextInput focus)
     if (key.ctrl && inputChar === 'e') {
       // This is a hint for users - the actual cursor movement would need to be handled by TextInput
-      // For now, we'll just ensure the input value is set (which puts cursor at end)
-      setInput(input);
+      // No need to setInput(input) as it's redundant and causes unnecessary re-renders
       return;
     }
 
@@ -373,9 +397,7 @@ To add a new project, complete the command with these parameters:
     <Box flexDirection="column" height="100%">
       {/* Messages - no border, fills available space */}
       <Box flexDirection="column" flexGrow={1} paddingX={1}>
-        {messages.map((message, index) => (
-          <MessageItem key={message.id || `fallback-${index}`} message={message} index={index} />
-        ))}
+        {renderedMessages}
         {isLoading && (
           <Box>
             <Text color="yellow">
@@ -390,7 +412,7 @@ To add a new project, complete the command with these parameters:
       <Box borderStyle="single" paddingX={1}>
         <TextInput
           value={input}
-          onChange={setInput}
+          onChange={handleInputChange}
           onSubmit={handleInputSubmit}
           placeholder="Type your message..."
         />
