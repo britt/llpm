@@ -20,8 +20,8 @@ console.log('🚀 Testing BLAZING FAST input performance...');
 const { lastFrame, stdin, unmount } = render(React.createElement(ChatInterface, mockProps));
 
 // Test rapid typing simulation
-const testText = "The quick brown fox jumps over the lazy dog";
-const typingSpeed = 1; // 1ms between keystrokes - VERY FAST
+const testText = "The quick brown fox jumps over the lazy dog and then some more text to test sustained typing performance at high speeds";
+const typingSpeed = 8.33; // 120 WPM = ~10 chars/sec = 100ms per char, but let's test even faster at 8.33ms (120 chars/sec)
 
 console.log(`⚡ Simulating typing at ${typingSpeed}ms per character...`);
 console.log(`📝 Text to type: "${testText}"`);
