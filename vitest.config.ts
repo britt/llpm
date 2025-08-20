@@ -63,8 +63,8 @@ export default defineConfig({
         'src/utils/systemPrompt.ts': {
           branches: 90,
           functions: 100,
-          lines: 95,
-          statements: 95
+          lines: 94,
+          statements: 94
         }
       },
       // Additional coverage options

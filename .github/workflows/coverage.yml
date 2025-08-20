@@ -33,11 +33,14 @@ jobs:
       run: bun run test --coverage
 
     - name: Upload coverage to Codecov
-      # Only upload if tests succeeded
-      if: success()
-      uses: codecov/codecov-action@v3
+      # Only upload if tests succeeded and token is available
+      if: success() && env.CODECOV_TOKEN != ''
+      uses: codecov/codecov-action@v4
       with:
         file: ./coverage/lcov.info
         flags: unittests
         name: codecov-umbrella
         fail_ci_if_error: false
+        token: ${{ secrets.CODECOV_TOKEN }}
+      env:
+        CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
