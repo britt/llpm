@@ -196,6 +196,10 @@ bun run test
 - `bun run test` - Run test suite
 - `bun run test:watch` - Run tests in watch mode
 - `bun run test:ui` - Run tests with UI
+- `bun run test:coverage` - Run tests with coverage report
+- `bun run typecheck` - Run TypeScript type checking
+- `bun run lint` - Run ESLint
+- `bun run format` - Format code with Prettier
 
 ### Debug Mode
 

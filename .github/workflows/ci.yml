@@ -1,0 +1,134 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  test:
+    name: Test Coverage
+    runs-on: ${{ matrix.os }}
+    
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        node-version: [18.x, 20.x, 22.x]
+        include:
+          - os: ubuntu-latest
+            node-version: 22.x
+            coverage: true
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Bun
+      uses: oven-sh/setup-bun@v2
+      with:
+        bun-version: latest
+        
+    - name: Cache dependencies
+      uses: actions/cache@v4
+      with:
+        path: ~/.bun/install/cache
+        key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lockb') }}
+        restore-keys: |
+          ${{ runner.os }}-bun-
+          
+    - name: Install dependencies
+      run: bun install
+      
+    - name: Run type checking
+      run: bun run typecheck
+      
+    - name: Run tests
+      run: bun test --coverage --run
+      env:
+        # Provide test API keys to prevent validation errors
+        OPENAI_API_KEY: test-key-for-ci
+        ANTHROPIC_API_KEY: test-key-for-ci
+        GROQ_API_KEY: test-key-for-ci
+        GOOGLE_VERTEX_PROJECT_ID: test-project-for-ci
+        
+    - name: Upload coverage reports to Codecov
+      if: matrix.coverage && env.CODECOV_TOKEN != ''
+      uses: codecov/codecov-action@v4
+      with:
+        file: ./coverage/lcov.info
+        flags: unittests
+        name: codecov-umbrella
+        fail_ci_if_error: false
+        token: ${{ secrets.CODECOV_TOKEN }}
+      env:
+        CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+        
+    - name: Upload coverage artifacts
+      if: matrix.coverage
+      uses: actions/upload-artifact@v4
+      with:
+        name: coverage-reports
+        path: |
+          coverage/
+          !coverage/tmp/
+        retention-days: 30
+
+  build:
+    name: Build Check
+    runs-on: ubuntu-latest
+    needs: test
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Bun
+      uses: oven-sh/setup-bun@v2
+      with:
+        bun-version: latest
+        
+    - name: Install dependencies
+      run: bun install
+      
+    - name: Run type checking
+      run: bun run typecheck
+      
+    - name: Test build process
+      run: |
+        # Test that postinstall script works
+        LLPM_TEST_MODE=true bun run postinstall
+        
+        # Verify the built CLI can start (with mock keys)
+        # In CI, the CLI will exit with code 1 due to raw mode not being supported
+        # This is expected behavior, so we check that it gets past initialization
+        timeout 5s bun start --verbose 2>&1 | tee cli_output.log || exit_code=$?
+        
+        # Check if the CLI got past initialization (shows our code works)
+        if grep -q "Starting LLPM CLI" cli_output.log && grep -q "Environment validation passed" cli_output.log; then
+          echo "✅ CLI initialization successful (raw mode error is expected in CI)"
+          exit 0
+        else
+          echo "❌ CLI failed during initialization"
+          cat cli_output.log
+          exit 1
+        fi
+      env:
+        OPENAI_API_KEY: test-key-for-build
+        
+  security:
+    name: Security Audit
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Bun
+      uses: oven-sh/setup-bun@v2
+      with:
+        bun-version: latest
+        
+    - name: Run security audit
+      run: bun audit
+      continue-on-error: true
