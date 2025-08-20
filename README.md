@@ -224,18 +224,29 @@ LLPM stores configuration in `~/.llpm/`:
 
 - `config.json` - Project configurations and current project
 - `chat-sessions/` - Persistent chat history by session
-- `system-prompt.txt` - Custom system prompt (optional)
+- `system_prompt.txt` - Custom system prompt (automatically created on first run)
 
 ### Custom System Prompt
 
-You can customize the AI assistant's behavior by creating a custom system prompt:
+LLPM automatically creates a default system prompt file on first run. You can customize the AI assistant's behavior by editing this file:
 
 ```bash
-# Create or edit the system prompt
-echo "Your custom system prompt here..." > ~/.llpm/system-prompt.txt
+# View the current system prompt
+cat ~/.llpm/system_prompt.txt
+
+# Edit the system prompt with your preferred editor
+nano ~/.llpm/system_prompt.txt
+# or
+code ~/.llpm/system_prompt.txt
 ```
 
-If no custom prompt exists, LLPM uses a comprehensive default prompt focused on project management and GitHub integration.
+**Key features:**
+- **Automatic creation**: Default prompt is copied to `~/.llpm/system_prompt.txt` on first install/run
+- **Idempotent**: Existing customizations are preserved during updates
+- **Real-time loading**: Changes take effect on next chat session start
+- **Fallback**: If the file is corrupted or missing, LLPM falls back to the built-in default
+
+The default system prompt focuses on project management, GitHub integration, and provides access to all available tools and commands.
 
 ## Architecture
 
