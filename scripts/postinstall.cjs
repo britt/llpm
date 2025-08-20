@@ -5,6 +5,7 @@ const fs = require('fs');
 const path = require('path');
 const { createHash } = require('crypto');
 const { execSync } = require('child_process');
+const os = require('os');
 
 /**
  * Postinstall script that downloads the appropriate LLPM binary
@@ -197,11 +198,76 @@ function makeExecutable(filePath) {
   }
 }
 
+function getConfigDir() {
+  return path.join(os.homedir(), '.llpm');
+}
+
+function ensureConfigDir() {
+  const configDir = getConfigDir();
+  if (!fs.existsSync(configDir)) {
+    fs.mkdirSync(configDir, { recursive: true });
+    log(`Created config directory: ${configDir}`);
+  }
+}
+
+function initializeSystemPrompt() {
+  try {
+    log('Initializing system prompt configuration');
+    
+    ensureConfigDir();
+    const configDir = getConfigDir();
+    const promptPath = path.join(configDir, 'system_prompt.txt');
+    
+    if (fs.existsSync(promptPath)) {
+      log('System prompt file already exists, skipping initialization');
+      return;
+    }
+    
+    // Default system prompt content (matches src/utils/systemPrompt.ts)
+    const defaultPrompt = `You are LLPM (Large Language Model Product Manager), an AI-powered project manager assistant. You can help manage multiple projects and their configurations. 
+
+You have access to tools for:
+- Project management: getting current project info, listing projects, adding new projects, switching between projects, and removing projects
+- GitHub integration: browsing user repositories, searching for repositories, and getting repository details
+- GitHub issue management: creating, listing, updating, commenting on, and searching GitHub issues
+
+CRITICAL: You MUST ALWAYS provide a text response. NEVER just call tools without providing explanatory text. Even when calling tools, you must explain what you're doing and what you found. 
+
+When users ask questions:
+1. Call the appropriate tools to get the information
+2. ALWAYS provide a natural language explanation of what the tools returned
+3. Answer the user's question directly based on the tool results
+
+NEVER respond with empty text, "Action completed", "I have completed the requested action", or similar generic responses.
+
+When users ask about project management tasks or GitHub repositories, use the available tools to help them AND provide clear explanations of what you found.
+
+Key capabilities:
+1. Project Management: Help users organize their work across multiple projects, each connected to a GitHub repository
+2. GitHub Integration: Browse and search repositories to help users select the right one for their projects  
+3. GitHub Issue Management: Create and manage GitHub issues within the context of the active project
+4. Configuration: Persist project settings and preferences
+5. Chat History: Maintain conversation history per project
+
+Always ask for clarification if you need more information to help effectively.`;
+    
+    fs.writeFileSync(promptPath, defaultPrompt, 'utf-8');
+    log(`Created default system prompt file: ${promptPath}`);
+    
+  } catch (err) {
+    log(`Warning: Failed to initialize system prompt file: ${err.message}`);
+    // Don't fail the entire postinstall process for this
+  }
+}
+
 async function main() {
   try {
     log('Starting binary download and installation');
     
-    // Skip in development environments
+    // Always initialize system prompt, regardless of environment
+    initializeSystemPrompt();
+    
+    // Skip binary installation in development environments
     if (process.env.NODE_ENV === 'development' || 
         process.env.CI === 'true' || 
         process.env.GITHUB_ACTIONS === 'true' ||
@@ -307,5 +373,8 @@ module.exports = {
   constructDownloadUrl,
   downloadFile,
   extractTarGz,
-  makeExecutable
+  makeExecutable,
+  getConfigDir,
+  ensureConfigDir,
+  initializeSystemPrompt
 };
