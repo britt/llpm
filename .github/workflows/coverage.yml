@@ -44,8 +44,8 @@ jobs:
         echo "## 📊 Test Coverage Report" > coverage-summary.md
         echo "" >> coverage-summary.md
         
-        # Capture the coverage output
-        bun run test --coverage --run > coverage_output.log 2>&1
+        # Capture the coverage output and strip ANSI color codes
+        bun run test --coverage --run 2>&1 | sed 's/\x1b\[[0-9;]*m//g' > coverage_output.log
         
         # Extract test results
         TEST_COUNT=$(grep -o '[0-9]\+ passed' coverage_output.log | head -1 | grep -o '[0-9]\+')
@@ -85,13 +85,6 @@ jobs:
         # Create markdown table from coverage output
         echo "| File | Statements | Branches | Functions | Lines | Uncovered Lines |" >> coverage-summary.md
         echo "|------|------------|----------|-----------|-------|-----------------|" >> coverage-summary.md
-        
-        # Debug: Check what's in the coverage output
-        echo "Debug: Coverage output contains:" >> coverage-summary.md
-        echo '```' >> coverage-summary.md
-        head -30 coverage_output.log >> coverage-summary.md
-        echo '```' >> coverage-summary.md
-        echo "" >> coverage-summary.md
         
         # Extract coverage data and convert to table format
         awk '/% Coverage report from v8/,/^$/' coverage_output.log | \
