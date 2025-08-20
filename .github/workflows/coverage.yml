@@ -32,6 +32,55 @@ jobs:
         GOOGLE_VERTEX_PROJECT_ID: test-project-for-coverage
       run: bun run test --coverage
 
+    - name: Generate coverage summary
+      if: success()
+      run: |
+        # Generate a markdown coverage report from the console output
+        echo "## 📊 Test Coverage Report" > coverage-summary.md
+        echo "" >> coverage-summary.md
+        
+        # Capture the coverage output
+        COVERAGE_OUTPUT=$(bun run test --coverage --run 2>&1)
+        
+        # Extract test results
+        TEST_COUNT=$(echo "$COVERAGE_OUTPUT" | grep -o '[0-9]\+ passed' | head -1 | grep -o '[0-9]\+')
+        echo "**Tests:** $TEST_COUNT passed ✅" >> coverage-summary.md
+        echo "" >> coverage-summary.md
+        
+        # Extract and format overall coverage
+        OVERALL_COVERAGE=$(echo "$COVERAGE_OUTPUT" | grep "All files" | head -1)
+        if [ ! -z "$OVERALL_COVERAGE" ]; then
+          echo "### 🎯 Overall Coverage" >> coverage-summary.md
+          echo "" >> coverage-summary.md
+          echo '```' >> coverage-summary.md
+          echo "$OVERALL_COVERAGE" >> coverage-summary.md
+          echo '```' >> coverage-summary.md
+          echo "" >> coverage-summary.md
+        fi
+        
+        # Extract coverage table
+        echo "### 📋 Detailed Coverage" >> coverage-summary.md
+        echo "" >> coverage-summary.md
+        echo '```' >> coverage-summary.md
+        echo "$COVERAGE_OUTPUT" | sed -n '/Coverage report from v8/,/^$/p' >> coverage-summary.md
+        echo '```' >> coverage-summary.md
+        echo "" >> coverage-summary.md
+        echo "---" >> coverage-summary.md
+        echo "*Generated on: $(date)*" >> coverage-summary.md
+      env:
+        OPENAI_API_KEY: test-key-for-coverage
+        ANTHROPIC_API_KEY: test-key-for-coverage
+        GROQ_API_KEY: test-key-for-coverage
+        GOOGLE_VERTEX_PROJECT_ID: test-project-for-coverage
+
+    - name: Comment PR with coverage
+      if: success() && github.event_name == 'pull_request'
+      uses: thollander/actions-comment-pull-request@v2
+      with:
+        filePath: coverage-summary.md
+        comment_tag: coverage-report
+        mode: recreate
+
     - name: Upload coverage to Codecov
       # Only upload if tests succeeded and token is available
       if: success() && env.CODECOV_TOKEN != ''
