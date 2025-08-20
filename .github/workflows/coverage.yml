@@ -86,6 +86,13 @@ jobs:
         echo "| File | Statements | Branches | Functions | Lines | Uncovered Lines |" >> coverage-summary.md
         echo "|------|------------|----------|-----------|-------|-----------------|" >> coverage-summary.md
         
+        # Debug: Check what's in the coverage output
+        echo "Debug: Coverage output contains:" >> coverage-summary.md
+        echo '```' >> coverage-summary.md
+        head -30 coverage_output.log >> coverage-summary.md
+        echo '```' >> coverage-summary.md
+        echo "" >> coverage-summary.md
+        
         # Extract coverage data and convert to table format
         awk '/% Coverage report from v8/,/^$/' coverage_output.log | \
         grep -E '.*\|.*\|.*\|.*\|.*\|' | \
