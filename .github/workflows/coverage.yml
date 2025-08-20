@@ -88,7 +88,9 @@ jobs:
         
         # Extract coverage data and convert to table format
         awk '/% Coverage report from v8/,/^$/' coverage_output.log | \
-        grep -E '^\s*[A-Za-z].*\|.*\|.*\|.*\|.*\|' | \
+        grep -E '.*\|.*\|.*\|.*\|.*\|' | \
+        grep -v '^[[:space:]]*File[[:space:]]*|' | \
+        grep -v '^[[:space:]]*-*[[:space:]]*|' | \
         sed 's/^[ ]*//' | \
         sed 's/[ ]*|[ ]*/|/g' | \
         sed 's/^/| /' | \
