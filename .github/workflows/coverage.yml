@@ -45,15 +45,20 @@ jobs:
         echo "" >> coverage-summary.md
         
         # Capture the coverage output
-        COVERAGE_OUTPUT=$(bun run test --coverage --run 2>&1)
+        bun run test --coverage --run > coverage_output.log 2>&1
         
         # Extract test results
-        TEST_COUNT=$(echo "$COVERAGE_OUTPUT" | grep -o '[0-9]\+ passed' | head -1 | grep -o '[0-9]\+')
+        TEST_COUNT=$(grep -o '[0-9]\+ passed' coverage_output.log | head -1 | grep -o '[0-9]\+')
+        TEST_FILES=$(grep -o '[0-9]\+ passed ([0-9]\+)' coverage_output.log | head -1 || echo "")
+        
         echo "**Tests:** $TEST_COUNT passed ✅" >> coverage-summary.md
+        if [ ! -z "$TEST_FILES" ]; then
+          echo "**Test Files:** $TEST_FILES" >> coverage-summary.md
+        fi
         echo "" >> coverage-summary.md
         
         # Extract and format overall coverage
-        OVERALL_COVERAGE=$(echo "$COVERAGE_OUTPUT" | grep "All files" | head -1)
+        OVERALL_COVERAGE=$(grep "All files" coverage_output.log | head -1)
         if [ ! -z "$OVERALL_COVERAGE" ]; then
           echo "### 🎯 Overall Coverage" >> coverage-summary.md
           echo "" >> coverage-summary.md
@@ -63,11 +68,11 @@ jobs:
           echo "" >> coverage-summary.md
         fi
         
-        # Extract coverage table
+        # Extract coverage table - improved approach
         echo "### 📋 Detailed Coverage" >> coverage-summary.md
         echo "" >> coverage-summary.md
         echo '```' >> coverage-summary.md
-        echo "$COVERAGE_OUTPUT" | sed -n '/Coverage report from v8/,/^$/p' >> coverage-summary.md
+        awk '/% Coverage report from v8/,/^$/' coverage_output.log | grep -v '^$' >> coverage-summary.md
         echo '```' >> coverage-summary.md
         echo "" >> coverage-summary.md
         echo "---" >> coverage-summary.md
