@@ -1,6 +1,8 @@
 import '../../test/setup';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { getCommandRegistry, parseCommand, executeCommand } from './registry';
+import * as systemPrompt from '../utils/systemPrompt';
+import * as markdownHighlight from '../utils/markdownHighlight';
 
 describe('commandRegistry', () => {
   beforeEach(() => {
@@ -177,6 +179,70 @@ describe('commandRegistry', () => {
       
       expect(result.success).toBe(true);
       expect(result.content).toBeTruthy();
+    });
+
+    describe('info prompt integration', () => {
+      it('should execute /info prompt command successfully', async () => {
+        const mockPrompt = 'Integration test system prompt content';
+        const mockHighlighted = 'Highlighted integration test system prompt content';
+        
+        vi.spyOn(systemPrompt, 'getSystemPrompt').mockResolvedValue(mockPrompt);
+        vi.spyOn(markdownHighlight, 'highlightMarkdown').mockReturnValue(mockHighlighted);
+
+        const parseResult = parseCommand('/info prompt');
+        expect(parseResult.isCommand).toBe(true);
+        expect(parseResult.command).toBe('info');
+        expect(parseResult.args).toEqual(['prompt']);
+
+        const executeResult = await executeCommand('info', ['prompt']);
+        
+        expect(executeResult.success).toBe(true);
+        expect(executeResult.content).toContain('📋 Current System Prompt:');
+        expect(executeResult.content).toContain(mockHighlighted);
+      });
+
+      it('should handle /info prompt parsing and execution with case insensitive sub-command', async () => {
+        const mockPrompt = 'Test prompt for case insensitive test';
+        const mockHighlighted = 'Highlighted test prompt for case insensitive test';
+        
+        vi.spyOn(systemPrompt, 'getSystemPrompt').mockResolvedValue(mockPrompt);
+        vi.spyOn(markdownHighlight, 'highlightMarkdown').mockReturnValue(mockHighlighted);
+
+        const parseResult = parseCommand('/info PROMPT');
+        const executeResult = await executeCommand(parseResult.command!, parseResult.args);
+        
+        expect(executeResult.success).toBe(true);
+        expect(executeResult.content).toContain(mockHighlighted);
+      });
+
+      it('should handle /info prompt errors through full command pipeline', async () => {
+        vi.spyOn(systemPrompt, 'getSystemPrompt').mockRejectedValue(new Error('Integration test error'));
+
+        const parseResult = parseCommand('/info prompt');
+        const executeResult = await executeCommand(parseResult.command!, parseResult.args);
+        
+        expect(executeResult.success).toBe(false);
+        expect(executeResult.content).toContain('❌ Error retrieving system prompt:');
+        expect(executeResult.content).toContain('Integration test error');
+      });
+
+      it('should handle /info with unknown sub-command through full pipeline', async () => {
+        const parseResult = parseCommand('/info unknown');
+        const executeResult = await executeCommand(parseResult.command!, parseResult.args);
+        
+        expect(executeResult.success).toBe(false);
+        expect(executeResult.content).toContain('❌ Unknown sub-command: unknown');
+        expect(executeResult.content).toContain('Available sub-commands: prompt');
+      });
+
+      it('should still execute regular /info command when no args provided', async () => {
+        const parseResult = parseCommand('/info');
+        const executeResult = await executeCommand(parseResult.command!, parseResult.args);
+        
+        expect(executeResult.success).toBe(true);
+        expect(executeResult.content).toContain('📱 LLPM v0.2.1');
+        expect(executeResult.content).not.toContain('📋 Current System Prompt:');
+      });
     });
   });
 });
