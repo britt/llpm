@@ -3,6 +3,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { infoCommand } from './info';
 import * as projectConfig from '../utils/projectConfig';
 import { modelRegistry } from '../services/modelRegistry';
+import * as systemPrompt from '../utils/systemPrompt';
 
 describe('infoCommand', () => {
   beforeEach(() => {
@@ -28,7 +29,7 @@ describe('infoCommand', () => {
     const result = await infoCommand.execute([]);
 
     expect(result.success).toBe(true);
-    expect(result.content).toContain('📱 LLPM v0.1.0');
+    expect(result.content).toContain('📱 LLPM v0.2.1');
     expect(result.content).toContain('📝 AI-powered Large Language Model Product Manager');
     expect(result.content).toContain('🤖 Model: GPT-4o Mini (openai)');
     expect(result.content).toContain('⚡ Runtime: Bun');
@@ -113,7 +114,60 @@ describe('infoCommand', () => {
     await expect(infoCommand.execute([])).rejects.toThrow('Config error');
   });
 
-  it('should ignore command arguments', async () => {
+  describe('prompt sub-command', () => {
+    it('should return system prompt when prompt sub-command is used', async () => {
+      const mockPrompt = 'Test system prompt content for testing';
+      vi.spyOn(systemPrompt, 'getSystemPrompt').mockResolvedValue(mockPrompt);
+
+      const result = await infoCommand.execute(['prompt']);
+
+      expect(result.success).toBe(true);
+      expect(result.content).toContain('📋 Current System Prompt:');
+      expect(result.content).toContain(mockPrompt);
+    });
+
+    it('should handle prompt sub-command case insensitively', async () => {
+      const mockPrompt = 'Test system prompt';
+      vi.spyOn(systemPrompt, 'getSystemPrompt').mockResolvedValue(mockPrompt);
+
+      const result = await infoCommand.execute(['PROMPT']);
+
+      expect(result.success).toBe(true);
+      expect(result.content).toContain('📋 Current System Prompt:');
+      expect(result.content).toContain(mockPrompt);
+    });
+
+    it('should handle errors when getting system prompt', async () => {
+      const errorMessage = 'Failed to read system prompt';
+      vi.spyOn(systemPrompt, 'getSystemPrompt').mockRejectedValue(new Error(errorMessage));
+
+      const result = await infoCommand.execute(['prompt']);
+
+      expect(result.success).toBe(false);
+      expect(result.content).toContain('❌ Error retrieving system prompt:');
+      expect(result.content).toContain(errorMessage);
+    });
+
+    it('should handle unknown errors when getting system prompt', async () => {
+      vi.spyOn(systemPrompt, 'getSystemPrompt').mockRejectedValue('String error');
+
+      const result = await infoCommand.execute(['prompt']);
+
+      expect(result.success).toBe(false);
+      expect(result.content).toContain('❌ Error retrieving system prompt:');
+      expect(result.content).toContain('Unknown error');
+    });
+
+    it('should return error for unknown sub-commands', async () => {
+      const result = await infoCommand.execute(['unknown']);
+
+      expect(result.success).toBe(false);
+      expect(result.content).toContain('❌ Unknown sub-command: unknown');
+      expect(result.content).toContain('Available sub-commands: prompt');
+    });
+  });
+
+  it('should show basic info when no arguments provided', async () => {
     vi.spyOn(projectConfig, 'getCurrentProject').mockResolvedValue(null);
     vi.spyOn(modelRegistry, 'getCurrentModel').mockReturnValue({
       displayName: 'Test Model',
@@ -121,9 +175,9 @@ describe('infoCommand', () => {
       modelId: 'test-model'
     });
 
-    const result = await infoCommand.execute(['ignored', 'args']);
+    const result = await infoCommand.execute([]);
 
     expect(result.success).toBe(true);
-    expect(result.content).toContain('📱 LLPM v0.1.0');
+    expect(result.content).toContain('📱 LLPM v0.2.1');
   });
 });
