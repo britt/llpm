@@ -3,6 +3,7 @@ import { debug } from '../utils/logger';
 import { getCurrentProject } from '../utils/projectConfig';
 import { modelRegistry } from '../services/modelRegistry';
 import { getSystemPrompt } from '../utils/systemPrompt';
+import { highlightMarkdown } from '../utils/markdownHighlight';
 
 const packageInfo = {
   name: 'LLPM',
@@ -26,8 +27,15 @@ export const infoCommand: Command = {
         try {
           const systemPrompt = await getSystemPrompt();
           
+          // Apply markdown syntax highlighting
+          const highlightedPrompt = highlightMarkdown(systemPrompt);
+          
+          const formattedPrompt = `📋 Current System Prompt:
+
+${highlightedPrompt}`;
+          
           return {
-            content: `📋 Current System Prompt:\n\n${systemPrompt}`,
+            content: formattedPrompt,
             success: true
           };
         } catch (error) {

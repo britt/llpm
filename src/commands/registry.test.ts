@@ -2,6 +2,7 @@ import '../../test/setup';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { getCommandRegistry, parseCommand, executeCommand } from './registry';
 import * as systemPrompt from '../utils/systemPrompt';
+import * as markdownHighlight from '../utils/markdownHighlight';
 
 describe('commandRegistry', () => {
   beforeEach(() => {
@@ -183,7 +184,10 @@ describe('commandRegistry', () => {
     describe('info prompt integration', () => {
       it('should execute /info prompt command successfully', async () => {
         const mockPrompt = 'Integration test system prompt content';
+        const mockHighlighted = 'Highlighted integration test system prompt content';
+        
         vi.spyOn(systemPrompt, 'getSystemPrompt').mockResolvedValue(mockPrompt);
+        vi.spyOn(markdownHighlight, 'highlightMarkdown').mockReturnValue(mockHighlighted);
 
         const parseResult = parseCommand('/info prompt');
         expect(parseResult.isCommand).toBe(true);
@@ -194,18 +198,21 @@ describe('commandRegistry', () => {
         
         expect(executeResult.success).toBe(true);
         expect(executeResult.content).toContain('📋 Current System Prompt:');
-        expect(executeResult.content).toContain(mockPrompt);
+        expect(executeResult.content).toContain(mockHighlighted);
       });
 
       it('should handle /info prompt parsing and execution with case insensitive sub-command', async () => {
         const mockPrompt = 'Test prompt for case insensitive test';
+        const mockHighlighted = 'Highlighted test prompt for case insensitive test';
+        
         vi.spyOn(systemPrompt, 'getSystemPrompt').mockResolvedValue(mockPrompt);
+        vi.spyOn(markdownHighlight, 'highlightMarkdown').mockReturnValue(mockHighlighted);
 
         const parseResult = parseCommand('/info PROMPT');
         const executeResult = await executeCommand(parseResult.command!, parseResult.args);
         
         expect(executeResult.success).toBe(true);
-        expect(executeResult.content).toContain(mockPrompt);
+        expect(executeResult.content).toContain(mockHighlighted);
       });
 
       it('should handle /info prompt errors through full command pipeline', async () => {

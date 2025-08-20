@@ -4,6 +4,7 @@ import { infoCommand } from './info';
 import * as projectConfig from '../utils/projectConfig';
 import { modelRegistry } from '../services/modelRegistry';
 import * as systemPrompt from '../utils/systemPrompt';
+import * as markdownHighlight from '../utils/markdownHighlight';
 
 describe('infoCommand', () => {
   beforeEach(() => {
@@ -117,24 +118,31 @@ describe('infoCommand', () => {
   describe('prompt sub-command', () => {
     it('should return system prompt when prompt sub-command is used', async () => {
       const mockPrompt = 'Test system prompt content for testing';
+      const mockHighlightedPrompt = 'Highlighted test system prompt content for testing';
+      
       vi.spyOn(systemPrompt, 'getSystemPrompt').mockResolvedValue(mockPrompt);
+      vi.spyOn(markdownHighlight, 'highlightMarkdown').mockReturnValue(mockHighlightedPrompt);
 
       const result = await infoCommand.execute(['prompt']);
 
       expect(result.success).toBe(true);
       expect(result.content).toContain('📋 Current System Prompt:');
-      expect(result.content).toContain(mockPrompt);
+      expect(result.content).toContain(mockHighlightedPrompt);
+      expect(markdownHighlight.highlightMarkdown).toHaveBeenCalledWith(mockPrompt);
     });
 
     it('should handle prompt sub-command case insensitively', async () => {
       const mockPrompt = 'Test system prompt';
+      const mockHighlightedPrompt = 'Highlighted test system prompt';
+      
       vi.spyOn(systemPrompt, 'getSystemPrompt').mockResolvedValue(mockPrompt);
+      vi.spyOn(markdownHighlight, 'highlightMarkdown').mockReturnValue(mockHighlightedPrompt);
 
       const result = await infoCommand.execute(['PROMPT']);
 
       expect(result.success).toBe(true);
       expect(result.content).toContain('📋 Current System Prompt:');
-      expect(result.content).toContain(mockPrompt);
+      expect(result.content).toContain(mockHighlightedPrompt);
     });
 
     it('should handle errors when getting system prompt', async () => {
