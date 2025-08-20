@@ -100,13 +100,17 @@ jobs:
         LLPM_TEST_MODE=true bun run postinstall
         
         # Verify the built CLI can start (with mock keys)
-        timeout 5s bun start --verbose || exit_code=$?
-        # Exit code 124 is timeout, which means app started successfully
-        if [ $exit_code -eq 124 ]; then
-          echo "✅ CLI starts successfully"
+        # In CI, the CLI will exit with code 1 due to raw mode not being supported
+        # This is expected behavior, so we check that it gets past initialization
+        timeout 5s bun start --verbose 2>&1 | tee cli_output.log || exit_code=$?
+        
+        # Check if the CLI got past initialization (shows our code works)
+        if grep -q "Starting LLPM CLI" cli_output.log && grep -q "Environment validation passed" cli_output.log; then
+          echo "✅ CLI initialization successful (raw mode error is expected in CI)"
           exit 0
         else
-          echo "❌ CLI failed to start (exit code: $exit_code)"
+          echo "❌ CLI failed during initialization"
+          cat cli_output.log
           exit 1
         fi
       env:
