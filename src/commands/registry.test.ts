@@ -22,9 +22,9 @@ describe('commandRegistry', () => {
       expect(registry.clear).toBeDefined();
       
       // Verify command structure
-      expect(registry.help.name).toBe('help');
-      expect(registry.help.description).toBeTruthy();
-      expect(typeof registry.help.execute).toBe('function');
+      expect(registry.help!.name).toBe('help');
+      expect(registry.help!.description).toBeTruthy();
+      expect(typeof registry.help!.execute).toBe('function');
     });
 
     it('should return consistent registry across calls', () => {
@@ -123,11 +123,12 @@ describe('commandRegistry', () => {
     it('should handle command execution errors', async () => {
       // Create a mock command that throws an error
       const registry = getCommandRegistry();
-      const originalInfo = registry.info;
+      const originalInfo = registry.info!;
       
       // Mock info command to throw an error
       registry.info = {
-        ...originalInfo,
+        name: 'info',
+        description: 'Test mock command',
         execute: () => { throw new Error('Test error'); }
       };
       
@@ -143,11 +144,12 @@ describe('commandRegistry', () => {
 
     it('should handle commands that throw non-Error objects', async () => {
       const registry = getCommandRegistry();
-      const originalHelp = registry.help;
+      const originalHelp = registry.help!;
       
       // Mock help command to throw a string
       registry.help = {
-        ...originalHelp,
+        name: 'help',
+        description: 'Test mock command',
         execute: () => { throw 'String error'; }
       };
       

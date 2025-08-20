@@ -33,7 +33,7 @@ describe('useChat Queue Basic Operations', () => {
     getCurrentProjectSpy = vi.spyOn(projectConfig, 'getCurrentProject').mockResolvedValue(null);
     parseCommandSpy = vi.spyOn(commandRegistry, 'parseCommand').mockReturnValue({
       isCommand: false,
-      command: null,
+      command: undefined,
       args: []
     });
     executeCommandSpy = vi.spyOn(commandRegistry, 'executeCommand').mockResolvedValue({

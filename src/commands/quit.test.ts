@@ -1,6 +1,12 @@
 import '../../test/setup';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { quitCommand } from './quit';
+import type { CommandResult } from './types';
+
+// Helper to resolve command results (handles both sync and async)
+async function resolveCommandResult(result: CommandResult | Promise<CommandResult>): Promise<CommandResult> {
+  return Promise.resolve(result);
+}
 
 describe('quitCommand', () => {
   let originalExit: typeof process.exit;
@@ -23,46 +29,48 @@ describe('quitCommand', () => {
     expect(quitCommand.description).toBe('Exit the application');
   });
 
-  it('should return success result with goodbye message', () => {
-    const result = quitCommand.execute([]);
+  it('should return success result with goodbye message', async () => {
+    const result = await resolveCommandResult(quitCommand.execute([]));
 
     expect(result.success).toBe(true);
     expect(result.content).toContain('👋 Goodbye!');
     expect(result.content).toContain('Thanks for using LLPM');
   });
 
-  it('should schedule process exit after delay', (done) => {
-    quitCommand.execute([]);
+  it('should schedule process exit after delay', () => {
+    return new Promise<void>((resolve) => {
+      quitCommand.execute([]);
 
-    // Initially process.exit should not be called
-    expect(process.exit).not.toHaveBeenCalled();
+      // Initially process.exit should not be called
+      expect(process.exit).not.toHaveBeenCalled();
 
-    // Wait for setTimeout to execute
-    setTimeout(() => {
-      expect(process.exit).toHaveBeenCalledWith(0);
-      done();
-    }, 150); // Wait longer than the 100ms delay
+      // Wait for setTimeout to execute
+      setTimeout(() => {
+        expect(process.exit).toHaveBeenCalledWith(0);
+        resolve();
+      }, 150); // Wait longer than the 100ms delay
+    });
   });
 
-  it('should ignore command arguments', () => {
-    const result = quitCommand.execute(['arg1', 'arg2']);
+  it('should ignore command arguments', async () => {
+    const result = await resolveCommandResult(quitCommand.execute(['arg1', 'arg2']));
 
     expect(result.success).toBe(true);
     expect(result.content).toContain('👋 Goodbye!');
   });
 
-  it('should handle multiple calls without issues', () => {
+  it('should handle multiple calls without issues', async () => {
     // Call multiple times
-    const result1 = quitCommand.execute([]);
-    const result2 = quitCommand.execute([]);
+    const result1 = await resolveCommandResult(quitCommand.execute([]));
+    const result2 = await resolveCommandResult(quitCommand.execute([]));
 
     expect(result1.success).toBe(true);
     expect(result2.success).toBe(true);
     expect(result1.content).toBe(result2.content);
   });
 
-  it('should use consistent goodbye message format', () => {
-    const result = quitCommand.execute([]);
+  it('should use consistent goodbye message format', async () => {
+    const result = await resolveCommandResult(quitCommand.execute([]));
 
     expect(result.content).toBe('👋 Goodbye! Thanks for using LLPM.');
   });

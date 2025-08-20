@@ -22,10 +22,7 @@ describe('infoCommand', () => {
     vi.spyOn(modelRegistry, 'getCurrentModel').mockReturnValue({
       displayName: 'GPT-4o Mini',
       provider: 'openai',
-      modelId: 'gpt-4o-mini',
-      contextWindow: 128000,
-      maxTokens: 16384,
-      supportsFunctionCalling: true
+      modelId: 'gpt-4o-mini'
     });
 
     const result = await infoCommand.execute([]);
@@ -45,17 +42,16 @@ describe('infoCommand', () => {
       id: 'test-project',
       name: 'Test Project',
       repository: 'https://github.com/user/test-project',
-      path: '/path/to/test-project'
+      path: '/path/to/test-project',
+      createdAt: '2023-01-01T00:00:00.000Z',
+      updatedAt: '2023-01-01T00:00:00.000Z'
     };
 
     vi.spyOn(projectConfig, 'getCurrentProject').mockResolvedValue(mockProject);
     vi.spyOn(modelRegistry, 'getCurrentModel').mockReturnValue({
       displayName: 'Claude 3.5 Sonnet',
       provider: 'anthropic',
-      modelId: 'claude-3-5-sonnet-20241022',
-      contextWindow: 200000,
-      maxTokens: 8192,
-      supportsFunctionCalling: true
+      modelId: 'claude-3-5-sonnet-20241022'
     });
 
     const result = await infoCommand.execute([]);
@@ -73,10 +69,7 @@ describe('infoCommand', () => {
     vi.spyOn(modelRegistry, 'getCurrentModel').mockReturnValue({
       displayName: 'Llama 3.1 70B',
       provider: 'groq',
-      modelId: 'llama-3.1-70b-versatile',
-      contextWindow: 131072,
-      maxTokens: 8192,
-      supportsFunctionCalling: true
+      modelId: 'llama-3.1-70b-versatile'
     });
 
     const result = await infoCommand.execute([]);
@@ -89,11 +82,8 @@ describe('infoCommand', () => {
     vi.spyOn(projectConfig, 'getCurrentProject').mockResolvedValue(null);
     vi.spyOn(modelRegistry, 'getCurrentModel').mockReturnValue({
       displayName: 'Test Model',
-      provider: 'test',
-      modelId: 'test-model',
-      contextWindow: 4096,
-      maxTokens: 2048,
-      supportsFunctionCalling: false
+      provider: 'openai',
+      modelId: 'test-model'
     });
 
     // Mock the process.versions to test edge case handling
@@ -115,11 +105,8 @@ describe('infoCommand', () => {
     vi.spyOn(projectConfig, 'getCurrentProject').mockRejectedValue(new Error('Config error'));
     vi.spyOn(modelRegistry, 'getCurrentModel').mockReturnValue({
       displayName: 'Test Model',
-      provider: 'test',
-      modelId: 'test-model',
-      contextWindow: 4096,
-      maxTokens: 2048,
-      supportsFunctionCalling: false
+      provider: 'openai',
+      modelId: 'test-model'
     });
 
     // The function should handle the error and continue
@@ -130,11 +117,8 @@ describe('infoCommand', () => {
     vi.spyOn(projectConfig, 'getCurrentProject').mockResolvedValue(null);
     vi.spyOn(modelRegistry, 'getCurrentModel').mockReturnValue({
       displayName: 'Test Model',
-      provider: 'test',
-      modelId: 'test-model',
-      contextWindow: 4096,
-      maxTokens: 2048,
-      supportsFunctionCalling: false
+      provider: 'openai',
+      modelId: 'test-model'
     });
 
     const result = await infoCommand.execute(['ignored', 'args']);
