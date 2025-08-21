@@ -7,7 +7,7 @@ import { highlightMarkdown } from '../utils/markdownHighlight';
 
 const packageInfo = {
   name: 'LLPM',
-  version: '0.2.1',
+  version: '0.2.2',
   description: 'AI-powered Large Language Model Product Manager'
 };
 
