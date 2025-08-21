@@ -55,7 +55,6 @@ export function App() {
     interactiveCommand,
     handleModelSelect,
     cancelModelSelection,
-    queueLength,
     isProcessing,
     queuedMessages
   } = useChat();
@@ -68,7 +67,6 @@ export function App() {
     interactiveCommand,
     onModelSelect: handleModelSelect,
     onCancelModelSelection: cancelModelSelection,
-    queueLength,
     isProcessing,
     queuedMessages
   });

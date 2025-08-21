@@ -1,38 +1,219 @@
-import React, { useState, useEffect, memo, useMemo, useCallback, useRef } from 'react';
+import { useState, useEffect, memo, useMemo, useCallback, useRef } from 'react';
 import { Box, Text, useInput } from 'ink';
 import Spinner from 'ink-spinner';
-import Link from 'ink-link';
 import SelectInput from 'ink-select-input';
 import type { Message } from '../types';
 import { loadInputHistory, saveInputHistory } from '../utils/inputHistory';
-import { getCurrentProject, listProjects, setCurrentProject as setCurrentProjectConfig } from '../utils/projectConfig';
+import {
+  getCurrentProject,
+  listProjects,
+  setCurrentProject as setCurrentProjectConfig
+} from '../utils/projectConfig';
 import type { Project } from '../types/project';
+import type { ModelSelectCommand } from '../types/models';
 
 interface ChatInterfaceProps {
   messages: Message[];
   onSendMessage: (message: string) => void;
   onAddSystemMessage: (message: string) => void;
   isLoading: boolean;
-  interactiveCommand?: {
-    type: 'model-select';
-    models: Array<{id: string, label: string, value: string}>;
-  } | null;
+  interactiveCommand?: ModelSelectCommand | null;
   onModelSelect?: (modelValue: string) => void;
   onCancelModelSelection?: () => void;
-  queueLength?: number;
   isProcessing?: boolean;
-  queuedMessages?: Array<{id: string, content: string, timestamp: number}>;
+  queuedMessages?: Array<{ id: string; content: string; timestamp: number }>;
 }
 
-export const ChatInterface = memo(function ChatInterface({ 
-  messages, 
-  onSendMessage, 
-  onAddSystemMessage, 
-  isLoading, 
+const ThinkingIndicator = memo(() => {
+  return (
+    <Box>
+      <Text color="red">
+        <Spinner type="aesthetic" /> PM is thinking...
+      </Text>
+    </Box>
+  );
+});
+
+const QueuedMessage = memo(
+  ({ message }: { message: { id: string; content: string; timestamp: number } }) => {
+    return (
+      <Box>
+        <Text color="gray" dimColor>{message.content}</Text>
+      </Box>
+    );
+  }
+);
+
+const MessageQueue = memo(
+  ({
+    messages: queuedMessages
+  }: {
+    messages?: Array<{ id: string; content: string; timestamp: number }>;
+  }) => {
+    if (!queuedMessages || queuedMessages.length === 0) return null;
+
+    return (
+      <Box flexDirection="column">
+        {queuedMessages.map(queuedMsg => (
+          <QueuedMessage key={queuedMsg.id} message={queuedMsg} />
+        ))}
+      </Box>
+    );
+  }
+);
+
+const ProjectStatus = memo(({ project }: { project: Project | null }) => {
+  return (
+    <Box paddingX={1} paddingY={0}>
+      <Text dimColor>
+        project:{' '}
+        {project ? (
+          <Text color="cyan" bold>
+            {project.name}
+          </Text>
+        ) : (
+          <Text color="gray">none</Text>
+        )}{' '}
+        <Text color="blackBright">(shift+tab: switch project)</Text>
+      </Text>
+    </Box>
+  );
+});
+
+// Individual message component to prevent full rerenders
+const MessageItem = memo(({ message }: { message: Message }) => {
+  const speakerIndicator = useMemo(() => {
+    return message.role === 'user'
+      ? '👤 You:   '
+      : message.role === 'system'
+        ? '⚙️ System: '
+        : '🤖 PM:    ';
+  }, [message.role]);
+
+  const speakerColor = useMemo(() => {
+    return message.role === 'user' ? 'gray' : message.role === 'system' ? 'yellow' : 'white';
+  }, [message.role]);
+
+  const messageColor = useMemo(() => {
+    return message.role === 'user' ? 'gray' : message.role === 'system' ? 'white' : 'white';
+  }, [message.role]);
+
+  return (
+    <Box marginBottom={1}>
+      <Box flexDirection="row">
+        <Text color={speakerColor} bold>
+          {speakerIndicator}
+        </Text>
+        <Box flexDirection="column" flexShrink={1}>
+          <Text color={messageColor} bold>
+            {message.content}
+          </Text>
+        </Box>
+      </Box>
+    </Box>
+  );
+});
+
+function MessageList({ messages }: { messages: Message[] }) {
+  return (
+    <>
+      {messages.map((message, index) => (
+        <MessageItem key={message.id || `fallback-${index}`} message={message} />
+      ))}
+    </>
+  );
+}
+
+const ModelSelector = memo(
+  ({
+    command,
+    onModelSelect
+  }: {
+    command: ModelSelectCommand;
+    onModelSelect?: (modelValue: string) => void;
+  }) => {
+    const models = command.models.map(model => ({
+      label: model.label,
+      value: model.value
+    }));
+
+    return (
+      <Box borderStyle="single" paddingX={1}>
+        <Box flexDirection="column">
+          <Text color="green" bold>
+            Select Model (ESC to cancel):
+          </Text>
+          <SelectInput
+            items={models}
+            onSelect={item => onModelSelect?.(item.value)}
+            onHighlight={() => {}}
+          />
+          <Box marginTop={1}>
+            <Text color="gray" dimColor>
+              💡 Only configured providers are shown. Use /model providers to see configuration
+              status.
+            </Text>
+          </Box>
+        </Box>
+      </Box>
+    );
+  }
+);
+
+const ProjectSelector = memo(
+  ({
+    onProjectSelect
+  }: {
+    onProjectSelect: (projectValue: { label: string; value: string }) => void;
+  }) => {
+    const [projects, setProjects] = useState([] as Project[]);
+    // Load available projects
+    listProjects()
+      .then(projects => {
+        setProjects(projects);
+      })
+      .catch(error => {
+        console.error('Failed to load projects:', error);
+        setProjects([]);
+      });
+
+    const items = projects.map(project => ({
+      label: project.name,
+      value: project.id
+    }));
+
+    // Add "Create New" option
+    items.unshift({
+      label: '(Create New Project)',
+      value: '__create_new__'
+    });
+
+    return (
+      <Box borderStyle="single" paddingX={1}>
+        <Box flexDirection="column">
+          <Text color="cyan" bold>
+            Select Project (ESC to cancel):
+          </Text>
+          <SelectInput items={items} onSelect={onProjectSelect} onHighlight={() => {}} />
+          <Box marginTop={1}>
+            <Text color="gray" dimColor>
+              💡 Create New: Use format "/project add {'<name> <repository> <path>'}"
+            </Text>
+          </Box>
+        </Box>
+      </Box>
+    );
+  }
+);
+
+export const ChatInterface = memo(function ChatInterface({
+  messages,
+  onSendMessage,
+  onAddSystemMessage,
+  isLoading,
   interactiveCommand,
   onModelSelect,
   onCancelModelSelection,
-  queueLength = 0,
   isProcessing = false,
   queuedMessages = []
 }: ChatInterfaceProps) {
@@ -41,14 +222,12 @@ export const ChatInterface = memo(function ChatInterface({
   const [historyIndex, setHistoryIndex] = useState(-1);
   const [currentProject, setCurrentProject] = useState<Project | null>(null);
   const [showProjectSelector, setShowProjectSelector] = useState(false);
-  const [availableProjects, setAvailableProjects] = useState<Project[]>([]);
   const [displayCursor, setDisplayCursor] = useState(0);
-  
+
   // Use refs to avoid re-renders during typing
   const inputRef = useRef('');
   const cursorRef = useRef(0);
-  const updateTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  
+
   // Immediate update function for lightning fast response
   const updateDisplay = useCallback(() => {
     setDisplayInput(inputRef.current);
@@ -81,18 +260,19 @@ export const ChatInterface = memo(function ChatInterface({
   }, []);
 
   // Handle project selection - memoized to prevent re-creation
-  const handleProjectSelect = useCallback(async (item: { label: string; value: string }) => {
-    try {
-      if (item.value === '__create_new__') {
-        // Handle "Create New Project" option
-        inputRef.current = '/project add ';
-        cursorRef.current = inputRef.current.length;
-        setDisplayInput(inputRef.current);
-        setDisplayCursor(inputRef.current.length);
-        setShowProjectSelector(false);
-        
-        // Add system message with rich formatting and instructions
-        const instructionMessage = `📝 **Creating a New Project**
+  const handleProjectSelect = useCallback(
+    async (item: { label: string; value: string }) => {
+      try {
+        if (item.value === '__create_new__') {
+          // Handle "Create New Project" option
+          inputRef.current = '/project add ';
+          cursorRef.current = inputRef.current.length;
+          setDisplayInput(inputRef.current);
+          setDisplayCursor(inputRef.current.length);
+          setShowProjectSelector(false);
+
+          // Add system message with rich formatting and instructions
+          const instructionMessage = `📝 **Creating a New Project**
 
 To add a new project, complete the command with these parameters:
 
@@ -108,37 +288,23 @@ To add a new project, complete the command with these parameters:
 \`/project add "E-commerce Site" "https://github.com/myuser/shop" "/Users/john/projects/shop"\`
 
 💡 **Tip:** Use quotes around names with spaces`;
-        
-        onAddSystemMessage(instructionMessage);
-        return;
-      } else {
-        await setCurrentProjectConfig(item.value);
-      }
-      
-      const updatedProject = await getCurrentProject();
-      setCurrentProject(updatedProject);
-      setShowProjectSelector(false);
-    } catch (error) {
-      console.error('Failed to set current project:', error);
-      setShowProjectSelector(false);
-    }
-  }, [onAddSystemMessage]);
 
-  // Memoize project selector items
-  const projectItems = useMemo(() => {
-    const items = availableProjects.map(project => ({
-      label: project.name,
-      value: project.id
-    }));
-    
-    // Add "Create New" option
-    items.unshift({
-      label: '(Create New Project)',
-      value: '__create_new__'
-    });
-    
-    return items;
-  }, [availableProjects]);
+          onAddSystemMessage(instructionMessage);
+          return;
+        } else {
+          await setCurrentProjectConfig(item.value);
+        }
+
+        const updatedProject = await getCurrentProject();
+        setCurrentProject(updatedProject);
+        setShowProjectSelector(false);
+      } catch (error) {
+        console.error('Failed to set current project:', error);
+        setShowProjectSelector(false);
+      }
+    },
+    [onAddSystemMessage]
+  );
 
   // Handle input submission - memoized to prevent re-creation
   const handleInputSubmit = useCallback(() => {
@@ -148,13 +314,13 @@ To add a new project, complete the command with these parameters:
       setInputHistory(prev => {
         const newHistory = [currentInput, ...prev.filter(h => h !== currentInput)];
         const limitedHistory = newHistory.slice(0, 100); // Keep last 100 commands
-        
+
         // Save to disk asynchronously
         saveInputHistory(limitedHistory);
-        
+
         return limitedHistory;
       });
-      
+
       onSendMessage(currentInput.trim());
       inputRef.current = '';
       cursorRef.current = 0;
@@ -163,83 +329,6 @@ To add a new project, complete the command with these parameters:
       setHistoryIndex(-1);
     }
   }, [onSendMessage]);
-
-  // Memoized function to parse content and render URLs as links
-  const renderContentWithLinks = useCallback((content: string) => {
-    const urlRegex = /https?:\/\/[^\s<>"{}|\\^`\[\]]+/gi;
-    const urls = content.match(urlRegex) || [];
-    
-    if (urls.length === 0) {
-      return content;
-    }
-    
-    const result: React.ReactNode[] = [];
-    let lastIndex = 0;
-    
-    urls.forEach((url, index) => {
-      const urlIndex = content.indexOf(url, lastIndex);
-      
-      // Add text before the URL
-      if (urlIndex > lastIndex) {
-        result.push(content.slice(lastIndex, urlIndex));
-      }
-      
-      // Add the link
-      result.push(
-        <Link key={`link-${index}`} url={url}>
-          <Text color="cyan" underline>{url}</Text>
-        </Link>
-      );
-      
-      lastIndex = urlIndex + url.length;
-    });
-    
-    // Add remaining text after the last URL
-    if (lastIndex < content.length) {
-      result.push(content.slice(lastIndex));
-    }
-    
-    return result;
-  }, []);
-
-  // Individual message component to prevent full rerenders
-  const MessageItem = memo(({ message, index }: { message: Message; index: number }) => {
-    const speakerIndicator = useMemo(() => {
-      return message.role === 'user' ? '👤 You:   ' : message.role === 'system' ? '⚙️ System: ' : '🤖 PM:    ';
-    }, [message.role]);
-    
-    const messageColor = useMemo(() => {
-      return message.role === 'user' ? 'blue' : message.role === 'system' ? 'magenta' : 'white';
-    }, [message.role]);
-    
-    // Memoize rendered content to prevent re-processing on every render
-    const renderedContent = useMemo(() => {
-      return renderContentWithLinks(message.content);
-    }, [message.content, renderContentWithLinks]);
-    
-    return (
-      <Box key={message.id || `fallback-${index}`} marginBottom={1}>
-        <Box flexDirection="row">
-          <Text color={messageColor} bold>
-            {speakerIndicator}
-          </Text>
-          <Box flexDirection="column" flexShrink={1}>
-            <Text color={messageColor} bold>
-              {renderedContent}
-            </Text>
-          </Box>
-        </Box>
-      </Box>
-    );
-  });
-
-  // Memoize the rendered messages list to prevent unnecessary re-renders
-  const renderedMessages = useMemo(() => {
-    return messages.map((message, index) => (
-      <MessageItem key={message.id || `fallback-${index}`} message={message} index={index} />
-    ));
-  }, [messages]);
-
 
   // BLAZING FAST input handler - uses refs to avoid React re-renders
   useInput((inputChar, key) => {
@@ -259,13 +348,7 @@ To add a new project, complete the command with these parameters:
     // Handle project selector
     if (key.shift && key.tab) {
       setShowProjectSelector(true);
-      // Load available projects
-      listProjects().then(projects => {
-        setAvailableProjects(projects);
-      }).catch(error => {
-        console.error('Failed to load projects:', error);
-        setAvailableProjects([]);
-      });
+
       return;
     }
 
@@ -356,7 +439,8 @@ To add a new project, complete the command with these parameters:
     if (key.backspace || key.delete) {
       if (cursorRef.current > 0) {
         const currentInput = inputRef.current;
-        const newInput = currentInput.slice(0, cursorRef.current - 1) + currentInput.slice(cursorRef.current);
+        const newInput =
+          currentInput.slice(0, cursorRef.current - 1) + currentInput.slice(cursorRef.current);
         inputRef.current = newInput;
         cursorRef.current = cursorRef.current - 1;
         updateDisplay();
@@ -376,214 +460,50 @@ To add a new project, complete the command with these parameters:
     }
   });
 
-  if (interactiveCommand?.type === 'model-select') {
-    const modelItems = interactiveCommand.models.map(model => ({
-      label: model.label,
-      value: model.value
-    }));
-
-    return (
-      <Box flexDirection="column" height="100%">
-        {/* Messages - no border, fills available space */}
-        <Box flexDirection="column" flexGrow={1} paddingX={1}>
-          {messages.map((message, index) => (
-            <MessageItem key={message.id || `fallback-${index}`} message={message} index={index} />
-          ))}
-          
-          {/* Show queued messages in light text */}
-          {queuedMessages.map((queuedMsg, index) => (
-            <Box key={queuedMsg.id} marginBottom={1}>
-              <Box flexDirection="row">
-                <Text color="blue" bold dimColor>
-                  👤 You:   
-                </Text>
-                <Box flexDirection="column" flexShrink={1}>
-                  <Text color="blue" bold dimColor>
-                    {queuedMsg.content}
-                  </Text>
-                </Box>
-              </Box>
-            </Box>
-          ))}
-          
-          {(isLoading || isProcessing) && (
-            <Box>
-              <Text color="red">
-                <Spinner type="aesthetic" />
-                {' '}PM is thinking...
-                {queueLength > 0 && (
-                  <Text color="yellow"> ({queueLength} message{queueLength !== 1 ? 's' : ''} queued)</Text>
-                )}
-              </Text>
-            </Box>
-          )}
-        </Box>
-
-        {/* Model Selector */}
-        <Box borderStyle="single" paddingX={1}>
-          <Box flexDirection="column">
-            <Text color="green" bold>Select Model (ESC to cancel):</Text>
-            <SelectInput
-              items={modelItems}
-              onSelect={(item) => onModelSelect?.(item.value)}
-              onHighlight={() => {}}
-            />
-            <Box marginTop={1}>
-              <Text color="gray" dimColor>
-                💡 Only configured providers are shown. Use /model providers to see configuration status.
-              </Text>
-            </Box>
-          </Box>
-        </Box>
-
-        {/* Project Status */}
-        <Box paddingX={1} paddingY={0}>
-          {currentProject && (
-            <Text color="blue" dimColor>
-              📁 {currentProject.name} | 🗂️ {currentProject.path}
-            </Text>
-          )}
-        </Box>
-      </Box>
-    );
-  }
-
-  if (showProjectSelector) {
-    return (
-      <Box flexDirection="column" height="100%">
-        {/* Messages - no border, fills available space */}
-        <Box flexDirection="column" flexGrow={1} paddingX={1}>
-          {messages.map((message, index) => (
-            <MessageItem key={message.id || `fallback-${index}`} message={message} index={index} />
-          ))}
-          
-          {/* Show queued messages in light text */}
-          {queuedMessages.map((queuedMsg, index) => (
-            <Box key={queuedMsg.id} marginBottom={1}>
-              <Box flexDirection="row">
-                <Text color="blue" bold dimColor>
-                  👤 You:   
-                </Text>
-                <Box flexDirection="column" flexShrink={1}>
-                  <Text color="blue" bold dimColor>
-                    {queuedMsg.content}
-                  </Text>
-                </Box>
-              </Box>
-            </Box>
-          ))}
-          
-          {(isLoading || isProcessing) && (
-            <Box>
-              <Text color="red">
-                <Spinner type="aesthetic" />
-                {' '}PM is thinking...
-                {queueLength > 0 && (
-                  <Text color="yellow"> ({queueLength} message{queueLength !== 1 ? 's' : ''} queued)</Text>
-                )}
-              </Text>
-            </Box>
-          )}
-        </Box>
-
-        {/* Project Selector */}
-        <Box borderStyle="single" paddingX={1}>
-          <Box flexDirection="column">
-            <Text color="cyan" bold>Select Project (ESC to cancel):</Text>
-            <SelectInput
-              items={projectItems}
-              onSelect={handleProjectSelect}
-              onHighlight={() => {}}
-            />
-            <Box marginTop={1}>
-              <Text color="gray" dimColor>
-                💡 Create New: Use format "/project add {'<name> <repository> <path>'}"
-              </Text>
-            </Box>
-          </Box>
-        </Box>
-
-        {/* Project Status */}
-        <Box paddingX={1} paddingY={0}>
-          <Text dimColor>
-            Project: {currentProject ? (
-              <Text color="cyan" bold>{currentProject.name}</Text>
-            ) : (
-              <Text color="gray">None</Text>
-            )}
+  let inputComponent = (<Box borderStyle="single" paddingX={1}>
+    {/* BLAZING FAST input rendering with batched updates */}
+    <Text>
+      <Text color="cyan" bold>
+        &gt;{' '}
+      </Text>
+      {displayInput.length > 0 || displayCursor > 0 ? (
+        <>
+          {displayInput.slice(0, displayCursor)}
+          <Text backgroundColor="white" color="black">
+            {displayInput[displayCursor] || ' '}
           </Text>
-        </Box>
-      </Box>
-    );
+          {displayInput.slice(displayCursor + 1)}
+        </>
+      ) : (
+        <>
+          <Text backgroundColor="white" color="black">
+            {' '}
+          </Text>
+          <Text dimColor>Type your message...</Text>
+        </>
+      )}
+    </Text>
+  </Box>);
+  if (showProjectSelector) {
+    inputComponent = <ProjectSelector onProjectSelect={handleProjectSelect} />;
+  }
+  if (interactiveCommand?.type === 'model-select') {
+    inputComponent = <ModelSelector command={interactiveCommand} onModelSelect={onModelSelect} />;
   }
 
   return (
     <Box flexDirection="column" height="100%">
       {/* Messages - no border, fills available space */}
       <Box flexDirection="column" flexGrow={1} paddingX={1}>
-        {renderedMessages}
-        
+        <MessageList messages={messages} />
         {/* Show queued messages in light text */}
-        {queuedMessages.map((queuedMsg, index) => (
-          <Box key={queuedMsg.id} marginBottom={1}>
-            <Box flexDirection="row">
-              <Text color="blue" bold dimColor>
-                👤 You:   
-              </Text>
-              <Box flexDirection="column" flexShrink={1}>
-                <Text color="blue" bold dimColor>
-                  {queuedMsg.content}
-                </Text>
-              </Box>
-            </Box>
-          </Box>
-        ))}
-        
-        {(isLoading || isProcessing) && (
-          <Box>
-            <Text color="red">
-              <Spinner type="aesthetic" />
-              {' '}PM is thinking...
-              {queueLength > 0 && (
-                <Text color="yellow"> ({queueLength} message{queueLength !== 1 ? 's' : ''} queued)</Text>
-              )}
-            </Text>
-          </Box>
-        )}
+        <MessageQueue messages={queuedMessages} />
+        {(isLoading || isProcessing) && <ThinkingIndicator />}
       </Box>
-
       {/* Input */}
-      <Box borderStyle="single" paddingX={1}>
-        {/* BLAZING FAST input rendering with batched updates */}
-        <Text>
-          <Text color="cyan" bold>&gt; </Text>
-          {displayInput.length > 0 || displayCursor > 0 ? (
-            <>
-              {displayInput.slice(0, displayCursor)}
-              <Text backgroundColor="white" color="black">
-                {displayInput[displayCursor] || ' '}
-              </Text>
-              {displayInput.slice(displayCursor + 1)}
-            </>
-          ) : (
-            <>
-              <Text backgroundColor="white" color="black"> </Text>
-              <Text dimColor>Type your message...</Text>
-            </>
-          )}
-        </Text>
-      </Box>
-
+      {inputComponent}
       {/* Project Status */}
-      <Box paddingX={1} paddingY={0}>
-        <Text dimColor>
-          project: {currentProject ? (
-            <Text color="cyan" bold>{currentProject.name}</Text>
-          ) : (
-            <Text color="gray">none</Text>
-          )} <Text color="blackBright">(shift+tab: switch project)</Text>
-        </Text>
-      </Box>
+      <ProjectStatus project={currentProject} />
     </Box>
   );
 });
