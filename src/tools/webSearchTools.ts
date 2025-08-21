@@ -43,7 +43,7 @@ export const webSearchTool = tool({
       }
 
       // Extract search results from the response
-      const searchResults = response.output?.value;
+      const searchResults = response.output?.value && JSON.parse(response.output?.value as string);
       
       if (!searchResults || !Array.isArray(searchResults)) {
         return {
