@@ -1,11 +1,13 @@
 import type { Command, CommandResult } from './types';
+import type { Project } from '../types/project';
 import { debug } from '../utils/logger';
 import {
   getCurrentProject,
   setCurrentProject,
   addProject,
   listProjects,
-  removeProject
+  removeProject,
+  updateProject
 } from '../utils/projectConfig';
 
 export const projectCommand: Command = {
@@ -20,13 +22,13 @@ export const projectCommand: Command = {
 
       if (currentProject) {
         return {
-          content: `📁 Current project: ${currentProject.name}\n📂 Repository: ${currentProject.repository}\n📍 Path: ${currentProject.path}`,
+          content: `📁 Current project: ${currentProject.name}\n📂 Repository: ${currentProject.repository}\n📍 Path: ${currentProject.path}${currentProject.description ? `\n📝 Description: ${currentProject.description}` : ''}`,
           success: true
         };
       } else {
         return {
           content:
-            '📁 No active project set.\n\n💡 Use /project add <name> <repository> <path> to add a new project\n💡 Use /project switch to see and switch between projects\n💡 Use /project list to list all available projects\n💡 Press shift+tab for quick project switching',
+            '📁 No active project set.\n\n💡 Use /project add <name> <repository> <path> [description] to add a new project\n💡 Use /project switch to see and switch between projects\n💡 Use /project list to list all available projects\n💡 Press shift+tab for quick project switching',
           success: true
         };
       }
@@ -39,23 +41,29 @@ export const projectCommand: Command = {
         if (args.length < 4) {
           return {
             content:
-              '❌ Usage: /project add <name> <repository> <path>\n\nExample: /project add "My App" "https://github.com/user/my-app" "/path/to/project"',
+              '❌ Usage: /project add <name> <repository> <path> [description]\n\nExample: /project add "My App" "https://github.com/user/my-app" "/path/to/project" "A web application for managing tasks"',
             success: false
           };
         }
 
         try {
-          const [, name, repository, path] = args;
+          const [, name, repository, path, description] = args;
           if (!name || !repository || !path) {
             return {
               content:
-                '❌ Usage: /project add <name> <repository> <path>\n\nExample: /project add "My App" "https://github.com/user/my-app" "/path/to/project"',
+                '❌ Usage: /project add <name> <repository> <path> [description]\n\nExample: /project add "My App" "https://github.com/user/my-app" "/path/to/project" "A web application for managing tasks"',
               success: false
             };
           }
-          const newProject = await addProject({ name, repository, path });
+          const projectData: Omit<Project, 'id' | 'createdAt' | 'updatedAt'> = { 
+            name, 
+            repository, 
+            path,
+            ...(description && { description })
+          };
+          const newProject = await addProject(projectData);
           return {
-            content: `✅ Added project "${newProject.name}" (ID: ${newProject.id})\n📂 Repository: ${repository}\n📍 Path: ${path}`,
+            content: `✅ Added project "${newProject.name}" (ID: ${newProject.id})\n📂 Repository: ${repository}\n📍 Path: ${path}${newProject.description ? `\n📝 Description: ${newProject.description}` : ''}`,
             success: true
           };
         } catch (error) {
@@ -75,7 +83,7 @@ export const projectCommand: Command = {
           if (projects.length === 0) {
             return {
               content:
-                '📂 No projects available to switch to.\n\n💡 Use /project add <name> <repository> <path> to add projects',
+                '📂 No projects available to switch to.\n\n💡 Use /project add <name> <repository> <path> [description] to add projects',
               success: true
             };
           }
@@ -119,7 +127,7 @@ export const projectCommand: Command = {
           if (projects.length === 0) {
             return {
               content:
-                '📂 No projects configured.\n\n💡 Use /project add <name> <repository> <path> to add your first project',
+                '📂 No projects configured.\n\n💡 Use /project add <name> <repository> <path> [description] to add your first project',
               success: true
             };
           }
@@ -127,7 +135,8 @@ export const projectCommand: Command = {
           const projectList = projects.map(project => {
             const isCurrent = currentProject?.id === project.id;
             const indicator = isCurrent ? '👉 ' : '   ';
-            return `${indicator}${project.name} (${project.id})\n    📂 ${project.repository}\n    📍 ${project.path}`;
+            const description = project.description ? `\n    📝 ${project.description}` : '';
+            return `${indicator}${project.name} (${project.id})\n    📂 ${project.repository}\n    📍 ${project.path}${description}`;
           });
 
           const header = `📂 Available Projects (${projects.length}):\n\n`;
@@ -177,9 +186,52 @@ export const projectCommand: Command = {
         }
       }
 
+      case 'update': {
+        if (args.length < 3) {
+          return {
+            content:
+              '❌ Usage: /project update <project-id> description "<description>"\n\nExample: /project update my-app-123 description "Updated description for my app"',
+            success: false
+          };
+        }
+
+        const projectId = args[1];
+        const field = args[2]?.toLowerCase();
+        const value = args[3];
+
+        if (!projectId || !field || !value) {
+          return {
+            content:
+              '❌ Usage: /project update <project-id> description "<description>"\n\nExample: /project update my-app-123 description "Updated description for my app"',
+            success: false
+          };
+        }
+
+        if (field !== 'description') {
+          return {
+            content:
+              '❌ Currently only "description" field can be updated\n\nUsage: /project update <project-id> description "<description>"',
+            success: false
+          };
+        }
+
+        try {
+          const updatedProject = await updateProject(projectId, { description: value });
+          return {
+            content: `✅ Updated project "${updatedProject.name}" description\n📝 New description: ${updatedProject.description}`,
+            success: true
+          };
+        } catch (error) {
+          return {
+            content: `❌ Failed to update project: ${error instanceof Error ? error.message : 'Unknown error'}\n\n💡 Use /project list to see available project IDs`,
+            success: false
+          };
+        }
+      }
+
       default:
         return {
-          content: `❌ Unknown subcommand: ${subCommand}\n\nAvailable subcommands:\n• add <name> <repository> <path> - Add a new project\n• list - List all available projects\n• switch <project-id> - Switch to a different project\n• set <project-id> - Set current project (alias for switch)\n• remove <project-id> - Remove a project`,
+          content: `❌ Unknown subcommand: ${subCommand}\n\nAvailable subcommands:\n• add <name> <repository> <path> [description] - Add a new project\n• list - List all available projects\n• switch <project-id> - Switch to a different project\n• set <project-id> - Set current project (alias for switch)\n• update <project-id> description "<description>" - Update project description\n• remove <project-id> - Remove a project`,
           success: false
         };
     }

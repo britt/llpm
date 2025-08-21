@@ -4,7 +4,8 @@ import {
   listProjectsTool,
   addProjectTool,
   setCurrentProjectTool,
-  removeProjectTool
+  removeProjectTool,
+  updateProjectTool
 } from './projectTools';
 import { listGitHubReposTool, searchGitHubReposTool, getGitHubRepoTool } from './githubTools';
 import {
@@ -27,6 +28,7 @@ const toolRegistry: ToolRegistry = {
   add_project: addProjectTool,
   set_current_project: setCurrentProjectTool,
   remove_project: removeProjectTool,
+  update_project: updateProjectTool,
   list_github_repos: listGitHubReposTool,
   search_github_repos: searchGitHubReposTool,
   get_github_repo: getGitHubRepoTool,

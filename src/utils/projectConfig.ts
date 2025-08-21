@@ -146,6 +146,32 @@ export async function removeProject(projectId: string): Promise<void> {
   debug('Project removed successfully:', projectId);
 }
 
+export async function updateProject(
+  projectId: string,
+  updates: Partial<Omit<Project, 'id' | 'createdAt' | 'updatedAt'>>
+): Promise<Project> {
+  debug('Updating project:', projectId, 'with updates:', updates);
+
+  const config = await loadProjectConfig();
+
+  if (!config.projects[projectId]) {
+    throw new Error(`Project ${projectId} not found`);
+  }
+
+  const existingProject = config.projects[projectId];
+  const updatedProject: Project = {
+    ...existingProject,
+    ...updates,
+    updatedAt: new Date().toISOString()
+  };
+
+  config.projects[projectId] = updatedProject;
+  await saveProjectConfig(config);
+
+  debug('Project updated successfully:', projectId);
+  return updatedProject;
+}
+
 export async function listProjects(): Promise<Project[]> {
   const config = await loadProjectConfig();
   return Object.values(config.projects);

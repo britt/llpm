@@ -1,6 +1,7 @@
 export interface Project {
   id: string;
   name: string;
+  description?: string;
   repository: string;
   path: string;
   github_repo?: string;

@@ -197,7 +197,7 @@ const ProjectSelector = memo(
           <SelectInput items={items} onSelect={onProjectSelect} onHighlight={() => {}} />
           <Box marginTop={1}>
             <Text color="gray" dimColor>
-              💡 Create New: Use format "/project add {'<name> <repository> <path>'}"
+              💡 Create New: Use format "/project add {'<name> <repository> <path> [description]'}"
             </Text>
           </Box>
         </Box>
@@ -277,15 +277,16 @@ export const ChatInterface = memo(function ChatInterface({
 To add a new project, complete the command with these parameters:
 
 **Command Format:**
-\`/project add <name> <repository> <path>\`
+\`/project add <name> <repository> <path> [description]\`
 
 **Parameters:**
 • **name** - A descriptive name for your project (e.g., "My Web App")
-• **repository** - GitHub repository URL (e.g., "https://github.com/user/repo")
+• **repository** - GitHub repository URL (e.g., "https://github.com/user/repo") 
 • **path** - Local file system path (e.g., "/Users/you/projects/my-app")
+• **description** - Optional description of the project (e.g., "Task management web app")
 
 **Example:**
-\`/project add "E-commerce Site" "https://github.com/myuser/shop" "/Users/john/projects/shop"\`
+\`/project add "E-commerce Site" "https://github.com/myuser/shop" "/Users/john/projects/shop" "Online store for selling handmade crafts"\`
 
 💡 **Tip:** Use quotes around names with spaces`;
 
