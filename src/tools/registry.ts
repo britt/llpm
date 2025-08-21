@@ -19,6 +19,7 @@ import {
   createGitHubPullRequestTool
 } from './githubPullRequestTools';
 import { getSystemPromptTool } from './systemTools';
+import { webSearchTool } from './webSearchTools';
 
 const toolRegistry: ToolRegistry = {
   get_current_project: getCurrentProjectTool,
@@ -36,7 +37,8 @@ const toolRegistry: ToolRegistry = {
   search_github_issues: searchGitHubIssuesTool,
   list_github_pull_requests: listGitHubPullRequestsTool,
   create_github_pull_request: createGitHubPullRequestTool,
-  get_system_prompt: getSystemPromptTool
+  get_system_prompt: getSystemPromptTool,
+  web_search: webSearchTool
 };
 
 export function getToolRegistry(): ToolRegistry {
