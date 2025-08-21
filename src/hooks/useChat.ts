@@ -5,6 +5,7 @@ import { debug, getVerbose } from '../utils/logger';
 import { parseCommand, executeCommand } from '../commands/registry';
 import { loadChatHistory, saveChatHistory } from '../utils/chatHistory';
 import { getCurrentProject } from '../utils/projectConfig';
+import type { ModelSelectCommand } from '../types/models';
 
 interface QueuedMessage {
   id: string;
@@ -23,10 +24,7 @@ export function useChat() {
   const [isLoading, setIsLoading] = useState(false);
   const [historyLoaded, setHistoryLoaded] = useState(false);
   const [currentProjectId, setCurrentProjectId] = useState<string | null>(null);
-  const [interactiveCommand, setInteractiveCommand] = useState<{ 
-    type: 'model-select'; 
-    models: Array<{id: string, label: string, value: string}> 
-  } | null>(null);
+  const [interactiveCommand, setInteractiveCommand] = useState<ModelSelectCommand | null>(null);
   
   // Message queue state
   const [messageQueue, setMessageQueue] = useState<QueuedMessage[]>([]);
