@@ -90,14 +90,18 @@ const MessageItem = memo(({ message }: { message: Message }) => {
         : '🤖 PM:    ';
   }, [message.role]);
 
+  const speakerColor = useMemo(() => {
+    return message.role === 'user' ? 'gray' : message.role === 'system' ? 'yellow' : 'white';
+  }, [message.role]);
+
   const messageColor = useMemo(() => {
-    return message.role === 'user' ? 'blue' : message.role === 'system' ? 'magenta' : 'white';
+    return message.role === 'user' ? 'gray' : message.role === 'system' ? 'white' : 'white';
   }, [message.role]);
 
   return (
     <Box marginBottom={1}>
       <Box flexDirection="row">
-        <Text color={messageColor} bold>
+        <Text color={speakerColor} bold>
           {speakerIndicator}
         </Text>
         <Box flexDirection="column" flexShrink={1}>
