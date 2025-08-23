@@ -1,6 +1,5 @@
 import { useState, useEffect, memo, useMemo, useCallback, useRef } from 'react';
 import { Box, Text, useInput } from 'ink';
-import Spinner from 'ink-spinner';
 import SelectInput from 'ink-select-input';
 import clipboardy from 'clipboardy';
 import type { Message } from '../types';
