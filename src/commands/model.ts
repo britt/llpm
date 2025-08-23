@@ -54,6 +54,36 @@ export const modelCommand: Command = {
     const subCommand = args[0]?.toLowerCase();
 
     switch (subCommand) {
+      case 'help': {
+        return {
+          content: `🤖 Model Management Commands:
+
+/model - Show current model and provider status
+/model help - Show this help message
+
+📋 Available Subcommands:
+• /model list [--all] - List available models (use --all to show unconfigured)
+• /model ls [--all] - Alias for list
+• /model current - Show detailed information about current model
+• /model providers - Show provider configuration status
+• /model switch <provider>/<model-id> - Switch to specific model
+• /model set <provider>/<model-id> - Alias for switch
+• /model <model-spec> - Quick switch to model
+
+🔧 Provider-Specific Commands:
+• /model openai [model] - Switch to OpenAI model (defaults to gpt-4o-mini)
+• /model anthropic [model] - Switch to Anthropic model (defaults to claude-3-5-sonnet-20241022)
+• /model groq [model] - Switch to Groq model (defaults to llama-3.1-70b-versatile)
+• /model google-vertex [model] - Switch to Google Vertex model (defaults to gemini-1.5-pro)
+
+📝 Examples:
+• /model switch openai/gpt-4o
+• /model anthropic claude-3-opus-20240229
+• /model list --all`,
+          success: true
+        };
+      }
+
       case 'list':
       case 'ls':
         const showAll = args.includes('--all') || args.includes('-a');

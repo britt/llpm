@@ -37,6 +37,32 @@ export const projectCommand: Command = {
     const subCommand = args[0]?.toLowerCase();
 
     switch (subCommand) {
+      case 'help': {
+        return {
+          content: `📁 Project Management Commands:
+
+/project - Show current project information
+/project help - Show this help message
+
+📋 Available Subcommands:
+• /project add <name> <repository> <path> [description] - Add a new project
+• /project list - List all available projects
+• /project switch [project-id] - Switch to a different project (interactive if no ID)
+• /project set <project-id> - Set current project (alias for switch)
+• /project update <project-id> description "<description>" - Update project description
+• /project remove <project-id> - Remove a project
+
+⌨️ Quick Actions:
+• Shift+Tab - Interactive project selector
+
+📝 Examples:
+• /project add "My App" "https://github.com/user/my-app" "/path/to/project" "Task manager"
+• /project switch my-app-123
+• /project update my-app-123 description "Updated description"`,
+          success: true
+        };
+      }
+
       case 'add': {
         if (args.length < 4) {
           return {

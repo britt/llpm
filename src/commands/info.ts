@@ -21,6 +21,22 @@ export const infoCommand: Command = {
     if (args.length > 0) {
       const subCommand = args[0]?.toLowerCase();
 
+      if (subCommand === 'help') {
+        return {
+          content: `ℹ️ Information Commands:
+
+/info - Show application information and status
+/info help - Show this help message
+
+📋 Available Subcommands:
+• /info prompt - Display the current system prompt with syntax highlighting
+
+📝 Examples:
+• /info prompt`,
+          success: true
+        };
+      }
+
       if (subCommand === 'prompt') {
         debug('Executing /info prompt sub-command');
         

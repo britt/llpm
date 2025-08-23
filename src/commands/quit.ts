@@ -4,8 +4,24 @@ import { debug } from '../utils/logger';
 export const quitCommand: Command = {
   name: 'quit',
   description: 'Exit the application',
-  execute: (): CommandResult => {
-    debug('Executing /quit command');
+  execute: (args: string[] = []): CommandResult => {
+    debug('Executing /quit command with args:', args);
+
+    // Handle help subcommand
+    if (args.length > 0 && args[0]?.toLowerCase() === 'help') {
+      return {
+        content: `👋 Quit Command:
+
+/quit - Exit the application gracefully
+/quit help - Show this help message
+
+📝 Description:
+Safely exits LLPM. Your conversation history and project settings are automatically saved.
+
+💡 You can also use Ctrl+C to exit the application.`,
+        success: true
+      };
+    }
 
     const message = '👋 Goodbye! Thanks for using LLPM.';
 
