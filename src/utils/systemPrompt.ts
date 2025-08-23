@@ -1,7 +1,6 @@
 import { readFile, writeFile } from 'fs/promises';
 import { existsSync } from 'fs';
-import { join } from 'path';
-import { getConfigDir, ensureConfigDir, SYSTEM_PROMPT_FILE } from './config';
+import { ensureConfigDir, SYSTEM_PROMPT_FILE } from './config';
 import { debug } from './logger';
 
 const DEFAULT_SYSTEM_PROMPT = `You are LLPM (Large Language Model Product Manager), an AI-powered project management assistant that operates within an interactive terminal interface. You help users manage multiple projects, interact with GitHub repositories, and coordinate development workflows through natural language conversation.
@@ -105,10 +104,14 @@ const DEFAULT_SYSTEM_PROMPT = `You are LLPM (Large Language Model Product Manage
 
 Always prioritize user productivity and provide actionable, contextual assistance that moves their projects forward.`;
 
+export function getSystemPromptPath(): string {
+  return SYSTEM_PROMPT_FILE;
+}
+
 export async function getSystemPrompt(): Promise<string> {
   try {
     await ensureConfigDir();
-    const promptPath = SYSTEM_PROMPT_FILE;
+    const promptPath = getSystemPromptPath();
 
     if (existsSync(promptPath)) {
       const customPrompt = await readFile(promptPath, 'utf-8');
@@ -126,9 +129,7 @@ export async function saveSystemPrompt(prompt: string): Promise<void> {
   debug('Saving custom system prompt');
   try {
     await ensureConfigDir();
-    const configDir = getConfigDir();
-    const promptPath = join(configDir, 'system_prompt.txt');
-
+    const promptPath =  getSystemPromptPath();
     await writeFile(promptPath, prompt.trim(), 'utf-8');
     debug('System prompt saved successfully');
   } catch (error) {
@@ -144,7 +145,7 @@ export function getDefaultSystemPrompt(): string {
 export async function ensureDefaultSystemPromptFile(): Promise<void> {
   try {
     await ensureConfigDir();
-    const promptPath = SYSTEM_PROMPT_FILE;
+    const promptPath = getSystemPromptPath();
 
     if (!existsSync(promptPath)) {
       debug('Creating default system prompt file');

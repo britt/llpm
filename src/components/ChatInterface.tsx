@@ -95,10 +95,10 @@ const ProjectStatus = memo(({ project, model }: { project: Project | null; model
 const MessageItem = memo(({ message }: { message: Message }) => {
   const speakerIndicator = useMemo(() => {
     return message.role === 'user'
-      ? '👤 You:   '
-      : message.role === 'system'
-        ? '⚙️ System: '
-        : '🤖 PM:    ';
+      ? '👤 You:    '
+      : message.role === 'ui-notification'
+        ? '⚙️ System:  '
+        : '🤖 PM:     ';
   }, [message.role]);
 
   const speakerColor = useMemo(() => {

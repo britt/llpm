@@ -4,11 +4,12 @@ import { existsSync, unlinkSync, mkdirSync } from 'fs';
 import { readFile, writeFile } from 'fs/promises';
 import { join } from 'path';
 import { tmpdir } from 'os';
+import * as systemPrompt from './systemPrompt';
 import { 
   getSystemPrompt, 
   saveSystemPrompt, 
   getDefaultSystemPrompt, 
-  ensureDefaultSystemPromptFile 
+  ensureDefaultSystemPromptFile,
 } from './systemPrompt';
 import * as config from './config';
 
@@ -17,6 +18,7 @@ describe('systemPrompt', () => {
   let promptPath: string;
   let getConfigDirSpy: any;
   let ensureConfigDirSpy: any;
+  let getSystemPromptPathSpy: any;
 
   beforeEach(() => {
     // Setup DOM environment
@@ -34,6 +36,7 @@ describe('systemPrompt', () => {
     promptPath = join(mockConfigDir, 'system_prompt.txt');
     
     getConfigDirSpy = vi.spyOn(config, 'getConfigDir').mockReturnValue(mockConfigDir);
+    getSystemPromptPathSpy = vi.spyOn(systemPrompt, 'getSystemPromptPath').mockReturnValue(promptPath);
     ensureConfigDirSpy = vi.spyOn(config, 'ensureConfigDir').mockImplementation(async () => {
       if (!existsSync(mockConfigDir)) {
         mkdirSync(mockConfigDir, { recursive: true });
@@ -49,7 +52,8 @@ describe('systemPrompt', () => {
   afterEach(() => {
     getConfigDirSpy.mockRestore();
     ensureConfigDirSpy.mockRestore();
-
+    getSystemPromptPathSpy.mockRestore();
+    
     // Clean up test files
     if (existsSync(promptPath)) {
       unlinkSync(promptPath);
@@ -152,7 +156,7 @@ describe('systemPrompt', () => {
 
     it('should throw error when write fails', async () => {
       // Mock ensureConfigDir to succeed but simulate write failure
-      getConfigDirSpy.mockReturnValue('/read-only/path');
+      getSystemPromptPathSpy.mockReturnValue('/read-only/path.txt');
       
       await expect(saveSystemPrompt('test')).rejects.toThrow();
     });
@@ -216,7 +220,7 @@ describe('systemPrompt', () => {
     it('should throw error when file write fails', async () => {
       // Mock config dir to invalid location after ensureConfigDir succeeds
       ensureConfigDirSpy.mockResolvedValueOnce(undefined);
-      getConfigDirSpy.mockReturnValue('/read-only/invalid/path');
+      getSystemPromptPathSpy.mockReturnValue('/read-only/invalid/path');
       
       await expect(ensureDefaultSystemPromptFile()).rejects.toThrow();
     });

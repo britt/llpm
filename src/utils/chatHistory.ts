@@ -42,7 +42,6 @@ async function ensureProjectDir(projectId: string): Promise<void> {
 
 export async function loadChatHistory(): Promise<Message[]> {
   debug('Loading chat history from disk');
-
   try {
     await ensureConfigDir();
 

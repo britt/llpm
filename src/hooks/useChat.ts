@@ -165,7 +165,7 @@ export function useChat() {
             debug('Cleared messages and reset to welcome message');
           } else {
             const responseMessage: Message = {
-              role: 'system',
+              role: 'ui-notification',
               content: result.content,
               id: generateMessageId()
             };
@@ -185,7 +185,7 @@ export function useChat() {
           }
 
           const errorMessage: Message = {
-            role: 'system',
+            role: 'ui-notification',
             content: errorContent,
             id: generateMessageId()
           };
@@ -329,13 +329,13 @@ export function useChat() {
     [messageQueue, processMessageImmediate]
   );
 
-  const addSystemMessage = useCallback((content: string) => {
-    const systemMessage: Message = {
-      role: 'system',
+  const addUINotification = useCallback((content: string) => {
+    const notification: Message = {
+      role: 'ui-notification',
       content,
       id: generateMessageId()
     };
-    setMessages(prev => [...prev, systemMessage]);
+    setMessages(prev => [...prev, notification]);
     debug('Added system message');
   }, []);
 
@@ -348,7 +348,7 @@ export function useChat() {
       const result = await executeCommand('model', ['switch', modelValue]);
       
       const responseMessage: Message = {
-        role: 'system',
+        role: 'ui-notification',
         content: result.content,
         id: generateMessageId()
       };
@@ -358,7 +358,7 @@ export function useChat() {
       debug('Error switching model:', error);
       
       const errorMessage: Message = {
-        role: 'system',
+        role: 'ui-notification',
         content: '❌ Failed to switch model. Please try again.',
         id: generateMessageId()
       };
@@ -390,7 +390,7 @@ export function useChat() {
       } else {
         // If not interactive, show the result as a system message
         const responseMessage: Message = {
-          role: 'system',
+          role: 'ui-notification',
           content: result.content,
           id: generateMessageId()
         };
@@ -400,7 +400,7 @@ export function useChat() {
       debug('Error triggering model selector:', error);
       
       const errorMessage: Message = {
-        role: 'system',
+        role: 'ui-notification',
         content: '❌ Failed to open model selector. Please try again.',
         id: generateMessageId()
       };
@@ -413,7 +413,7 @@ export function useChat() {
   return {
     messages,
     sendMessage,
-    addSystemMessage,
+    addSystemMessage: addUINotification,
     isLoading,
     interactiveCommand,
     handleModelSelect,
