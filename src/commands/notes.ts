@@ -90,7 +90,7 @@ export const notesCommand: Command = {
             };
           }
           
-          const note = db.addNote(title, content);
+          const note = await db.addNote(title, content);
           
           return {
             content: `✅ Added note "${note.title}" (ID: ${note.id})\n📝 Content: ${content || '(empty)'}`,
