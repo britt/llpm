@@ -76,7 +76,7 @@ const ProjectStatus = memo(({ project }: { project: Project | null }) => {
         ) : (
           <Text color="gray">none</Text>
         )}{' '}
-        <Text color="blackBright">(shift+tab: switch project, ctrl+tab: switch model)</Text>
+        <Text color="blackBright">(shift+tab: switch project, option+tab: switch model)</Text>
       </Text>
     </Box>
   );
@@ -361,8 +361,8 @@ To add a new project, complete the command with these parameters:
       return;
     }
 
-    // Handle model selector
-    if (key.ctrl && key.tab) {
+    // Handle model selector (Option+Tab on Mac, Alt+Tab on other systems)
+    if (key.meta && key.tab) {
       onTriggerModelSelector?.();
       return;
     }
@@ -383,6 +383,7 @@ To add a new project, complete the command with these parameters:
       return;
     }
 
+
     // Handle Ctrl+E - move cursor to end
     if (key.ctrl && inputChar === 'e') {
       cursorRef.current = inputRef.current.length;
@@ -398,7 +399,11 @@ To add a new project, complete the command with these parameters:
     }
 
     // Handle Ctrl+V / Cmd+V - paste content from clipboard
-    if ((key.ctrl || key.meta) && inputChar === 'v') {
+    // Try multiple ways to detect paste events in terminals
+    const isPasteEvent = 
+      ((key.ctrl || key.meta) && inputChar === 'v'); // Standard paste
+    
+    if (isPasteEvent) {
       try {
         const clipboardContent = clipboardy.readSync();
         if (clipboardContent) {
@@ -415,11 +420,12 @@ To add a new project, complete the command with these parameters:
           }
         }
       } catch (error) {
-        // Silently ignore clipboard errors - clipboard might be empty or inaccessible
+        // Silently handle clipboard errors
         console.error('Failed to read clipboard:', error);
       }
       return;
     }
+
 
     // Handle arrow keys for cursor movement
     if (key.leftArrow) {
@@ -488,14 +494,32 @@ To add a new project, complete the command with these parameters:
     }
 
     // Handle regular character input - FASTEST PATH
-    if (inputChar && !key.ctrl && !key.meta && inputChar.length === 1) {
-      const currentInput = inputRef.current;
-      const cursor = cursorRef.current;
-      const newInput = currentInput.slice(0, cursor) + inputChar + currentInput.slice(cursor);
-      inputRef.current = newInput;
-      cursorRef.current = cursor + 1;
-      updateDisplay();
-      return;
+    if (inputChar && !key.ctrl && !key.meta) {
+      // Check for pasted content (multiple characters at once)
+      if (inputChar.length > 1) {
+        // This might be pasted content
+        const processedContent = inputChar.replace(/\r?\n/g, ' ').trim();
+        if (processedContent) {
+          const currentInput = inputRef.current;
+          const cursor = cursorRef.current;
+          const newInput = currentInput.slice(0, cursor) + processedContent + currentInput.slice(cursor);
+          inputRef.current = newInput;
+          cursorRef.current = cursor + processedContent.length;
+          updateDisplay();
+        }
+        return;
+      }
+      
+      // Single character input
+      if (inputChar.length === 1) {
+        const currentInput = inputRef.current;
+        const cursor = cursorRef.current;
+        const newInput = currentInput.slice(0, cursor) + inputChar + currentInput.slice(cursor);
+        inputRef.current = newInput;
+        cursorRef.current = cursor + 1;
+        updateDisplay();
+        return;
+      }
     }
   });
 

@@ -15,8 +15,8 @@ export async function saveCurrentModel(model: ModelConfig): Promise<void> {
   try {
     debug('Saving current model to storage:', model.displayName);
     
-    // Ensure storage directory exists
-    await Bun.write(STORAGE_DIR, '');
+    // Ensure storage directory exists using Bun's shell command
+    await Bun.spawn(['mkdir', '-p', STORAGE_DIR]).exited;
     
     const config: StoredModelConfig = {
       currentModel: model,

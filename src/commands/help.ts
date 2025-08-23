@@ -44,7 +44,7 @@ Displays a comprehensive list of all available commands, keyboard shortcuts, and
       '• Ctrl+U - Clear input line',
       '• Ctrl+V - Paste from clipboard',
       '• Shift+Tab - Switch project',
-      '• Ctrl+Tab - Switch model',
+      '• Option+Tab - Switch model',
       '• Up/Down arrows - Navigate input history',
       '• Ctrl+C - Exit application',
       '',
