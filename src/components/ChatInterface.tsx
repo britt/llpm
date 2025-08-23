@@ -2,6 +2,7 @@ import { useState, useEffect, memo, useMemo, useCallback, useRef } from 'react';
 import { Box, Text, useInput } from 'ink';
 import Spinner from 'ink-spinner';
 import SelectInput from 'ink-select-input';
+import clipboardy from 'clipboardy';
 import type { Message } from '../types';
 import { loadInputHistory, saveInputHistory } from '../utils/inputHistory';
 import {
@@ -197,7 +198,7 @@ const ProjectSelector = memo(
           <SelectInput items={items} onSelect={onProjectSelect} onHighlight={() => {}} />
           <Box marginTop={1}>
             <Text color="gray" dimColor>
-              💡 Create New: Use format "/project add {'<name> <repository> <path> [description]'}"
+              💡 Create New: Use format "/project add {'<name> <owner/repo> <path> [description]'}"
             </Text>
           </Box>
         </Box>
@@ -281,12 +282,17 @@ To add a new project, complete the command with these parameters:
 
 **Parameters:**
 • **name** - A descriptive name for your project (e.g., "My Web App")
-• **repository** - GitHub repository URL (e.g., "https://github.com/user/repo") 
+• **repository** - GitHub owner/repo (e.g., "user/repo") or full URL (e.g., "https://github.com/user/repo") 
 • **path** - Local file system path (e.g., "/Users/you/projects/my-app")
 • **description** - Optional description of the project (e.g., "Task management web app")
 
-**Example:**
-\`/project add "E-commerce Site" "https://github.com/myuser/shop" "/Users/john/projects/shop" "Online store for selling handmade crafts"\`
+**Repository Formats:**
+• GitHub shorthand: "user/my-app" (auto-converts to https://github.com/user/my-app)
+• Full URL: "https://github.com/user/my-app"
+
+**Examples:**
+\`/project add "E-commerce Site" "myuser/shop" "/Users/john/projects/shop" "Online store for selling handmade crafts"\`
+\`/project add "Web App" "https://github.com/user/webapp" "/path/to/webapp" "Full stack application"\`
 
 💡 **Tip:** Use quotes around names with spaces`;
 
@@ -380,6 +386,30 @@ To add a new project, complete the command with these parameters:
     if (key.ctrl && inputChar === 'a') {
       cursorRef.current = 0;
       updateDisplay();
+      return;
+    }
+
+    // Handle Ctrl+V / Cmd+V - paste content from clipboard
+    if ((key.ctrl || key.meta) && inputChar === 'v') {
+      try {
+        const clipboardContent = clipboardy.readSync();
+        if (clipboardContent) {
+          // Replace newlines with spaces to keep single-line input
+          const processedContent = clipboardContent.replace(/\r?\n/g, ' ').trim();
+          
+          if (processedContent) {
+            const currentInput = inputRef.current;
+            const cursor = cursorRef.current;
+            const newInput = currentInput.slice(0, cursor) + processedContent + currentInput.slice(cursor);
+            inputRef.current = newInput;
+            cursorRef.current = cursor + processedContent.length;
+            updateDisplay();
+          }
+        }
+      } catch (error) {
+        // Silently ignore clipboard errors - clipboard might be empty or inaccessible
+        console.error('Failed to read clipboard:', error);
+      }
       return;
     }
 

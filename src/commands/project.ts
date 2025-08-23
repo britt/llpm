@@ -10,6 +10,26 @@ import {
   updateProject
 } from '../utils/projectConfig';
 
+// Helper function to normalize repository format
+function normalizeRepository(repository: string): string {
+  // If it's already a URL, return as-is
+  if (repository.startsWith('http://') || repository.startsWith('https://')) {
+    return repository;
+  }
+  
+  // If it's in owner/repo format, convert to GitHub URL
+  if (repository.includes('/') && !repository.includes('.')) {
+    return `https://github.com/${repository}`;
+  }
+  
+  // If it doesn't look like a URL or owner/repo, assume it's owner/repo
+  if (!repository.includes('://')) {
+    return `https://github.com/${repository}`;
+  }
+  
+  return repository;
+}
+
 export const projectCommand: Command = {
   name: 'project',
   description: 'Set the current project or manage projects',
@@ -55,8 +75,14 @@ export const projectCommand: Command = {
 ⌨️ Quick Actions:
 • Shift+Tab - Interactive project selector
 
+📝 Repository Formats:
+• GitHub owner/repo: "user/my-app" (converts to https://github.com/user/my-app)
+• Full URL: "https://github.com/user/my-app"
+• Any git URL: "git@github.com:user/my-app.git"
+
 📝 Examples:
-• /project add "My App" "https://github.com/user/my-app" "/path/to/project" "Task manager"
+• /project add "My App" "user/my-app" "/path/to/project" "Task manager"
+• /project add "Web App" "https://github.com/user/webapp" "/path/to/webapp"
 • /project switch my-app-123
 • /project update my-app-123 description "Updated description"`,
           success: true
@@ -67,7 +93,7 @@ export const projectCommand: Command = {
         if (args.length < 4) {
           return {
             content:
-              '❌ Usage: /project add <name> <repository> <path> [description]\n\nExample: /project add "My App" "https://github.com/user/my-app" "/path/to/project" "A web application for managing tasks"',
+              '❌ Usage: /project add <name> <repository> <path> [description]\n\nExamples:\n• /project add "My App" "user/my-app" "/path/to/project" "A web application for managing tasks"\n• /project add "Web App" "https://github.com/user/webapp" "/path/to/webapp"',
             success: false
           };
         }
@@ -77,19 +103,23 @@ export const projectCommand: Command = {
           if (!name || !repository || !path) {
             return {
               content:
-                '❌ Usage: /project add <name> <repository> <path> [description]\n\nExample: /project add "My App" "https://github.com/user/my-app" "/path/to/project" "A web application for managing tasks"',
+                '❌ Usage: /project add <name> <repository> <path> [description]\n\nExample: /project add "My App" "user/my-app" "/path/to/project" "A web application for managing tasks"',
               success: false
             };
           }
+          
+          // Normalize repository format (convert owner/repo to full GitHub URL)
+          const normalizedRepository = normalizeRepository(repository);
+          
           const projectData: Omit<Project, 'id' | 'createdAt' | 'updatedAt'> = { 
             name, 
-            repository, 
+            repository: normalizedRepository, 
             path,
             ...(description && { description })
           };
           const newProject = await addProject(projectData);
           return {
-            content: `✅ Added project "${newProject.name}" (ID: ${newProject.id})\n📂 Repository: ${repository}\n📍 Path: ${path}${newProject.description ? `\n📝 Description: ${newProject.description}` : ''}`,
+            content: `✅ Added project "${newProject.name}" (ID: ${newProject.id})\n📂 Repository: ${normalizedRepository}\n📍 Path: ${path}${newProject.description ? `\n📝 Description: ${newProject.description}` : ''}`,
             success: true
           };
         } catch (error) {

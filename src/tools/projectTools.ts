@@ -10,6 +10,26 @@ import {
 } from '../utils/projectConfig';
 import { debug } from '../utils/logger';
 
+// Helper function to normalize repository format
+function normalizeRepository(repository: string): string {
+  // If it's already a URL, return as-is
+  if (repository.startsWith('http://') || repository.startsWith('https://')) {
+    return repository;
+  }
+  
+  // If it's in owner/repo format, convert to GitHub URL
+  if (repository.includes('/') && !repository.includes('.')) {
+    return `https://github.com/${repository}`;
+  }
+  
+  // If it doesn't look like a URL or owner/repo, assume it's owner/repo
+  if (!repository.includes('://')) {
+    return `https://github.com/${repository}`;
+  }
+  
+  return repository;
+}
+
 export const getCurrentProjectTool = tool({
   description: 'Get information about the currently active project',
   inputSchema: z.object({}),
@@ -77,10 +97,10 @@ export const listProjectsTool = tool({
 });
 
 export const addProjectTool = tool({
-  description: 'Add a new project to the system',
+  description: 'Add a new project to the system. Repository can be a full URL or GitHub owner/repo format (e.g., "user/repo")',
   inputSchema: z.object({
     name: z.string().describe('The name of the project'),
-    repository: z.string().describe('The GitHub repository URL or identifier'),
+    repository: z.string().describe('The GitHub repository URL or owner/repo format (e.g., "user/repo" or "https://github.com/user/repo")'),
     path: z.string().describe('The local file system path to the project'),
     description: z.string().optional().describe('Optional description of the project')
   }),
@@ -88,7 +108,9 @@ export const addProjectTool = tool({
     debug('Executing add_project tool with params:', { name, repository, path, description });
 
     try {
-      const projectData = { name, repository, path, ...(description && { description }) };
+      // Normalize repository format (convert owner/repo to full GitHub URL)
+      const normalizedRepository = normalizeRepository(repository);
+      const projectData = { name, repository: normalizedRepository, path, ...(description && { description }) };
       const newProject = await addProject(projectData);
 
       return {
