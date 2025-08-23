@@ -3,22 +3,28 @@ import { mkdir } from 'fs/promises';
 import { join } from 'path';
 import { homedir } from 'os';
 import { debug } from './logger';
+import { ensureDefaultSystemPromptFile } from './systemPrompt';
+import { loadProjectConfig } from './projectConfig';
 
 export const CONFIG_DIR = join(homedir(), '.llpm');
 export const CONFIG_FILE = join(CONFIG_DIR, 'config.json');
+export const SYSTEM_PROMPT_FILE = join(CONFIG_DIR, 'system_prompt.txt');
 
 export async function ensureConfigDir(): Promise<void> {
-  debug('Ensuring config directory exists:', CONFIG_DIR);
-
   if (!existsSync(CONFIG_DIR)) {
     debug('Creating config directory:', CONFIG_DIR);
     await mkdir(CONFIG_DIR, { recursive: true });
     debug('Config directory created successfully');
-  } else {
-    debug('Config directory already exists');
   }
-  // TODO: ensure config file exists
-  // TODO: ensure system prompt file exists
+
+  // ensure config file exists
+  if (!existsSync(CONFIG_FILE)) {
+    await loadProjectConfig()
+  }
+  // ensure system prompt file exists
+  if (!existsSync(CONFIG_FILE)) {
+    await ensureDefaultSystemPromptFile()
+  }
 }
 
 export function getConfigPath(): string {

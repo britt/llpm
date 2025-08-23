@@ -1,7 +1,7 @@
 import { readFile, writeFile } from 'fs/promises';
 import { existsSync } from 'fs';
 import { join } from 'path';
-import { getConfigDir, ensureConfigDir } from './config';
+import { getConfigDir, ensureConfigDir, SYSTEM_PROMPT_FILE } from './config';
 import { debug } from './logger';
 
 const DEFAULT_SYSTEM_PROMPT = `You are LLPM (Large Language Model Product Manager), an AI-powered project management assistant that operates within an interactive terminal interface. You help users manage multiple projects, interact with GitHub repositories, and coordinate development workflows through natural language conversation.
@@ -106,19 +106,14 @@ const DEFAULT_SYSTEM_PROMPT = `You are LLPM (Large Language Model Product Manage
 Always prioritize user productivity and provide actionable, contextual assistance that moves their projects forward.`;
 
 export async function getSystemPrompt(): Promise<string> {
-  debug('Loading system prompt');
-
   try {
     await ensureConfigDir();
-    const configDir = getConfigDir();
-    const promptPath = join(configDir, 'system_prompt.txt');
+    const promptPath = SYSTEM_PROMPT_FILE;
 
     if (existsSync(promptPath)) {
-      debug('Loading custom system prompt from config directory');
       const customPrompt = await readFile(promptPath, 'utf-8');
       return customPrompt.trim();
     } else {
-      debug('Using default system prompt');
       return DEFAULT_SYSTEM_PROMPT;
     }
   } catch (error) {
@@ -129,7 +124,6 @@ export async function getSystemPrompt(): Promise<string> {
 
 export async function saveSystemPrompt(prompt: string): Promise<void> {
   debug('Saving custom system prompt');
-
   try {
     await ensureConfigDir();
     const configDir = getConfigDir();
@@ -148,20 +142,15 @@ export function getDefaultSystemPrompt(): string {
 }
 
 export async function ensureDefaultSystemPromptFile(): Promise<void> {
-  debug('Ensuring default system prompt file exists');
-
   try {
     await ensureConfigDir();
-    const configDir = getConfigDir();
-    const promptPath = join(configDir, 'system_prompt.txt');
+    const promptPath = SYSTEM_PROMPT_FILE;
 
     if (!existsSync(promptPath)) {
       debug('Creating default system prompt file');
       await writeFile(promptPath, DEFAULT_SYSTEM_PROMPT, 'utf-8');
       debug('Default system prompt file created successfully');
-    } else {
-      debug('System prompt file already exists, skipping creation');
-    }
+    } 
   } catch (error) {
     debug('Error ensuring default system prompt file:', error);
     throw error;

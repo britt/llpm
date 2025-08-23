@@ -6,8 +6,6 @@ import { debug } from './logger';
 import { URL } from 'url';
 
 export async function loadProjectConfig(): Promise<ProjectConfig> {
-  debug('Loading project configuration');
-
   try {
     await ensureConfigDir();
     const configPath = getConfigFilePath();
@@ -23,11 +21,6 @@ export async function loadProjectConfig(): Promise<ProjectConfig> {
 
     const data = await readFile(configPath, 'utf-8');
     const config: ProjectConfig = JSON.parse(data);
-
-    debug('Loaded project config with', Object.keys(config.projects).length, 'projects');
-    if (config.currentProject) {
-      debug('Current project:', config.currentProject);
-    }
 
     return config;
   } catch (error) {
