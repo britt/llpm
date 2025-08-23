@@ -11,7 +11,8 @@ import {
   setCurrentProject as setCurrentProjectConfig
 } from '../utils/projectConfig';
 import type { Project } from '../types/project';
-import type { ModelSelectCommand } from '../types/models';
+import type { ModelSelectCommand, ModelConfig } from '../types/models';
+import { loadCurrentModel } from '../utils/modelStorage';
 
 interface ChatInterfaceProps {
   messages: Message[];
@@ -64,7 +65,7 @@ const MessageQueue = memo(
   }
 );
 
-const ProjectStatus = memo(({ project }: { project: Project | null }) => {
+const ProjectStatus = memo(({ project, model }: { project: Project | null; model: ModelConfig | null }) => {
   return (
     <Box paddingX={1} paddingY={0}>
       <Text dimColor>
@@ -72,6 +73,14 @@ const ProjectStatus = memo(({ project }: { project: Project | null }) => {
         {project ? (
           <Text color="cyan" bold>
             {project.name}
+          </Text>
+        ) : (
+          <Text color="gray">none</Text>
+        )}{' '}
+        | model:{' '}
+        {model ? (
+          <Text color="green" bold>
+            {model.displayName}
           </Text>
         ) : (
           <Text color="gray">none</Text>
@@ -224,6 +233,7 @@ export const ChatInterface = memo(function ChatInterface({
   const [inputHistory, setInputHistory] = useState<string[]>([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
   const [currentProject, setCurrentProject] = useState<Project | null>(null);
+  const [currentModel, setCurrentModel] = useState<ModelConfig | null>(null);
   const [showProjectSelector, setShowProjectSelector] = useState(false);
   const [displayCursor, setDisplayCursor] = useState(0);
 
@@ -259,6 +269,24 @@ export const ChatInterface = memo(function ChatInterface({
 
     // Check for project changes every 30 seconds (reduced frequency)
     const interval = setInterval(loadCurrentProject, 30000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Load current model on mount and periodically
+  useEffect(() => {
+    const loadModel = async () => {
+      try {
+        const model = await loadCurrentModel();
+        setCurrentModel(model);
+      } catch (error) {
+        console.error('Failed to load current model:', error);
+      }
+    };
+
+    loadModel();
+
+    // Check for model changes every 30 seconds
+    const interval = setInterval(loadModel, 30000);
     return () => clearInterval(interval);
   }, []);
 
@@ -566,7 +594,7 @@ To add a new project, complete the command with these parameters:
       {/* Input */}
       {inputComponent}
       {/* Project Status */}
-      <ProjectStatus project={currentProject} />
+      <ProjectStatus project={currentProject} model={currentModel} />
     </Box>
   );
 });
