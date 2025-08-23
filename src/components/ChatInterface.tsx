@@ -31,7 +31,7 @@ const ThinkingIndicator = memo(() => {
   return (
     <Box>
       <Text color="red">
-        <Spinner type="aesthetic" /> PM is thinking...
+PM is thinking...
       </Text>
     </Box>
   );
