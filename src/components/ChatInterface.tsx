@@ -76,7 +76,7 @@ const ProjectStatus = memo(({ project }: { project: Project | null }) => {
         ) : (
           <Text color="gray">none</Text>
         )}{' '}
-        <Text color="blackBright">(shift+tab: switch project, option+shift: switch model)</Text>
+        <Text color="blackBright">(shift+tab: switch project, option+m: switch model)</Text>
       </Text>
     </Box>
   );
@@ -361,8 +361,8 @@ To add a new project, complete the command with these parameters:
       return;
     }
 
-    // Handle model selector (Option+Shift)
-    if (key.meta && key.shift) {
+    // Handle model selector (Option+M for Model)
+    if (key.meta && inputChar === 'm') {
       onTriggerModelSelector?.();
       return;
     }
