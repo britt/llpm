@@ -373,6 +373,43 @@ export function useChat() {
     setInteractiveCommand(null);
   }, []);
 
+  const triggerModelSelector = useCallback(async () => {
+    debug('Triggering model selector via hotkey');
+    setIsLoading(true);
+    
+    try {
+      const result = await executeCommand('model', ['switch']);
+      
+      // Check for interactive command results
+      if (result.interactive && result.interactive.type === 'model-select') {
+        setInteractiveCommand({
+          type: 'model-select',
+          models: result.interactive.models
+        });
+        debug('Showing interactive model selector');
+      } else {
+        // If not interactive, show the result as a system message
+        const responseMessage: Message = {
+          role: 'system',
+          content: result.content,
+          id: generateMessageId()
+        };
+        setMessages(prev => [...prev, responseMessage]);
+      }
+    } catch (error) {
+      debug('Error triggering model selector:', error);
+      
+      const errorMessage: Message = {
+        role: 'system',
+        content: '❌ Failed to open model selector. Please try again.',
+        id: generateMessageId()
+      };
+      setMessages(prev => [...prev, errorMessage]);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
   return {
     messages,
     sendMessage,
@@ -381,6 +418,7 @@ export function useChat() {
     interactiveCommand,
     handleModelSelect,
     cancelModelSelection,
+    triggerModelSelector,
     // Queue status for UI indicators
     queueLength: messageQueue.length,
     isProcessing,

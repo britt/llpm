@@ -55,6 +55,7 @@ export function App() {
     interactiveCommand,
     handleModelSelect,
     cancelModelSelection,
+    triggerModelSelector,
     isProcessing,
     queuedMessages
   } = useChat();
@@ -67,6 +68,7 @@ export function App() {
     interactiveCommand,
     onModelSelect: handleModelSelect,
     onCancelModelSelection: cancelModelSelection,
+    onTriggerModelSelector: triggerModelSelector,
     isProcessing,
     queuedMessages
   });

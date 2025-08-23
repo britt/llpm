@@ -21,6 +21,7 @@ interface ChatInterfaceProps {
   interactiveCommand?: ModelSelectCommand | null;
   onModelSelect?: (modelValue: string) => void;
   onCancelModelSelection?: () => void;
+  onTriggerModelSelector?: () => void;
   isProcessing?: boolean;
   queuedMessages?: Array<{ id: string; content: string; timestamp: number }>;
 }
@@ -75,7 +76,7 @@ const ProjectStatus = memo(({ project }: { project: Project | null }) => {
         ) : (
           <Text color="gray">none</Text>
         )}{' '}
-        <Text color="blackBright">(shift+tab: switch project)</Text>
+        <Text color="blackBright">(shift+tab: switch project, ctrl+tab: switch model)</Text>
       </Text>
     </Box>
   );
@@ -215,6 +216,7 @@ export const ChatInterface = memo(function ChatInterface({
   interactiveCommand,
   onModelSelect,
   onCancelModelSelection,
+  onTriggerModelSelector,
   isProcessing = false,
   queuedMessages = []
 }: ChatInterfaceProps) {
@@ -356,6 +358,12 @@ To add a new project, complete the command with these parameters:
     if (key.shift && key.tab) {
       setShowProjectSelector(true);
 
+      return;
+    }
+
+    // Handle model selector
+    if (key.ctrl && key.tab) {
+      onTriggerModelSelector?.();
       return;
     }
 
