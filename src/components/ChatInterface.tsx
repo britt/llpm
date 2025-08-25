@@ -1,5 +1,5 @@
 import { useState, useEffect, memo, useMemo, useCallback } from 'react';
-import { Box, Text } from 'ink';
+import { Box, Text, useInput, type Key } from 'ink';
 import SelectInput from 'ink-select-input';
 import type { Message } from '../types';
 import {
@@ -138,15 +138,23 @@ function MessageList({ messages }: { messages: Message[] }) {
 const ModelSelector = memo(
   ({
     command,
-    onModelSelect
+    onModelSelect,
+    onHide
   }: {
     command: ModelSelectCommand;
     onModelSelect?: (modelValue: string) => void;
+    onHide: () => void;
   }) => {
     const models = command.models.map(model => ({
       label: model.label,
       value: model.value
     }));
+
+    useInput((input: string, key: Key) => {
+      if (key.escape) {
+        onHide();
+      }
+    });
 
     return (
       <Box borderStyle="single" paddingX={1}>
@@ -173,9 +181,11 @@ const ModelSelector = memo(
 
 const ProjectSelector = memo(
   ({
-    onProjectSelect
+    onProjectSelect,
+    onHide
   }: {
     onProjectSelect: (projectValue: { label: string; value: string }) => void;
+    onHide: () => void;
   }) => {
     const [projects, setProjects] = useState([] as Project[]);
     // Load available projects
@@ -197,6 +207,12 @@ const ProjectSelector = memo(
     items.unshift({
       label: '(Create New Project)',
       value: '__create_new__'
+    });
+
+    useInput((input: string, key: Key) => {
+      if (key.escape) {
+        onHide();
+      }
     });
 
     return (
@@ -320,12 +336,9 @@ To add a new project, complete the command with these parameters:
 
   const showProjectSelectorHotKey = hotKey(
     (inputChar, key) => key.shift && key.tab,
-    () => setShowProjectSelector(true)
-  );
-
-  const hideProjectSelectorHotKey = hotKey(
-    useCallback((inputChar, key) => key.escape && showProjectSelector, [showProjectSelector]),
-    () => setShowProjectSelector(false)
+    () => {
+      setShowProjectSelector(true);
+    }
   );
 
   const showModelSelectorHotKey = hotKey(
@@ -333,27 +346,21 @@ To add a new project, complete the command with these parameters:
     useCallback(() => onTriggerModelSelector?.(), [onTriggerModelSelector])
   );
 
-  const hideModelSelectorHotKey = hotKey(
-    useCallback((inputChar, key) => key.escape && interactiveCommand?.type === 'model-select', [interactiveCommand]),
-    useCallback(() => onCancelModelSelection?.(), [onCancelModelSelection])
-  );
 
   let inputComponent = (
     <ShellInput
       hotKeys={[
         showProjectSelectorHotKey,
-        hideProjectSelectorHotKey,
         showModelSelectorHotKey,
-        hideModelSelectorHotKey
       ]}
       onSubmit={handleInputSubmit}
     />
   );
   if (showProjectSelector) {
-    inputComponent = <ProjectSelector onProjectSelect={handleProjectSelect} />;
+    inputComponent = <ProjectSelector onProjectSelect={handleProjectSelect} onHide={() => setShowProjectSelector(false)} />;
   }
   if (interactiveCommand?.type === 'model-select') {
-    inputComponent = <ModelSelector command={interactiveCommand} onModelSelect={onModelSelect} />;
+    inputComponent = <ModelSelector command={interactiveCommand} onModelSelect={onModelSelect} onHide={() => onCancelModelSelection?.()} />;
   }
 
   return (

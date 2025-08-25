@@ -1,4 +1,4 @@
-import { readFile, writeFile } from 'fs/promises';
+import { readFile, appendFile } from 'fs/promises';
 import { existsSync } from 'fs';
 import { join } from 'path';
 import type { Message } from '../types';
@@ -6,15 +6,13 @@ import { getConfigDir, ensureConfigDir } from './config';
 import { getCurrentProject } from './projectConfig';
 import { debug } from './logger';
 
-interface ChatSession {
-  id: string;
-  timestamp: string;
-  messages: Message[];
+function MessageToLogString(message: Message): string {
+  return `${message.role}: ${message.content}`;
 }
 
-interface ChatHistoryData {
-  sessions: ChatSession[];
-  currentSessionId?: string;
+function LogStringToMessage(logString: string): Message   {
+  const [role, content] = logString.split(': ');
+  return { role: role as Message['role'], content: content || '' };
 }
 
 async function getChatHistoryPath(): Promise<string> {
@@ -24,10 +22,10 @@ async function getChatHistoryPath(): Promise<string> {
   if (currentProject) {
     // Use project-specific chat history
     const projectDir = join(configDir, 'projects', currentProject.id);
-    return join(projectDir, 'chat-history.json');
+    return join(projectDir, 'chat-history.log');
   } else {
     // Use global chat history when no project is selected
-    return join(configDir, 'global-chat-history.json');
+    return join(configDir, 'global-chat-history.log');
   }
 }
 
@@ -50,7 +48,6 @@ export async function loadChatHistory(): Promise<Message[]> {
     if (currentProject) {
       await ensureProjectDir(currentProject.id);
     }
-
     const historyPath = await getChatHistoryPath();
 
     if (!existsSync(historyPath)) {
@@ -59,26 +56,14 @@ export async function loadChatHistory(): Promise<Message[]> {
     }
 
     const data = await readFile(historyPath, 'utf-8');
-    const history: ChatHistoryData = JSON.parse(data);
-
-    if (history.currentSessionId && history.sessions.length > 0) {
-      const currentSession = history.sessions.find(s => s.id === history.currentSessionId);
-      if (currentSession) {
-        debug('Loaded', currentSession.messages.length, 'messages from current session');
-        return currentSession.messages;
-      }
-    }
+    const history: Message[] = data.split('\n').map(LogStringToMessage);
 
     // If no current session, get the most recent one
-    if (history.sessions.length > 0) {
-      const latestSession = history.sessions[history.sessions.length - 1];
-      if (latestSession) {
-        debug('Loaded', latestSession.messages.length, 'messages from latest session');
-        return latestSession.messages;
-      }
+    if (history.length > 0) {
+      debug('Loaded', history.length, 'messages from history');
+      return history.slice(-50);
     }
 
-    debug('No sessions found in history');
     return [];
   } catch (error) {
     debug('Error loading chat history:', error);
@@ -86,6 +71,7 @@ export async function loadChatHistory(): Promise<Message[]> {
   }
 }
 
+// TODO: new line escaping
 export async function saveChatHistory(messages: Message[]): Promise<void> {
   debug('Saving chat history with', messages.length, 'messages');
 
@@ -100,86 +86,8 @@ export async function saveChatHistory(messages: Message[]): Promise<void> {
 
     const historyPath = await getChatHistoryPath();
 
-    // Load existing history
-    let history: ChatHistoryData = { sessions: [] };
-
-    if (existsSync(historyPath)) {
-      try {
-        const data = await readFile(historyPath, 'utf-8');
-        history = JSON.parse(data);
-      } catch (error) {
-        debug('Error reading existing history, creating new:', error);
-        history = { sessions: [] };
-      }
-    }
-
-    // Create or update current session
-    const now = new Date().toISOString();
-    const sessionId = history.currentSessionId || `session-${Date.now()}`;
-
-    const existingSessionIndex = history.sessions.findIndex(s => s.id === sessionId);
-
-    if (existingSessionIndex >= 0) {
-      // Update existing session
-      history.sessions[existingSessionIndex] = {
-        id: sessionId,
-        timestamp: now,
-        messages
-      };
-    } else {
-      // Create new session
-      history.sessions.push({
-        id: sessionId,
-        timestamp: now,
-        messages
-      });
-    }
-
-    history.currentSessionId = sessionId;
-
-    // Keep only last 10 sessions to prevent unlimited growth
-    if (history.sessions.length > 10) {
-      history.sessions = history.sessions.slice(-10);
-    }
-
-    await writeFile(historyPath, JSON.stringify(history, null, 2), 'utf-8');
-    debug('Chat history saved successfully');
+    await appendFile(historyPath, messages.map(MessageToLogString).join('\n'), 'utf-8');
   } catch (error) {
     debug('Error saving chat history:', error);
-  }
-}
-
-export async function createNewSession(): Promise<void> {
-  debug('Creating new chat session');
-
-  try {
-    await ensureConfigDir();
-
-    // Check if we have a current project and ensure its directory exists
-    const currentProject = await getCurrentProject();
-    if (currentProject) {
-      await ensureProjectDir(currentProject.id);
-    }
-
-    const historyPath = await getChatHistoryPath();
-
-    let history: ChatHistoryData = { sessions: [] };
-
-    if (existsSync(historyPath)) {
-      try {
-        const data = await readFile(historyPath, 'utf-8');
-        history = JSON.parse(data);
-      } catch (error) {
-        debug('Error reading existing history:', error);
-      }
-    }
-
-    // Set new session ID
-    history.currentSessionId = `session-${Date.now()}`;
-
-    await writeFile(historyPath, JSON.stringify(history, null, 2), 'utf-8');
-    debug('New session created:', history.currentSessionId);
-  } catch (error) {
-    debug('Error creating new session:', error);
   }
 }

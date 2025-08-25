@@ -8,15 +8,8 @@ import { getCurrentProject } from '../utils/projectConfig';
 import type { ModelSelectCommand } from '../types/models';
 
 interface QueuedMessage {
-  id: string;
   content: string;
   timestamp: number;
-}
-
-let messageCounter = 0;
-function generateMessageId(): string {
-  messageCounter += 1;
-  return `msg-${messageCounter}-${Math.random().toString(36).substr(2, 9)}`;
 }
 
 export function useChat() {
@@ -25,14 +18,15 @@ export function useChat() {
   const [historyLoaded, setHistoryLoaded] = useState(false);
   const [currentProjectId, setCurrentProjectId] = useState<string | null>(null);
   const [interactiveCommand, setInteractiveCommand] = useState<ModelSelectCommand | null>(null);
-  
+
   // Message queue state
   const [messageQueue, setMessageQueue] = useState<QueuedMessage[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
-  
+
   const messagesRef = useRef<Message[]>([]);
   const processingRef = useRef(false);
-  
+  const savePositionRef = useRef(0);
+
   // Keep refs in sync with state
   useEffect(() => {
     messagesRef.current = messages;
@@ -59,6 +53,7 @@ export function useChat() {
         }
 
         const savedMessages = await loadChatHistory();
+        savePositionRef.current = savedMessages.length;
 
         if (savedMessages.length === 0) {
           // No saved history, use welcome message
@@ -66,17 +61,12 @@ export function useChat() {
             role: 'assistant',
             content:
               "Hello! I'm LLPM, your AI-powered project manager. How can I help you today?\n\n💡 Type /help to see available commands.",
-            id: generateMessageId()
           };
           setMessages([welcomeMessage]);
           debug('No saved history found, using welcome message');
         } else {
           // Load saved history and ensure all messages have unique IDs
-          const messagesWithIds = savedMessages.map((msg, index) => ({
-            ...msg,
-            id: msg.id && msg.id.trim() ? msg.id : `loaded-${index}-${generateMessageId()}`
-          }));
-          setMessages(messagesWithIds);
+          setMessages(savedMessages);
           debug('Loaded', savedMessages.length, 'messages from history');
         }
       } catch (error) {
@@ -86,7 +76,6 @@ export function useChat() {
           role: 'assistant',
           content:
             "Hello! I'm LLPM, your AI-powered project manager. How can I help you today?\n\n💡 Type /help to see available commands.",
-          id: generateMessageId()
         };
         setMessages([welcomeMessage]);
       } finally {
@@ -121,9 +110,11 @@ export function useChat() {
   useEffect(() => {
     if (historyLoaded && messages.length > 0) {
       debug('Saving updated chat history');
-      saveChatHistory(messages).catch(error => {
-        debug('Failed to save chat history:', error);
-      });
+      saveChatHistory(messages.slice(savePositionRef.current)).
+        then(() => savePositionRef.current = messages.length - 1).
+        catch(error => {
+          debug('Failed to save chat history:', error);
+        });
     }
   }, [messages, historyLoaded]);
 
@@ -159,7 +150,6 @@ export function useChat() {
               role: 'assistant',
               content:
                 "Hello! I'm LLPM, your AI-powered project manager. How can I help you today?\n\n💡 Type /help to see available commands.",
-              id: generateMessageId()
             };
             setMessages([welcomeMessage]);
             debug('Cleared messages and reset to welcome message');
@@ -167,7 +157,6 @@ export function useChat() {
             const responseMessage: Message = {
               role: 'ui-notification',
               content: result.content,
-              id: generateMessageId()
             };
             setMessages(prev => [...prev, responseMessage]);
             debug('Added command response to state');
@@ -187,7 +176,6 @@ export function useChat() {
           const errorMessage: Message = {
             role: 'ui-notification',
             content: errorContent,
-            id: generateMessageId()
           };
           setMessages(prev => [...prev, errorMessage]);
         } finally {
@@ -197,7 +185,7 @@ export function useChat() {
       }
 
       // Handle regular chat messages
-      const userMessage: Message = { role: 'user', content, id: generateMessageId() };
+      const userMessage: Message = { role: 'user', content };
 
       debug('Adding user message to state');
       setMessages(prev => [...prev, userMessage]);
@@ -221,7 +209,6 @@ export function useChat() {
         const assistantMessage: Message = {
           role: 'assistant',
           content: responseContent,
-          id: generateMessageId()
         };
         setMessages(prev => [...prev, assistantMessage]);
         debug('Added assistant response to state');
@@ -240,7 +227,6 @@ export function useChat() {
         const errorMessage: Message = {
           role: 'assistant',
           content: errorContent,
-          id: generateMessageId()
         };
         setMessages(prev => [...prev, errorMessage]);
         debug('Added error message to state');
@@ -273,12 +259,12 @@ export function useChat() {
           setIsProcessing(false);
           return;
         }
-        
+
         setMessageQueue(prev => prev.slice(1));
 
         try {
           await processMessageImmediate(nextMessage.content);
-          debug('processNextMessage: completed processing message:', nextMessage.id);
+          debug('processNextMessage: completed processing message');
         } catch (error) {
           debug('processNextMessage: error processing message:', error);
         } finally {
@@ -300,7 +286,6 @@ export function useChat() {
       }
 
       const queuedMessage: QueuedMessage = {
-        id: generateMessageId(),
         content: trimmedContent,
         timestamp: Date.now()
       };
@@ -308,7 +293,7 @@ export function useChat() {
       // If not currently processing, process immediately
       if (!processingRef.current && messageQueue.length === 0) {
         setIsProcessing(true);
-        
+
         try {
           await processMessageImmediate(queuedMessage.content);
         } catch (error) {
@@ -329,7 +314,6 @@ export function useChat() {
     const notification: Message = {
       role: 'ui-notification',
       content,
-      id: generateMessageId()
     };
     setMessages(prev => [...prev, notification]);
     debug('Added system message');
@@ -339,24 +323,22 @@ export function useChat() {
     debug('Model selected:', modelValue);
     setInteractiveCommand(null);
     setIsLoading(true);
-    
+
     try {
       const result = await executeCommand('model', ['switch', modelValue]);
-      
+
       const responseMessage: Message = {
         role: 'ui-notification',
         content: result.content,
-        id: generateMessageId()
       };
       setMessages(prev => [...prev, responseMessage]);
       debug('Model switch completed');
     } catch (error) {
       debug('Error switching model:', error);
-      
+
       const errorMessage: Message = {
         role: 'ui-notification',
         content: '❌ Failed to switch model. Please try again.',
-        id: generateMessageId()
       };
       setMessages(prev => [...prev, errorMessage]);
     } finally {
@@ -372,10 +354,10 @@ export function useChat() {
   const triggerModelSelector = useCallback(async () => {
     debug('Triggering model selector via hotkey');
     setIsLoading(true);
-    
+
     try {
       const result = await executeCommand('model', ['switch']);
-      
+
       // Check for interactive command results
       if (result.interactive && result.interactive.type === 'model-select') {
         setInteractiveCommand({
@@ -388,17 +370,15 @@ export function useChat() {
         const responseMessage: Message = {
           role: 'ui-notification',
           content: result.content,
-          id: generateMessageId()
         };
         setMessages(prev => [...prev, responseMessage]);
       }
     } catch (error) {
       debug('Error triggering model selector:', error);
-      
+
       const errorMessage: Message = {
         role: 'ui-notification',
         content: '❌ Failed to open model selector. Please try again.',
-        id: generateMessageId()
       };
       setMessages(prev => [...prev, errorMessage]);
     } finally {
