@@ -1,10 +1,7 @@
-import { useState, useEffect, memo, useMemo, useCallback, useRef } from 'react';
-import { Box, Text, useInput } from 'ink';
-import Spinner from 'ink-spinner';
+import { useState, useEffect, memo, useMemo, useCallback } from 'react';
+import { Box, Text } from 'ink';
 import SelectInput from 'ink-select-input';
-import clipboardy from 'clipboardy';
 import type { Message } from '../types';
-import { loadInputHistory, saveInputHistory } from '../utils/inputHistory';
 import {
   getCurrentProject,
   listProjects,
@@ -13,6 +10,7 @@ import {
 import type { Project } from '../types/project';
 import type { ModelSelectCommand, ModelConfig } from '../types/models';
 import { loadCurrentModel } from '../utils/modelStorage';
+import ShellInput, { hotKey } from './ShellInput';
 
 interface ChatInterfaceProps {
   messages: Message[];
@@ -30,9 +28,7 @@ interface ChatInterfaceProps {
 const ThinkingIndicator = memo(() => {
   return (
     <Box>
-      <Text color="red">
-PM is thinking...
-      </Text>
+      <Text color="red">PM is thinking...</Text>
     </Box>
   );
 });
@@ -41,7 +37,9 @@ const QueuedMessage = memo(
   ({ message }: { message: { id: string; content: string; timestamp: number } }) => {
     return (
       <Box>
-        <Text color="gray" dimColor>{message.content}</Text>
+        <Text color="gray" dimColor>
+          {message.content}
+        </Text>
       </Box>
     );
   }
@@ -65,31 +63,33 @@ const MessageQueue = memo(
   }
 );
 
-const ProjectStatus = memo(({ project, model }: { project: Project | null; model: ModelConfig | null }) => {
-  return (
-    <Box paddingX={1} paddingY={0}>
-      <Text dimColor>
-        project:{' '}
-        {project ? (
-          <Text color="cyan" bold>
-            {project.name}
-          </Text>
-        ) : (
-          <Text color="gray">none</Text>
-        )}{' '}
-        | model:{' '}
-        {model ? (
-          <Text color="green" bold>
-            {model.displayName}
-          </Text>
-        ) : (
-          <Text color="gray">none</Text>
-        )}{' '}
-        <Text color="blackBright">(shift+tab: switch project, option+m: switch model)</Text>
-      </Text>
-    </Box>
-  );
-});
+const ProjectStatus = memo(
+  ({ project, model }: { project: Project | null; model: ModelConfig | null }) => {
+    return (
+      <Box paddingX={1} paddingY={0}>
+        <Text dimColor>
+          project:{' '}
+          {project ? (
+            <Text color="cyan" bold>
+              {project.name}
+            </Text>
+          ) : (
+            <Text color="gray">none</Text>
+          )}{' '}
+          | model:{' '}
+          {model ? (
+            <Text color="green" bold>
+              {model.displayName}
+            </Text>
+          ) : (
+            <Text color="gray">none</Text>
+          )}{' '}
+          <Text color="blackBright">(shift+tab: switch project, option+m: switch model)</Text>
+        </Text>
+      </Box>
+    );
+  }
+);
 
 // Individual message component to prevent full rerenders
 const MessageItem = memo(({ message }: { message: Message }) => {
@@ -229,32 +229,11 @@ export const ChatInterface = memo(function ChatInterface({
   isProcessing = false,
   queuedMessages = []
 }: ChatInterfaceProps) {
-  const [displayInput, setDisplayInput] = useState('');
-  const [inputHistory, setInputHistory] = useState<string[]>([]);
-  const [historyIndex, setHistoryIndex] = useState(-1);
   const [currentProject, setCurrentProject] = useState<Project | null>(null);
   const [currentModel, setCurrentModel] = useState<ModelConfig | null>(null);
   const [showProjectSelector, setShowProjectSelector] = useState(false);
-  const [displayCursor, setDisplayCursor] = useState(0);
 
-  // Use refs to avoid re-renders during typing
-  const inputRef = useRef('');
-  const cursorRef = useRef(0);
-
-  // Immediate update function for lightning fast response
-  const updateDisplay = useCallback(() => {
-    setDisplayInput(inputRef.current);
-    setDisplayCursor(cursorRef.current);
-  }, []);
-
-  // Load input history on mount
-  useEffect(() => {
-    loadInputHistory().then(history => {
-      setInputHistory(history);
-    });
-  }, []);
-
-  // Load current project on mount and periodically
+  // Load current project on mount
   useEffect(() => {
     const loadCurrentProject = async () => {
       try {
@@ -266,13 +245,9 @@ export const ChatInterface = memo(function ChatInterface({
     };
 
     loadCurrentProject();
-
-    // Check for project changes every 30 seconds (reduced frequency)
-    const interval = setInterval(loadCurrentProject, 30000);
-    return () => clearInterval(interval);
   }, []);
 
-  // Load current model on mount and periodically
+  // Load current model on mount
   useEffect(() => {
     const loadModel = async () => {
       try {
@@ -284,10 +259,6 @@ export const ChatInterface = memo(function ChatInterface({
     };
 
     loadModel();
-
-    // Check for model changes every 30 seconds
-    const interval = setInterval(loadModel, 30000);
-    return () => clearInterval(interval);
   }, []);
 
   // Handle project selection - memoized to prevent re-creation
@@ -296,10 +267,6 @@ export const ChatInterface = memo(function ChatInterface({
       try {
         if (item.value === '__create_new__') {
           // Handle "Create New Project" option
-          inputRef.current = '/project add ';
-          cursorRef.current = inputRef.current.length;
-          setDisplayInput(inputRef.current);
-          setDisplayCursor(inputRef.current.length);
           setShowProjectSelector(false);
 
           // Add system message with rich formatting and instructions
@@ -344,237 +311,44 @@ To add a new project, complete the command with these parameters:
   );
 
   // Handle input submission - memoized to prevent re-creation
-  const handleInputSubmit = useCallback(() => {
-    const currentInput = inputRef.current;
-    if (currentInput.trim()) {
-      // Add to history (avoid duplicates)
-      setInputHistory(prev => {
-        const newHistory = [currentInput, ...prev.filter(h => h !== currentInput)];
-        const limitedHistory = newHistory.slice(0, 100); // Keep last 100 commands
+  const handleInputSubmit = useCallback(
+    (input: string) => {
+      onSendMessage(input.trim());
+    },
+    [onSendMessage]
+  );
 
-        // Save to disk asynchronously
-        saveInputHistory(limitedHistory);
+  const showProjectSelectorHotKey = hotKey(
+    (inputChar, key) => key.shift && key.tab,
+    () => setShowProjectSelector(true)
+  );
 
-        return limitedHistory;
-      });
+  const hideProjectSelectorHotKey = hotKey(
+    useCallback((inputChar, key) => key.escape && showProjectSelector, [showProjectSelector]),
+    () => setShowProjectSelector(false)
+  );
 
-      onSendMessage(currentInput.trim());
-      inputRef.current = '';
-      cursorRef.current = 0;
-      setDisplayInput('');
-      setDisplayCursor(0);
-      setHistoryIndex(-1);
-    }
-  }, [onSendMessage]);
+  const showModelSelectorHotKey = hotKey(
+    (inputChar, key) => key.meta && inputChar === 'm',
+    useCallback(() => onTriggerModelSelector?.(), [onTriggerModelSelector])
+  );
 
-  // BLAZING FAST input handler - uses refs to avoid React re-renders
-  useInput((inputChar, key) => {
-    // Skip all input handling when selectors are shown
-    if (showProjectSelector || interactiveCommand?.type === 'model-select') {
-      // Handle ESC to cancel project selector
-      if (key.escape && showProjectSelector) {
-        setShowProjectSelector(false);
-      }
-      // Handle ESC to cancel model selector
-      if (key.escape && interactiveCommand?.type === 'model-select') {
-        onCancelModelSelection?.();
-      }
-      return;
-    }
+  const hideModelSelectorHotKey = hotKey(
+    useCallback((inputChar, key) => key.escape && interactiveCommand?.type === 'model-select', [interactiveCommand]),
+    useCallback(() => onCancelModelSelection?.(), [onCancelModelSelection])
+  );
 
-    // Handle project selector
-    if (key.shift && key.tab) {
-      setShowProjectSelector(true);
-
-      return;
-    }
-
-    // Handle model selector (Option+M for Model)
-    if (key.meta && inputChar === 'm') {
-      onTriggerModelSelector?.();
-      return;
-    }
-
-    // Handle Enter - submit input
-    if (key.return) {
-      handleInputSubmit();
-      return;
-    }
-
-    // Handle Ctrl+U - clear input
-    if (key.ctrl && inputChar === 'u') {
-      inputRef.current = '';
-      cursorRef.current = 0;
-      setDisplayInput('');
-      setDisplayCursor(0);
-      setHistoryIndex(-1);
-      return;
-    }
-
-
-    // Handle Ctrl+E - move cursor to end
-    if (key.ctrl && inputChar === 'e') {
-      cursorRef.current = inputRef.current.length;
-      updateDisplay();
-      return;
-    }
-
-    // Handle Ctrl+A - move cursor to beginning
-    if (key.ctrl && inputChar === 'a') {
-      cursorRef.current = 0;
-      updateDisplay();
-      return;
-    }
-
-    // Handle Ctrl+V / Cmd+V - paste content from clipboard
-    // Try multiple ways to detect paste events in terminals
-    const isPasteEvent = 
-      ((key.ctrl || key.meta) && inputChar === 'v'); // Standard paste
-    
-    if (isPasteEvent) {
-      try {
-        const clipboardContent = clipboardy.readSync();
-        if (clipboardContent) {
-          // Replace newlines with spaces to keep single-line input
-          const processedContent = clipboardContent.replace(/\r?\n/g, ' ').trim();
-          
-          if (processedContent) {
-            const currentInput = inputRef.current;
-            const cursor = cursorRef.current;
-            const newInput = currentInput.slice(0, cursor) + processedContent + currentInput.slice(cursor);
-            inputRef.current = newInput;
-            cursorRef.current = cursor + processedContent.length;
-            updateDisplay();
-          }
-        }
-      } catch (error) {
-        // Silently handle clipboard errors
-        console.error('Failed to read clipboard:', error);
-      }
-      return;
-    }
-
-
-    // Handle arrow keys for cursor movement
-    if (key.leftArrow) {
-      cursorRef.current = Math.max(0, cursorRef.current - 1);
-      updateDisplay();
-      return;
-    }
-
-    if (key.rightArrow) {
-      cursorRef.current = Math.min(inputRef.current.length, cursorRef.current + 1);
-      updateDisplay();
-      return;
-    }
-
-    if (key.upArrow && !key.ctrl && !key.shift) {
-      // Navigate up in history
-      if (inputHistory.length > 0) {
-        const newIndex = Math.min(historyIndex + 1, inputHistory.length - 1);
-        const historyText = inputHistory[newIndex];
-        if (historyText) {
-          setHistoryIndex(newIndex);
-          inputRef.current = historyText;
-          cursorRef.current = historyText.length;
-          setDisplayInput(historyText);
-          setDisplayCursor(historyText.length);
-        }
-      }
-      return;
-    }
-
-    if (key.downArrow && !key.ctrl && !key.shift) {
-      // Navigate down in history
-      if (historyIndex >= 0) {
-        const newIndex = historyIndex - 1;
-        if (newIndex < 0) {
-          setHistoryIndex(-1);
-          inputRef.current = '';
-          cursorRef.current = 0;
-          setDisplayInput('');
-          setDisplayCursor(0);
-        } else {
-          const historyText = inputHistory[newIndex];
-          if (historyText) {
-            setHistoryIndex(newIndex);
-            inputRef.current = historyText;
-            cursorRef.current = historyText.length;
-            setDisplayInput(historyText);
-            setDisplayCursor(historyText.length);
-          }
-        }
-      }
-      return;
-    }
-
-    // Handle backspace
-    if (key.backspace || key.delete) {
-      if (cursorRef.current > 0) {
-        const currentInput = inputRef.current;
-        const newInput =
-          currentInput.slice(0, cursorRef.current - 1) + currentInput.slice(cursorRef.current);
-        inputRef.current = newInput;
-        cursorRef.current = cursorRef.current - 1;
-        updateDisplay();
-      }
-      return;
-    }
-
-    // Handle regular character input - FASTEST PATH
-    if (inputChar && !key.ctrl && !key.meta) {
-      // Check for pasted content (multiple characters at once)
-      if (inputChar.length > 1) {
-        // This might be pasted content
-        const processedContent = inputChar.replace(/\r?\n/g, ' ').trim();
-        if (processedContent) {
-          const currentInput = inputRef.current;
-          const cursor = cursorRef.current;
-          const newInput = currentInput.slice(0, cursor) + processedContent + currentInput.slice(cursor);
-          inputRef.current = newInput;
-          cursorRef.current = cursor + processedContent.length;
-          updateDisplay();
-        }
-        return;
-      }
-      
-      // Single character input
-      if (inputChar.length === 1) {
-        const currentInput = inputRef.current;
-        const cursor = cursorRef.current;
-        const newInput = currentInput.slice(0, cursor) + inputChar + currentInput.slice(cursor);
-        inputRef.current = newInput;
-        cursorRef.current = cursor + 1;
-        updateDisplay();
-        return;
-      }
-    }
-  });
-
-  let inputComponent = (<Box borderStyle="single" paddingX={1}>
-    {/* BLAZING FAST input rendering with batched updates */}
-    <Text>
-      <Text color="cyan" bold>
-        &gt;{' '}
-      </Text>
-      {displayInput.length > 0 || displayCursor > 0 ? (
-        <>
-          {displayInput.slice(0, displayCursor)}
-          <Text backgroundColor="white" color="black">
-            {displayInput[displayCursor] || ' '}
-          </Text>
-          {displayInput.slice(displayCursor + 1)}
-        </>
-      ) : (
-        <>
-          <Text backgroundColor="white" color="black">
-            {' '}
-          </Text>
-          <Text dimColor>Type your message...</Text>
-        </>
-      )}
-    </Text>
-  </Box>);
+  let inputComponent = (
+    <ShellInput
+      hotKeys={[
+        showProjectSelectorHotKey,
+        hideProjectSelectorHotKey,
+        showModelSelectorHotKey,
+        hideModelSelectorHotKey
+      ]}
+      onSubmit={handleInputSubmit}
+    />
+  );
   if (showProjectSelector) {
     inputComponent = <ProjectSelector onProjectSelect={handleProjectSelect} />;
   }

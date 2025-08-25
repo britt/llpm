@@ -24,7 +24,7 @@ export async function loadInputHistory(): Promise<string[]> {
 
     if (Array.isArray(history)) {
       debug('Loaded', history.length, 'input history items');
-      return history;
+      return history.slice(0,100);
     } else {
       debug('Invalid input history format, returning empty array');
       return [];

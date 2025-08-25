@@ -296,7 +296,6 @@ export function useChat() {
       // Don't process empty messages
       const trimmedContent = content.trim();
       if (!trimmedContent) {
-        debug('sendMessage: ignoring empty message');
         return;
       }
 
@@ -308,12 +307,10 @@ export function useChat() {
 
       // If not currently processing, process immediately
       if (!processingRef.current && messageQueue.length === 0) {
-        debug('sendMessage: processing immediately (not busy)');
         setIsProcessing(true);
         
         try {
           await processMessageImmediate(queuedMessage.content);
-          debug('sendMessage: completed immediate processing');
         } catch (error) {
           debug('sendMessage: error in immediate processing:', error);
         } finally {
@@ -323,7 +320,6 @@ export function useChat() {
         // Add to queue and wait for processing
         debug('sendMessage: adding to queue (currently processing or queue not empty)');
         setMessageQueue(prev => [...prev, queuedMessage]);
-        debug('sendMessage: queue length after adding:', messageQueue.length + 1);
       }
     },
     [messageQueue, processMessageImmediate]

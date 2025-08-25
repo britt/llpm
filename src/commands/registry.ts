@@ -46,8 +46,6 @@ export function parseCommand(input: string): {
   const command = parts[0]?.toLowerCase();
   const args = parts.slice(1);
 
-  debug('Parsed command:', command, 'with args:', args);
-
   return {
     isCommand: true,
     command,
