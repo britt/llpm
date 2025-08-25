@@ -1,5 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Box, Text } from 'ink';
+import { loadInputHistory, saveInputHistory } from '../utils/inputHistory';
+import { debug } from '../utils/logger';
 
 interface HybridInputProps {
   value?: string;
@@ -21,10 +23,19 @@ export default function HybridInput({
   const [internalValue, setInternalValue] = useState(value);
   const [cursorPosition, setCursorPosition] = useState(value.length);
   const [showCursor, setShowCursor] = useState(true);
+  const [inputHistory, setInputHistory] = useState<string[]>([]);
   const inputRef = useRef<any>(null);
   const terminalRowRef = useRef<number | null>(null);
   const terminalColRef = useRef<number | null>(null);
   const isActiveRef = useRef(false);
+  const historyIndexRef = useRef(-1);
+
+  // Load input history on mount
+  useEffect(() => {
+    loadInputHistory().then(history => {
+      setInputHistory(history);
+    });
+  }, []);
 
   // Sync external value changes
   useEffect(() => {
@@ -92,7 +103,27 @@ export default function HybridInput({
     }
 
     if (keyCode === 13) { // Enter
-      onSubmit?.(internalValue);
+      const currentInput = internalValue.trim();
+      onSubmit?.(currentInput);
+      
+      // Add to history and save
+      if (currentInput) {
+        setInputHistory(prev => {
+          const newHistory = [currentInput, ...prev.filter(h => h !== currentInput)];
+          const limitedHistory = newHistory.slice(0, 100); // Keep last 100 commands
+          
+          // Save to disk asynchronously
+          saveInputHistory(limitedHistory);
+          
+          return limitedHistory;
+        });
+      }
+      
+      // Reset input
+      setInternalValue('');
+      setCursorPosition(0);
+      historyIndexRef.current = -1;
+      updateTerminalDisplay('', 0);
       return;
     }
 
@@ -103,6 +134,28 @@ export default function HybridInput({
 
     if (keyCode === 27) { // Escape sequences (arrow keys, etc.)
       handleEscapeSequence(chunk);
+      return;
+    }
+
+    // Handle Ctrl combinations
+    if (keyCode === 1) { // Ctrl+A - move to start
+      setCursorPosition(0);
+      updateCursorPosition(0);
+      return;
+    }
+
+    if (keyCode === 5) { // Ctrl+E - move to end
+      const newPos = internalValue.length;
+      setCursorPosition(newPos);
+      updateCursorPosition(newPos);
+      return;
+    }
+
+    if (keyCode === 21) { // Ctrl+U - clear line
+      setInternalValue('');
+      setCursorPosition(0);
+      updateTerminalDisplay('', 0);
+      onChange?.('');
       return;
     }
 
@@ -163,6 +216,45 @@ export default function HybridInput({
         const newPos = Math.min(internalValue.length, cursorPosition + 1);
         setCursorPosition(newPos);
         updateCursorPosition(newPos);
+      } else if (sequence === '\x1b[A') { // Up arrow - history up
+        handleHistoryUp();
+      } else if (sequence === '\x1b[B') { // Down arrow - history down
+        handleHistoryDown();
+      }
+    }
+  };
+
+  const handleHistoryUp = () => {
+    if (inputHistory.length > 0) {
+      const newIndex = Math.min(historyIndexRef.current + 1, inputHistory.length - 1);
+      const historyText = inputHistory[newIndex];
+      debug('history up', newIndex, historyText);
+      if (historyText) {
+        historyIndexRef.current = newIndex;
+        setInternalValue(historyText);
+        setCursorPosition(historyText.length);
+        updateTerminalDisplay(historyText, historyText.length);
+      }
+    }
+  };
+
+  const handleHistoryDown = () => {
+    if (historyIndexRef.current >= 0) {
+      const newIndex = historyIndexRef.current - 1;
+      if (newIndex < 0) {
+        historyIndexRef.current = -1;
+        setInternalValue('');
+        setCursorPosition(0);
+        updateTerminalDisplay('', 0);
+      } else {
+        const historyText = inputHistory[newIndex];
+        debug('history down', newIndex, historyText);
+        if (historyText) {
+          historyIndexRef.current = newIndex;
+          setInternalValue(historyText);
+          setCursorPosition(historyText.length);
+          updateTerminalDisplay(historyText, historyText.length);
+        }
       }
     }
   };
