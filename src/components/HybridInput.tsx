@@ -1,5 +1,5 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { Box, Text } from 'ink';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
+import { Box, Text, useInput } from 'ink';
 import { loadInputHistory, saveInputHistory } from '../utils/inputHistory';
 import { debug } from '../utils/logger';
 
@@ -14,21 +14,25 @@ interface HybridInputProps {
 
 export default function HybridInput({
   value = '',
-  placeholder = '',
+  placeholder = 'Type your message...',
   onSubmit,
   onChange,
-  focus = false,
+  focus = true,
   disabled = false
 }: HybridInputProps) {
-  const [internalValue, setInternalValue] = useState(value);
-  const [cursorPosition, setCursorPosition] = useState(value.length);
-  const [showCursor, setShowCursor] = useState(true);
+  const [displayInput, setDisplayInput] = useState(value);
+  const [displayCursor, setDisplayCursor] = useState(value.length);
   const [inputHistory, setInputHistory] = useState<string[]>([]);
-  const inputRef = useRef<any>(null);
-  const terminalRowRef = useRef<number | null>(null);
-  const terminalColRef = useRef<number | null>(null);
-  const isActiveRef = useRef(false);
+  
+  // Use refs to avoid re-renders during typing
+  const inputRef = useRef(value);
+  const cursorRef = useRef(value.length);
   const historyIndexRef = useRef(-1);
+
+  const updateDisplay = useCallback(() => {
+    setDisplayInput(inputRef.current);
+    setDisplayCursor(cursorRef.current);
+  }, []);
 
   // Load input history on mount
   useEffect(() => {
@@ -39,71 +43,54 @@ export default function HybridInput({
 
   // Sync external value changes
   useEffect(() => {
-    if (value !== internalValue) {
-      setInternalValue(value);
-      setCursorPosition(value.length);
-      if (isActiveRef.current) {
-        redrawInput();
+    if (value !== inputRef.current) {
+      inputRef.current = value;
+      cursorRef.current = value.length;
+      updateDisplay();
+    }
+  }, [value, updateDisplay]);
+
+  const handleHistoryUp = useCallback(() => {
+    if (inputHistory.length > 0) {
+      const newIndex = Math.min(historyIndexRef.current + 1, inputHistory.length - 1);
+      const historyText = inputHistory[newIndex];
+      debug('history up', newIndex, historyText);
+      if (historyText) {
+        historyIndexRef.current = newIndex;
+        inputRef.current = historyText;
+        cursorRef.current = historyText.length;
+        updateDisplay();
       }
     }
-  }, [value]);
+  }, [inputHistory, updateDisplay]);
 
-  // Handle focus changes
-  useEffect(() => {
-    isActiveRef.current = focus && !disabled;
-    
-    if (isActiveRef.current) {
-      captureTerminalPosition();
-      setupRawInput();
-      startCursorBlink();
-    } else {
-      cleanupRawInput();
-      stopCursorBlink();
+  const handleHistoryDown = useCallback(() => {
+    if (historyIndexRef.current >= 0) {
+      const newIndex = historyIndexRef.current - 1;
+      if (newIndex < 0) {
+        historyIndexRef.current = -1;
+        inputRef.current = '';
+        cursorRef.current = 0;
+        updateDisplay();
+      } else {
+        const historyText = inputHistory[newIndex];
+        debug('history down', newIndex, historyText);
+        if (historyText) {
+          historyIndexRef.current = newIndex;
+          inputRef.current = historyText;
+          cursorRef.current = historyText.length;
+          updateDisplay();
+        }
+      }
     }
+  }, [inputHistory, updateDisplay]);
 
-    return () => {
-      cleanupRawInput();
-      stopCursorBlink();
-    };
-  }, [focus, disabled]);
+  useInput((inputChar, key) => {
+    if (!focus || disabled) return;
 
-  const captureTerminalPosition = () => {
-    // Get current cursor position in terminal
-    // This is a simplified version - in practice you'd need to query terminal
-    terminalRowRef.current = process.stdout.rows || 1;
-    terminalColRef.current = 1;
-  };
-
-  const setupRawInput = () => {
-    if (!process.stdin.setRawMode) return;
-    
-    process.stdin.setRawMode(true);
-    process.stdin.resume();
-    process.stdin.on('data', handleRawInput);
-  };
-
-  const cleanupRawInput = () => {
-    if (!process.stdin.setRawMode) return;
-    
-    process.stdin.removeListener('data', handleRawInput);
-    process.stdin.setRawMode(false);
-    process.stdin.pause();
-  };
-
-  const handleRawInput = (chunk: Buffer) => {
-    if (!isActiveRef.current) return;
-
-    const key = chunk.toString();
-    const keyCode = chunk[0];
-
-    // Handle special keys
-    if (keyCode === 3) { // Ctrl+C
-      process.exit(0);
-      return;
-    }
-
-    if (keyCode === 13) { // Enter
-      const currentInput = internalValue.trim();
+    // Handle return key
+    if (key.return) {
+      const currentInput = inputRef.current.trim();
       onSubmit?.(currentInput);
       
       // Add to history and save
@@ -120,195 +107,121 @@ export default function HybridInput({
       }
       
       // Reset input
-      setInternalValue('');
-      setCursorPosition(0);
+      inputRef.current = '';
+      cursorRef.current = 0;
       historyIndexRef.current = -1;
-      updateTerminalDisplay('', 0);
+      updateDisplay();
       return;
     }
 
-    if (keyCode === 127 || keyCode === 8) { // Backspace
-      handleBackspace();
+    // Handle backspace
+    if (key.backspace || key.delete) {
+      if (cursorRef.current > 0) {
+        const currentInput = inputRef.current;
+        const newInput =
+          currentInput.slice(0, cursorRef.current - 1) + currentInput.slice(cursorRef.current);
+        inputRef.current = newInput;
+        cursorRef.current = cursorRef.current - 1;
+        updateDisplay();
+        onChange?.(newInput);
+      }
       return;
     }
 
-    if (keyCode === 27) { // Escape sequences (arrow keys, etc.)
-      handleEscapeSequence(chunk);
+    // Handle arrow keys
+    if (key.upArrow && !key.ctrl && !key.shift) {
+      handleHistoryUp();
+      return;
+    }
+
+    if (key.downArrow && !key.ctrl && !key.shift) {
+      handleHistoryDown();
+      return;
+    }
+
+    if (key.leftArrow) {
+      cursorRef.current = Math.max(0, cursorRef.current - 1);
+      updateDisplay();
+      return;
+    }
+
+    if (key.rightArrow) {
+      cursorRef.current = Math.min(inputRef.current.length, cursorRef.current + 1);
+      updateDisplay();
       return;
     }
 
     // Handle Ctrl combinations
-    if (keyCode === 1) { // Ctrl+A - move to start
-      setCursorPosition(0);
-      updateCursorPosition(0);
+    if (key.ctrl && inputChar === 'a') {
+      cursorRef.current = 0;
+      updateDisplay();
       return;
     }
 
-    if (keyCode === 5) { // Ctrl+E - move to end
-      const newPos = internalValue.length;
-      setCursorPosition(newPos);
-      updateCursorPosition(newPos);
+    if (key.ctrl && inputChar === 'e') {
+      cursorRef.current = inputRef.current.length;
+      updateDisplay();
       return;
     }
 
-    if (keyCode === 21) { // Ctrl+U - clear line
-      setInternalValue('');
-      setCursorPosition(0);
-      updateTerminalDisplay('', 0);
+    if (key.ctrl && inputChar === 'u') {
+      inputRef.current = '';
+      cursorRef.current = 0;
+      updateDisplay();
       onChange?.('');
       return;
     }
 
     // Regular character input
-    if (keyCode && keyCode >= 32 && keyCode <= 126) {
-      handleCharacterInput(key);
-    }
-  };
+    if (inputChar && !key.ctrl && !key.meta) {
+      // Check for pasted content (multiple characters at once)
+      if (inputChar.length > 1) {
+        const currentInput = inputRef.current;
+        const cursor = cursorRef.current;
+        const newInput = currentInput.slice(0, cursor) + inputChar + currentInput.slice(cursor);
+        inputRef.current = newInput;
+        cursorRef.current = cursor + inputChar.length;
+        updateDisplay();
+        onChange?.(newInput);
+        return;
+      }
 
-  const handleCharacterInput = (char: string) => {
-    const newValue = 
-      internalValue.slice(0, cursorPosition) + 
-      char + 
-      internalValue.slice(cursorPosition);
-    
-    const newCursorPos = cursorPosition + 1;
-    
-    // Update immediately via direct terminal write
-    updateTerminalDisplay(newValue, newCursorPos);
-    
-    // Update internal state (will not cause re-render immediately)
-    setInternalValue(newValue);
-    setCursorPosition(newCursorPos);
-    
-    // Notify parent of change
-    onChange?.(newValue);
-  };
-
-  const handleBackspace = () => {
-    if (cursorPosition === 0) return;
-
-    const newValue = 
-      internalValue.slice(0, cursorPosition - 1) + 
-      internalValue.slice(cursorPosition);
-    
-    const newCursorPos = cursorPosition - 1;
-    
-    // Update immediately via direct terminal write
-    updateTerminalDisplay(newValue, newCursorPos);
-    
-    // Update internal state
-    setInternalValue(newValue);
-    setCursorPosition(newCursorPos);
-    
-    // Notify parent of change
-    onChange?.(newValue);
-  };
-
-  const handleEscapeSequence = (chunk: Buffer) => {
-    if (chunk.length >= 3) {
-      const sequence = chunk.toString();
-      
-      if (sequence === '\x1b[D') { // Left arrow
-        const newPos = Math.max(0, cursorPosition - 1);
-        setCursorPosition(newPos);
-        updateCursorPosition(newPos);
-      } else if (sequence === '\x1b[C') { // Right arrow
-        const newPos = Math.min(internalValue.length, cursorPosition + 1);
-        setCursorPosition(newPos);
-        updateCursorPosition(newPos);
-      } else if (sequence === '\x1b[A') { // Up arrow - history up
-        handleHistoryUp();
-      } else if (sequence === '\x1b[B') { // Down arrow - history down
-        handleHistoryDown();
+      // Single character input
+      if (inputChar.length === 1) {
+        const currentInput = inputRef.current;
+        const cursor = cursorRef.current;
+        const newInput = currentInput.slice(0, cursor) + inputChar + currentInput.slice(cursor);
+        inputRef.current = newInput;
+        cursorRef.current = cursor + 1;
+        updateDisplay();
+        onChange?.(newInput);
+        return;
       }
     }
-  };
+  }, { isActive: focus && !disabled });
 
-  const handleHistoryUp = () => {
-    if (inputHistory.length > 0) {
-      const newIndex = Math.min(historyIndexRef.current + 1, inputHistory.length - 1);
-      const historyText = inputHistory[newIndex];
-      debug('history up', newIndex, historyText);
-      if (historyText) {
-        historyIndexRef.current = newIndex;
-        setInternalValue(historyText);
-        setCursorPosition(historyText.length);
-        updateTerminalDisplay(historyText, historyText.length);
-      }
-    }
-  };
-
-  const handleHistoryDown = () => {
-    if (historyIndexRef.current >= 0) {
-      const newIndex = historyIndexRef.current - 1;
-      if (newIndex < 0) {
-        historyIndexRef.current = -1;
-        setInternalValue('');
-        setCursorPosition(0);
-        updateTerminalDisplay('', 0);
-      } else {
-        const historyText = inputHistory[newIndex];
-        debug('history down', newIndex, historyText);
-        if (historyText) {
-          historyIndexRef.current = newIndex;
-          setInternalValue(historyText);
-          setCursorPosition(historyText.length);
-          updateTerminalDisplay(historyText, historyText.length);
-        }
-      }
-    }
-  };
-
-  const updateTerminalDisplay = (text: string, cursorPos: number) => {
-    if (!terminalRowRef.current || !terminalColRef.current) return;
-
-    // Move to input line
-    process.stdout.write(`\x1b[${terminalRowRef.current};${terminalColRef.current}H`);
-    
-    // Clear line
-    process.stdout.write('\x1b[2K');
-    
-    // Write text
-    const displayText = text || (placeholder && !focus ? placeholder : '');
-    process.stdout.write(displayText);
-    
-    // Position cursor
-    const actualCursorCol = terminalColRef.current + cursorPos;
-    process.stdout.write(`\x1b[${terminalRowRef.current};${actualCursorCol}H`);
-  };
-
-  const updateCursorPosition = (cursorPos: number) => {
-    if (!terminalRowRef.current || !terminalColRef.current) return;
-    
-    const actualCursorCol = terminalColRef.current + cursorPos;
-    process.stdout.write(`\x1b[${terminalRowRef.current};${actualCursorCol}H`);
-  };
-
-  const redrawInput = () => {
-    updateTerminalDisplay(internalValue, cursorPosition);
-  };
-
-  const startCursorBlink = () => {
-    setShowCursor(true);
-    // Set steady block cursor
-    process.stdout.write('\x1b[2 q');
-  };
-
-  const stopCursorBlink = () => {
-    setShowCursor(false);
-    // Hide cursor
-    process.stdout.write('\x1b[?25l');
-  };
-
-  // Fallback render for Ink (used for layout but not actual input display)
-  const displayValue = internalValue || (placeholder && !focus ? placeholder : '');
-  const cursorChar = focus && showCursor ? '█' : ' ';
-  
   return (
-    <Box ref={inputRef}>
-      <Text color={disabled ? 'gray' : undefined} dimColor={!focus}>
-        {displayValue}
-        {focus && <Text color="white">{cursorChar}</Text>}
+    <Box borderStyle="single" paddingX={1}>
+      <Text>
+        <Text color="cyan" bold>
+          &gt;{' '}
+        </Text>
+        {displayInput.length > 0 || displayCursor > 0 ? (
+          <>
+            {displayInput.slice(0, displayCursor)}
+            <Text backgroundColor="white" color="black">
+              {displayInput[displayCursor] || ' '}
+            </Text>
+            {displayInput.slice(displayCursor + 1)}
+          </>
+        ) : (
+          <>
+            <Text backgroundColor="white" color="black">
+              {' '}
+            </Text>
+            <Text dimColor>{placeholder}</Text>
+          </>
+        )}
       </Text>
     </Box>
   );

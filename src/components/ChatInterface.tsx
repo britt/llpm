@@ -10,7 +10,7 @@ import {
 import type { Project } from '../types/project';
 import type { ModelSelectCommand, ModelConfig } from '../types/models';
 import { loadCurrentModel } from '../utils/modelStorage';
-import ShellInput, { hotKey } from './ShellInput';
+import HybridInput from './HybridInput';
 
 interface ChatInterfaceProps {
   messages: Message[];
@@ -248,6 +248,7 @@ export const ChatInterface = memo(function ChatInterface({
   const [currentProject, setCurrentProject] = useState<Project | null>(null);
   const [currentModel, setCurrentModel] = useState<ModelConfig | null>(null);
   const [showProjectSelector, setShowProjectSelector] = useState(false);
+  const [activeInput, setActiveInput] = useState<'main' | 'project' | 'model'>('main');
 
   // Load current project on mount
   useEffect(() => {
@@ -284,6 +285,7 @@ export const ChatInterface = memo(function ChatInterface({
         if (item.value === '__create_new__') {
           // Handle "Create New Project" option
           setShowProjectSelector(false);
+          setActiveInput('main');
 
           // Add system message with rich formatting and instructions
           const instructionMessage = `📝 **Creating a New Project**
@@ -318,9 +320,11 @@ To add a new project, complete the command with these parameters:
         const updatedProject = await getCurrentProject();
         setCurrentProject(updatedProject);
         setShowProjectSelector(false);
+        setActiveInput('main');
       } catch (error) {
         console.error('Failed to set current project:', error);
         setShowProjectSelector(false);
+        setActiveInput('main');
       }
     },
     [onAddSystemMessage]
@@ -334,33 +338,65 @@ To add a new project, complete the command with these parameters:
     [onSendMessage]
   );
 
-  const showProjectSelectorHotKey = hotKey(
-    (inputChar, key) => key.shift && key.tab,
-    () => {
+  // Global hotkey handling for input focus management
+  useInput((inputChar, key) => {
+    // Only handle hotkeys when main input is focused
+    if (activeInput !== 'main') return;
+    
+    if (key.shift && key.tab) {
       setShowProjectSelector(true);
+      setActiveInput('project');
     }
-  );
+    
+    if (key.meta && inputChar === 'm') {
+      onTriggerModelSelector?.();
+      setActiveInput('model');
+    }
+  }, { isActive: activeInput === 'main' });
 
-  const showModelSelectorHotKey = hotKey(
-    (inputChar, key) => key.meta && inputChar === 'm',
-    useCallback(() => onTriggerModelSelector?.(), [onTriggerModelSelector])
-  );
 
+  // Update active input state when selectors show/hide
+  useEffect(() => {
+    if (showProjectSelector) {
+      setActiveInput('project');
+    } else if (interactiveCommand?.type === 'model-select') {
+      setActiveInput('model');
+    } else {
+      setActiveInput('main');
+    }
+  }, [showProjectSelector, interactiveCommand]);
 
   let inputComponent = (
-    <ShellInput
-      hotKeys={[
-        showProjectSelectorHotKey,
-        showModelSelectorHotKey,
-      ]}
+    <HybridInput
+      focus={activeInput === 'main'}
+      placeholder="Type your message..."
       onSubmit={handleInputSubmit}
     />
   );
+  
   if (showProjectSelector) {
-    inputComponent = <ProjectSelector onProjectSelect={handleProjectSelect} onHide={() => setShowProjectSelector(false)} />;
+    inputComponent = (
+      <ProjectSelector 
+        onProjectSelect={handleProjectSelect} 
+        onHide={() => {
+          setShowProjectSelector(false);
+          setActiveInput('main');
+        }} 
+      />
+    );
   }
+  
   if (interactiveCommand?.type === 'model-select') {
-    inputComponent = <ModelSelector command={interactiveCommand} onModelSelect={onModelSelect} onHide={() => onCancelModelSelection?.()} />;
+    inputComponent = (
+      <ModelSelector 
+        command={interactiveCommand} 
+        onModelSelect={onModelSelect} 
+        onHide={() => {
+          onCancelModelSelection?.();
+          setActiveInput('main');
+        }} 
+      />
+    );
   }
 
   return (
