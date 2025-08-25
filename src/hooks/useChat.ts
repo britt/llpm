@@ -110,7 +110,7 @@ export function useChat() {
   useEffect(() => {
     if (historyLoaded && messages.length > 0) {
       debug('Saving updated chat history');
-      saveChatHistory(messages.slice(savePositionRef.current)).
+      saveChatHistory(messages.slice(savePositionRef.current+1)).
         then(() => savePositionRef.current = messages.length - 1).
         catch(error => {
           debug('Failed to save chat history:', error);

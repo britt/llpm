@@ -6,13 +6,21 @@ import { getConfigDir, ensureConfigDir } from './config';
 import { getCurrentProject } from './projectConfig';
 import { debug } from './logger';
 
-function MessageToLogString(message: Message): string {
-  return `${message.role}: ${message.content}`;
+// Use a delimiter that's unlikely to appear in message content
+const MESSAGE_DELIMITER = '\n---MESSAGE---\n';
+
+export function MessageToLogString(message: Message): string {
+  // Escape newlines in content to preserve message structure
+  const escapedContent = message.content.replace(/\n/g, '\\n');
+  return `${message.role}: ${escapedContent}`;
 }
 
-function LogStringToMessage(logString: string): Message   {
-  const [role, content] = logString.split(': ');
-  return { role: role as Message['role'], content: content || '' };
+export function LogStringToMessage(logString: string): Message {
+  const [role, ...contentParts] = logString.split(': ');
+  const content = contentParts.join(': '); // Rejoin in case content had colons
+  // Unescape newlines in content
+  const unescapedContent = content.replace(/\\n/g, '\n');
+  return { role: role as Message['role'], content: unescapedContent };
 }
 
 async function getChatHistoryPath(): Promise<string> {
@@ -56,7 +64,11 @@ export async function loadChatHistory(): Promise<Message[]> {
     }
 
     const data = await readFile(historyPath, 'utf-8');
-    const history: Message[] = data.split('\n').map(LogStringToMessage);
+    // Split by delimiter instead of newlines
+    const history: Message[] = data
+      .split(MESSAGE_DELIMITER)
+      .filter(line => line.trim()) // Remove empty lines
+      .map(LogStringToMessage);
 
     // If no current session, get the most recent one
     if (history.length > 0) {
@@ -71,7 +83,6 @@ export async function loadChatHistory(): Promise<Message[]> {
   }
 }
 
-// TODO: new line escaping
 export async function saveChatHistory(messages: Message[]): Promise<void> {
   debug('Saving chat history with', messages.length, 'messages');
 
@@ -86,7 +97,9 @@ export async function saveChatHistory(messages: Message[]): Promise<void> {
 
     const historyPath = await getChatHistoryPath();
 
-    await appendFile(historyPath, messages.map(MessageToLogString).join('\n'), 'utf-8');
+    // Join messages with delimiter to preserve structure
+    const content = messages.map(MessageToLogString).join(MESSAGE_DELIMITER);
+    await appendFile(historyPath, content + MESSAGE_DELIMITER, 'utf-8');
   } catch (error) {
     debug('Error saving chat history:', error);
   }
