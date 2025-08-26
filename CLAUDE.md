@@ -8,6 +8,7 @@ Default to using Bun instead of Node.js.
 
 - Use `bun <file>` instead of `node <file>` or `ts-node <file>`
 - Use `bun test` instead of `jest` or `vitest`
+- **ALWAYS use `bun test` for running tests, NOT `bun run test` or `npm test`**
 - Use `bun build <file.html|file.ts|file.css>` instead of `webpack` or `esbuild`
 - Use `bun install` instead of `npm install` or `yarn install` or `pnpm install`
 - Use `bun run <script>` instead of `npm run <script>` or `yarn run <script>` or `pnpm run <script>`
@@ -25,7 +26,7 @@ Default to using Bun instead of Node.js.
 
 ## Testing
 
-Use `bun test` to run tests.
+**CRITICAL: Use `bun test` to run tests - NOT `bun run test` or any other command.**
 
 ```ts#index.test.ts
 import { test, expect } from "bun:test";

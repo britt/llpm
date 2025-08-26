@@ -4,7 +4,8 @@ import {
   listProjectsTool,
   addProjectTool,
   setCurrentProjectTool,
-  removeProjectTool
+  removeProjectTool,
+  updateProjectTool
 } from './projectTools';
 import { listGitHubReposTool, searchGitHubReposTool, getGitHubRepoTool } from './githubTools';
 import {
@@ -20,6 +21,14 @@ import {
 } from './githubPullRequestTools';
 import { getSystemPromptTool } from './systemTools';
 import { webSearchTool } from './webSearchTools';
+import {
+  addNoteTool,
+  updateNoteTool,
+  searchNotesTool,
+  listNotesTool,
+  getNoteTool,
+  deleteNoteTool
+} from './notesTools';
 
 const toolRegistry: ToolRegistry = {
   get_current_project: getCurrentProjectTool,
@@ -27,6 +36,7 @@ const toolRegistry: ToolRegistry = {
   add_project: addProjectTool,
   set_current_project: setCurrentProjectTool,
   remove_project: removeProjectTool,
+  update_project: updateProjectTool,
   list_github_repos: listGitHubReposTool,
   search_github_repos: searchGitHubReposTool,
   get_github_repo: getGitHubRepoTool,
@@ -38,7 +48,13 @@ const toolRegistry: ToolRegistry = {
   list_github_pull_requests: listGitHubPullRequestsTool,
   create_github_pull_request: createGitHubPullRequestTool,
   get_system_prompt: getSystemPromptTool,
-  web_search: webSearchTool
+  web_search: webSearchTool,
+  add_note: addNoteTool,
+  update_note: updateNoteTool,
+  search_notes: searchNotesTool,
+  list_notes: listNotesTool,
+  get_note: getNoteTool,
+  delete_note: deleteNoteTool
 };
 
 export function getToolRegistry(): ToolRegistry {

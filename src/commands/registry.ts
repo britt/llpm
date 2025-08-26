@@ -8,6 +8,7 @@ import { projectCommand } from './project';
 import { githubCommand } from './github';
 import { debugCommand } from './debug';
 import { modelCommand } from './model';
+import { notesCommand } from './notes';
 import { debug } from '../utils/logger';
 
 const commandRegistry: CommandRegistry = {
@@ -19,7 +20,8 @@ const commandRegistry: CommandRegistry = {
   project: projectCommand,
   github: githubCommand,
   debug: debugCommand,
-  model: modelCommand
+  model: modelCommand,
+  notes: notesCommand
 };
 
 export function getCommandRegistry(): CommandRegistry {
@@ -43,8 +45,6 @@ export function parseCommand(input: string): {
   const parts = trimmed.split(/\s+/);
   const command = parts[0]?.toLowerCase();
   const args = parts.slice(1);
-
-  debug('Parsed command:', command, 'with args:', args);
 
   return {
     isCommand: true,

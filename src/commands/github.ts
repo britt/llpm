@@ -18,6 +18,28 @@ export const githubCommand: Command = {
     const subCommand = args[0]?.toLowerCase() || '';
 
     switch (subCommand) {
+      case 'help': {
+        return {
+          content: `🐙 GitHub Integration Commands:
+
+/github - Show GitHub repositories for current project
+/github help - Show this help message
+
+📋 Available Subcommands:
+• /github list [limit] - List your GitHub repositories (default: 10)
+• /github repos [limit] - Alias for list
+• /github search <query> [limit] - Search GitHub repositories (default: 5)
+
+📝 Examples:
+• /github list 20
+• /github search "typescript react" 10
+
+🔧 Configuration:
+Set GITHUB_TOKEN environment variable for authentication`,
+          success: true
+        };
+      }
+
       case 'list':
       case 'repos': {
         const limit = args[1] ? parseInt(args[1]) : 10;

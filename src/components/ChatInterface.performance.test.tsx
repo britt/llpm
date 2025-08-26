@@ -50,7 +50,7 @@ describe('ChatInterface Performance', () => {
   const createMessages = (count: number): Message[] => {
     return Array.from({ length: count }, (_, i) => ({
       id: `msg-${i}`,
-      role: i % 3 === 0 ? 'user' : i % 3 === 1 ? 'assistant' : 'system',
+      role: i % 4 === 0 ? 'user' : i % 3 === 1 ? 'assistant' : 'ui-notification',
       content: `This is test message ${i} with some content that might contain https://example.com/link${i} for testing URL rendering performance.`
     }));
   };

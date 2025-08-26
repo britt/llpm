@@ -7,6 +7,23 @@ export const debugCommand: Command = {
   execute: (args: string[]): CommandResult => {
     debug('Executing /debug command with args:', args);
 
+    // Handle help subcommand
+    if (args.length > 0 && args[0]?.toLowerCase() === 'help') {
+      return {
+        content: `🐛 Debug Command:
+
+/debug [count] - Show the last N debug log lines (default: 10)
+/debug help - Show this help message
+
+📝 Examples:
+• /debug - Show last 10 debug logs
+• /debug 25 - Show last 25 debug logs
+
+💡 Debug logs include internal application operations and can help troubleshoot issues.`,
+        success: true
+      };
+    }
+
     const count = args.length > 0 && args[0] ? parseInt(args[0], 10) : 10;
     
     if (isNaN(count) || count <= 0) {

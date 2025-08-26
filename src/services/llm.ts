@@ -1,4 +1,4 @@
-import { generateText, streamText, stepCountIs } from 'ai';
+import { generateText, streamText, stepCountIs, type ModelMessage } from 'ai';
 import type { Message } from '../types';
 import { debug, getVerbose } from '../utils/logger';
 import { getToolRegistry } from '../tools/registry';
@@ -21,12 +21,12 @@ export async function generateResponse(messages: Message[]): Promise<string> {
       content: systemPromptContent
     };
 
-    const allMessages = [
+    const allMessages : ModelMessage[] = [
       systemMessage,
-      ...messages.map(msg => ({
+      ...messages.filter(msg => msg.role !== 'ui-notification').map(msg => ({
         role: msg.role,
         content: msg.content
-      }))
+      } as ModelMessage))
     ];
 
     const tools = getToolRegistry();
@@ -69,16 +69,13 @@ export async function generateResponse(messages: Message[]): Promise<string> {
   }
 }
 
-export async function* streamResponse(messages: Message[]) {
+export async function* streamResponse(messages: ModelMessage[]) {
   try {
     const model = await modelRegistry.createLanguageModel();
     
     const { textStream } = await streamText({
       model,
-      messages: messages.map(msg => ({
-        role: msg.role,
-        content: msg.content
-      }))
+      messages
     });
 
     for await (const delta of textStream) {

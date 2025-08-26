@@ -1,5 +1,3 @@
-import React from 'react';
-import { render } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import * as llmService from './src/services/llm';
 import * as chatHistory from './src/utils/chatHistory';
