@@ -116,7 +116,7 @@ const MessageItem = memo(({ message }: { message: Message }) => {
           {speakerIndicator}
         </Text>
         <Box flexDirection="column" flexShrink={1}>
-          <Text color={messageColor} bold>
+          <Text color={messageColor}>
             {message.content}
           </Text>
         </Box>
