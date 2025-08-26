@@ -13,7 +13,7 @@ import {
 } from './systemPrompt';
 import * as config from './config';
 
-describe.skip('systemPrompt', () => {
+describe('systemPrompt', () => {
   let mockConfigDir: string;
   let promptPath: string;
   let originalGetConfigDir: typeof config.getConfigDir;
@@ -42,6 +42,10 @@ describe.skip('systemPrompt', () => {
         mkdirSync(mockConfigDir, { recursive: true });
       }
     });
+    
+    // Mock getSystemPromptPath to use temp directory
+    const systemPromptModule = await import('./systemPrompt');
+    vi.spyOn(systemPromptModule, 'getSystemPromptPath').mockReturnValue(promptPath);
 
     // Clean up any existing test files
     if (existsSync(promptPath)) {
@@ -160,8 +164,9 @@ describe.skip('systemPrompt', () => {
     });
 
     it('should throw error when write fails', async () => {
-      // Mock config to return invalid path
-      vi.spyOn(config, 'getConfigDir').mockReturnValue('/read-only/path');
+      // Mock writeFile to throw an error
+      const fs = await import('fs/promises');
+      vi.spyOn(fs, 'writeFile').mockRejectedValue(new Error('Permission denied'));
       
       await expect(saveSystemPrompt('test prompt')).rejects.toThrow();
     });
@@ -205,8 +210,9 @@ describe.skip('systemPrompt', () => {
     });
 
     it('should throw error when file write fails', async () => {
-      // Mock config to return invalid path for write failure
-      vi.spyOn(config, 'getConfigDir').mockReturnValue('/read-only/path');
+      // Mock writeFile to throw an error
+      const fs = await import('fs/promises');
+      vi.spyOn(fs, 'writeFile').mockRejectedValue(new Error('Write failed'));
       
       await expect(ensureDefaultSystemPromptFile()).rejects.toThrow();
     });
