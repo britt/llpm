@@ -86,25 +86,6 @@ export function useChat() {
     initializeChatHistory();
   }, [currentProjectId]);
 
-  // Check for project changes periodically (every 10 seconds to reduce UI churn)
-  useEffect(() => {
-    const interval = setInterval(async () => {
-      try {
-        const currentProject = await getCurrentProject();
-        const newProjectId = currentProject?.id || null;
-
-        if (currentProjectId !== newProjectId) {
-          debug('Project changed detected, reloading chat history');
-          setCurrentProjectId(newProjectId);
-          // The dependency array will trigger the above useEffect to reload history
-        }
-      } catch (error) {
-        debug('Error checking for project changes:', error);
-      }
-    }, 10000);
-
-    return () => clearInterval(interval);
-  }, [currentProjectId]);
 
   // Save messages whenever they change (after history is loaded)
   useEffect(() => {
