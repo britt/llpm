@@ -216,6 +216,8 @@ GOOGLE_VERTEX_REGION=us-central1  # optional
 - Use `@octokit/rest` for GitHub API interactions
 - Create repositories: `gh repo create` command
 - Environment variable: `GITHUB_TOKEN` for authentication
+- **GitHub Projects (Classic)**: Due to API deprecation, newer Octokit versions don't include Projects endpoints. We use `octokit.request()` for direct API calls to the deprecated endpoints.
+- **Projects Classic Status**: GitHub is deprecating Projects Classic in favor of Projects v2. Current implementation uses Classic API which still works but may be sunset in the future.
 
 ### TypeScript Best Practices
 

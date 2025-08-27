@@ -104,8 +104,8 @@ export async function listProjects(
     }
 
     const { data } = repo 
-      ? await octokitInstance.rest.projects.listForRepo(apiParams as any)
-      : await octokitInstance.rest.projects.listForOrg(apiParams as any);
+      ? await octokitInstance.request('GET /repos/{owner}/{repo}/projects', apiParams as any)
+      : await octokitInstance.request('GET /orgs/{org}/projects', apiParams as any);
 
     if (getVerbose()) {
       debug('✅ GitHub API Response: received', data.length, 'projects');
@@ -158,8 +158,8 @@ export async function createProject(
     }
 
     const { data: projectData } = repo
-      ? await octokitInstance.rest.projects.createForRepo(apiParams as any)
-      : await octokitInstance.rest.projects.createForOrg(apiParams as any);
+      ? await octokitInstance.request('POST /repos/{owner}/{repo}/projects', apiParams as any)
+      : await octokitInstance.request('POST /orgs/{org}/projects', apiParams as any);
 
     if (getVerbose()) {
       debug('✅ GitHub API Response: project created');
@@ -200,7 +200,7 @@ export async function getProject(projectId: number): Promise<GitHubProject> {
       debug('📋 Parameters:', JSON.stringify(apiParams, null, 2));
     }
 
-    const { data } = await octokitInstance.rest.projects.get(apiParams);
+    const { data } = await octokitInstance.request('GET /projects/{project_id}', apiParams);
 
     if (getVerbose()) {
       debug('✅ GitHub API Response: project retrieved');
@@ -251,7 +251,7 @@ export async function updateProject(
       debug('📋 Parameters:', JSON.stringify(apiParams, null, 2));
     }
 
-    const { data } = await octokitInstance.rest.projects.update(apiParams);
+    const { data } = await octokitInstance.request('PATCH /projects/{project_id}', apiParams);
 
     if (getVerbose()) {
       debug('✅ GitHub API Response: project updated');
@@ -292,7 +292,7 @@ export async function deleteProject(projectId: number): Promise<void> {
       debug('📋 Parameters:', JSON.stringify(apiParams, null, 2));
     }
 
-    await octokitInstance.rest.projects.delete(apiParams);
+    await octokitInstance.request('DELETE /projects/{project_id}', apiParams);
 
     if (getVerbose()) {
       debug('✅ GitHub API Response: project deleted');
@@ -323,7 +323,7 @@ export async function listProjectColumns(projectId: number): Promise<GitHubProje
       debug('📋 Parameters:', JSON.stringify(apiParams, null, 2));
     }
 
-    const { data } = await octokitInstance.rest.projects.listColumns(apiParams);
+    const { data } = await octokitInstance.request('GET /projects/{project_id}/columns', apiParams);
 
     if (getVerbose()) {
       debug('✅ GitHub API Response: received', data.length, 'columns');
@@ -367,7 +367,7 @@ export async function createProjectColumn(
       debug('📋 Parameters:', JSON.stringify(apiParams, null, 2));
     }
 
-    const { data: columnData } = await octokitInstance.rest.projects.createColumn(apiParams);
+    const { data: columnData } = await octokitInstance.request('POST /projects/{project_id}/columns', apiParams);
 
     if (getVerbose()) {
       debug('✅ GitHub API Response: column created');
@@ -411,7 +411,7 @@ export async function updateProjectColumn(
       debug('📋 Parameters:', JSON.stringify(apiParams, null, 2));
     }
 
-    const { data: columnData } = await octokitInstance.rest.projects.updateColumn(apiParams);
+    const { data: columnData } = await octokitInstance.request('PATCH /projects/columns/{column_id}', apiParams);
 
     if (getVerbose()) {
       debug('✅ GitHub API Response: column updated');
@@ -449,7 +449,7 @@ export async function deleteProjectColumn(columnId: number): Promise<void> {
       debug('📋 Parameters:', JSON.stringify(apiParams, null, 2));
     }
 
-    await octokitInstance.rest.projects.deleteColumn(apiParams);
+    await octokitInstance.request('DELETE /projects/columns/{column_id}', apiParams);
 
     if (getVerbose()) {
       debug('✅ GitHub API Response: column deleted');
@@ -485,7 +485,7 @@ export async function moveProjectColumn(
       debug('📋 Parameters:', JSON.stringify(apiParams, null, 2));
     }
 
-    await octokitInstance.rest.projects.moveColumn(apiParams);
+    await octokitInstance.request('POST /projects/columns/{column_id}/moves', apiParams);
 
     if (getVerbose()) {
       debug('✅ GitHub API Response: column moved');
@@ -526,7 +526,7 @@ export async function listProjectCards(
       debug('📋 Parameters:', JSON.stringify(apiParams, null, 2));
     }
 
-    const { data } = await octokitInstance.rest.projects.listCards(apiParams);
+    const { data } = await octokitInstance.request('GET /projects/columns/{column_id}/cards', apiParams);
 
     if (getVerbose()) {
       debug('✅ GitHub API Response: received', data.length, 'cards');
@@ -576,7 +576,7 @@ export async function createProjectCard(
       debug('📋 Parameters:', JSON.stringify(apiParams, null, 2));
     }
 
-    const { data: cardData } = await octokitInstance.rest.projects.createCard(apiParams);
+    const { data: cardData } = await octokitInstance.request('POST /projects/columns/{column_id}/cards', apiParams);
 
     if (getVerbose()) {
       debug('✅ GitHub API Response: card created');
@@ -625,7 +625,7 @@ export async function updateProjectCard(
       debug('📋 Parameters:', JSON.stringify(apiParams, null, 2));
     }
 
-    const { data: cardData } = await octokitInstance.rest.projects.updateCard(apiParams);
+    const { data: cardData } = await octokitInstance.request('PATCH /projects/columns/cards/{card_id}', apiParams);
 
     if (getVerbose()) {
       debug('✅ GitHub API Response: card updated');
@@ -665,7 +665,7 @@ export async function deleteProjectCard(cardId: number): Promise<void> {
       debug('📋 Parameters:', JSON.stringify(apiParams, null, 2));
     }
 
-    await octokitInstance.rest.projects.deleteCard(apiParams);
+    await octokitInstance.request('DELETE /projects/columns/cards/{card_id}', apiParams);
 
     if (getVerbose()) {
       debug('✅ GitHub API Response: card deleted');
@@ -704,7 +704,7 @@ export async function moveProjectCard(
       debug('📋 Parameters:', JSON.stringify(apiParams, null, 2));
     }
 
-    await octokitInstance.rest.projects.moveCard(apiParams);
+    await octokitInstance.request('POST /projects/columns/cards/{card_id}/moves', apiParams);
 
     if (getVerbose()) {
       debug('✅ GitHub API Response: card moved');
