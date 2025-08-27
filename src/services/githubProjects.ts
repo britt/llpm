@@ -33,7 +33,10 @@ export interface GitHubProjectV2Item {
         id: string;
         name: string;
       };
-      value?: any;
+      text?: string;
+      number?: number;
+      date?: string;
+      name?: string;
     }>;
   };
 }
@@ -746,6 +749,27 @@ export async function addProjectV2Item(
                     name
                   }
                   text
+                }
+                ... on ProjectV2ItemFieldNumberValue {
+                  field {
+                    id
+                    name
+                  }
+                  number
+                }
+                ... on ProjectV2ItemFieldDateValue {
+                  field {
+                    id
+                    name
+                  }
+                  date
+                }
+                ... on ProjectV2ItemFieldSingleSelectValue {
+                  field {
+                    id
+                    name
+                  }
+                  name
                 }
               }
             }
