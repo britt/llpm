@@ -2,30 +2,57 @@ import { Octokit } from '@octokit/rest';
 import { debug, getVerbose } from '../utils/logger';
 import { execSync } from 'child_process';
 
-export interface GitHubProject {
-  id: number;
-  name: string;
-  body: string | null;
-  state: 'open' | 'closed';
-  html_url: string;
-  created_at: string;
-  updated_at: string;
+export interface GitHubProjectV2 {
+  id: string;
+  number: number;
+  title: string;
+  url: string;
+  public: boolean;
+  closed: boolean;
+  createdAt: string;
+  updatedAt: string;
+  owner: {
+    id: string;
+  };
 }
 
-export interface GitHubProjectColumn {
-  id: number;
-  name: string;
-  created_at: string;
-  updated_at: string;
+export interface GitHubProjectV2Item {
+  id: string;
+  type: 'ISSUE' | 'PULL_REQUEST' | 'DRAFT_ISSUE';
+  content?: {
+    id: string;
+    number?: number;
+    title: string;
+    url?: string;
+  };
+  createdAt: string;
+  updatedAt: string;
+  fieldValues: {
+    nodes: Array<{
+      field: {
+        id: string;
+        name: string;
+      };
+      value?: any;
+    }>;
+  };
 }
 
-export interface GitHubProjectCard {
-  id: number;
-  note: string | null;
-  archived: boolean;
-  content_url: string | null;
-  created_at: string;
-  updated_at: string;
+export interface GitHubProjectV2Field {
+  id: string;
+  name: string;
+  dataType: 'TEXT' | 'NUMBER' | 'DATE' | 'SINGLE_SELECT' | 'ITERATION';
+  options?: Array<{
+    id: string;
+    name: string;
+  }>;
+}
+
+export interface GitHubProjectV2View {
+  id: string;
+  name: string;
+  layout: 'TABLE_LAYOUT' | 'BOARD_LAYOUT' | 'TIMELINE_LAYOUT' | 'ROADMAP_LAYOUT';
+  number: number;
 }
 
 let octokit: Octokit | null = null;
@@ -57,7 +84,7 @@ async function getGitHubToken(): Promise<string> {
   }
 
   throw new Error(
-    'GitHub token not found. Please either:\n1. Set GITHUB_TOKEN or GH_TOKEN environment variable\n2. Run `gh auth login` to authenticate with GitHub CLI'
+    'GitHub token not found. Please either:\n1. Set GITHUB_TOKEN or GH_TOKEN environment variable\n2. Run `gh auth login --scopes "project"` to authenticate with GitHub CLI'
   );
 }
 
@@ -77,645 +104,810 @@ async function initializeOctokit(): Promise<void> {
   }
 }
 
+// Helper function to get owner ID (user or organization)
+export async function getOwnerId(login: string): Promise<string> {
+  await initializeOctokit();
+  const octokitInstance = getOctokit();
+
+  if (getVerbose()) {
+    debug('🌐 GraphQL Query: Get owner ID for', login);
+  }
+
+  try {
+    // Try as organization first
+    const orgQuery = `
+      query($login: String!) {
+        organization(login: $login) {
+          id
+        }
+      }
+    `;
+
+    const orgResult = await octokitInstance.graphql<{ organization: { id: string } | null }>(orgQuery, {
+      login,
+      headers: {
+        'X-Github-Next-Global-ID': '1'
+      }
+    });
+
+    if (orgResult.organization) {
+      debug('Found organization ID:', orgResult.organization.id);
+      return orgResult.organization.id;
+    }
+  } catch (error) {
+    debug('Not an organization, trying as user:', error);
+  }
+
+  try {
+    // Try as user
+    const userQuery = `
+      query($login: String!) {
+        user(login: $login) {
+          id
+        }
+      }
+    `;
+
+    const userResult = await octokitInstance.graphql<{ user: { id: string } | null }>(userQuery, {
+      login,
+      headers: {
+        'X-Github-Next-Global-ID': '1'
+      }
+    });
+
+    if (userResult.user) {
+      debug('Found user ID:', userResult.user.id);
+      return userResult.user.id;
+    }
+  } catch (error) {
+    debug('Not a user either:', error);
+  }
+
+  throw new Error(`Owner '${login}' not found`);
+}
+
 // Project management functions
-export async function listProjects(
-  owner: string,
-  repo?: string,
-  options: {
-    state?: 'open' | 'closed' | 'all';
-    per_page?: number;
-  } = {}
-): Promise<GitHubProject[]> {
-  debug('Listing GitHub projects:', owner, repo, 'options:', options);
+export async function listProjectsV2(owner: string): Promise<GitHubProjectV2[]> {
+  debug('Listing GitHub Projects v2 for:', owner);
 
   try {
     await initializeOctokit();
     const octokitInstance = getOctokit();
 
-    const apiParams = {
-      ...(repo ? { owner, repo } : { org: owner }),
-      state: options.state || 'open',
-      per_page: options.per_page || 30
-    };
+    // Try as organization first, then fallback to user
+    let result: any;
+    let projects: GitHubProjectV2[] = [];
 
-    if (getVerbose()) {
-      debug('🌐 GitHub API Call:', repo ? 'GET /repos/:owner/:repo/projects' : 'GET /orgs/:org/projects');
-      debug('📋 Parameters:', JSON.stringify(apiParams, null, 2));
+    try {
+      const orgQuery = `
+        query($login: String!) {
+          organization(login: $login) {
+            projectsV2(first: 100) {
+              nodes {
+                id
+                number
+                title
+                url
+                public
+                closed
+                createdAt
+                updatedAt
+                owner {
+                  id
+                }
+              }
+            }
+          }
+        }
+      `;
+
+      if (getVerbose()) {
+        debug('🌐 GraphQL Query: List Projects v2 (Organization)');
+        debug('📋 Variables:', { login: owner });
+      }
+
+      result = await octokitInstance.graphql<{
+        organization: {
+          projectsV2: {
+            nodes: GitHubProjectV2[];
+          };
+        } | null;
+      }>(orgQuery, {
+        login: owner,
+        headers: {
+          'X-Github-Next-Global-ID': '1'
+        }
+      });
+
+      // Check if organization exists (GraphQL returns null for not found, not an error)
+      if (result.organization && result.organization.projectsV2) {
+        projects = result.organization.projectsV2.nodes;
+        debug('Found organization projects:', projects.length);
+      } else {
+        throw new Error('Organization not found');
+      }
+    } catch (orgError) {
+      debug('Not an organization, trying as user:', orgError);
+      
+      // Try as user
+      const userQuery = `
+        query($login: String!) {
+          user(login: $login) {
+            projectsV2(first: 100) {
+              nodes {
+                id
+                number
+                title
+                url
+                public
+                closed
+                createdAt
+                updatedAt
+                owner {
+                  id
+                }
+              }
+            }
+          }
+        }
+      `;
+
+      if (getVerbose()) {
+        debug('🌐 GraphQL Query: List Projects v2 (User)');
+        debug('📋 Variables:', { login: owner });
+      }
+
+      result = await octokitInstance.graphql<{
+        user: {
+          projectsV2: {
+            nodes: GitHubProjectV2[];
+          };
+        };
+      }>(userQuery, {
+        login: owner,
+        headers: {
+          'X-Github-Next-Global-ID': '1'
+        }
+      });
+
+      projects = result.user.projectsV2.nodes;
+      debug('Found user projects:', projects.length);
     }
 
-    const { data } = repo 
-      ? await octokitInstance.request('GET /repos/{owner}/{repo}/projects', apiParams as any)
-      : await octokitInstance.request('GET /orgs/{org}/projects', apiParams as any);
-
     if (getVerbose()) {
-      debug('✅ GitHub API Response: received', data.length, 'projects');
+      debug('✅ GraphQL Response: received', projects.length, 'projects');
     }
 
-    const projects: GitHubProject[] = data.map(project => ({
-      id: project.id,
-      name: project.name,
-      body: project.body,
-      state: project.state as 'open' | 'closed',
-      html_url: project.html_url,
-      created_at: project.created_at,
-      updated_at: project.updated_at
-    }));
-
-    debug('Retrieved', projects.length, 'projects');
+    debug('Retrieved', projects.length, 'projects v2');
     return projects;
   } catch (error) {
-    debug('Error listing GitHub projects:', error instanceof Error ? error.message : 'Unknown error');
+    debug('Error listing GitHub Projects v2:', error instanceof Error ? error.message : 'Unknown error');
     if (error instanceof Error) {
-      throw new Error(`Failed to list GitHub projects: ${error.message}`);
+      throw new Error(`Failed to list GitHub Projects v2: ${error.message}`);
     }
-    throw new Error('Failed to list GitHub projects: Unknown error');
+    throw new Error('Failed to list GitHub Projects v2: Unknown error');
   }
 }
 
-export async function createProject(
+export async function createProjectV2(
   owner: string,
-  repo: string | undefined,
   data: {
-    name: string;
-    body?: string;
+    title: string;
   }
-): Promise<GitHubProject> {
-  debug('Creating GitHub project:', owner, repo, data.name);
+): Promise<GitHubProjectV2> {
+  debug('Creating GitHub Project v2:', owner, data.title);
 
   try {
     await initializeOctokit();
     const octokitInstance = getOctokit();
 
-    const apiParams = {
-      ...(repo ? { owner, repo } : { org: owner }),
-      name: data.name,
-      ...(data.body && { body: data.body })
-    };
+    // Get owner ID first
+    const ownerId = await getOwnerId(owner);
+
+    const mutation = `
+      mutation($ownerId: ID!, $title: String!) {
+        createProjectV2(input: {
+          ownerId: $ownerId
+          title: $title
+        }) {
+          projectV2 {
+            id
+            number
+            title
+            url
+            public
+            closed
+            createdAt
+            updatedAt
+            owner {
+              id
+            }
+          }
+        }
+      }
+    `;
 
     if (getVerbose()) {
-      debug('🌐 GitHub API Call:', repo ? 'POST /repos/:owner/:repo/projects' : 'POST /orgs/:org/projects');
-      debug('📋 Parameters:', JSON.stringify(apiParams, null, 2));
+      debug('🌐 GraphQL Mutation: Create Project v2');
+      debug('📋 Variables:', { ownerId, title: data.title });
     }
 
-    const { data: projectData } = repo
-      ? await octokitInstance.request('POST /repos/{owner}/{repo}/projects', apiParams as any)
-      : await octokitInstance.request('POST /orgs/{org}/projects', apiParams as any);
+    const result = await octokitInstance.graphql<{
+      createProjectV2: {
+        projectV2: GitHubProjectV2;
+      };
+    }>(mutation, {
+      ownerId,
+      title: data.title,
+      headers: {
+        'X-Github-Next-Global-ID': '1'
+      }
+    });
+
+    const project = result.createProjectV2.projectV2;
 
     if (getVerbose()) {
-      debug('✅ GitHub API Response: project created');
+      debug('✅ GraphQL Response: project created');
     }
 
-    const project: GitHubProject = {
-      id: projectData.id,
-      name: projectData.name,
-      body: projectData.body,
-      state: projectData.state as 'open' | 'closed',
-      html_url: projectData.html_url,
-      created_at: projectData.created_at,
-      updated_at: projectData.updated_at
-    };
-
-    debug('Created project:', project.name);
+    debug('Created project v2:', project.title);
     return project;
   } catch (error) {
-    debug('Error creating GitHub project:', error instanceof Error ? error.message : 'Unknown error');
+    debug('Error creating GitHub Project v2:', error instanceof Error ? error.message : 'Unknown error');
     if (error instanceof Error) {
-      throw new Error(`Failed to create GitHub project: ${error.message}`);
+      throw new Error(`Failed to create GitHub Project v2: ${error.message}`);
     }
-    throw new Error('Failed to create GitHub project: Unknown error');
+    throw new Error('Failed to create GitHub Project v2: Unknown error');
   }
 }
 
-export async function getProject(projectId: number): Promise<GitHubProject> {
-  debug('Getting GitHub project:', projectId);
+export async function getProjectV2(owner: string, number: number): Promise<GitHubProjectV2> {
+  debug('Getting GitHub Project v2:', owner, number);
 
   try {
     await initializeOctokit();
     const octokitInstance = getOctokit();
 
-    const apiParams = { project_id: projectId };
+    // Try as organization first, then fallback to user
+    let result: any;
+    let project: GitHubProjectV2 | null = null;
 
-    if (getVerbose()) {
-      debug('🌐 GitHub API Call: GET /projects/:project_id');
-      debug('📋 Parameters:', JSON.stringify(apiParams, null, 2));
+    try {
+      const orgQuery = `
+        query($login: String!, $number: Int!) {
+          organization(login: $login) {
+            projectV2(number: $number) {
+              id
+              number
+              title
+              url
+              public
+              closed
+              createdAt
+              updatedAt
+              owner {
+                id
+              }
+            }
+          }
+        }
+      `;
+
+      if (getVerbose()) {
+        debug('🌐 GraphQL Query: Get Project v2 (Organization)');
+        debug('📋 Variables:', { login: owner, number });
+      }
+
+      result = await octokitInstance.graphql<{
+        organization: {
+          projectV2: GitHubProjectV2 | null;
+        };
+      }>(orgQuery, {
+        login: owner,
+        number,
+        headers: {
+          'X-Github-Next-Global-ID': '1'
+        }
+      });
+
+      project = result.organization.projectV2;
+    } catch (orgError) {
+      debug('Not an organization, trying as user:', orgError);
+      
+      // Try as user
+      const userQuery = `
+        query($login: String!, $number: Int!) {
+          user(login: $login) {
+            projectV2(number: $number) {
+              id
+              number
+              title
+              url
+              public
+              closed
+              createdAt
+              updatedAt
+              owner {
+                id
+              }
+            }
+          }
+        }
+      `;
+
+      if (getVerbose()) {
+        debug('🌐 GraphQL Query: Get Project v2 (User)');
+        debug('📋 Variables:', { login: owner, number });
+      }
+
+      result = await octokitInstance.graphql<{
+        user: {
+          projectV2: GitHubProjectV2 | null;
+        };
+      }>(userQuery, {
+        login: owner,
+        number,
+        headers: {
+          'X-Github-Next-Global-ID': '1'
+        }
+      });
+
+      project = result.user.projectV2;
+    }
+    if (!project) {
+      throw new Error(`Project #${number} not found for ${owner}`);
     }
 
-    const { data } = await octokitInstance.request('GET /projects/{project_id}', apiParams);
-
     if (getVerbose()) {
-      debug('✅ GitHub API Response: project retrieved');
+      debug('✅ GraphQL Response: project retrieved');
     }
 
-    const project: GitHubProject = {
-      id: data.id,
-      name: data.name,
-      body: data.body,
-      state: data.state as 'open' | 'closed',
-      html_url: data.html_url,
-      created_at: data.created_at,
-      updated_at: data.updated_at
-    };
-
-    debug('Retrieved project:', project.name);
+    debug('Retrieved project v2:', project.title);
     return project;
   } catch (error) {
-    debug('Error getting GitHub project:', error instanceof Error ? error.message : 'Unknown error');
+    debug('Error getting GitHub Project v2:', error instanceof Error ? error.message : 'Unknown error');
     if (error instanceof Error) {
-      throw new Error(`Failed to get GitHub project: ${error.message}`);
+      throw new Error(`Failed to get GitHub Project v2: ${error.message}`);
     }
-    throw new Error('Failed to get GitHub project: Unknown error');
+    throw new Error('Failed to get GitHub Project v2: Unknown error');
   }
 }
 
-export async function updateProject(
-  projectId: number,
+export async function updateProjectV2(
+  projectId: string,
   updates: {
-    name?: string;
-    body?: string;
-    state?: 'open' | 'closed';
+    title?: string;
+    public?: boolean;
+    closed?: boolean;
   }
-): Promise<GitHubProject> {
-  debug('Updating GitHub project:', projectId, updates);
+): Promise<GitHubProjectV2> {
+  debug('Updating GitHub Project v2:', projectId, updates);
 
   try {
     await initializeOctokit();
     const octokitInstance = getOctokit();
 
-    const apiParams = {
-      project_id: projectId,
-      ...updates
-    };
+    const mutation = `
+      mutation($projectId: ID!, $title: String, $public: Boolean, $closed: Boolean) {
+        updateProjectV2(input: {
+          projectId: $projectId
+          title: $title
+          public: $public
+          closed: $closed
+        }) {
+          projectV2 {
+            id
+            number
+            title
+            url
+            public
+            closed
+            createdAt
+            updatedAt
+            owner {
+              id
+            }
+          }
+        }
+      }
+    `;
 
     if (getVerbose()) {
-      debug('🌐 GitHub API Call: PATCH /projects/:project_id');
-      debug('📋 Parameters:', JSON.stringify(apiParams, null, 2));
+      debug('🌐 GraphQL Mutation: Update Project v2');
+      debug('📋 Variables:', { projectId, ...updates });
     }
 
-    const { data } = await octokitInstance.request('PATCH /projects/{project_id}', apiParams);
+    const result = await octokitInstance.graphql<{
+      updateProjectV2: {
+        projectV2: GitHubProjectV2;
+      };
+    }>(mutation, {
+      projectId,
+      ...updates,
+      headers: {
+        'X-Github-Next-Global-ID': '1'
+      }
+    });
+
+    const project = result.updateProjectV2.projectV2;
 
     if (getVerbose()) {
-      debug('✅ GitHub API Response: project updated');
+      debug('✅ GraphQL Response: project updated');
     }
 
-    const project: GitHubProject = {
-      id: data.id,
-      name: data.name,
-      body: data.body,
-      state: data.state as 'open' | 'closed',
-      html_url: data.html_url,
-      created_at: data.created_at,
-      updated_at: data.updated_at
-    };
-
-    debug('Updated project:', project.name);
+    debug('Updated project v2:', project.title);
     return project;
   } catch (error) {
-    debug('Error updating GitHub project:', error instanceof Error ? error.message : 'Unknown error');
+    debug('Error updating GitHub Project v2:', error instanceof Error ? error.message : 'Unknown error');
     if (error instanceof Error) {
-      throw new Error(`Failed to update GitHub project: ${error.message}`);
+      throw new Error(`Failed to update GitHub Project v2: ${error.message}`);
     }
-    throw new Error('Failed to update GitHub project: Unknown error');
+    throw new Error('Failed to update GitHub Project v2: Unknown error');
   }
 }
 
-export async function deleteProject(projectId: number): Promise<void> {
-  debug('Deleting GitHub project:', projectId);
+export async function deleteProjectV2(projectId: string): Promise<void> {
+  debug('Deleting GitHub Project v2:', projectId);
 
   try {
     await initializeOctokit();
     const octokitInstance = getOctokit();
 
-    const apiParams = { project_id: projectId };
+    const mutation = `
+      mutation($projectId: ID!) {
+        deleteProjectV2(input: { projectId: $projectId }) {
+          projectV2 {
+            id
+          }
+        }
+      }
+    `;
 
     if (getVerbose()) {
-      debug('🌐 GitHub API Call: DELETE /projects/:project_id');
-      debug('📋 Parameters:', JSON.stringify(apiParams, null, 2));
+      debug('🌐 GraphQL Mutation: Delete Project v2');
+      debug('📋 Variables:', { projectId });
     }
 
-    await octokitInstance.request('DELETE /projects/{project_id}', apiParams);
+    await octokitInstance.graphql(mutation, {
+      projectId,
+      headers: {
+        'X-Github-Next-Global-ID': '1'
+      }
+    });
 
     if (getVerbose()) {
-      debug('✅ GitHub API Response: project deleted');
+      debug('✅ GraphQL Response: project deleted');
     }
 
-    debug('Deleted project:', projectId);
+    debug('Deleted project v2:', projectId);
   } catch (error) {
-    debug('Error deleting GitHub project:', error instanceof Error ? error.message : 'Unknown error');
+    debug('Error deleting GitHub Project v2:', error instanceof Error ? error.message : 'Unknown error');
     if (error instanceof Error) {
-      throw new Error(`Failed to delete GitHub project: ${error.message}`);
+      throw new Error(`Failed to delete GitHub Project v2: ${error.message}`);
     }
-    throw new Error('Failed to delete GitHub project: Unknown error');
+    throw new Error('Failed to delete GitHub Project v2: Unknown error');
   }
 }
 
-// Column management functions
-export async function listProjectColumns(projectId: number): Promise<GitHubProjectColumn[]> {
-  debug('Listing GitHub project columns:', projectId);
+// Item management functions
+export async function listProjectV2Items(projectId: string): Promise<GitHubProjectV2Item[]> {
+  debug('Listing GitHub Project v2 items:', projectId);
 
   try {
     await initializeOctokit();
     const octokitInstance = getOctokit();
 
-    const apiParams = { project_id: projectId };
+    const query = `
+      query($projectId: ID!) {
+        node(id: $projectId) {
+          ... on ProjectV2 {
+            items(first: 100) {
+              nodes {
+                id
+                type
+                content {
+                  ... on Issue {
+                    id
+                    number
+                    title
+                    url
+                  }
+                  ... on PullRequest {
+                    id
+                    number
+                    title
+                    url
+                  }
+                  ... on DraftIssue {
+                    id
+                    title
+                  }
+                }
+                createdAt
+                updatedAt
+                fieldValues(first: 20) {
+                  nodes {
+                    ... on ProjectV2ItemFieldTextValue {
+                      field {
+                        id
+                        name
+                      }
+                      text
+                    }
+                    ... on ProjectV2ItemFieldNumberValue {
+                      field {
+                        id
+                        name
+                      }
+                      number
+                    }
+                    ... on ProjectV2ItemFieldDateValue {
+                      field {
+                        id
+                        name
+                      }
+                      date
+                    }
+                    ... on ProjectV2ItemFieldSingleSelectValue {
+                      field {
+                        id
+                        name
+                      }
+                      name
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    `;
 
     if (getVerbose()) {
-      debug('🌐 GitHub API Call: GET /projects/:project_id/columns');
-      debug('📋 Parameters:', JSON.stringify(apiParams, null, 2));
+      debug('🌐 GraphQL Query: List Project v2 items');
+      debug('📋 Variables:', { projectId });
     }
 
-    const { data } = await octokitInstance.request('GET /projects/{project_id}/columns', apiParams);
+    const result = await octokitInstance.graphql<{
+      node: {
+        items: {
+          nodes: GitHubProjectV2Item[];
+        };
+      } | null;
+    }>(query, {
+      projectId,
+      headers: {
+        'X-Github-Next-Global-ID': '1'
+      }
+    });
+
+    if (!result.node) {
+      throw new Error('Project not found');
+    }
+
+    const items = result.node.items.nodes;
 
     if (getVerbose()) {
-      debug('✅ GitHub API Response: received', data.length, 'columns');
+      debug('✅ GraphQL Response: received', items.length, 'items');
     }
 
-    const columns: GitHubProjectColumn[] = data.map(column => ({
-      id: column.id,
-      name: column.name,
-      created_at: column.created_at,
-      updated_at: column.updated_at
-    }));
-
-    debug('Retrieved', columns.length, 'columns');
-    return columns;
+    debug('Retrieved', items.length, 'project v2 items');
+    return items;
   } catch (error) {
-    debug('Error listing GitHub project columns:', error instanceof Error ? error.message : 'Unknown error');
+    debug('Error listing GitHub Project v2 items:', error instanceof Error ? error.message : 'Unknown error');
     if (error instanceof Error) {
-      throw new Error(`Failed to list GitHub project columns: ${error.message}`);
+      throw new Error(`Failed to list GitHub Project v2 items: ${error.message}`);
     }
-    throw new Error('Failed to list GitHub project columns: Unknown error');
+    throw new Error('Failed to list GitHub Project v2 items: Unknown error');
   }
 }
 
-export async function createProjectColumn(
-  projectId: number,
-  data: { name: string }
-): Promise<GitHubProjectColumn> {
-  debug('Creating GitHub project column:', projectId, data.name);
+export async function addProjectV2Item(
+  projectId: string,
+  contentId: string
+): Promise<GitHubProjectV2Item> {
+  debug('Adding item to GitHub Project v2:', projectId, contentId);
 
   try {
     await initializeOctokit();
     const octokitInstance = getOctokit();
 
-    const apiParams = {
-      project_id: projectId,
-      name: data.name
-    };
+    const mutation = `
+      mutation($projectId: ID!, $contentId: ID!) {
+        addProjectV2ItemById(input: {
+          projectId: $projectId
+          contentId: $contentId
+        }) {
+          item {
+            id
+            type
+            content {
+              ... on Issue {
+                id
+                number
+                title
+                url
+              }
+              ... on PullRequest {
+                id
+                number
+                title
+                url
+              }
+            }
+            createdAt
+            updatedAt
+            fieldValues(first: 20) {
+              nodes {
+                ... on ProjectV2ItemFieldTextValue {
+                  field {
+                    id
+                    name
+                  }
+                  text
+                }
+              }
+            }
+          }
+        }
+      }
+    `;
 
     if (getVerbose()) {
-      debug('🌐 GitHub API Call: POST /projects/:project_id/columns');
-      debug('📋 Parameters:', JSON.stringify(apiParams, null, 2));
+      debug('🌐 GraphQL Mutation: Add Project v2 item');
+      debug('📋 Variables:', { projectId, contentId });
     }
 
-    const { data: columnData } = await octokitInstance.request('POST /projects/{project_id}/columns', apiParams);
+    const result = await octokitInstance.graphql<{
+      addProjectV2ItemById: {
+        item: GitHubProjectV2Item;
+      };
+    }>(mutation, {
+      projectId,
+      contentId,
+      headers: {
+        'X-Github-Next-Global-ID': '1'
+      }
+    });
+
+    const item = result.addProjectV2ItemById.item;
 
     if (getVerbose()) {
-      debug('✅ GitHub API Response: column created');
+      debug('✅ GraphQL Response: item added');
     }
 
-    const column: GitHubProjectColumn = {
-      id: columnData.id,
-      name: columnData.name,
-      created_at: columnData.created_at,
-      updated_at: columnData.updated_at
-    };
-
-    debug('Created column:', column.name);
-    return column;
+    debug('Added project v2 item:', item.id);
+    return item;
   } catch (error) {
-    debug('Error creating GitHub project column:', error instanceof Error ? error.message : 'Unknown error');
+    debug('Error adding GitHub Project v2 item:', error instanceof Error ? error.message : 'Unknown error');
     if (error instanceof Error) {
-      throw new Error(`Failed to create GitHub project column: ${error.message}`);
+      throw new Error(`Failed to add GitHub Project v2 item: ${error.message}`);
     }
-    throw new Error('Failed to create GitHub project column: Unknown error');
+    throw new Error('Failed to add GitHub Project v2 item: Unknown error');
   }
 }
 
-export async function updateProjectColumn(
-  columnId: number,
-  data: { name: string }
-): Promise<GitHubProjectColumn> {
-  debug('Updating GitHub project column:', columnId, data.name);
+export async function removeProjectV2Item(projectId: string, itemId: string): Promise<void> {
+  debug('Removing item from GitHub Project v2:', projectId, itemId);
 
   try {
     await initializeOctokit();
     const octokitInstance = getOctokit();
 
-    const apiParams = {
-      column_id: columnId,
-      name: data.name
-    };
+    const mutation = `
+      mutation($projectId: ID!, $itemId: ID!) {
+        deleteProjectV2Item(input: {
+          projectId: $projectId
+          itemId: $itemId
+        }) {
+          deletedItemId
+        }
+      }
+    `;
 
     if (getVerbose()) {
-      debug('🌐 GitHub API Call: PATCH /projects/columns/:column_id');
-      debug('📋 Parameters:', JSON.stringify(apiParams, null, 2));
+      debug('🌐 GraphQL Mutation: Remove Project v2 item');
+      debug('📋 Variables:', { projectId, itemId });
     }
 
-    const { data: columnData } = await octokitInstance.request('PATCH /projects/columns/{column_id}', apiParams);
+    await octokitInstance.graphql(mutation, {
+      projectId,
+      itemId,
+      headers: {
+        'X-Github-Next-Global-ID': '1'
+      }
+    });
 
     if (getVerbose()) {
-      debug('✅ GitHub API Response: column updated');
+      debug('✅ GraphQL Response: item removed');
     }
 
-    const column: GitHubProjectColumn = {
-      id: columnData.id,
-      name: columnData.name,
-      created_at: columnData.created_at,
-      updated_at: columnData.updated_at
-    };
-
-    debug('Updated column:', column.name);
-    return column;
+    debug('Removed project v2 item:', itemId);
   } catch (error) {
-    debug('Error updating GitHub project column:', error instanceof Error ? error.message : 'Unknown error');
+    debug('Error removing GitHub Project v2 item:', error instanceof Error ? error.message : 'Unknown error');
     if (error instanceof Error) {
-      throw new Error(`Failed to update GitHub project column: ${error.message}`);
+      throw new Error(`Failed to remove GitHub Project v2 item: ${error.message}`);
     }
-    throw new Error('Failed to update GitHub project column: Unknown error');
+    throw new Error('Failed to remove GitHub Project v2 item: Unknown error');
   }
 }
 
-export async function deleteProjectColumn(columnId: number): Promise<void> {
-  debug('Deleting GitHub project column:', columnId);
+// Field management functions
+export async function listProjectV2Fields(projectId: string): Promise<GitHubProjectV2Field[]> {
+  debug('Listing GitHub Project v2 fields:', projectId);
 
   try {
     await initializeOctokit();
     const octokitInstance = getOctokit();
 
-    const apiParams = { column_id: columnId };
+    const query = `
+      query($projectId: ID!) {
+        node(id: $projectId) {
+          ... on ProjectV2 {
+            fields(first: 20) {
+              nodes {
+                ... on ProjectV2Field {
+                  id
+                  name
+                  dataType
+                }
+                ... on ProjectV2SingleSelectField {
+                  id
+                  name
+                  dataType
+                  options {
+                    id
+                    name
+                  }
+                }
+                ... on ProjectV2IterationField {
+                  id
+                  name
+                  dataType
+                }
+              }
+            }
+          }
+        }
+      }
+    `;
 
     if (getVerbose()) {
-      debug('🌐 GitHub API Call: DELETE /projects/columns/:column_id');
-      debug('📋 Parameters:', JSON.stringify(apiParams, null, 2));
+      debug('🌐 GraphQL Query: List Project v2 fields');
+      debug('📋 Variables:', { projectId });
     }
 
-    await octokitInstance.request('DELETE /projects/columns/{column_id}', apiParams);
+    const result = await octokitInstance.graphql<{
+      node: {
+        fields: {
+          nodes: GitHubProjectV2Field[];
+        };
+      } | null;
+    }>(query, {
+      projectId,
+      headers: {
+        'X-Github-Next-Global-ID': '1'
+      }
+    });
+
+    if (!result.node) {
+      throw new Error('Project not found');
+    }
+
+    const fields = result.node.fields.nodes;
 
     if (getVerbose()) {
-      debug('✅ GitHub API Response: column deleted');
+      debug('✅ GraphQL Response: received', fields.length, 'fields');
     }
 
-    debug('Deleted column:', columnId);
+    debug('Retrieved', fields.length, 'project v2 fields');
+    return fields;
   } catch (error) {
-    debug('Error deleting GitHub project column:', error instanceof Error ? error.message : 'Unknown error');
+    debug('Error listing GitHub Project v2 fields:', error instanceof Error ? error.message : 'Unknown error');
     if (error instanceof Error) {
-      throw new Error(`Failed to delete GitHub project column: ${error.message}`);
+      throw new Error(`Failed to list GitHub Project v2 fields: ${error.message}`);
     }
-    throw new Error('Failed to delete GitHub project column: Unknown error');
-  }
-}
-
-export async function moveProjectColumn(
-  columnId: number,
-  data: { position: string }
-): Promise<void> {
-  debug('Moving GitHub project column:', columnId, data.position);
-
-  try {
-    await initializeOctokit();
-    const octokitInstance = getOctokit();
-
-    const apiParams = {
-      column_id: columnId,
-      position: data.position
-    };
-
-    if (getVerbose()) {
-      debug('🌐 GitHub API Call: POST /projects/columns/:column_id/moves');
-      debug('📋 Parameters:', JSON.stringify(apiParams, null, 2));
-    }
-
-    await octokitInstance.request('POST /projects/columns/{column_id}/moves', apiParams);
-
-    if (getVerbose()) {
-      debug('✅ GitHub API Response: column moved');
-    }
-
-    debug('Moved column:', columnId, 'to position:', data.position);
-  } catch (error) {
-    debug('Error moving GitHub project column:', error instanceof Error ? error.message : 'Unknown error');
-    if (error instanceof Error) {
-      throw new Error(`Failed to move GitHub project column: ${error.message}`);
-    }
-    throw new Error('Failed to move GitHub project column: Unknown error');
-  }
-}
-
-// Card management functions
-export async function listProjectCards(
-  columnId: number,
-  options: {
-    archived_state?: 'all' | 'archived' | 'not_archived';
-    per_page?: number;
-  } = {}
-): Promise<GitHubProjectCard[]> {
-  debug('Listing GitHub project cards:', columnId, 'options:', options);
-
-  try {
-    await initializeOctokit();
-    const octokitInstance = getOctokit();
-
-    const apiParams = {
-      column_id: columnId,
-      archived_state: options.archived_state || 'not_archived',
-      per_page: options.per_page || 30
-    };
-
-    if (getVerbose()) {
-      debug('🌐 GitHub API Call: GET /projects/columns/:column_id/cards');
-      debug('📋 Parameters:', JSON.stringify(apiParams, null, 2));
-    }
-
-    const { data } = await octokitInstance.request('GET /projects/columns/{column_id}/cards', apiParams);
-
-    if (getVerbose()) {
-      debug('✅ GitHub API Response: received', data.length, 'cards');
-    }
-
-    const cards: GitHubProjectCard[] = data.map(card => ({
-      id: card.id,
-      note: card.note,
-      archived: card.archived || false,
-      content_url: card.content_url || null,
-      created_at: card.created_at,
-      updated_at: card.updated_at
-    }));
-
-    debug('Retrieved', cards.length, 'cards');
-    return cards;
-  } catch (error) {
-    debug('Error listing GitHub project cards:', error instanceof Error ? error.message : 'Unknown error');
-    if (error instanceof Error) {
-      throw new Error(`Failed to list GitHub project cards: ${error.message}`);
-    }
-    throw new Error('Failed to list GitHub project cards: Unknown error');
-  }
-}
-
-export async function createProjectCard(
-  columnId: number,
-  data: {
-    note?: string;
-    content_id?: number;
-    content_type?: string;
-  }
-): Promise<GitHubProjectCard> {
-  debug('Creating GitHub project card:', columnId, data);
-
-  try {
-    await initializeOctokit();
-    const octokitInstance = getOctokit();
-
-    const apiParams = {
-      column_id: columnId,
-      ...data
-    };
-
-    if (getVerbose()) {
-      debug('🌐 GitHub API Call: POST /projects/columns/:column_id/cards');
-      debug('📋 Parameters:', JSON.stringify(apiParams, null, 2));
-    }
-
-    const { data: cardData } = await octokitInstance.request('POST /projects/columns/{column_id}/cards', apiParams);
-
-    if (getVerbose()) {
-      debug('✅ GitHub API Response: card created');
-    }
-
-    const card: GitHubProjectCard = {
-      id: cardData.id,
-      note: cardData.note,
-      archived: cardData.archived || false,
-      content_url: cardData.content_url || null,
-      created_at: cardData.created_at,
-      updated_at: cardData.updated_at
-    };
-
-    debug('Created card:', card.id);
-    return card;
-  } catch (error) {
-    debug('Error creating GitHub project card:', error instanceof Error ? error.message : 'Unknown error');
-    if (error instanceof Error) {
-      throw new Error(`Failed to create GitHub project card: ${error.message}`);
-    }
-    throw new Error('Failed to create GitHub project card: Unknown error');
-  }
-}
-
-export async function updateProjectCard(
-  cardId: number,
-  data: {
-    note?: string;
-    archived?: boolean;
-  }
-): Promise<GitHubProjectCard> {
-  debug('Updating GitHub project card:', cardId, data);
-
-  try {
-    await initializeOctokit();
-    const octokitInstance = getOctokit();
-
-    const apiParams = {
-      card_id: cardId,
-      ...data
-    };
-
-    if (getVerbose()) {
-      debug('🌐 GitHub API Call: PATCH /projects/columns/cards/:card_id');
-      debug('📋 Parameters:', JSON.stringify(apiParams, null, 2));
-    }
-
-    const { data: cardData } = await octokitInstance.request('PATCH /projects/columns/cards/{card_id}', apiParams);
-
-    if (getVerbose()) {
-      debug('✅ GitHub API Response: card updated');
-    }
-
-    const card: GitHubProjectCard = {
-      id: cardData.id,
-      note: cardData.note,
-      archived: cardData.archived || false,
-      content_url: cardData.content_url || null,
-      created_at: cardData.created_at,
-      updated_at: cardData.updated_at
-    };
-
-    debug('Updated card:', card.id);
-    return card;
-  } catch (error) {
-    debug('Error updating GitHub project card:', error instanceof Error ? error.message : 'Unknown error');
-    if (error instanceof Error) {
-      throw new Error(`Failed to update GitHub project card: ${error.message}`);
-    }
-    throw new Error('Failed to update GitHub project card: Unknown error');
-  }
-}
-
-export async function deleteProjectCard(cardId: number): Promise<void> {
-  debug('Deleting GitHub project card:', cardId);
-
-  try {
-    await initializeOctokit();
-    const octokitInstance = getOctokit();
-
-    const apiParams = { card_id: cardId };
-
-    if (getVerbose()) {
-      debug('🌐 GitHub API Call: DELETE /projects/columns/cards/:card_id');
-      debug('📋 Parameters:', JSON.stringify(apiParams, null, 2));
-    }
-
-    await octokitInstance.request('DELETE /projects/columns/cards/{card_id}', apiParams);
-
-    if (getVerbose()) {
-      debug('✅ GitHub API Response: card deleted');
-    }
-
-    debug('Deleted card:', cardId);
-  } catch (error) {
-    debug('Error deleting GitHub project card:', error instanceof Error ? error.message : 'Unknown error');
-    if (error instanceof Error) {
-      throw new Error(`Failed to delete GitHub project card: ${error.message}`);
-    }
-    throw new Error('Failed to delete GitHub project card: Unknown error');
-  }
-}
-
-export async function moveProjectCard(
-  cardId: number,
-  data: {
-    position: string;
-    column_id?: number;
-  }
-): Promise<void> {
-  debug('Moving GitHub project card:', cardId, data);
-
-  try {
-    await initializeOctokit();
-    const octokitInstance = getOctokit();
-
-    const apiParams = {
-      card_id: cardId,
-      ...data
-    };
-
-    if (getVerbose()) {
-      debug('🌐 GitHub API Call: POST /projects/columns/cards/:card_id/moves');
-      debug('📋 Parameters:', JSON.stringify(apiParams, null, 2));
-    }
-
-    await octokitInstance.request('POST /projects/columns/cards/{card_id}/moves', apiParams);
-
-    if (getVerbose()) {
-      debug('✅ GitHub API Response: card moved');
-    }
-
-    debug('Moved card:', cardId, 'to position:', data.position);
-  } catch (error) {
-    debug('Error moving GitHub project card:', error instanceof Error ? error.message : 'Unknown error');
-    if (error instanceof Error) {
-      throw new Error(`Failed to move GitHub project card: ${error.message}`);
-    }
-    throw new Error('Failed to move GitHub project card: Unknown error');
+    throw new Error('Failed to list GitHub Project v2 fields: Unknown error');
   }
 }

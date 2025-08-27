@@ -220,7 +220,7 @@ GOOGLE_VERTEX_REGION=us-central1  # optional
 #### GitHub Projects v2 (Recommended)
 - **New Projects Experience**: Uses GraphQL API exclusively - no REST endpoints available
 - **Authentication**: Requires `GITHUB_TOKEN` with `project` scope (`gh auth login --scopes "project"`)
-- **Commands**: Use `/project-board-v2` command for new Projects v2 management
+- **Commands**: Use `/project-board` command for new Projects v2 management
 - **API Structure**: Projects → Items (issues/PRs/drafts) with custom Fields and Views
 - **Node IDs**: Uses GraphQL Global Node IDs (e.g., `gid://Project/123`) instead of numeric IDs
 - **Features**: More flexible than Classic with custom fields, multiple views, better integration
@@ -230,7 +230,7 @@ GOOGLE_VERTEX_REGION=us-central1  # optional
 - **REST API**: Due to API deprecation, newer Octokit versions don't include Projects endpoints
 - **Implementation**: We use `octokit.request()` for direct API calls to deprecated endpoints
 - **Commands**: `/project-board` command marked as deprecated
-- **Migration**: Users should migrate to Projects v2 (`/project-board-v2`)
+- **Migration**: Users should migrate to Projects v2 (`/project-board`)
 
 ### TypeScript Best Practices
 

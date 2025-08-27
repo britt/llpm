@@ -1,50 +1,43 @@
 import { tool } from 'ai';
 import { z } from 'zod';
 import { 
-  listProjects, 
-  createProject, 
-  getProject, 
-  updateProject, 
-  deleteProject,
-  listProjectColumns,
-  createProjectColumn,
-  updateProjectColumn,
-  deleteProjectColumn,
-  moveProjectColumn,
-  listProjectCards,
-  createProjectCard,
-  updateProjectCard,
-  deleteProjectCard,
-  moveProjectCard
+  listProjectsV2,
+  createProjectV2,
+  getProjectV2,
+  updateProjectV2,
+  deleteProjectV2,
+  listProjectV2Items,
+  addProjectV2Item,
+  removeProjectV2Item,
+  listProjectV2Fields,
+  getOwnerId
 } from '../services/githubProjects';
 import { debug } from '../utils/logger';
 
 // Project management tools
-export const listGitHubProjectsTool = tool({
-  description: 'List GitHub projects for a repository or organization',
+export const listGitHubProjectsV2Tool = tool({
+  description: 'List GitHub Projects v2 for a user or organization',
   inputSchema: z.object({
-    owner: z.string().describe('Repository owner or organization name'),
-    repo: z.string().optional().describe('Repository name (omit for organization projects)'),
-    state: z.string().optional().describe('Filter by project state: open, closed, or all (default: open)')
+    owner: z.string().describe('Username or organization name')
   }),
-  execute: async ({ owner, repo, state = 'open' }) => {
-    debug('Executing list_github_projects tool with params:', { owner, repo, state });
+  execute: async ({ owner }) => {
+    debug('Executing list_github_projects_v2 tool with params:', { owner });
 
     try {
-      const projects = await listProjects(owner, repo, {
-        state: state as 'open' | 'closed' | 'all'
-      });
+      const projects = await listProjectsV2(owner);
 
       return {
         success: true,
         projects: projects.map(project => ({
           id: project.id,
-          name: project.name,
-          body: project.body,
-          state: project.state,
-          html_url: project.html_url,
-          created_at: project.created_at,
-          updated_at: project.updated_at
+          number: project.number,
+          title: project.title,
+          url: project.url,
+          public: project.public,
+          closed: project.closed,
+          createdAt: project.createdAt,
+          updatedAt: project.updatedAt,
+          owner: project.owner
         })),
         count: projects.length
       };
@@ -57,30 +50,30 @@ export const listGitHubProjectsTool = tool({
   }
 });
 
-export const createGitHubProjectTool = tool({
-  description: 'Create a new GitHub project board',
+export const createGitHubProjectV2Tool = tool({
+  description: 'Create a new GitHub Project v2',
   inputSchema: z.object({
-    owner: z.string().describe('Repository owner or organization name'),
-    repo: z.string().optional().describe('Repository name (omit for organization project)'),
-    name: z.string().describe('Project name'),
-    body: z.string().optional().describe('Project description')
+    owner: z.string().describe('Username or organization name'),
+    title: z.string().describe('Project title')
   }),
-  execute: async ({ owner, repo, name, body }) => {
-    debug('Executing create_github_project tool with params:', { owner, repo, name, body });
+  execute: async ({ owner, title }) => {
+    debug('Executing create_github_project_v2 tool with params:', { owner, title });
 
     try {
-      const project = await createProject(owner, repo, { name, body });
+      const project = await createProjectV2(owner, { title });
 
       return {
         success: true,
         project: {
           id: project.id,
-          name: project.name,
-          body: project.body,
-          state: project.state,
-          html_url: project.html_url,
-          created_at: project.created_at,
-          updated_at: project.updated_at
+          number: project.number,
+          title: project.title,
+          url: project.url,
+          public: project.public,
+          closed: project.closed,
+          createdAt: project.createdAt,
+          updatedAt: project.updatedAt,
+          owner: project.owner
         }
       };
     } catch (error) {
@@ -92,33 +85,71 @@ export const createGitHubProjectTool = tool({
   }
 });
 
-export const updateGitHubProjectTool = tool({
-  description: 'Update an existing GitHub project',
+export const getGitHubProjectV2Tool = tool({
+  description: 'Get details of a specific GitHub Project v2',
   inputSchema: z.object({
-    project_id: z.number().describe('Project ID'),
-    name: z.string().optional().describe('New project name'),
-    body: z.string().optional().describe('New project description'),
-    state: z.string().optional().describe('Project state: open or closed')
+    owner: z.string().describe('Username or organization name'),
+    number: z.number().describe('Project number')
   }),
-  execute: async ({ project_id, name, body, state }) => {
-    debug('Executing update_github_project tool with params:', { project_id, name, body, state });
+  execute: async ({ owner, number }) => {
+    debug('Executing get_github_project_v2 tool with params:', { owner, number });
 
     try {
-      const project = await updateProject(project_id, { 
-        name, 
-        body, 
-        state: state as 'open' | 'closed' 
+      const project = await getProjectV2(owner, number);
+
+      return {
+        success: true,
+        project: {
+          id: project.id,
+          number: project.number,
+          title: project.title,
+          url: project.url,
+          public: project.public,
+          closed: project.closed,
+          createdAt: project.createdAt,
+          updatedAt: project.updatedAt,
+          owner: project.owner
+        }
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      };
+    }
+  }
+});
+
+export const updateGitHubProjectV2Tool = tool({
+  description: 'Update an existing GitHub Project v2',
+  inputSchema: z.object({
+    projectId: z.string().describe('Project ID'),
+    title: z.string().optional().describe('New project title'),
+    public: z.boolean().optional().describe('Make project public or private'),
+    closed: z.boolean().optional().describe('Close or open the project')
+  }),
+  execute: async ({ projectId, title, public: isPublic, closed }) => {
+    debug('Executing update_github_project_v2 tool with params:', { projectId, title, public: isPublic, closed });
+
+    try {
+      const project = await updateProjectV2(projectId, { 
+        title, 
+        public: isPublic,
+        closed
       });
 
       return {
         success: true,
         project: {
           id: project.id,
-          name: project.name,
-          body: project.body,
-          state: project.state,
-          html_url: project.html_url,
-          updated_at: project.updated_at
+          number: project.number,
+          title: project.title,
+          url: project.url,
+          public: project.public,
+          closed: project.closed,
+          createdAt: project.createdAt,
+          updatedAt: project.updatedAt,
+          owner: project.owner
         }
       };
     } catch (error) {
@@ -130,28 +161,20 @@ export const updateGitHubProjectTool = tool({
   }
 });
 
-export const getGitHubProjectTool = tool({
-  description: 'Get details of a specific GitHub project',
+export const deleteGitHubProjectV2Tool = tool({
+  description: 'Delete a GitHub Project v2',
   inputSchema: z.object({
-    project_id: z.number().describe('Project ID')
+    projectId: z.string().describe('Project ID to delete')
   }),
-  execute: async ({ project_id }) => {
-    debug('Executing get_github_project tool with params:', { project_id });
+  execute: async ({ projectId }) => {
+    debug('Executing delete_github_project_v2 tool with params:', { projectId });
 
     try {
-      const project = await getProject(project_id);
+      await deleteProjectV2(projectId);
 
       return {
         success: true,
-        project: {
-          id: project.id,
-          name: project.name,
-          body: project.body,
-          state: project.state,
-          html_url: project.html_url,
-          created_at: project.created_at,
-          updated_at: project.updated_at
-        }
+        message: `Project ${projectId} deleted successfully`
       };
     } catch (error) {
       return {
@@ -162,51 +185,29 @@ export const getGitHubProjectTool = tool({
   }
 });
 
-export const deleteGitHubProjectTool = tool({
-  description: 'Delete a GitHub project',
+// Item management tools
+export const listGitHubProjectV2ItemsTool = tool({
+  description: 'List items in a GitHub Project v2',
   inputSchema: z.object({
-    project_id: z.number().describe('Project ID to delete')
+    projectId: z.string().describe('Project ID')
   }),
-  execute: async ({ project_id }) => {
-    debug('Executing delete_github_project tool with params:', { project_id });
+  execute: async ({ projectId }) => {
+    debug('Executing list_github_project_v2_items tool with params:', { projectId });
 
     try {
-      await deleteProject(project_id);
+      const items = await listProjectV2Items(projectId);
 
       return {
         success: true,
-        message: `Project ${project_id} deleted successfully`
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : 'Unknown error'
-      };
-    }
-  }
-});
-
-// Column management tools
-export const listGitHubProjectColumnsTool = tool({
-  description: 'List columns in a GitHub project',
-  inputSchema: z.object({
-    project_id: z.number().describe('Project ID')
-  }),
-  execute: async ({ project_id }) => {
-    debug('Executing list_github_project_columns tool with params:', { project_id });
-
-    try {
-      const columns = await listProjectColumns(project_id);
-
-      return {
-        success: true,
-        columns: columns.map(column => ({
-          id: column.id,
-          name: column.name,
-          created_at: column.created_at,
-          updated_at: column.updated_at
+        items: items.map(item => ({
+          id: item.id,
+          type: item.type,
+          content: item.content,
+          createdAt: item.createdAt,
+          updatedAt: item.updatedAt,
+          fieldValues: item.fieldValues.nodes
         })),
-        count: columns.length
+        count: items.length
       };
     } catch (error) {
       return {
@@ -217,25 +218,27 @@ export const listGitHubProjectColumnsTool = tool({
   }
 });
 
-export const createGitHubProjectColumnTool = tool({
-  description: 'Create a new column in a GitHub project',
+export const addGitHubProjectV2ItemTool = tool({
+  description: 'Add an issue or pull request to a GitHub Project v2',
   inputSchema: z.object({
-    project_id: z.number().describe('Project ID'),
-    name: z.string().describe('Column name')
+    projectId: z.string().describe('Project ID'),
+    contentId: z.string().describe('Issue or Pull Request ID (node ID, not number)')
   }),
-  execute: async ({ project_id, name }) => {
-    debug('Executing create_github_project_column tool with params:', { project_id, name });
+  execute: async ({ projectId, contentId }) => {
+    debug('Executing add_github_project_v2_item tool with params:', { projectId, contentId });
 
     try {
-      const column = await createProjectColumn(project_id, { name });
+      const item = await addProjectV2Item(projectId, contentId);
 
       return {
         success: true,
-        column: {
-          id: column.id,
-          name: column.name,
-          created_at: column.created_at,
-          updated_at: column.updated_at
+        item: {
+          id: item.id,
+          type: item.type,
+          content: item.content,
+          createdAt: item.createdAt,
+          updatedAt: item.updatedAt,
+          fieldValues: item.fieldValues.nodes
         }
       };
     } catch (error) {
@@ -247,25 +250,21 @@ export const createGitHubProjectColumnTool = tool({
   }
 });
 
-export const updateGitHubProjectColumnTool = tool({
-  description: 'Update a GitHub project column name',
+export const removeGitHubProjectV2ItemTool = tool({
+  description: 'Remove an item from a GitHub Project v2',
   inputSchema: z.object({
-    column_id: z.number().describe('Column ID'),
-    name: z.string().describe('New column name')
+    projectId: z.string().describe('Project ID'),
+    itemId: z.string().describe('Item ID to remove')
   }),
-  execute: async ({ column_id, name }) => {
-    debug('Executing update_github_project_column tool with params:', { column_id, name });
+  execute: async ({ projectId, itemId }) => {
+    debug('Executing remove_github_project_v2_item tool with params:', { projectId, itemId });
 
     try {
-      const column = await updateProjectColumn(column_id, { name });
+      await removeProjectV2Item(projectId, itemId);
 
       return {
         success: true,
-        column: {
-          id: column.id,
-          name: column.name,
-          updated_at: column.updated_at
-        }
+        message: `Item ${itemId} removed from project ${projectId}`
       };
     } catch (error) {
       return {
@@ -276,81 +275,27 @@ export const updateGitHubProjectColumnTool = tool({
   }
 });
 
-export const deleteGitHubProjectColumnTool = tool({
-  description: 'Delete a column from a GitHub project',
+// Field management tools
+export const listGitHubProjectV2FieldsTool = tool({
+  description: 'List custom fields in a GitHub Project v2',
   inputSchema: z.object({
-    column_id: z.number().describe('Column ID to delete')
+    projectId: z.string().describe('Project ID')
   }),
-  execute: async ({ column_id }) => {
-    debug('Executing delete_github_project_column tool with params:', { column_id });
+  execute: async ({ projectId }) => {
+    debug('Executing list_github_project_v2_fields tool with params:', { projectId });
 
     try {
-      await deleteProjectColumn(column_id);
+      const fields = await listProjectV2Fields(projectId);
 
       return {
         success: true,
-        message: `Column ${column_id} deleted successfully`
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : 'Unknown error'
-      };
-    }
-  }
-});
-
-export const moveGitHubProjectColumnTool = tool({
-  description: 'Move a column to a different position in the project',
-  inputSchema: z.object({
-    column_id: z.number().describe('Column ID to move'),
-    position: z.string().describe('Position: "first", "last", or "after:column_id"')
-  }),
-  execute: async ({ column_id, position }) => {
-    debug('Executing move_github_project_column tool with params:', { column_id, position });
-
-    try {
-      await moveProjectColumn(column_id, { position });
-
-      return {
-        success: true,
-        message: `Column ${column_id} moved to position: ${position}`
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : 'Unknown error'
-      };
-    }
-  }
-});
-
-// Card management tools
-export const listGitHubProjectCardsTool = tool({
-  description: 'List cards in a GitHub project column',
-  inputSchema: z.object({
-    column_id: z.number().describe('Column ID'),
-    archived_state: z.string().optional().describe('Filter by archived state: all, archived, or not_archived (default: not_archived)')
-  }),
-  execute: async ({ column_id, archived_state = 'not_archived' }) => {
-    debug('Executing list_github_project_cards tool with params:', { column_id, archived_state });
-
-    try {
-      const cards = await listProjectCards(column_id, {
-        archived_state: archived_state as 'all' | 'archived' | 'not_archived'
-      });
-
-      return {
-        success: true,
-        cards: cards.map(card => ({
-          id: card.id,
-          note: card.note,
-          archived: card.archived,
-          content_url: card.content_url,
-          created_at: card.created_at,
-          updated_at: card.updated_at
+        fields: fields.map(field => ({
+          id: field.id,
+          name: field.name,
+          dataType: field.dataType,
+          options: field.options
         })),
-        count: cards.length
+        count: fields.length
       };
     } catch (error) {
       return {
@@ -361,128 +306,118 @@ export const listGitHubProjectCardsTool = tool({
   }
 });
 
-export const createGitHubProjectCardTool = tool({
-  description: 'Create a new card in a GitHub project column',
+// Utility tools
+export const getGitHubOwnerIdTool = tool({
+  description: 'Get GitHub user or organization ID (needed for Projects v2 operations)',
   inputSchema: z.object({
-    column_id: z.number().describe('Column ID'),
-    note: z.string().optional().describe('Card note/content'),
-    content_id: z.number().optional().describe('Issue or PR ID to link to this card'),
-    content_type: z.string().optional().describe('Content type: "Issue" or "PullRequest" (required if content_id is provided)')
+    login: z.string().describe('Username or organization login')
   }),
-  execute: async ({ column_id, note, content_id, content_type }) => {
-    debug('Executing create_github_project_card tool with params:', { column_id, note, content_id, content_type });
+  execute: async ({ login }) => {
+    debug('Executing get_github_owner_id tool with params:', { login });
 
     try {
-      const cardData: any = {};
+      const ownerId = await getOwnerId(login);
+
+      return {
+        success: true,
+        ownerId,
+        login
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      };
+    }
+  }
+});
+
+// Helper tool to get issue/PR node IDs for adding to projects
+export const getGitHubIssueNodeIdTool = tool({
+  description: 'Get GitHub issue or pull request node ID (needed for adding to Projects v2)',
+  inputSchema: z.object({
+    owner: z.string().describe('Repository owner'),
+    repo: z.string().describe('Repository name'),
+    number: z.number().describe('Issue or pull request number'),
+    type: z.enum(['issue', 'pullrequest']).describe('Type of content')
+  }),
+  execute: async ({ owner, repo, number, type }) => {
+    debug('Executing get_github_issue_node_id tool with params:', { owner, repo, number, type });
+
+    try {
+      // Import here to avoid circular dependency
+      const { Octokit } = await import('@octokit/rest');
+      const { execSync } = await import('child_process');
       
-      if (note) {
-        cardData.note = note;
-      } else if (content_id && content_type) {
-        cardData.content_id = content_id;
-        cardData.content_type = content_type;
-      } else {
-        throw new Error('Either note or both content_id and content_type must be provided');
+      // Get token
+      const envToken = process.env.GITHUB_TOKEN || process.env.GH_TOKEN;
+      let token = envToken;
+      
+      if (!token) {
+        try {
+          const rawToken = execSync('gh auth token', {
+            encoding: 'utf8',
+            timeout: 5000,
+            stdio: ['ignore', 'pipe', 'ignore']
+          });
+          token = rawToken.trim();
+        } catch (error: any) {
+          throw new Error('GitHub token not found', error);
+        }
       }
 
-      const card = await createProjectCard(column_id, cardData);
+      const octokit = new Octokit({ auth: token });
 
-      return {
-        success: true,
-        card: {
-          id: card.id,
-          note: card.note,
-          archived: card.archived,
-          content_url: card.content_url,
-          created_at: card.created_at,
-          updated_at: card.updated_at
+      const query = type === 'issue' ? `
+        query($owner: String!, $repo: String!, $number: Int!) {
+          repository(owner: $owner, name: $repo) {
+            issue(number: $number) {
+              id
+              number
+              title
+              url
+            }
+          }
         }
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : 'Unknown error'
-      };
-    }
-  }
-});
-
-export const updateGitHubProjectCardTool = tool({
-  description: 'Update a GitHub project card',
-  inputSchema: z.object({
-    card_id: z.number().describe('Card ID'),
-    note: z.string().optional().describe('New card note/content'),
-    archived: z.boolean().optional().describe('Archive or unarchive the card')
-  }),
-  execute: async ({ card_id, note, archived }) => {
-    debug('Executing update_github_project_card tool with params:', { card_id, note, archived });
-
-    try {
-      const card = await updateProjectCard(card_id, { note, archived });
-
-      return {
-        success: true,
-        card: {
-          id: card.id,
-          note: card.note,
-          archived: card.archived,
-          content_url: card.content_url,
-          updated_at: card.updated_at
+      ` : `
+        query($owner: String!, $repo: String!, $number: Int!) {
+          repository(owner: $owner, name: $repo) {
+            pullRequest(number: $number) {
+              id
+              number
+              title
+              url
+            }
+          }
         }
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : 'Unknown error'
-      };
-    }
-  }
-});
+      `;
 
-export const deleteGitHubProjectCardTool = tool({
-  description: 'Delete a card from a GitHub project',
-  inputSchema: z.object({
-    card_id: z.number().describe('Card ID to delete')
-  }),
-  execute: async ({ card_id }) => {
-    debug('Executing delete_github_project_card tool with params:', { card_id });
+      const result = await octokit.graphql<{
+        repository: {
+          issue?: { id: string; number: number; title: string; url: string };
+          pullRequest?: { id: string; number: number; title: string; url: string };
+        };
+      }>(query, {
+        owner,
+        repo,
+        number,
+        headers: {
+          'X-Github-Next-Global-ID': '1'
+        }
+      });
 
-    try {
-      await deleteProjectCard(card_id);
-
-      return {
-        success: true,
-        message: `Card ${card_id} deleted successfully`
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : 'Unknown error'
-      };
-    }
-  }
-});
-
-export const moveGitHubProjectCardTool = tool({
-  description: 'Move a card to a different position or column',
-  inputSchema: z.object({
-    card_id: z.number().describe('Card ID to move'),
-    position: z.string().describe('Position: "top", "bottom", or "after:card_id"'),
-    column_id: z.number().optional().describe('Target column ID (if moving to a different column)')
-  }),
-  execute: async ({ card_id, position, column_id }) => {
-    debug('Executing move_github_project_card tool with params:', { card_id, position, column_id });
-
-    try {
-      const moveData: any = { position };
-      if (column_id) {
-        moveData.column_id = column_id;
+      const content = type === 'issue' ? result.repository.issue : result.repository.pullRequest;
+      if (!content) {
+        throw new Error(`${type} #${number} not found in ${owner}/${repo}`);
       }
 
-      await moveProjectCard(card_id, moveData);
-
       return {
         success: true,
-        message: `Card ${card_id} moved to position: ${position}${column_id ? ` in column ${column_id}` : ''}`
+        nodeId: content.id,
+        number: content.number,
+        title: content.title,
+        url: content.url,
+        type
       };
     } catch (error) {
       return {

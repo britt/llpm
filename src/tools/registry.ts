@@ -36,23 +36,6 @@ import {
   findProjectFiles
 } from './filesystemTools';
 import {
-  listGitHubProjectsTool,
-  createGitHubProjectTool,
-  getGitHubProjectTool,
-  updateGitHubProjectTool,
-  deleteGitHubProjectTool,
-  listGitHubProjectColumnsTool,
-  createGitHubProjectColumnTool,
-  updateGitHubProjectColumnTool,
-  deleteGitHubProjectColumnTool,
-  moveGitHubProjectColumnTool,
-  listGitHubProjectCardsTool,
-  createGitHubProjectCardTool,
-  updateGitHubProjectCardTool,
-  deleteGitHubProjectCardTool,
-  moveGitHubProjectCardTool
-} from './githubProjectsTools';
-import {
   listGitHubProjectsV2Tool,
   createGitHubProjectV2Tool,
   getGitHubProjectV2Tool,
@@ -64,7 +47,7 @@ import {
   listGitHubProjectV2FieldsTool,
   getGitHubOwnerIdTool,
   getGitHubIssueNodeIdTool
-} from './githubProjectsV2Tools';
+} from './githubProjectsTools';
 
 const toolRegistry: ToolRegistry = {
   get_current_project: getCurrentProjectTool,
@@ -95,31 +78,16 @@ const toolRegistry: ToolRegistry = {
   list_project_directory: listProjectDirectory,
   get_project_file_info: getProjectFileInfo,
   find_project_files: findProjectFiles,
-  list_github_projects: listGitHubProjectsTool,
-  create_github_project: createGitHubProjectTool,
-  get_github_project: getGitHubProjectTool,
-  update_github_project: updateGitHubProjectTool,
-  delete_github_project: deleteGitHubProjectTool,
-  list_github_project_columns: listGitHubProjectColumnsTool,
-  create_github_project_column: createGitHubProjectColumnTool,
-  update_github_project_column: updateGitHubProjectColumnTool,
-  delete_github_project_column: deleteGitHubProjectColumnTool,
-  move_github_project_column: moveGitHubProjectColumnTool,
-  list_github_project_cards: listGitHubProjectCardsTool,
-  create_github_project_card: createGitHubProjectCardTool,
-  update_github_project_card: updateGitHubProjectCardTool,
-  delete_github_project_card: deleteGitHubProjectCardTool,
-  move_github_project_card: moveGitHubProjectCardTool,
-  // GitHub Projects v2 (new Projects experience)
-  list_github_projects_v2: listGitHubProjectsV2Tool,
-  create_github_project_v2: createGitHubProjectV2Tool,
-  get_github_project_v2: getGitHubProjectV2Tool,
-  update_github_project_v2: updateGitHubProjectV2Tool,
-  delete_github_project_v2: deleteGitHubProjectV2Tool,
-  list_github_project_v2_items: listGitHubProjectV2ItemsTool,
-  add_github_project_v2_item: addGitHubProjectV2ItemTool,
-  remove_github_project_v2_item: removeGitHubProjectV2ItemTool,
-  list_github_project_v2_fields: listGitHubProjectV2FieldsTool,
+  // GitHub Projects (new Projects experience)
+  list_github_projects: listGitHubProjectsV2Tool,
+  create_github_project: createGitHubProjectV2Tool,
+  get_github_project: getGitHubProjectV2Tool,
+  update_github_project: updateGitHubProjectV2Tool,
+  delete_github_project: deleteGitHubProjectV2Tool,
+  list_github_project_items: listGitHubProjectV2ItemsTool,
+  add_github_project_item: addGitHubProjectV2ItemTool,
+  remove_github_project_item: removeGitHubProjectV2ItemTool,
+  list_github_project_fields: listGitHubProjectV2FieldsTool,
   get_github_owner_id: getGitHubOwnerIdTool,
   get_github_issue_node_id: getGitHubIssueNodeIdTool
 };
