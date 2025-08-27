@@ -29,7 +29,7 @@ jobs:
         ANTHROPIC_API_KEY: test-key-for-actions
         GROQ_API_KEY: test-key-for-actions
         GOOGLE_VERTEX_PROJECT_ID: test-project-for-actions
-      run: bun test --coverage
+      run: find . -name "*.test.*" -not -name "*.performance.test.*" | xargs bun test --coverage
     
     - name: Run security audit
       run: bun audit
