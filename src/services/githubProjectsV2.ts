@@ -141,25 +141,29 @@ export async function getOwnerId(login: string): Promise<string> {
     debug('Not an organization, trying as user:', error);
   }
 
-  // Try as user
-  const userQuery = `
-    query($login: String!) {
-      user(login: $login) {
-        id
+  try {
+    // Try as user
+    const userQuery = `
+      query($login: String!) {
+        user(login: $login) {
+          id
+        }
       }
-    }
-  `;
+    `;
 
-  const userResult = await octokitInstance.graphql<{ user: { id: string } | null }>(userQuery, {
-    login,
-    headers: {
-      'X-Github-Next-Global-ID': '1'
-    }
-  });
+    const userResult = await octokitInstance.graphql<{ user: { id: string } | null }>(userQuery, {
+      login,
+      headers: {
+        'X-Github-Next-Global-ID': '1'
+      }
+    });
 
-  if (userResult.user) {
-    debug('Found user ID:', userResult.user.id);
-    return userResult.user.id;
+    if (userResult.user) {
+      debug('Found user ID:', userResult.user.id);
+      return userResult.user.id;
+    }
+  } catch (error) {
+    debug('Not a user either:', error);
   }
 
   throw new Error(`Owner '${login}' not found`);
@@ -173,53 +177,106 @@ export async function listProjectsV2(owner: string): Promise<GitHubProjectV2[]> 
     await initializeOctokit();
     const octokitInstance = getOctokit();
 
-    // Get owner ID first
-    const ownerId = await getOwnerId(owner);
+    // Try as organization first, then fallback to user
+    let result: any;
+    let projects: GitHubProjectV2[] = [];
 
-    const query = `
-      query($login: String!) {
-        repositoryOwner(login: $login) {
-          projectsV2(first: 100) {
-            nodes {
-              id
-              number
-              title
-              shortDescription
-              readme
-              url
-              public
-              closed
-              createdAt
-              updatedAt
-              owner {
+    try {
+      const orgQuery = `
+        query($login: String!) {
+          organization(login: $login) {
+            projectsV2(first: 100) {
+              nodes {
                 id
-                login
+                number
+                title
+                shortDescription
+                readme
+                url
+                public
+                closed
+                createdAt
+                updatedAt
+                owner {
+                  id
+                  login
+                }
               }
             }
           }
         }
+      `;
+
+      if (getVerbose()) {
+        debug('🌐 GraphQL Query: List Projects v2 (Organization)');
+        debug('📋 Variables:', { login: owner });
       }
-    `;
 
-    if (getVerbose()) {
-      debug('🌐 GraphQL Query: List Projects v2');
-      debug('📋 Variables:', { login: owner });
-    }
-
-    const result = await octokitInstance.graphql<{
-      repositoryOwner: {
-        projectsV2: {
-          nodes: GitHubProjectV2[];
+      result = await octokitInstance.graphql<{
+        organization: {
+          projectsV2: {
+            nodes: GitHubProjectV2[];
+          };
         };
-      };
-    }>(query, {
-      login: owner,
-      headers: {
-        'X-Github-Next-Global-ID': '1'
-      }
-    });
+      }>(orgQuery, {
+        login: owner,
+        headers: {
+          'X-Github-Next-Global-ID': '1'
+        }
+      });
 
-    const projects = result.repositoryOwner.projectsV2.nodes;
+      projects = result.organization.projectsV2.nodes;
+      debug('Found organization projects:', projects.length);
+    } catch (orgError) {
+      debug('Not an organization, trying as user:', orgError);
+      
+      // Try as user
+      const userQuery = `
+        query($login: String!) {
+          user(login: $login) {
+            projectsV2(first: 100) {
+              nodes {
+                id
+                number
+                title
+                shortDescription
+                readme
+                url
+                public
+                closed
+                createdAt
+                updatedAt
+                owner {
+                  id
+                  login
+                }
+              }
+            }
+          }
+        }
+      `;
+
+      if (getVerbose()) {
+        debug('🌐 GraphQL Query: List Projects v2 (User)');
+        debug('📋 Variables:', { login: owner });
+      }
+
+      result = await octokitInstance.graphql<{
+        user: {
+          projectsV2: {
+            nodes: GitHubProjectV2[];
+          };
+        };
+      }>(userQuery, {
+        login: owner,
+        headers: {
+          'X-Github-Next-Global-ID': '1'
+        }
+      });
+
+      projects = result.user.projectsV2.nodes;
+      debug('Found user projects:', projects.length);
+    }
 
     if (getVerbose()) {
       debug('✅ GraphQL Response: received', projects.length, 'projects');
@@ -324,47 +381,98 @@ export async function getProjectV2(owner: string, number: number): Promise<GitHu
     await initializeOctokit();
     const octokitInstance = getOctokit();
 
-    const query = `
-      query($login: String!, $number: Int!) {
-        repositoryOwner(login: $login) {
-          projectV2(number: $number) {
-            id
-            number
-            title
-            shortDescription
-            readme
-            url
-            public
-            closed
-            createdAt
-            updatedAt
-            owner {
+    // Try as organization first, then fallback to user
+    let result: any;
+    let project: GitHubProjectV2 | null = null;
+
+    try {
+      const orgQuery = `
+        query($login: String!, $number: Int!) {
+          organization(login: $login) {
+            projectV2(number: $number) {
               id
-              login
+              number
+              title
+              shortDescription
+              readme
+              url
+              public
+              closed
+              createdAt
+              updatedAt
+              owner {
+                id
+                login
+              }
             }
           }
         }
-      }
-    `;
+      `;
 
-    if (getVerbose()) {
-      debug('🌐 GraphQL Query: Get Project v2');
-      debug('📋 Variables:', { login: owner, number });
+      if (getVerbose()) {
+        debug('🌐 GraphQL Query: Get Project v2 (Organization)');
+        debug('📋 Variables:', { login: owner, number });
+      }
+
+      result = await octokitInstance.graphql<{
+        organization: {
+          projectV2: GitHubProjectV2 | null;
+        };
+      }>(orgQuery, {
+        login: owner,
+        number,
+        headers: {
+          'X-Github-Next-Global-ID': '1'
+        }
+      });
+
+      project = result.organization.projectV2;
+    } catch (orgError) {
+      debug('Not an organization, trying as user:', orgError);
+      
+      // Try as user
+      const userQuery = `
+        query($login: String!, $number: Int!) {
+          user(login: $login) {
+            projectV2(number: $number) {
+              id
+              number
+              title
+              shortDescription
+              readme
+              url
+              public
+              closed
+              createdAt
+              updatedAt
+              owner {
+                id
+                login
+              }
+            }
+          }
+        }
+      `;
+
+      if (getVerbose()) {
+        debug('🌐 GraphQL Query: Get Project v2 (User)');
+        debug('📋 Variables:', { login: owner, number });
+      }
+
+      result = await octokitInstance.graphql<{
+        user: {
+          projectV2: GitHubProjectV2 | null;
+        };
+      }>(userQuery, {
+        login: owner,
+        number,
+        headers: {
+          'X-Github-Next-Global-ID': '1'
+        }
+      });
+
+      project = result.user.projectV2;
     }
-
-    const result = await octokitInstance.graphql<{
-      repositoryOwner: {
-        projectV2: GitHubProjectV2 | null;
-      };
-    }>(query, {
-      login: owner,
-      number,
-      headers: {
-        'X-Github-Next-Global-ID': '1'
-      }
-    });
-
-    const project = result.repositoryOwner.projectV2;
     if (!project) {
       throw new Error(`Project #${number} not found for ${owner}`);
     }
