@@ -3,7 +3,7 @@ import { describe, it, expect } from 'vitest';
 import { ChatInterface } from './ChatInterface';
 import type { Message } from '../types';
 
-(process.env.CI === 'true' ? describe.skip : describe)('ChatInterface Basic Tests', () => {
+describe('ChatInterface Basic Tests', () => {
   const messages: Message[] = [];
   
   const mockProps = {

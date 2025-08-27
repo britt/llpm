@@ -35,7 +35,7 @@ jobs:
         ANTHROPIC_API_KEY: test-key-for-coverage
         GROQ_API_KEY: test-key-for-coverage
         GOOGLE_VERTEX_PROJECT_ID: test-project-for-coverage
-      run: bun test --coverage
+      run: bun run test:coverage
 
     - name: Generate coverage summary
       if: success()
@@ -45,7 +45,7 @@ jobs:
         echo "" >> coverage-summary.md
         
         # Capture the coverage output and strip ANSI color codes
-        bun test --coverage 2>&1 | sed 's/\x1b\[[0-9;]*m//g' > coverage_output.log
+        bun run test:coverage 2>&1 | sed 's/\x1b\[[0-9;]*m//g' > coverage_output.log
         
         # Extract test results
         TEST_COUNT=$(grep -o '[0-9]\+ passed' coverage_output.log | head -1 | grep -o '[0-9]\+')
