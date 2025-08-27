@@ -5,6 +5,10 @@ export default defineConfig({
     globals: true,
     environment: 'jsdom',
     setupFiles: ['./test/setup.ts'],
+    // Exclude performance tests in CI environments
+    exclude: process.env.CI === 'true' 
+      ? ['**/*.performance.test.*', '**/node_modules/**', '**/*.d.ts']
+      : ['**/node_modules/**', '**/*.d.ts'],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'html', 'json', 'lcov'],

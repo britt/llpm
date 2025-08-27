@@ -1,16 +1,16 @@
 import { useState, useEffect, memo, useMemo, useCallback } from 'react';
-import { Box, Text, useInput, type Key } from 'ink';
-import SelectInput from 'ink-select-input';
+import { Box, Text, useInput } from 'ink';
 import type { Message } from '../types';
 import {
   getCurrentProject,
-  listProjects,
   setCurrentProject as setCurrentProjectConfig
 } from '../utils/projectConfig';
 import type { Project } from '../types/project';
 import type { ModelSelectCommand, ModelConfig } from '../types/models';
 import { loadCurrentModel } from '../utils/modelStorage';
 import HybridInput from './HybridInput';
+import ProjectSelector from './ProjectSelector';
+import ModelSelector from './ModelSelector';
 
 interface ChatInterfaceProps {
   messages: Message[];
@@ -116,7 +116,7 @@ const MessageItem = memo(({ message }: { message: Message }) => {
           {speakerIndicator}
         </Text>
         <Box flexDirection="column" flexShrink={1}>
-          <Text color={messageColor} bold>
+          <Text color={messageColor}>
             {message.content}
           </Text>
         </Box>
@@ -134,104 +134,6 @@ function MessageList({ messages }: { messages: Message[] }) {
     </>
   );
 }
-
-const ModelSelector = memo(
-  ({
-    command,
-    onModelSelect,
-    onHide
-  }: {
-    command: ModelSelectCommand;
-    onModelSelect?: (modelValue: string) => void;
-    onHide: () => void;
-  }) => {
-    const models = command.models.map(model => ({
-      label: model.label,
-      value: model.value
-    }));
-
-    useInput((input: string, key: Key) => {
-      if (key.escape) {
-        onHide();
-      }
-    });
-
-    return (
-      <Box borderStyle="single" paddingX={1}>
-        <Box flexDirection="column">
-          <Text color="green" bold>
-            Select Model (ESC to cancel):
-          </Text>
-          <SelectInput
-            items={models}
-            onSelect={item => onModelSelect?.(item.value)}
-            onHighlight={() => {}}
-          />
-          <Box marginTop={1}>
-            <Text color="gray" dimColor>
-              💡 Only configured providers are shown. Use /model providers to see configuration
-              status.
-            </Text>
-          </Box>
-        </Box>
-      </Box>
-    );
-  }
-);
-
-const ProjectSelector = memo(
-  ({
-    onProjectSelect,
-    onHide
-  }: {
-    onProjectSelect: (projectValue: { label: string; value: string }) => void;
-    onHide: () => void;
-  }) => {
-    const [projects, setProjects] = useState([] as Project[]);
-    // Load available projects
-    listProjects()
-      .then(projects => {
-        setProjects(projects);
-      })
-      .catch(error => {
-        console.error('Failed to load projects:', error);
-        setProjects([]);
-      });
-
-    const items = projects.map(project => ({
-      label: project.name,
-      value: project.id
-    }));
-
-    // Add "Create New" option
-    items.unshift({
-      label: '(Create New Project)',
-      value: '__create_new__'
-    });
-
-    useInput((input: string, key: Key) => {
-      if (key.escape) {
-        onHide();
-      }
-    });
-
-    return (
-      <Box borderStyle="single" paddingX={1}>
-        <Box flexDirection="column">
-          <Text color="cyan" bold>
-            Select Project (ESC to cancel):
-          </Text>
-          <SelectInput items={items} onSelect={onProjectSelect} onHighlight={() => {}} />
-          <Box marginTop={1}>
-            <Text color="gray" dimColor>
-              💡 Create New: Use format "/project add {'<name> <owner/repo> <path> [description]'}"
-            </Text>
-          </Box>
-        </Box>
-      </Box>
-    );
-  }
-);
 
 export const ChatInterface = memo(function ChatInterface({
   messages,
@@ -340,19 +242,13 @@ To add a new project, complete the command with these parameters:
 
   // Global hotkey handling for input focus management
   useInput((inputChar, key) => {
-    // Only handle hotkeys when main input is focused
-    if (activeInput !== 'main') return;
-    
-    if (key.shift && key.tab) {
-      setShowProjectSelector(true);
-      setActiveInput('project');
+    // Cancel model selection and project selector
+    if (key.escape) {
+      onCancelModelSelection?.();
+      setShowProjectSelector(false);
+      setActiveInput('main');
     }
-    
-    if (key.meta && inputChar === 'm') {
-      onTriggerModelSelector?.();
-      setActiveInput('model');
-    }
-  }, { isActive: activeInput === 'main' });
+  }, { isActive: activeInput !== 'main' });
 
 
   // Update active input state when selectors show/hide
@@ -371,6 +267,8 @@ To add a new project, complete the command with these parameters:
       focus={activeInput === 'main'}
       placeholder="Type your message..."
       onSubmit={handleInputSubmit}
+      onShowModelSelector={() => {onTriggerModelSelector?.(); setActiveInput('model')}}
+      onShowProjectSelector={() => {setShowProjectSelector(true); setActiveInput('project')}}
     />
   );
   
@@ -378,10 +276,6 @@ To add a new project, complete the command with these parameters:
     inputComponent = (
       <ProjectSelector 
         onProjectSelect={handleProjectSelect} 
-        onHide={() => {
-          setShowProjectSelector(false);
-          setActiveInput('main');
-        }} 
       />
     );
   }
@@ -391,10 +285,6 @@ To add a new project, complete the command with these parameters:
       <ModelSelector 
         command={interactiveCommand} 
         onModelSelect={onModelSelect} 
-        onHide={() => {
-          onCancelModelSelection?.();
-          setActiveInput('main');
-        }} 
       />
     );
   }

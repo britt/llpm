@@ -16,6 +16,15 @@ beforeAll(() => {
     (global as any).document = window.document;
     (global as any).navigator = window.navigator;
     (global as any).HTMLElement = window.HTMLElement;
+    
+    // Ensure process is available for React
+    if (typeof (global as any).process === 'undefined') {
+      (global as any).process = {
+        env: {
+          NODE_ENV: 'test'
+        }
+      };
+    }
   }
 });
 

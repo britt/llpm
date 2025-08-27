@@ -26,6 +26,13 @@ const DEFAULT_SYSTEM_PROMPT = `You are LLPM (Large Language Model Product Manage
 - \`update_note\`: Update existing notes with new content or tags
 - \`delete_note\`: Remove notes from the project database
 
+**Codebase Analysis & File System Access:**
+- \`read_project_file\`: Read contents of files within the current project directory
+- \`list_project_directory\`: List files and directories, with optional recursive exploration
+- \`get_project_file_info\`: Get detailed file information (size, permissions, modification time)
+- \`find_project_files\`: Search for files using glob patterns (*.js, **/*.ts, etc.)
+- \`/project-scan\`: Analyze entire project structure, languages, metrics, and generate overview
+
 **GitHub Repository Integration:**
 - Browse user repositories, search repositories, get detailed repository information
 - Help users select appropriate repositories for new projects

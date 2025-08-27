@@ -29,6 +29,12 @@ import {
   getNoteTool,
   deleteNoteTool
 } from './notesTools';
+import {
+  readProjectFile,
+  listProjectDirectory,
+  getProjectFileInfo,
+  findProjectFiles
+} from './filesystemTools';
 
 const toolRegistry: ToolRegistry = {
   get_current_project: getCurrentProjectTool,
@@ -54,7 +60,11 @@ const toolRegistry: ToolRegistry = {
   search_notes: searchNotesTool,
   list_notes: listNotesTool,
   get_note: getNoteTool,
-  delete_note: deleteNoteTool
+  delete_note: deleteNoteTool,
+  read_project_file: readProjectFile,
+  list_project_directory: listProjectDirectory,
+  get_project_file_info: getProjectFileInfo,
+  find_project_files: findProjectFiles
 };
 
 export function getToolRegistry(): ToolRegistry {

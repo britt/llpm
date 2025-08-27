@@ -7,33 +7,44 @@ interface HybridInputProps {
   value?: string;
   placeholder?: string;
   onSubmit?: (value: string) => void;
-  onChange?: (value: string) => void;
   focus?: boolean;
   disabled?: boolean;
+  onShowModelSelector?: () => void;
+  onShowProjectSelector?: () => void;
+}
+
+interface InputState {
+  input: string;
+  cursor: number;
 }
 
 export default function HybridInput({
   value = '',
   placeholder = 'Type your message...',
   onSubmit,
-  onChange,
   focus = true,
-  disabled = false
+  disabled = false,
+  onShowModelSelector,
+  onShowProjectSelector
 }: HybridInputProps) {
-  const [displayInput, setDisplayInput] = useState(value);
-  const [displayCursor, setDisplayCursor] = useState(value.length);
+  const [inputState, setInputState] = useState<InputState>({
+    input: value,
+    cursor: value.length
+  });
   const [inputHistory, setInputHistory] = useState<string[]>([]);
   
   // Use refs to avoid re-renders during typing
-  const inputRef = useRef(value);
-  const cursorRef = useRef(value.length);
+  const inputStateRef = useRef(inputState);
   const historyIndexRef = useRef(-1);
 
-  const updateDisplay = useCallback(() => {
-    setDisplayInput(inputRef.current);
-    setDisplayCursor(cursorRef.current);
+  const updateInputState = useCallback((newInput: string, newCursor: number) => {
+    inputStateRef.current = {
+      input: newInput,
+      cursor: newCursor
+    };
+    setInputState(inputStateRef.current);
   }, []);
-
+  
   // Load input history on mount
   useEffect(() => {
     loadInputHistory().then(history => {
@@ -43,12 +54,14 @@ export default function HybridInput({
 
   // Sync external value changes
   useEffect(() => {
-    if (value !== inputRef.current) {
-      inputRef.current = value;
-      cursorRef.current = value.length;
-      updateDisplay();
+    if (value !== inputStateRef.current.input) {
+      inputStateRef.current = {
+        input: value,
+        cursor: value.length
+      };
+      setInputState(inputStateRef.current);
     }
-  }, [value, updateDisplay]);
+  }, [value]);
 
   const handleHistoryUp = useCallback(() => {
     if (inputHistory.length > 0) {
@@ -57,40 +70,45 @@ export default function HybridInput({
       debug('history up', newIndex, historyText);
       if (historyText) {
         historyIndexRef.current = newIndex;
-        inputRef.current = historyText;
-        cursorRef.current = historyText.length;
-        updateDisplay();
+        updateInputState(historyText, historyText.length);
       }
     }
-  }, [inputHistory, updateDisplay]);
+  }, [inputHistory]);
 
   const handleHistoryDown = useCallback(() => {
     if (historyIndexRef.current >= 0) {
       const newIndex = historyIndexRef.current - 1;
       if (newIndex < 0) {
         historyIndexRef.current = -1;
-        inputRef.current = '';
-        cursorRef.current = 0;
-        updateDisplay();
+        updateInputState('', 0);
       } else {
         const historyText = inputHistory[newIndex];
         debug('history down', newIndex, historyText);
         if (historyText) {
           historyIndexRef.current = newIndex;
-          inputRef.current = historyText;
-          cursorRef.current = historyText.length;
-          updateDisplay();
+          updateInputState(historyText, historyText.length);
         }
       }
     }
-  }, [inputHistory, updateDisplay]);
+  }, [inputHistory]);
 
   useInput((inputChar, key) => {
     if (!focus || disabled) return;
 
+    if (key.shift && key.tab) {
+      onShowProjectSelector?.();
+      return;
+    }
+
+    if (key.meta && inputChar === 'm') {
+      onShowModelSelector?.();
+      return;
+    }
+
     // Handle return key
     if (key.return) {
-      const currentInput = inputRef.current.trim();
+      debug('return', inputStateRef.current.input);
+      const currentInput = inputStateRef.current.input.trim();
       onSubmit?.(currentInput);
       
       // Add to history and save
@@ -107,23 +125,20 @@ export default function HybridInput({
       }
       
       // Reset input
-      inputRef.current = '';
-      cursorRef.current = 0;
+      updateInputState('', 0);
       historyIndexRef.current = -1;
-      updateDisplay();
       return;
     }
 
     // Handle backspace
-    if (key.backspace || key.delete) {
-      if (cursorRef.current > 0) {
-        const currentInput = inputRef.current;
-        const newInput =
-          currentInput.slice(0, cursorRef.current - 1) + currentInput.slice(cursorRef.current);
-        inputRef.current = newInput;
-        cursorRef.current = cursorRef.current - 1;
-        updateDisplay();
-        onChange?.(newInput);
+    // This works around a fucking bug in Ink useInput where it doesn't handle backspace correctly
+    // If they come in fast it treats them as characters and not as backspaces
+    if (key.backspace || key.delete || inputChar.charCodeAt(0) === 127) {
+      const deleteLength = Math.max(inputChar.lastIndexOf(String.fromCharCode(127)) + 1, 1);
+      if (inputStateRef.current.cursor > 0) {
+        const newCursor = inputStateRef.current.cursor - deleteLength;
+        const newInput = inputStateRef.current.input.slice(0, newCursor) + inputStateRef.current.input.slice(newCursor + deleteLength);
+        updateInputState(newInput, newCursor);
       }
       return;
     }
@@ -140,61 +155,71 @@ export default function HybridInput({
     }
 
     if (key.leftArrow) {
-      cursorRef.current = Math.max(0, cursorRef.current - 1);
-      updateDisplay();
+      debug('leftArrow', inputStateRef.current.cursor);
+      updateInputState(inputStateRef.current.input, Math.max(0, inputStateRef.current.cursor - 1));
       return;
     }
 
     if (key.rightArrow) {
-      cursorRef.current = Math.min(inputRef.current.length, cursorRef.current + 1);
-      updateDisplay();
+      debug('rightArrow', inputStateRef.current.cursor);
+      updateInputState(inputStateRef.current.input, Math.min(inputStateRef.current.input.length, inputStateRef.current.cursor + 1));
       return;
     }
 
     // Handle Ctrl combinations
     if (key.ctrl && inputChar === 'a') {
-      cursorRef.current = 0;
-      updateDisplay();
+      inputStateRef.current = {
+        input: inputStateRef.current.input,
+        cursor: 0
+      };
+      updateInputState(inputStateRef.current.input, 0);
       return;
     }
 
     if (key.ctrl && inputChar === 'e') {
-      cursorRef.current = inputRef.current.length;
-      updateDisplay();
+      inputStateRef.current = {
+        input: inputStateRef.current.input,
+        cursor: inputStateRef.current.input.length
+      };
+      updateInputState(inputStateRef.current.input, inputStateRef.current.input.length);
       return;
     }
 
     if (key.ctrl && inputChar === 'u') {
-      inputRef.current = '';
-      cursorRef.current = 0;
-      updateDisplay();
-      onChange?.('');
+      inputStateRef.current = {
+        input: '',
+        cursor: 0
+      };
+      updateInputState('', 0);
       return;
     }
 
     // Regular character input
-    if (inputChar && !key.ctrl && !key.meta) {
+    if (inputChar && !key.ctrl && !key.meta && !key.delete && !key.backspace) {
+      debug('regular input', inputChar.charCodeAt(0), `%%%${inputChar}%%%`, inputStateRef.current.cursor, key);
       // Check for pasted content (multiple characters at once)
       if (inputChar.length > 1) {
-        const currentInput = inputRef.current;
-        const cursor = cursorRef.current;
+        const currentInput = inputStateRef.current.input;
+        const cursor = inputStateRef.current.cursor;
         const newInput = currentInput.slice(0, cursor) + inputChar + currentInput.slice(cursor);
-        inputRef.current = newInput;
-        cursorRef.current = cursor + inputChar.length;
-        updateDisplay();
-        onChange?.(newInput);
+        inputStateRef.current = {
+          input: newInput,
+          cursor: cursor + inputChar.length
+        };
+        updateInputState(inputStateRef.current.input, inputStateRef.current.cursor);
         return;
       }
 
       // Single character input
       if (inputChar.length === 1) {
-        const currentInput = inputRef.current;
-        const cursor = cursorRef.current;
+        const currentInput = inputStateRef.current.input;
+        const cursor = 0 + inputStateRef.current.cursor;
         const newInput = currentInput.slice(0, cursor) + inputChar + currentInput.slice(cursor);
-        inputRef.current = newInput;
-        cursorRef.current = cursor + 1;
-        updateDisplay();
-        onChange?.(newInput);
+        inputStateRef.current = {
+          input: newInput,
+          cursor: cursor + 1
+        };
+        updateInputState(inputStateRef.current.input, inputStateRef.current.cursor);
         return;
       }
     }
@@ -206,13 +231,13 @@ export default function HybridInput({
         <Text color="cyan" bold>
           &gt;{' '}
         </Text>
-        {displayInput.length > 0 || displayCursor > 0 ? (
+        {inputStateRef.current.input.length > 0 || inputStateRef.current.cursor > 0 ? (
           <>
-            {displayInput.slice(0, displayCursor)}
+            {inputStateRef.current.input.slice(0, inputStateRef.current.cursor)}
             <Text backgroundColor="white" color="black">
-              {displayInput[displayCursor] || ' '}
+              {inputStateRef.current.input[inputStateRef.current.cursor] || ' '}
             </Text>
-            {displayInput.slice(displayCursor + 1)}
+            {inputStateRef.current.cursor +1 < inputStateRef.current.input.length && inputStateRef.current.input.slice(inputStateRef.current.cursor + 1)}
           </>
         ) : (
           <>
