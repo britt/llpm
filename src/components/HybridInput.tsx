@@ -134,7 +134,7 @@ export default function HybridInput({
     // This works around a fucking bug in Ink useInput where it doesn't handle backspace correctly
     // If they come in fast it treats them as characters and not as backspaces
     if (key.backspace || key.delete || inputChar.charCodeAt(0) === 127) {
-      const deleteLength = inputChar.lastIndexOf(String.fromCharCode(127)) + 1;
+      const deleteLength = Math.max(inputChar.lastIndexOf(String.fromCharCode(127)) + 1, 1);
       if (inputStateRef.current.cursor > 0) {
         const newCursor = inputStateRef.current.cursor - deleteLength;
         const newInput = inputStateRef.current.input.slice(0, newCursor) + inputStateRef.current.input.slice(newCursor + deleteLength);
