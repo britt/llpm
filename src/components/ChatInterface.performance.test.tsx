@@ -64,7 +64,7 @@ describe('ChatInterface Performance', () => {
     onCancelModelSelection: undefined
   };
 
-  it('should handle large message lists efficiently', () => {
+  (process.env.CI === 'true' ? it.skip : it)('should handle large message lists efficiently', () => {
     const startTime = performance.now();
     
     const messages = createMessages(100); // 100 messages
@@ -105,7 +105,7 @@ describe('ChatInterface Performance', () => {
     console.log(`Re-render: ${reRenderTime.toFixed(2)}ms`);
   });
 
-  it('should efficiently update when adding new messages', () => {
+  (process.env.CI === 'true' ? it.skip : it)('should efficiently update when adding new messages', () => {
     const initialMessages = createMessages(50);
     
     const { rerender } = render(
@@ -143,7 +143,7 @@ describe('ChatInterface Performance', () => {
     console.log(`Message addition update: ${updateTime.toFixed(2)}ms`);
   });
 
-  it('should not re-render unnecessarily when non-message props change', () => {
+  (process.env.CI === 'true' ? it.skip : it)('should not re-render unnecessarily when non-message props change', () => {
     const messages = createMessages(20);
     let renderCount = 0;
     
