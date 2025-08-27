@@ -10,6 +10,7 @@ import { debugCommand } from './debug';
 import { modelCommand } from './model';
 import { notesCommand } from './notes';
 import { projectScanCommand } from './project-scan';
+import { projectBoardCommand } from './project-board';
 import { debug } from '../utils/logger';
 
 const commandRegistry: CommandRegistry = {
@@ -23,7 +24,8 @@ const commandRegistry: CommandRegistry = {
   debug: debugCommand,
   model: modelCommand,
   notes: notesCommand,
-  'project-scan': projectScanCommand
+  'project-scan': projectScanCommand,
+  'project-board': projectBoardCommand
 };
 
 export function getCommandRegistry(): CommandRegistry {

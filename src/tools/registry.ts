@@ -35,6 +35,23 @@ import {
   getProjectFileInfo,
   findProjectFiles
 } from './filesystemTools';
+import {
+  listGitHubProjectsTool,
+  createGitHubProjectTool,
+  getGitHubProjectTool,
+  updateGitHubProjectTool,
+  deleteGitHubProjectTool,
+  listGitHubProjectColumnsTool,
+  createGitHubProjectColumnTool,
+  updateGitHubProjectColumnTool,
+  deleteGitHubProjectColumnTool,
+  moveGitHubProjectColumnTool,
+  listGitHubProjectCardsTool,
+  createGitHubProjectCardTool,
+  updateGitHubProjectCardTool,
+  deleteGitHubProjectCardTool,
+  moveGitHubProjectCardTool
+} from './githubProjectsTools';
 
 const toolRegistry: ToolRegistry = {
   get_current_project: getCurrentProjectTool,
@@ -64,7 +81,22 @@ const toolRegistry: ToolRegistry = {
   read_project_file: readProjectFile,
   list_project_directory: listProjectDirectory,
   get_project_file_info: getProjectFileInfo,
-  find_project_files: findProjectFiles
+  find_project_files: findProjectFiles,
+  list_github_projects: listGitHubProjectsTool,
+  create_github_project: createGitHubProjectTool,
+  get_github_project: getGitHubProjectTool,
+  update_github_project: updateGitHubProjectTool,
+  delete_github_project: deleteGitHubProjectTool,
+  list_github_project_columns: listGitHubProjectColumnsTool,
+  create_github_project_column: createGitHubProjectColumnTool,
+  update_github_project_column: updateGitHubProjectColumnTool,
+  delete_github_project_column: deleteGitHubProjectColumnTool,
+  move_github_project_column: moveGitHubProjectColumnTool,
+  list_github_project_cards: listGitHubProjectCardsTool,
+  create_github_project_card: createGitHubProjectCardTool,
+  update_github_project_card: updateGitHubProjectCardTool,
+  delete_github_project_card: deleteGitHubProjectCardTool,
+  move_github_project_card: moveGitHubProjectCardTool
 };
 
 export function getToolRegistry(): ToolRegistry {
