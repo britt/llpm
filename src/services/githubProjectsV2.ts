@@ -6,8 +6,6 @@ export interface GitHubProjectV2 {
   id: string;
   number: number;
   title: string;
-  shortDescription?: string | null;
-  readme?: string | null;
   url: string;
   public: boolean;
   closed: boolean;
@@ -15,7 +13,6 @@ export interface GitHubProjectV2 {
   updatedAt: string;
   owner: {
     id: string;
-    login: string;
   };
 }
 
@@ -190,8 +187,6 @@ export async function listProjectsV2(owner: string): Promise<GitHubProjectV2[]> 
                 id
                 number
                 title
-                shortDescription
-                readme
                 url
                 public
                 closed
@@ -199,7 +194,6 @@ export async function listProjectsV2(owner: string): Promise<GitHubProjectV2[]> 
                 updatedAt
                 owner {
                   id
-                  login
                 }
               }
             }
@@ -217,7 +211,7 @@ export async function listProjectsV2(owner: string): Promise<GitHubProjectV2[]> 
           projectsV2: {
             nodes: GitHubProjectV2[];
           };
-        };
+        } | null;
       }>(orgQuery, {
         login: owner,
         headers: {
@@ -225,8 +219,13 @@ export async function listProjectsV2(owner: string): Promise<GitHubProjectV2[]> 
         }
       });
 
-      projects = result.organization.projectsV2.nodes;
-      debug('Found organization projects:', projects.length);
+      // Check if organization exists (GraphQL returns null for not found, not an error)
+      if (result.organization && result.organization.projectsV2) {
+        projects = result.organization.projectsV2.nodes;
+        debug('Found organization projects:', projects.length);
+      } else {
+        throw new Error('Organization not found');
+      }
     } catch (orgError) {
       debug('Not an organization, trying as user:', orgError);
       
@@ -239,8 +238,6 @@ export async function listProjectsV2(owner: string): Promise<GitHubProjectV2[]> 
                 id
                 number
                 title
-                shortDescription
-                readme
                 url
                 public
                 closed
@@ -248,7 +245,6 @@ export async function listProjectsV2(owner: string): Promise<GitHubProjectV2[]> 
                 updatedAt
                 owner {
                   id
-                  login
                 }
               }
             }
@@ -297,8 +293,6 @@ export async function createProjectV2(
   owner: string,
   data: {
     title: string;
-    shortDescription?: string;
-    readme?: string;
   }
 ): Promise<GitHubProjectV2> {
   debug('Creating GitHub Project v2:', owner, data.title);
@@ -311,19 +305,15 @@ export async function createProjectV2(
     const ownerId = await getOwnerId(owner);
 
     const mutation = `
-      mutation($ownerId: ID!, $title: String!, $shortDescription: String, $readme: String) {
+      mutation($ownerId: ID!, $title: String!) {
         createProjectV2(input: {
           ownerId: $ownerId
           title: $title
-          shortDescription: $shortDescription
-          readme: $readme
         }) {
           projectV2 {
             id
             number
             title
-            shortDescription
-            readme
             url
             public
             closed
@@ -331,7 +321,6 @@ export async function createProjectV2(
             updatedAt
             owner {
               id
-              login
             }
           }
         }
@@ -350,8 +339,6 @@ export async function createProjectV2(
     }>(mutation, {
       ownerId,
       title: data.title,
-      shortDescription: data.shortDescription || null,
-      readme: data.readme || null,
       headers: {
         'X-Github-Next-Global-ID': '1'
       }
@@ -393,8 +380,6 @@ export async function getProjectV2(owner: string, number: number): Promise<GitHu
               id
               number
               title
-              shortDescription
-              readme
               url
               public
               closed
@@ -402,7 +387,6 @@ export async function getProjectV2(owner: string, number: number): Promise<GitHu
               updatedAt
               owner {
                 id
-                login
               }
             }
           }
@@ -438,8 +422,6 @@ export async function getProjectV2(owner: string, number: number): Promise<GitHu
               id
               number
               title
-              shortDescription
-              readme
               url
               public
               closed
@@ -447,7 +429,6 @@ export async function getProjectV2(owner: string, number: number): Promise<GitHu
               updatedAt
               owner {
                 id
-                login
               }
             }
           }
@@ -496,8 +477,6 @@ export async function updateProjectV2(
   projectId: string,
   updates: {
     title?: string;
-    shortDescription?: string;
-    readme?: string;
     public?: boolean;
     closed?: boolean;
   }
@@ -509,12 +488,10 @@ export async function updateProjectV2(
     const octokitInstance = getOctokit();
 
     const mutation = `
-      mutation($projectId: ID!, $title: String, $shortDescription: String, $readme: String, $public: Boolean, $closed: Boolean) {
+      mutation($projectId: ID!, $title: String, $public: Boolean, $closed: Boolean) {
         updateProjectV2(input: {
           projectId: $projectId
           title: $title
-          shortDescription: $shortDescription
-          readme: $readme
           public: $public
           closed: $closed
         }) {
@@ -522,8 +499,6 @@ export async function updateProjectV2(
             id
             number
             title
-            shortDescription
-            readme
             url
             public
             closed
@@ -531,7 +506,6 @@ export async function updateProjectV2(
             updatedAt
             owner {
               id
-              login
             }
           }
         }

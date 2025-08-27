@@ -111,7 +111,7 @@ async function handleListProjects(args: string[]): Promise<CommandResult> {
 
   const projectList = projects.map(project => {
     const status = project.closed ? '🔒 Closed' : (project.public ? '🌐 Public' : '🔒 Private');
-    return `• **${project.title}** (#${project.number}) - ${status}\n  ID: \`${project.id}\`\n  ${project.shortDescription || 'No description'}\n  🔗 ${project.url}`;
+    return `• **${project.title}** (#${project.number}) - ${status}\n  ID: \`${project.id}\`\n  🔗 ${project.url}`;
   }).join('\n\n');
 
   return {
@@ -130,9 +130,8 @@ async function handleCreateProject(args: string[]): Promise<CommandResult> {
 
   const owner = args[0];
   const title = args[1];
-  const shortDescription = args.slice(2).join(' ') || undefined;
 
-  const project = await createProjectV2(owner, { title, shortDescription });
+  const project = await createProjectV2(owner, { title });
 
   const status = project.public ? '🌐 Public' : '🔒 Private';
   return {
@@ -163,7 +162,7 @@ async function handleGetProject(args: string[]): Promise<CommandResult> {
   const status = project.closed ? '🔒 Closed' : (project.public ? '🌐 Public' : '🔒 Private');
   return {
     success: true,
-    content: `**${project.title}** (#${project.number}) - ${status}\nID: \`${project.id}\`\nOwner: ${project.owner.login}\nDescription: ${project.shortDescription || 'None'}\nCreated: ${new Date(project.createdAt).toLocaleDateString()}\nUpdated: ${new Date(project.updatedAt).toLocaleDateString()}\n🔗 ${project.url}`
+    content: `**${project.title}** (#${project.number}) - ${status}\nID: \`${project.id}\`\nCreated: ${new Date(project.createdAt).toLocaleDateString()}\nUpdated: ${new Date(project.updatedAt).toLocaleDateString()}\n🔗 ${project.url}`
   };
 }
 
@@ -182,7 +181,8 @@ async function handleUpdateProject(args: string[]): Promise<CommandResult> {
     if (arg.startsWith('--title=')) {
       updates.title = arg.split('=')[1].replace(/"/g, '');
     } else if (arg.startsWith('--description=')) {
-      updates.shortDescription = arg.split('=')[1].replace(/"/g, '');
+      // Description updates not supported in Projects v2
+      continue;
     } else if (arg.startsWith('--public=')) {
       const value = arg.split('=')[1];
       updates.public = value === 'true';

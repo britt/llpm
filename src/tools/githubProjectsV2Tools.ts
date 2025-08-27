@@ -32,7 +32,6 @@ export const listGitHubProjectsV2Tool = tool({
           id: project.id,
           number: project.number,
           title: project.title,
-          shortDescription: project.shortDescription,
           url: project.url,
           public: project.public,
           closed: project.closed,
@@ -55,15 +54,13 @@ export const createGitHubProjectV2Tool = tool({
   description: 'Create a new GitHub Project v2',
   inputSchema: z.object({
     owner: z.string().describe('Username or organization name'),
-    title: z.string().describe('Project title'),
-    shortDescription: z.string().optional().describe('Short project description'),
-    readme: z.string().optional().describe('Project README content')
+    title: z.string().describe('Project title')
   }),
-  execute: async ({ owner, title, shortDescription, readme }) => {
-    debug('Executing create_github_project_v2 tool with params:', { owner, title, shortDescription, readme });
+  execute: async ({ owner, title }) => {
+    debug('Executing create_github_project_v2 tool with params:', { owner, title });
 
     try {
-      const project = await createProjectV2(owner, { title, shortDescription, readme });
+      const project = await createProjectV2(owner, { title });
 
       return {
         success: true,
@@ -71,7 +68,6 @@ export const createGitHubProjectV2Tool = tool({
           id: project.id,
           number: project.number,
           title: project.title,
-          shortDescription: project.shortDescription,
           url: project.url,
           public: project.public,
           closed: project.closed,
@@ -107,8 +103,6 @@ export const getGitHubProjectV2Tool = tool({
           id: project.id,
           number: project.number,
           title: project.title,
-          shortDescription: project.shortDescription,
-          readme: project.readme,
           url: project.url,
           public: project.public,
           closed: project.closed,
@@ -131,19 +125,15 @@ export const updateGitHubProjectV2Tool = tool({
   inputSchema: z.object({
     projectId: z.string().describe('Project ID'),
     title: z.string().optional().describe('New project title'),
-    shortDescription: z.string().optional().describe('New short description'),
-    readme: z.string().optional().describe('New README content'),
     public: z.boolean().optional().describe('Make project public or private'),
     closed: z.boolean().optional().describe('Close or open the project')
   }),
-  execute: async ({ projectId, title, shortDescription, readme, public: isPublic, closed }) => {
-    debug('Executing update_github_project_v2 tool with params:', { projectId, title, shortDescription, readme, public: isPublic, closed });
+  execute: async ({ projectId, title, public: isPublic, closed }) => {
+    debug('Executing update_github_project_v2 tool with params:', { projectId, title, public: isPublic, closed });
 
     try {
       const project = await updateProjectV2(projectId, { 
         title, 
-        shortDescription, 
-        readme,
         public: isPublic,
         closed
       });
@@ -154,8 +144,6 @@ export const updateGitHubProjectV2Tool = tool({
           id: project.id,
           number: project.number,
           title: project.title,
-          shortDescription: project.shortDescription,
-          readme: project.readme,
           url: project.url,
           public: project.public,
           closed: project.closed,
@@ -373,8 +361,8 @@ export const getGitHubIssueNodeIdTool = tool({
             stdio: ['ignore', 'pipe', 'ignore']
           });
           token = rawToken.trim();
-        } catch (error) {
-          throw new Error('GitHub token not found');
+        } catch (error: any) {
+          throw new Error('GitHub token not found', error);
         }
       }
 
