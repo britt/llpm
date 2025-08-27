@@ -35,6 +35,19 @@ import {
   getProjectFileInfo,
   findProjectFiles
 } from './filesystemTools';
+import {
+  listGitHubProjectsV2Tool,
+  createGitHubProjectV2Tool,
+  getGitHubProjectV2Tool,
+  updateGitHubProjectV2Tool,
+  deleteGitHubProjectV2Tool,
+  listGitHubProjectV2ItemsTool,
+  addGitHubProjectV2ItemTool,
+  removeGitHubProjectV2ItemTool,
+  listGitHubProjectV2FieldsTool,
+  getGitHubOwnerIdTool,
+  getGitHubIssueNodeIdTool
+} from './githubProjectsTools';
 
 const toolRegistry: ToolRegistry = {
   get_current_project: getCurrentProjectTool,
@@ -64,7 +77,19 @@ const toolRegistry: ToolRegistry = {
   read_project_file: readProjectFile,
   list_project_directory: listProjectDirectory,
   get_project_file_info: getProjectFileInfo,
-  find_project_files: findProjectFiles
+  find_project_files: findProjectFiles,
+  // GitHub Projects (new Projects experience)
+  list_github_projects: listGitHubProjectsV2Tool,
+  create_github_project: createGitHubProjectV2Tool,
+  get_github_project: getGitHubProjectV2Tool,
+  update_github_project: updateGitHubProjectV2Tool,
+  delete_github_project: deleteGitHubProjectV2Tool,
+  list_github_project_items: listGitHubProjectV2ItemsTool,
+  add_github_project_item: addGitHubProjectV2ItemTool,
+  remove_github_project_item: removeGitHubProjectV2ItemTool,
+  list_github_project_fields: listGitHubProjectV2FieldsTool,
+  get_github_owner_id: getGitHubOwnerIdTool,
+  get_github_issue_node_id: getGitHubIssueNodeIdTool
 };
 
 export function getToolRegistry(): ToolRegistry {

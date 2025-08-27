@@ -196,7 +196,6 @@ export default function HybridInput({
 
     // Regular character input
     if (inputChar && !key.ctrl && !key.meta && !key.delete && !key.backspace) {
-      debug('regular input', inputChar.charCodeAt(0), `%%%${inputChar}%%%`, inputStateRef.current.cursor, key);
       // Check for pasted content (multiple characters at once)
       if (inputChar.length > 1) {
         const currentInput = inputStateRef.current.input;

@@ -217,6 +217,21 @@ GOOGLE_VERTEX_REGION=us-central1  # optional
 - Create repositories: `gh repo create` command
 - Environment variable: `GITHUB_TOKEN` for authentication
 
+#### GitHub Projects v2 (Recommended)
+- **New Projects Experience**: Uses GraphQL API exclusively - no REST endpoints available
+- **Authentication**: Requires `GITHUB_TOKEN` with `project` scope (`gh auth login --scopes "project"`)
+- **Commands**: Use `/project-board` command for new Projects v2 management
+- **API Structure**: Projects → Items (issues/PRs/drafts) with custom Fields and Views
+- **Node IDs**: Uses GraphQL Global Node IDs (e.g., `gid://Project/123`) instead of numeric IDs
+- **Features**: More flexible than Classic with custom fields, multiple views, better integration
+
+#### GitHub Projects Classic (Deprecated)
+- **Legacy API**: GitHub is deprecating Projects Classic in favor of Projects v2
+- **REST API**: Due to API deprecation, newer Octokit versions don't include Projects endpoints
+- **Implementation**: We use `octokit.request()` for direct API calls to deprecated endpoints
+- **Commands**: `/project-board` command marked as deprecated
+- **Migration**: Users should migrate to Projects v2 (`/project-board`)
+
 ### TypeScript Best Practices
 
 - **Always use `import type` for type-only imports**: Use `import type { MyType } from './types'` instead of `import { MyType } from './types'` when importing interfaces, types, or other TypeScript-only constructs
@@ -303,11 +318,39 @@ const myTool = tool({
   debug('API response received:', response.data);
   ```
 
+### Version Management (Semantic Versioning)
+
+This project follows semantic versioning (MAJOR.MINOR.PATCH):
+
+**Version Bump Rules:**
+- **PATCH (0.0.x)**: Bug fixes, documentation updates, small improvements, test fixes
+- **MINOR (0.x.0)**: New features, new commands, new tools, API additions that maintain backward compatibility
+- **MAJOR (x.0.0)**: Breaking changes, API removals, significant architecture changes
+
+**When to Bump:**
+- **Always bump MINOR** for new features like:
+  - New slash commands (e.g., `/project-board`)
+  - New AI tools for LLM integration
+  - New service integrations (GitHub, APIs)
+  - New CLI functionality
+- **Always bump PATCH** for:
+  - Bug fixes and error handling
+  - Test fixes and CI improvements
+  - Documentation updates
+  - Performance improvements
+- **Consider MAJOR** for:
+  - Breaking command interfaces
+  - Removing features/commands
+  - Major refactoring that affects user workflows
+
+**Example**: Adding GitHub Projects integration with `/project-board` command and 15 new AI tools = MINOR version bump
+
 ### Development Workflow
 
 - Always run lint/typecheck commands if available before committing
 - Use TodoWrite tool for complex multi-step tasks to track progress
 - Mark todos as completed immediately after finishing tasks
 - **Commit changes regularly**: After completing 2-3 related tasks or making significant progress, commit changes to maintain good version history
+- **Bump version appropriately**: Use semantic versioning rules above to determine version bumps
 - Commit with descriptive messages including Claude Code attribution
 - Push to GitHub repository after commits to keep remote updated
