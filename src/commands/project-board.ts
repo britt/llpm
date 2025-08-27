@@ -18,12 +18,16 @@ import {
 
 export const projectBoardCommand: Command = {
   name: 'project-board',
-  description: 'Manage GitHub Projects boards (Classic)',
+  description: '⚠️  [DEPRECATED] Manage GitHub Projects Classic (use /project-board-v2 for new Projects)',
   execute: async (args: string[]): Promise<CommandResult> => {
     if (args.length === 0) {
       return {
         success: false,
-        content: `Usage: /project-board <subcommand> [options]
+        content: `⚠️  **DEPRECATED COMMAND** ⚠️
+This command uses GitHub Projects Classic, which is being deprecated by GitHub.
+Use /project-board-v2 for the new GitHub Projects v2 experience.
+
+Usage: /project-board <subcommand> [options]
 
 Subcommands:
   list <owner> [repo]                    - List projects for repository or organization
