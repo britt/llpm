@@ -628,39 +628,78 @@ export async function listProjectV2Items(projectId: string): Promise<GitHubProje
                 }
                 createdAt
                 updatedAt
-                fieldValues(first: 20) {
+                                fieldValues(first: 20) {
                   nodes {
-                    ... on ProjectV2ItemFieldTextValue {
-                      field {
-                        id
-                        name
-                      }
-                      text
+                                    ... on ProjectV2ItemFieldTextValue {
+                  field {
+                    ... on ProjectV2Field {
+                      id
+                      name
                     }
-                    ... on ProjectV2ItemFieldNumberValue {
-                      field {
-                        id
-                        name
-                      }
-                      number
+                    ... on ProjectV2SingleSelectField {
+                      id
+                      name
                     }
-                    ... on ProjectV2ItemFieldDateValue {
-                      field {
-                        id
-                        name
-                      }
-                      date
-                    }
-                    ... on ProjectV2ItemFieldSingleSelectValue {
-                      field {
-                        id
-                        name
-                      }
+                    ... on ProjectV2IterationField {
+                      id
                       name
                     }
                   }
+                  text
                 }
-              }
+                                          ... on ProjectV2ItemFieldNumberValue {
+                        field {
+                          ... on ProjectV2Field {
+                            id
+                            name
+                          }
+                          ... on ProjectV2SingleSelectField {
+                            id
+                            name
+                          }
+                          ... on ProjectV2IterationField {
+                            id
+                            name
+                          }
+                        }
+                        number
+                      }
+                                          ... on ProjectV2ItemFieldDateValue {
+                        field {
+                          ... on ProjectV2Field {
+                            id
+                            name
+                          }
+                          ... on ProjectV2SingleSelectField {
+                            id
+                            name
+                          }
+                          ... on ProjectV2IterationField {
+                            id
+                            name
+                          }
+                        }
+                        date
+                      }
+                                          ... on ProjectV2ItemFieldSingleSelectValue {
+                        field {
+                          ... on ProjectV2Field {
+                            id
+                            name
+                          }
+                          ... on ProjectV2SingleSelectField {
+                            id
+                            name
+                          }
+                          ... on ProjectV2IterationField {
+                            id
+                            name
+                          }
+                        }
+                        name
+                      }
+                  }
+                }
             }
           }
         }
@@ -745,29 +784,69 @@ export async function addProjectV2Item(
               nodes {
                 ... on ProjectV2ItemFieldTextValue {
                   field {
-                    id
-                    name
+                    ... on ProjectV2Field {
+                      id
+                      name
+                    }
+                    ... on ProjectV2SingleSelectField {
+                      id
+                      name
+                    }
+                    ... on ProjectV2IterationField {
+                      id
+                      name
+                    }
                   }
                   text
                 }
                 ... on ProjectV2ItemFieldNumberValue {
                   field {
-                    id
-                    name
+                    ... on ProjectV2Field {
+                      id
+                      name
+                    }
+                    ... on ProjectV2SingleSelectField {
+                      id
+                      name
+                    }
+                    ... on ProjectV2IterationField {
+                      id
+                      name
+                    }
                   }
                   number
                 }
                 ... on ProjectV2ItemFieldDateValue {
                   field {
-                    id
-                    name
+                    ... on ProjectV2Field {
+                      id
+                      name
+                    }
+                    ... on ProjectV2SingleSelectField {
+                      id
+                      name
+                    }
+                    ... on ProjectV2IterationField {
+                      id
+                      name
+                    }
                   }
                   date
                 }
                 ... on ProjectV2ItemFieldSingleSelectValue {
                   field {
-                    id
-                    name
+                    ... on ProjectV2Field {
+                      id
+                      name
+                    }
+                    ... on ProjectV2SingleSelectField {
+                      id
+                      name
+                    }
+                    ... on ProjectV2IterationField {
+                      id
+                      name
+                    }
                   }
                   name
                 }
@@ -890,6 +969,7 @@ export async function listProjectV2Fields(projectId: string): Promise<GitHubProj
                   name
                   dataType
                 }
+
               }
             }
           }
