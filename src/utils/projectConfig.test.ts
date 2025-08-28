@@ -1,15 +1,45 @@
 import '../../test/setup';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import type { ProjectConfig, Project } from '../types/project';
+
+// Mock modules before importing the functions
+vi.mock('fs', () => ({
+  default: {
+    existsSync: vi.fn()
+  },
+  existsSync: vi.fn()
+}));
+
+vi.mock('fs/promises', () => ({
+  default: {
+    readFile: vi.fn(),
+    writeFile: vi.fn()
+  },
+  readFile: vi.fn(),
+  writeFile: vi.fn()
+}));
+
+vi.mock('./config', () => ({
+  default: {
+    getConfigFilePath: vi.fn(),
+    ensureConfigDir: vi.fn()
+  },
+  getConfigFilePath: vi.fn(),
+  ensureConfigDir: vi.fn()
+}));
+
+vi.mock('./logger', () => ({
+  default: {
+    debug: vi.fn()
+  },
+  debug: vi.fn()
+}));
+
 import {
   setProjectBoard,
   removeProjectBoard,
   getProjectBoard
 } from './projectConfig';
-import * as fs from 'fs';
-import * as fsPromises from 'fs/promises';
-import * as config from './config';
-import * as logger from './logger';
 
 describe('Project Board Configuration', () => {
   const mockProject: Project = {
@@ -30,16 +60,21 @@ describe('Project Board Configuration', () => {
     currentProject: 'test-project-123'
   };
 
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks();
     
-    // Mock file system operations
-    vi.spyOn(fs, 'existsSync').mockReturnValue(true);
-    vi.spyOn(fsPromises, 'readFile').mockResolvedValue(JSON.stringify(mockConfig));
-    vi.spyOn(fsPromises, 'writeFile').mockResolvedValue(undefined);
-    vi.spyOn(config, 'getConfigFilePath').mockReturnValue('/mock/config.json');
-    vi.spyOn(config, 'ensureConfigDir').mockResolvedValue(undefined);
-    vi.spyOn(logger, 'debug').mockReturnValue(undefined);
+    // Setup mocks using mocked modules
+    const fs = await import('fs');
+    const fsPromises = await import('fs/promises');
+    const config = await import('./config');
+    const logger = await import('./logger');
+    
+    vi.mocked(fs.existsSync).mockReturnValue(true);
+    vi.mocked(fsPromises.readFile).mockResolvedValue(JSON.stringify(mockConfig));
+    vi.mocked(fsPromises.writeFile).mockResolvedValue(undefined);
+    vi.mocked(config.getConfigFilePath).mockReturnValue('/mock/config.json');
+    vi.mocked(config.ensureConfigDir).mockResolvedValue(undefined);
+    vi.mocked(logger.debug).mockReturnValue(undefined);
   });
 
   describe('setProjectBoard', () => {
@@ -57,6 +92,7 @@ describe('Project Board Configuration', () => {
       });
 
       // Verify saveProjectConfig was called
+      const fsPromises = await import('fs/promises');
       expect(fsPromises.writeFile).toHaveBeenCalled();
     });
 
@@ -94,7 +130,8 @@ describe('Project Board Configuration', () => {
         currentProject: 'test-project-123'
       };
 
-      vi.spyOn(fsPromises, 'readFile').mockResolvedValue(JSON.stringify(configWithBoard));
+      const fsPromises = await import('fs/promises');
+      vi.mocked(fsPromises.readFile).mockResolvedValue(JSON.stringify(configWithBoard));
 
       const result = await removeProjectBoard('test-project-123');
 
@@ -128,7 +165,8 @@ describe('Project Board Configuration', () => {
         currentProject: 'test-project-123'
       };
 
-      vi.spyOn(fsPromises, 'readFile').mockResolvedValue(JSON.stringify(configWithBoard));
+      const fsPromises = await import('fs/promises');
+      vi.mocked(fsPromises.readFile).mockResolvedValue(JSON.stringify(configWithBoard));
 
       const result = await getProjectBoard('test-project-123');
 
@@ -160,7 +198,8 @@ describe('Project Board Configuration', () => {
         currentProject: 'test-project-123'
       };
 
-      vi.spyOn(fsPromises, 'readFile').mockResolvedValue(JSON.stringify(configWithoutBoard));
+      const fsPromises = await import('fs/promises');
+      vi.mocked(fsPromises.readFile).mockResolvedValue(JSON.stringify(configWithoutBoard));
 
       const result = await getProjectBoard('test-project-123');
       expect(result).toBeNull();
