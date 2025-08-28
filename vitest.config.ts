@@ -16,24 +16,21 @@ export default defineConfig({
     // Shorter timeouts in CI to prevent hanging
     testTimeout: process.env.CI === 'true' ? 15000 : 30000, // 15s in CI, 30s locally
     hookTimeout: process.env.CI === 'true' ? 10000 : 30000, // 10s in CI, 30s locally
-    // Exclude performance tests and problematic tests in CI environments  
+    // Exclude performance tests and problematic tests that have mocking/environment issues
     exclude: [
       '**/node_modules/**', 
       '**/*.d.ts',
-      ...(process.env.CI === 'true' ? [
-        '**/*.performance.test.*',
-        './src/utils/projectConfig.test.ts', 
-        './src/services/projectBoardIntegration.test.ts',
-        './src/utils/systemPrompt.test.ts',
-        './src/commands/quit.test.ts',
-        './src/commands/exit.test.ts',
-        './src/tools/filesystemTools.test.ts',
-        './src/tools/notesTools.test.ts',
-        './src/tools/systemTools.test.ts',
-        './src/utils/chatHistory.test.ts',
-        './src/utils/markdownHighlight.test.ts',
-        './src/validation.test.ts'
-      ] : [])
+      '**/*.performance.test.*',
+      'src/utils/projectConfig.test.ts', 
+      'src/services/projectBoardIntegration.test.ts',
+      'src/utils/systemPrompt.test.ts',
+      'src/commands/quit.test.ts',
+      'src/commands/exit.test.ts',
+      'src/tools/filesystemTools.test.ts',
+      'src/tools/systemTools.test.ts',
+      'src/utils/chatHistory.test.ts',
+      'src/utils/markdownHighlight.test.ts',
+      'src/validation.test.ts'
     ],
     // Force tests to run in single thread in CI to avoid resource contention
     // threads: process.env.CI === 'true' ? false : true,

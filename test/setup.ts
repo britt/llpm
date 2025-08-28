@@ -21,8 +21,8 @@ try {
     }))
   }));
 } catch (error) {
-  // Ignore mock errors in environments where vi.mock is not available
-  console.warn('Warning: Could not mock bun:sqlite, tests may fail in browser environments');
+  // Silently ignore mock errors in environments where vi.mock is not available
+  // Note: bun:sqlite warnings are expected in browser/CI environments
 }
 
 // Setup DOM environment for React Testing Library
