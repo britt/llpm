@@ -5,6 +5,7 @@ import type { Message } from '../types';
 import { getConfigDir, ensureConfigDir } from './config';
 import { getCurrentProject } from './projectConfig';
 import { debug } from './logger';
+import { DEFAULT_HISTORY_SIZE } from '../constants';
 
 // Use a delimiter that's unlikely to appear in message content
 const MESSAGE_DELIMITER = '\n---MESSAGE---\n';
@@ -73,7 +74,7 @@ export async function loadChatHistory(): Promise<Message[]> {
     // If no current session, get the most recent one
     if (history.length > 0) {
       debug('Loaded', history.length, 'messages from history');
-      return history.slice(-50);
+      return history.slice(-1*DEFAULT_HISTORY_SIZE);
     }
 
     return [];

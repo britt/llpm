@@ -6,10 +6,15 @@ import { parseCommand, executeCommand } from '../commands/registry';
 import { loadChatHistory, saveChatHistory } from '../utils/chatHistory';
 import { getCurrentProject } from '../utils/projectConfig';
 import type { ModelSelectCommand } from '../types/models';
+import { DEFAULT_HISTORY_SIZE } from '../constants';
 
-interface QueuedMessage {
+export interface QueuedMessage {
   content: string;
   timestamp: number;
+}
+
+function trimMessages(messages: Message[]): Message[] {
+  return messages.slice(-1*DEFAULT_HISTORY_SIZE);
 }
 
 export function useChat() {
@@ -66,7 +71,7 @@ export function useChat() {
           debug('No saved history found, using welcome message');
         } else {
           // Load saved history and ensure all messages have unique IDs
-          setMessages(savedMessages);
+          setMessages(trimMessages(savedMessages));
           debug('Loaded', savedMessages.length, 'messages from history');
         }
       } catch (error) {
@@ -139,7 +144,7 @@ export function useChat() {
               role: 'ui-notification',
               content: result.content,
             };
-            setMessages(prev => [...prev, responseMessage]);
+            setMessages(prev => trimMessages([...prev, responseMessage]));
             debug('Added command response to state');
           }
         } catch (error) {
@@ -158,7 +163,7 @@ export function useChat() {
             role: 'ui-notification',
             content: errorContent,
           };
-          setMessages(prev => [...prev, errorMessage]);
+          setMessages(prev => trimMessages([...prev, errorMessage]));
         } finally {
           setIsLoading(false);
         }
@@ -169,7 +174,7 @@ export function useChat() {
       const userMessage: Message = { role: 'user', content };
 
       debug('Adding user message to state');
-      setMessages(prev => [...prev, userMessage]);
+      setMessages(prev => trimMessages([...prev, userMessage]));
       setIsLoading(true);
       debug('Set loading state to true');
 
@@ -191,7 +196,7 @@ export function useChat() {
           role: 'assistant',
           content: responseContent,
         };
-        setMessages(prev => [...prev, assistantMessage]);
+        setMessages(prev => trimMessages([...prev, assistantMessage]));
         debug('Added assistant response to state');
       } catch (error) {
         debug('Error in processMessageImmediate:', error);
@@ -209,7 +214,7 @@ export function useChat() {
           role: 'assistant',
           content: errorContent,
         };
-        setMessages(prev => [...prev, errorMessage]);
+        setMessages(prev => trimMessages([...prev, errorMessage]));
         debug('Added error message to state');
       } finally {
         setIsLoading(false);
@@ -296,7 +301,7 @@ export function useChat() {
       role: 'ui-notification',
       content,
     };
-    setMessages(prev => [...prev, notification]);
+    setMessages(prev => trimMessages([...prev, notification]));
     debug('Added system message');
   }, []);
 
@@ -312,7 +317,7 @@ export function useChat() {
         role: 'ui-notification',
         content: result.content,
       };
-      setMessages(prev => [...prev, responseMessage]);
+      setMessages(prev => trimMessages([...prev, responseMessage]));
       debug('Model switch completed');
     } catch (error) {
       debug('Error switching model:', error);
@@ -321,7 +326,7 @@ export function useChat() {
         role: 'ui-notification',
         content: '❌ Failed to switch model. Please try again.',
       };
-      setMessages(prev => [...prev, errorMessage]);
+      setMessages(prev => trimMessages([...prev, errorMessage]));
     } finally {
       setIsLoading(false);
     }
@@ -352,7 +357,7 @@ export function useChat() {
           role: 'ui-notification',
           content: result.content,
         };
-        setMessages(prev => [...prev, responseMessage]);
+        setMessages(prev => trimMessages([...prev, responseMessage]));
       }
     } catch (error) {
       debug('Error triggering model selector:', error);
@@ -361,7 +366,7 @@ export function useChat() {
         role: 'ui-notification',
         content: '❌ Failed to open model selector. Please try again.',
       };
-      setMessages(prev => [...prev, errorMessage]);
+      setMessages(prev => trimMessages([...prev, errorMessage]));
     } finally {
       setIsLoading(false);
     }
