@@ -6,7 +6,7 @@ export default defineConfig({
   },
   resolve: {
     alias: process.env.CI === 'true' ? {
-      'bun:sqlite': 'vitest/dist/mock.js'
+      'bun:sqlite': new URL('./test/mocks/bun-sqlite.js', import.meta.url).pathname
     } : {}
   },
   test: {
@@ -28,7 +28,11 @@ export default defineConfig({
         './src/commands/quit.test.ts',
         './src/commands/exit.test.ts',
         './src/tools/filesystemTools.test.ts',
-        './src/tools/notesTools.test.ts'
+        './src/tools/notesTools.test.ts',
+        './src/tools/systemTools.test.ts',
+        './src/utils/chatHistory.test.ts',
+        './src/utils/markdownHighlight.test.ts',
+        './src/validation.test.ts'
       ] : [])
     ],
     // Force tests to run in single thread in CI to avoid resource contention
