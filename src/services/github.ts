@@ -2,6 +2,7 @@ import { Octokit } from '@octokit/rest';
 import { debug, getVerbose } from '../utils/logger';
 import { execSync } from 'child_process';
 import { getUserReposViaGhCli, searchReposViaGhCli, getRepoViaGhCli } from './githubCli';
+import { credentialManager } from '../utils/credentialManager';
 
 export interface GitHubRepo {
   id: number;
@@ -65,11 +66,10 @@ export interface GitHubPullRequest {
 let octokit: Octokit | null = null;
 
 async function getGitHubToken(): Promise<string> {
-  // Try environment variables first
-  const envToken = process.env.GITHUB_TOKEN || process.env.GH_TOKEN;
-  if (envToken) {
-    debug('Using GitHub token from environment variable');
-    return envToken;
+  // Try credential manager (which checks env vars first, then config file)
+  const token = await credentialManager.getGitHubToken();
+  if (token) {
+    return token;
   }
 
   // Try to test if gh CLI works first
@@ -109,7 +109,7 @@ async function getGitHubToken(): Promise<string> {
   }
 
   throw new Error(
-    'GitHub token not found. Please either:\n1. Set GITHUB_TOKEN or GH_TOKEN environment variable\n2. Run `gh auth login` to authenticate with GitHub CLI\n3. Install GitHub CLI (gh) if not available'
+    'GitHub token not found. Please either:\n1. Set GITHUB_TOKEN or GH_TOKEN environment variable\n2. Store credentials in config file using credential commands\n3. Run `gh auth login` to authenticate with GitHub CLI\n4. Install GitHub CLI (gh) if not available'
   );
 }
 

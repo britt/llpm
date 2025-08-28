@@ -1,5 +1,6 @@
 import { tool } from 'ai';
 import { z } from 'zod';
+import { credentialManager } from '../utils/credentialManager';
 import { 
   listProjectsV2,
   createProjectV2,
@@ -350,9 +351,8 @@ export const getGitHubIssueNodeIdTool = tool({
       const { Octokit } = await import('@octokit/rest');
       const { execSync } = await import('child_process');
       
-      // Get token
-      const envToken = process.env.GITHUB_TOKEN || process.env.GH_TOKEN;
-      let token = envToken;
+      // Get token using credential manager
+      let token = await credentialManager.getGitHubToken();
       
       if (!token) {
         try {

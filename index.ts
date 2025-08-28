@@ -5,40 +5,45 @@ import { ChatInterface } from './src/components/ChatInterface';
 import { useChat } from './src/hooks/useChat';
 import { setVerbose, debug } from './src/utils/logger';
 import { ensureDefaultSystemPromptFile } from './src/utils/systemPrompt';
+import { credentialManager } from './src/utils/credentialManager';
 
-export function validateEnvironment() {
-  debug('Validating environment variables');
+export async function validateEnvironment() {
+  debug('Validating credentials (environment variables and profiles)');
   
-  const hasOpenAI = !!process.env.OPENAI_API_KEY;
-  const hasAnthropic = !!process.env.ANTHROPIC_API_KEY;
-  const hasGroq = !!process.env.GROQ_API_KEY;
-  const hasVertex = !!process.env.GOOGLE_VERTEX_PROJECT_ID;
+  const hasOpenAI = !!(await credentialManager.getOpenAIAPIKey());
+  const hasAnthropic = !!(await credentialManager.getAnthropicAPIKey());
+  const hasGroq = !!(await credentialManager.getGroqAPIKey());
+  const hasVertex = !!(await credentialManager.getGoogleVertexProjectId());
   
   if (!hasOpenAI && !hasAnthropic && !hasGroq && !hasVertex) {
-    debug('No AI provider API keys found in environment');
-    console.error('❌ Error: At least one AI provider API key is required');
+    const currentProfile = credentialManager.getCurrentProfileName();
+    debug('No AI provider credentials found');
+    console.error('❌ Error: At least one AI provider credential is required');
     console.error('');
-    console.error('Please configure at least one provider:');
+    console.error(`Currently active profile: ${currentProfile}`);
     console.error('');
-    console.error('OpenAI:');
+    console.error('🔧 Setup options:');
+    console.error('');
+    console.error('1. Environment Variables:');
     console.error('  OPENAI_API_KEY=your-key-here');
-    console.error('  Get key from: https://platform.openai.com/api-keys');
-    console.error('');
-    console.error('Anthropic:');
     console.error('  ANTHROPIC_API_KEY=your-key-here');
-    console.error('  Get key from: https://console.anthropic.com/');
-    console.error('');
-    console.error('Groq:');
     console.error('  GROQ_API_KEY=your-key-here');
-    console.error('  Get key from: https://console.groq.com/keys');
-    console.error('');
-    console.error('Google Vertex AI:');
     console.error('  GOOGLE_VERTEX_PROJECT_ID=your-project-id');
-    console.error('  GOOGLE_VERTEX_REGION=us-central1  # optional');
     console.error('');
-    console.error('Setup:');
-    console.error('1. Copy .env.example to .env: cp .env.example .env');
-    console.error('2. Edit .env and add your API key(s)');
+    console.error('2. Stored Credentials (persistent):');
+    console.error('  /credentials set openai apiKey your-key-here');
+    console.error('  /credentials set anthropic apiKey your-key-here');
+    console.error('  /credentials set groq apiKey your-key-here');
+    console.error('  /credentials set googleVertex projectId your-project-id');
+    console.error('');
+    console.error('3. Different Profile:');
+    console.error('  llpm --profile work');
+    console.error('  /credentials profile create work');
+    console.error('');
+    console.error('Get API keys from:');
+    console.error('• OpenAI: https://platform.openai.com/api-keys');
+    console.error('• Anthropic: https://console.anthropic.com/');
+    console.error('• Groq: https://console.groq.com/keys');
     process.exit(1);
   }
   
@@ -96,8 +101,16 @@ if (import.meta.main) {
       debug('Command line args:', args);
     }
 
+    // Parse profile flag
+    const profileFlagIndex = args.findIndex(arg => arg === '--profile' || arg === '-p');
+    if (profileFlagIndex !== -1 && profileFlagIndex + 1 < args.length) {
+      const profileName = args[profileFlagIndex + 1];
+      credentialManager.setProfileOverride(profileName);
+      debug(`Profile set to: ${profileName}`);
+    }
+
     debug('Starting LLPM CLI');
-    validateEnvironment();
+    await validateEnvironment();
 
     // Ensure default system prompt file exists
     try {

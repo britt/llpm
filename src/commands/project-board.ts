@@ -10,6 +10,7 @@ import {
   removeProjectV2Item,
   listProjectV2Fields
 } from '../services/githubProjects';
+import { getGitHubIssueNodeIdTool } from '../tools/githubProjectsTools';
 
 export const projectBoardCommand: Command = {
   name: 'project-board',
@@ -100,6 +101,12 @@ async function handleListProjects(args: string[]): Promise<CommandResult> {
   }
 
   const owner = args[0];
+  if (!owner) {
+    return {
+      success: false,
+      content: 'Usage: /board list <owner>'
+    };
+  }
   const projects = await listProjectsV2(owner);
 
   if (projects.length === 0) {
@@ -131,6 +138,13 @@ async function handleCreateProject(args: string[]): Promise<CommandResult> {
   const owner = args[0];
   const title = args[1];
 
+  if (!owner || !title) {
+    return {
+      success: false,
+      content: 'Usage: /board create <owner> <title>'
+    };
+  }
+
   const project = await createProjectV2(owner, { title });
 
   const status = project.public ? '🌐 Public' : '🔒 Private';
@@ -149,7 +163,13 @@ async function handleGetProject(args: string[]): Promise<CommandResult> {
   }
 
   const owner = args[0];
-  const number = parseInt(args[1]);
+  if (!owner) {
+    return {
+      success: false,
+      content: 'Usage: /board get <owner> <number>'
+    };
+  }
+  const number = parseInt(args[1] || '0');
   if (isNaN(number)) {
     return {
       success: false,
@@ -175,11 +195,17 @@ async function handleUpdateProject(args: string[]): Promise<CommandResult> {
   }
 
   const projectId = args[0];
+  if (!projectId) {
+    return {
+      success: false,
+      content: 'Usage: /board update <project_id> [--title="New Title"] [--description="New Description"] [--public=true/false] [--closed=true/false]'
+    };
+  }
   const updates: any = {};
   
   for (const arg of args.slice(1)) {
     if (arg.startsWith('--title=')) {
-      updates.title = arg.split('=')[1].replace(/"/g, '');
+      updates.title = arg.split('=')[1]?.replace(/"/g, '');
     } else if (arg.startsWith('--description=')) {
       // Description updates not supported in Projects v2
       continue;
@@ -217,6 +243,12 @@ async function handleDeleteProject(args: string[]): Promise<CommandResult> {
   }
 
   const projectId = args[0];
+  if (!projectId) {
+    return {
+      success: false,
+      content: 'Usage: /board delete <project_id>'
+    };
+  }
   await deleteProjectV2(projectId);
 
   return {
@@ -234,6 +266,12 @@ async function handleListItems(args: string[]): Promise<CommandResult> {
   }
 
   const projectId = args[0];
+  if (!projectId) {
+    return {
+      success: false,
+      content: 'Usage: /board items <project_id>'
+    };
+  }
   const items = await listProjectV2Items(projectId);
 
   if (items.length === 0) {
@@ -269,6 +307,12 @@ async function handleAddItem(args: string[]): Promise<CommandResult> {
   const projectId = args[0];
   const contentId = args[1];
 
+  if (!projectId || !contentId) {
+    return {
+      success: false,
+      content: 'Usage: /board add-item <project_id> <content_id>'
+    };
+  }
   const item = await addProjectV2Item(projectId, contentId);
 
   const typeIcon = item.type === 'ISSUE' ? '🐛' : item.type === 'PULL_REQUEST' ? '🔀' : '📝';
@@ -292,6 +336,12 @@ async function handleRemoveItem(args: string[]): Promise<CommandResult> {
   const projectId = args[0];
   const itemId = args[1];
 
+  if (!projectId || !itemId) {
+    return {
+      success: false,
+      content: 'Usage: /board remove-item <project_id> <item_id>'
+    };
+  }
   await removeProjectV2Item(projectId, itemId);
 
   return {
@@ -309,6 +359,12 @@ async function handleListFields(args: string[]): Promise<CommandResult> {
   }
 
   const projectId = args[0];
+  if (!projectId) {
+    return {
+      success: false,
+      content: 'Usage: /board fields <project_id>'
+    };
+  }
   const fields = await listProjectV2Fields(projectId);
 
   if (fields.length === 0) {
@@ -350,7 +406,7 @@ async function handleGetIssueId(args: string[]): Promise<CommandResult> {
 
   const owner = args[0];
   const repo = args[1];
-  const number = parseInt(args[2]);
+  const number = parseInt(args[2] || '0');
   if (isNaN(number)) {
     return {
       success: false,
@@ -359,15 +415,27 @@ async function handleGetIssueId(args: string[]): Promise<CommandResult> {
   }
 
   try {
-    // Import here to avoid circular dependency issues
-    const { getGitHubIssueNodeIdTool } = await import('../tools/githubProjectsTools');
-    
-    const result = await getGitHubIssueNodeIdTool.execute({
+    if (!getGitHubIssueNodeIdTool) {
+      return {
+        success: false,
+        content: 'GitHub issue tool not available'
+      };
+    }
+
+    const result = await (getGitHubIssueNodeIdTool as any).execute({
       owner,
       repo,
       number,
       type: 'issue'
     });
+
+    // Handle the union type - check if it's an AsyncIterable (streaming) or direct result
+    if (Symbol.asyncIterator in result) {
+      return {
+        success: false,
+        content: 'Tool returned streaming result, expected direct result'
+      };
+    }
 
     if (!result.success) {
       return {
@@ -398,7 +466,7 @@ async function handleGetPrId(args: string[]): Promise<CommandResult> {
 
   const owner = args[0];
   const repo = args[1];
-  const number = parseInt(args[2]);
+  const number = parseInt(args[2] || '0');
   if (isNaN(number)) {
     return {
       success: false,
@@ -406,16 +474,28 @@ async function handleGetPrId(args: string[]): Promise<CommandResult> {
     };
   }
 
-  try {
-    // Import here to avoid circular dependency issues
-    const { getGitHubIssueNodeIdTool } = await import('../tools/githubProjectsTools');
-    
-    const result = await getGitHubIssueNodeIdTool.execute({
+  try {    
+    if (!getGitHubIssueNodeIdTool) {
+      return {
+        success: false,
+        content: 'GitHub issue tool not available'
+      };
+    }
+
+    const result = await (getGitHubIssueNodeIdTool as any).execute({
       owner,
       repo,
       number,
       type: 'pullrequest'
     });
+
+    // Handle the union type - check if it's an AsyncIterable (streaming) or direct result
+    if (Symbol.asyncIterator in result) {
+      return {
+        success: false,
+        content: 'Tool returned streaming result, expected direct result'
+      };
+    }
 
     if (!result.success) {
       return {

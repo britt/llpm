@@ -7,6 +7,7 @@ import type { ModelProvider, ModelConfig, ModelProviderConfig, ModelState, DEFAU
 import { DEFAULT_MODELS as DEFAULT_MODEL_CONFIGS } from '../types/models';
 import { debug } from '../utils/logger';
 import { saveCurrentModel, loadCurrentModel } from '../utils/modelStorage';
+import { credentialManager } from '../utils/credentialManager';
 
 class ModelRegistry {
   private currentModel: ModelConfig;
@@ -17,24 +18,12 @@ class ModelRegistry {
     // Default to GPT-4.1 mini, but will be overridden by init()
     this.currentModel = DEFAULT_MODEL_CONFIGS.openai.find(m => m.modelId === 'gpt-4.1-mini')!;
     
+    // Provider configs will be populated during init() using credential manager
     this.providerConfigs = {
-      openai: {
-        provider: 'openai',
-        apiKey: process.env.OPENAI_API_KEY
-      },
-      anthropic: {
-        provider: 'anthropic',
-        apiKey: process.env.ANTHROPIC_API_KEY
-      },
-      groq: {
-        provider: 'groq',
-        apiKey: process.env.GROQ_API_KEY
-      },
-      'google-vertex': {
-        provider: 'google-vertex',
-        projectId: process.env.GOOGLE_VERTEX_PROJECT_ID,
-        region: process.env.GOOGLE_VERTEX_REGION || 'us-central1'
-      }
+      openai: { provider: 'openai' },
+      anthropic: { provider: 'anthropic' },
+      groq: { provider: 'groq' },
+      'google-vertex': { provider: 'google-vertex' }
     };
   }
 
@@ -42,6 +31,9 @@ class ModelRegistry {
     if (this.initialized) return;
     
     debug('Initializing model registry');
+    
+    // Load credentials using credential manager
+    await this.loadProviderCredentials();
     
     // Try to load stored model
     const storedModel = await loadCurrentModel();
@@ -160,6 +152,38 @@ class ModelRegistry {
     return (Object.keys(this.providerConfigs) as ModelProvider[]).filter(provider => 
       this.isProviderConfigured(provider)
     );
+  }
+
+  private async loadProviderCredentials(): Promise<void> {
+    debug('Loading provider credentials');
+
+    // Load OpenAI credentials
+    const openaiKey = await credentialManager.getOpenAIAPIKey();
+    if (openaiKey) {
+      this.providerConfigs.openai.apiKey = openaiKey;
+    }
+
+    // Load Anthropic credentials
+    const anthropicKey = await credentialManager.getAnthropicAPIKey();
+    if (anthropicKey) {
+      this.providerConfigs.anthropic.apiKey = anthropicKey;
+    }
+
+    // Load Groq credentials
+    const groqKey = await credentialManager.getGroqAPIKey();
+    if (groqKey) {
+      this.providerConfigs.groq.apiKey = groqKey;
+    }
+
+    // Load Google Vertex credentials
+    const vertexProjectId = await credentialManager.getGoogleVertexProjectId();
+    const vertexRegion = await credentialManager.getGoogleVertexRegion();
+    if (vertexProjectId) {
+      this.providerConfigs['google-vertex'].projectId = vertexProjectId;
+      this.providerConfigs['google-vertex'].region = vertexRegion;
+    }
+
+    debug('Provider credentials loaded');
   }
 }
 
