@@ -18,6 +18,7 @@ export interface GitHubRepo {
 
 export interface GitHubIssue {
   id: number;
+  node_id: string;
   number: number;
   title: string;
   body: string | null;

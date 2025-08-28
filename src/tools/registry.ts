@@ -48,6 +48,12 @@ import {
   getGitHubOwnerIdTool,
   getGitHubIssueNodeIdTool
 } from './githubProjectsTools';
+import {
+  setProjectBoardTool,
+  getProjectBoardInfoTool,
+  removeProjectBoardTool,
+  listAvailableProjectBoardsTool
+} from './projectConfigTools';
 
 const toolRegistry: ToolRegistry = {
   get_current_project: getCurrentProjectTool,
@@ -89,7 +95,12 @@ const toolRegistry: ToolRegistry = {
   remove_github_project_item: removeGitHubProjectV2ItemTool,
   list_github_project_fields: listGitHubProjectV2FieldsTool,
   get_github_owner_id: getGitHubOwnerIdTool,
-  get_github_issue_node_id: getGitHubIssueNodeIdTool
+  get_github_issue_node_id: getGitHubIssueNodeIdTool,
+  // Project Board Configuration
+  set_project_board: setProjectBoardTool,
+  get_project_board_info: getProjectBoardInfoTool,
+  remove_project_board: removeProjectBoardTool,
+  list_available_project_boards: listAvailableProjectBoardsTool
 };
 
 export function getToolRegistry(): ToolRegistry {

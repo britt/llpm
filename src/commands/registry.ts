@@ -25,7 +25,7 @@ const commandRegistry: CommandRegistry = {
   model: modelCommand,
   notes: notesCommand,
   'project-scan': projectScanCommand,
-  'project-board': projectBoardCommand
+  board: projectBoardCommand
 };
 
 export function getCommandRegistry(): CommandRegistry {

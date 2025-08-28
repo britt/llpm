@@ -5,6 +5,8 @@ export interface Project {
   repository: string;
   path: string;
   github_repo?: string;
+  projectBoardId?: string; // GitHub Project v2 ID (e.g., gid://Project/123)
+  projectBoardNumber?: number; // GitHub Project v2 number (e.g., 8)
   createdAt: string;
   updatedAt: string;
 }
