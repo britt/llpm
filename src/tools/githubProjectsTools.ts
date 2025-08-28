@@ -9,6 +9,7 @@ import {
   listProjectV2Items,
   addProjectV2Item,
   removeProjectV2Item,
+  updateProjectV2ItemFieldValue,
   listProjectV2Fields,
   getOwnerId
 } from '../services/githubProjects';
@@ -418,6 +419,46 @@ export const getGitHubIssueNodeIdTool = tool({
         title: content.title,
         url: content.url,
         type
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      };
+    }
+  }
+});
+
+export const updateGitHubProjectV2ItemFieldValueTool = tool({
+  description: 'Update field values for items in a GitHub Project v2 board',
+  inputSchema: z.object({
+    projectId: z.string().describe('Project ID'),
+    itemId: z.string().describe('Project item ID to update'),
+    fieldId: z.string().describe('Field ID to update'),
+    value: z.object({
+      text: z.string().optional().describe('Text value for text fields'),
+      number: z.number().optional().describe('Number value for number fields'),
+      date: z.string().optional().describe('Date value for date fields (ISO 8601 format)'),
+      singleSelectOptionId: z.string().optional().describe('Option ID for single select fields')
+    }).describe('Field value to set (provide only one type based on field type)')
+  }),
+  execute: async ({ projectId, itemId, fieldId, value }) => {
+    debug('Executing update_github_project_v2_item_field_value tool with params:', { projectId, itemId, fieldId, value });
+
+    try {
+      const updatedItem = await updateProjectV2ItemFieldValue(projectId, itemId, fieldId, value);
+
+      return {
+        success: true,
+        item: {
+          id: updatedItem.id,
+          type: updatedItem.type,
+          content: updatedItem.content,
+          createdAt: updatedItem.createdAt,
+          updatedAt: updatedItem.updatedAt,
+          fieldValues: updatedItem.fieldValues.nodes
+        },
+        message: `Successfully updated field ${fieldId} for item ${itemId}`
       };
     } catch (error) {
       return {

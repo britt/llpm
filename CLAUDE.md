@@ -244,11 +244,15 @@ AI Tools for Project Board Management:
 - `get_project_board_info`: View current project board configuration with optional validation
 - `remove_project_board`: Remove project board link from current project
 - `list_available_project_boards`: List all available project boards for an owner
+- `update_github_project_item_field`: Update field values for items in GitHub Project v2 boards (supports text, number, date, and single select fields)
 
 Example AI Usage:
 ```
 User: Link this project to GitHub project board #8 for user 'myorg'
 Assistant: I'll link your current project to the GitHub project board using the set_project_board tool.
+
+User: Update the priority field to "High" for item ABC123 in project XYZ789
+Assistant: I'll update the project item's priority field using the update_github_project_item_field tool.
 ```
 
 ### TypeScript Best Practices

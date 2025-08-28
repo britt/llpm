@@ -36,7 +36,7 @@ export default defineConfig({
       ] : [])
     ],
     // Force tests to run in single thread in CI to avoid resource contention
-    threads: process.env.CI === 'true' ? false : true,
+    // threads: process.env.CI === 'true' ? false : true,
     // Add pool options for CI stability
     pool: process.env.CI === 'true' ? 'forks' : 'threads',
     poolOptions: process.env.CI === 'true' ? {
