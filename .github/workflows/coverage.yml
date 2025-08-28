@@ -12,6 +12,7 @@ permissions:
 jobs:
   coverage:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     # Make coverage job non-blocking - continue even if this fails
     continue-on-error: true
 
