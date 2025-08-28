@@ -11,6 +11,7 @@ import { loadCurrentModel } from '../utils/modelStorage';
 import HybridInput from './HybridInput';
 import ProjectSelector from './ProjectSelector';
 import ModelSelector from './ModelSelector';
+import type { QueuedMessage } from '../hooks/useChat';
 
 interface ChatInterfaceProps {
   messages: Message[];
@@ -22,7 +23,7 @@ interface ChatInterfaceProps {
   onCancelModelSelection?: () => void;
   onTriggerModelSelector?: () => void;
   isProcessing?: boolean;
-  queuedMessages?: Array<{ id: string; content: string; timestamp: number }>;
+  queuedMessages?: Array<QueuedMessage>;
 }
 
 const ThinkingIndicator = memo(() => {
@@ -33,8 +34,8 @@ const ThinkingIndicator = memo(() => {
   );
 });
 
-const QueuedMessage = memo(
-  ({ message }: { message: { id: string; content: string; timestamp: number } }) => {
+const QueuedMessageItem = memo(
+  ({ message }: {  message: QueuedMessage }) => {
     return (
       <Box>
         <Text color="gray" dimColor>
@@ -49,14 +50,14 @@ const MessageQueue = memo(
   ({
     messages: queuedMessages
   }: {
-    messages?: Array<{ id: string; content: string; timestamp: number }>;
+    messages?: Array<QueuedMessage>;
   }) => {
     if (!queuedMessages || queuedMessages.length === 0) return null;
 
     return (
       <Box flexDirection="column">
-        {queuedMessages.map(queuedMsg => (
-          <QueuedMessage key={queuedMsg.id} message={queuedMsg} />
+        {queuedMessages.map((queuedMsg, i) => (
+          <QueuedMessageItem key={`queued-message-${i}`} message={queuedMsg} />
         ))}
       </Box>
     );
@@ -125,6 +126,7 @@ const MessageItem = memo(({ message }: { message: Message }) => {
   );
 });
 
+// TODO: implement buffering of messages
 function MessageList({ messages }: { messages: Message[] }) {
   return (
     <>

@@ -36,6 +36,7 @@ jobs:
         ANTHROPIC_API_KEY: test-key-for-coverage
         GROQ_API_KEY: test-key-for-coverage
         GOOGLE_VERTEX_PROJECT_ID: test-project-for-coverage
+        CI: true
       run: |
         # Generate a markdown coverage report from the console output
         echo "## 📊 Test Coverage Report" > coverage-summary.md
