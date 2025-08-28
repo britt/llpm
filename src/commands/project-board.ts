@@ -1,4 +1,4 @@
-import type { Command, CommandResult } from '../types';
+import type { Command, CommandResult } from './types';
 import {
   listProjectsV2,
   createProjectV2,
@@ -18,7 +18,7 @@ export const projectBoardCommand: Command = {
     if (args.length === 0) {
       return {
         success: false,
-        content: `Usage: /project-board <subcommand> [options]
+        content: `Usage: /board <subcommand> [options]
 
 **GitHub Projects v2** (New Projects Experience)
 
@@ -38,12 +38,12 @@ Subcommands:
   get-pr-id <owner> <repo> <number>      - Get PR node ID for adding to project
 
 Examples:
-  /project-board list myorg
-  /project-board create myorg "My Project" "Project description"
-  /project-board get myorg 1
-  /project-board items gid://Project/123
-  /project-board get-issue-id myorg myrepo 42
-  /project-board add-item gid://Project/123 gid://Issue/456
+  /board list myorg
+  /board create myorg "My Project" "Project description"
+  /board get myorg 1
+  /board items gid://Project/123
+  /board get-issue-id myorg myrepo 42
+  /board add-item gid://Project/123 gid://Issue/456
 
 **Note:** Projects v2 uses GraphQL node IDs (e.g., gid://Project/123) instead of numeric IDs.
 Use get-issue-id/get-pr-id to get the node IDs needed for add-item.`
@@ -79,7 +79,7 @@ Use get-issue-id/get-pr-id to get the node IDs needed for add-item.`
         default:
           return {
             success: false,
-            content: `Unknown subcommand: ${subcommand}\nUse /project-board without arguments to see available commands.`
+            content: `Unknown subcommand: ${subcommand}\nUse /board without arguments to see available commands.`
           };
       }
     } catch (error) {
@@ -95,7 +95,7 @@ async function handleListProjects(args: string[]): Promise<CommandResult> {
   if (args.length === 0) {
     return {
       success: false,
-      content: 'Usage: /project-board list <owner>'
+      content: 'Usage: /board list <owner>'
     };
   }
 
@@ -124,7 +124,7 @@ async function handleCreateProject(args: string[]): Promise<CommandResult> {
   if (args.length < 2) {
     return {
       success: false,
-      content: 'Usage: /project-board create <owner> <title> [description]'
+      content: 'Usage: /board create <owner> <title> [description]'
     };
   }
 
@@ -144,7 +144,7 @@ async function handleGetProject(args: string[]): Promise<CommandResult> {
   if (args.length < 2) {
     return {
       success: false,
-      content: 'Usage: /project-board get <owner> <number>'
+      content: 'Usage: /board get <owner> <number>'
     };
   }
 
@@ -170,7 +170,7 @@ async function handleUpdateProject(args: string[]): Promise<CommandResult> {
   if (args.length === 0) {
     return {
       success: false,
-      content: 'Usage: /project-board update <project_id> [--title="New Title"] [--description="New Description"] [--public=true/false] [--closed=true/false]'
+      content: 'Usage: /board update <project_id> [--title="New Title"] [--description="New Description"] [--public=true/false] [--closed=true/false]'
     };
   }
 
@@ -212,7 +212,7 @@ async function handleDeleteProject(args: string[]): Promise<CommandResult> {
   if (args.length === 0) {
     return {
       success: false,
-      content: 'Usage: /project-board delete <project_id>'
+      content: 'Usage: /board delete <project_id>'
     };
   }
 
@@ -229,7 +229,7 @@ async function handleListItems(args: string[]): Promise<CommandResult> {
   if (args.length === 0) {
     return {
       success: false,
-      content: 'Usage: /project-board items <project_id>'
+      content: 'Usage: /board items <project_id>'
     };
   }
 
@@ -262,7 +262,7 @@ async function handleAddItem(args: string[]): Promise<CommandResult> {
   if (args.length < 2) {
     return {
       success: false,
-      content: 'Usage: /project-board add-item <project_id> <content_id>\n\nTip: Use get-issue-id or get-pr-id to get the content_id first.'
+      content: 'Usage: /board add-item <project_id> <content_id>\n\nTip: Use get-issue-id or get-pr-id to get the content_id first.'
     };
   }
 
@@ -285,7 +285,7 @@ async function handleRemoveItem(args: string[]): Promise<CommandResult> {
   if (args.length < 2) {
     return {
       success: false,
-      content: 'Usage: /project-board remove-item <project_id> <item_id>'
+      content: 'Usage: /board remove-item <project_id> <item_id>'
     };
   }
 
@@ -304,7 +304,7 @@ async function handleListFields(args: string[]): Promise<CommandResult> {
   if (args.length === 0) {
     return {
       success: false,
-      content: 'Usage: /project-board fields <project_id>'
+      content: 'Usage: /board fields <project_id>'
     };
   }
 
@@ -344,7 +344,7 @@ async function handleGetIssueId(args: string[]): Promise<CommandResult> {
   if (args.length < 3) {
     return {
       success: false,
-      content: 'Usage: /project-board get-issue-id <owner> <repo> <number>'
+      content: 'Usage: /board get-issue-id <owner> <repo> <number>'
     };
   }
 
@@ -392,7 +392,7 @@ async function handleGetPrId(args: string[]): Promise<CommandResult> {
   if (args.length < 3) {
     return {
       success: false,
-      content: 'Usage: /project-board get-pr-id <owner> <repo> <number>'
+      content: 'Usage: /board get-pr-id <owner> <repo> <number>'
     };
   }
 

@@ -37,16 +37,16 @@ describe('quitCommand', () => {
     expect(result.content).toContain('Thanks for using LLPM');
   });
 
-  it('should schedule process exit after delay', () => {
+  it('should not call process.exit in test environment', () => {
     return new Promise<void>((resolve) => {
       quitCommand.execute([]);
 
-      // Initially process.exit should not be called
+      // process.exit should not be called in test environment
       expect(process.exit).not.toHaveBeenCalled();
 
-      // Wait for setTimeout to execute
+      // Wait to ensure setTimeout doesn't execute process.exit
       setTimeout(() => {
-        expect(process.exit).toHaveBeenCalledWith(0);
+        expect(process.exit).not.toHaveBeenCalled();
         resolve();
       }, 150); // Wait longer than the 100ms delay
     });

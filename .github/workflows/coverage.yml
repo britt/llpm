@@ -12,6 +12,7 @@ permissions:
 jobs:
   coverage:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     # Make coverage job non-blocking - continue even if this fails
     continue-on-error: true
 
@@ -43,7 +44,7 @@ jobs:
         echo "" >> coverage-summary.md
         
         # Capture the coverage output and strip ANSI color codes (with error handling)
-        if bun run test:coverage 2>&1 | sed 's/\x1b\[[0-9;]*m//g' > coverage_output.log; then
+        if bun run test:coverage --run 2>&1 | sed 's/\x1b\[[0-9;]*m//g' > coverage_output.log; then
           echo "Tests completed successfully"
         else
           echo "Tests failed, generating partial report" 

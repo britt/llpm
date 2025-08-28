@@ -16,15 +16,6 @@ export async function ensureConfigDir(): Promise<void> {
     await mkdir(CONFIG_DIR, { recursive: true });
     debug('Config directory created successfully');
   }
-
-  // ensure config file exists
-  if (!existsSync(CONFIG_FILE)) {
-    await loadProjectConfig()
-  }
-  // ensure system prompt file exists
-  if (!existsSync(CONFIG_FILE)) {
-    await ensureDefaultSystemPromptFile()
-  }
 }
 
 export function getConfigPath(): string {

@@ -7,7 +7,8 @@ import {
   addProject,
   listProjects,
   removeProject,
-  updateProject
+  updateProject,
+  getProjectBoard
 } from '../utils/projectConfig';
 
 // Helper function to normalize repository format
@@ -41,8 +42,14 @@ export const projectCommand: Command = {
       const currentProject = await getCurrentProject();
 
       if (currentProject) {
+        // Check if project has a linked board
+        const projectBoard = await getProjectBoard(currentProject.id);
+        const boardInfo = projectBoard 
+          ? `\n📋 Project Board: Linked (ID: ${projectBoard.projectBoardId}${projectBoard.projectBoardNumber ? `, #${projectBoard.projectBoardNumber}` : ''})`
+          : '\n📋 Project Board: Not linked';
+
         return {
-          content: `📁 Current project: ${currentProject.name}\n📂 Repository: ${currentProject.repository}\n📍 Path: ${currentProject.path}${currentProject.description ? `\n📝 Description: ${currentProject.description}` : ''}`,
+          content: `📁 Current project: ${currentProject.name}\n📂 Repository: ${currentProject.repository}\n📍 Path: ${currentProject.path}${currentProject.description ? `\n📝 Description: ${currentProject.description}` : ''}${boardInfo}`,
           success: true
         };
       } else {
@@ -188,12 +195,19 @@ export const projectCommand: Command = {
             };
           }
 
-          const projectList = projects.map(project => {
+          const projectList = await Promise.all(projects.map(async project => {
             const isCurrent = currentProject?.id === project.id;
             const indicator = isCurrent ? '👉 ' : '   ';
             const description = project.description ? `\n    📝 ${project.description}` : '';
-            return `${indicator}${project.name} (${project.id})\n    📂 ${project.repository}\n    📍 ${project.path}${description}`;
-          });
+            
+            // Check project board status
+            const projectBoard = await getProjectBoard(project.id);
+            const boardStatus = projectBoard 
+              ? `\n    📋 Project Board: Linked (#${projectBoard.projectBoardNumber || 'Unknown'})`
+              : `\n    📋 Project Board: Not linked`;
+            
+            return `${indicator}${project.name} (${project.id})\n    📂 ${project.repository}\n    📍 ${project.path}${description}${boardStatus}`;
+          }));
 
           const header = `📂 Available Projects (${projects.length}):\n\n`;
           const footer = '\n\n💡 Use /project set <project-id> to switch projects\n💡 Or press shift+tab for interactive project selector';

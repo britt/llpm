@@ -44,10 +44,17 @@ import {
   listGitHubProjectV2ItemsTool,
   addGitHubProjectV2ItemTool,
   removeGitHubProjectV2ItemTool,
+  updateGitHubProjectV2ItemFieldValueTool,
   listGitHubProjectV2FieldsTool,
   getGitHubOwnerIdTool,
   getGitHubIssueNodeIdTool
 } from './githubProjectsTools';
+import {
+  setProjectBoardTool,
+  getProjectBoardInfoTool,
+  removeProjectBoardTool,
+  listAvailableProjectBoardsTool
+} from './projectConfigTools';
 
 const toolRegistry: ToolRegistry = {
   get_current_project: getCurrentProjectTool,
@@ -87,9 +94,15 @@ const toolRegistry: ToolRegistry = {
   list_github_project_items: listGitHubProjectV2ItemsTool,
   add_github_project_item: addGitHubProjectV2ItemTool,
   remove_github_project_item: removeGitHubProjectV2ItemTool,
+  update_github_project_item_field: updateGitHubProjectV2ItemFieldValueTool,
   list_github_project_fields: listGitHubProjectV2FieldsTool,
   get_github_owner_id: getGitHubOwnerIdTool,
-  get_github_issue_node_id: getGitHubIssueNodeIdTool
+  get_github_issue_node_id: getGitHubIssueNodeIdTool,
+  // Project Board Configuration
+  set_project_board: setProjectBoardTool,
+  get_project_board_info: getProjectBoardInfoTool,
+  remove_project_board: removeProjectBoardTool,
+  list_available_project_boards: listAvailableProjectBoardsTool
 };
 
 export function getToolRegistry(): ToolRegistry {

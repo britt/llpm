@@ -8,6 +8,7 @@ import {
   commentOnIssue,
   searchIssues
 } from '../services/github';
+import { autoAddToProjectBoard } from '../services/projectBoardIntegration';
 import { debug } from '../utils/logger';
 
 async function getProjectRepoInfo() {
@@ -42,6 +43,15 @@ export const createGitHubIssueTool = tool({
       debug(`Creating issue in ${owner}/${repo} for project ${projectName}`);
 
       const issue = await createIssue(owner, repo, title, body, labels);
+
+      // Attempt to automatically add the issue to the project board
+      try {
+        const autoAddResult = await autoAddToProjectBoard(issue.node_id, 'issue');
+        debug('Auto-add to project board result:', autoAddResult);
+      } catch (error) {
+        debug('Failed to auto-add issue to project board:', error);
+        // Don't fail the issue creation if project board addition fails
+      }
 
       return {
         success: true,

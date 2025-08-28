@@ -937,6 +937,120 @@ export async function removeProjectV2Item(projectId: string, itemId: string): Pr
 }
 
 // Field management functions
+export async function updateProjectV2ItemFieldValue(
+  projectId: string,
+  itemId: string,
+  fieldId: string,
+  value: {
+    text?: string;
+    number?: number;
+    date?: string;
+    singleSelectOptionId?: string;
+  }
+): Promise<GitHubProjectV2Item> {
+  const token = await getGitHubToken();
+  const octokit = new Octokit({ auth: token });
+
+  try {
+    debug('Updating project item field value:', { projectId, itemId, fieldId, value });
+
+    const mutation = `
+      mutation updateProjectV2ItemFieldValue($input: UpdateProjectV2ItemFieldValueInput!) {
+        updateProjectV2ItemFieldValue(input: $input) {
+          projectV2Item {
+            id
+            type
+            content {
+              ... on Issue {
+                id
+                number
+                title
+                url
+              }
+              ... on PullRequest {
+                id
+                number
+                title
+                url
+              }
+              ... on DraftIssue {
+                id
+                title
+              }
+            }
+            createdAt
+            updatedAt
+            fieldValues(first: 20) {
+              nodes {
+                ... on ProjectV2ItemFieldTextValue {
+                  field {
+                    ... on ProjectV2Field {
+                      id
+                      name
+                    }
+                  }
+                  text
+                }
+                ... on ProjectV2ItemFieldNumberValue {
+                  field {
+                    ... on ProjectV2Field {
+                      id
+                      name
+                    }
+                  }
+                  number
+                }
+                ... on ProjectV2ItemFieldDateValue {
+                  field {
+                    ... on ProjectV2Field {
+                      id
+                      name
+                    }
+                  }
+                  date
+                }
+                ... on ProjectV2ItemFieldSingleSelectValue {
+                  field {
+                    ... on ProjectV2SingleSelectField {
+                      id
+                      name
+                    }
+                  }
+                  name
+                }
+              }
+            }
+          }
+        }
+      }
+    `;
+
+    const result = await octokit.graphql<{
+      updateProjectV2ItemFieldValue: {
+        projectV2Item: GitHubProjectV2Item;
+      };
+    }>(mutation, {
+      input: {
+        projectId,
+        itemId,
+        fieldId,
+        value
+      },
+      headers: {
+        'X-Github-Next-Global-ID': '1'
+      }
+    });
+
+    const item = result.updateProjectV2ItemFieldValue.projectV2Item;
+    debug('Successfully updated project item field value:', item.id);
+
+    return item;
+  } catch (error: any) {
+    debug('Error updating project item field value:', error);
+    throw new Error(`Failed to update project item field value: ${error.message}`);
+  }
+}
+
 export async function listProjectV2Fields(projectId: string): Promise<GitHubProjectV2Field[]> {
   debug('Listing GitHub Project v2 fields:', projectId);
 

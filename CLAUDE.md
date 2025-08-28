@@ -230,7 +230,30 @@ GOOGLE_VERTEX_REGION=us-central1  # optional
 - **REST API**: Due to API deprecation, newer Octokit versions don't include Projects endpoints
 - **Implementation**: We use `octokit.request()` for direct API calls to deprecated endpoints
 - **Commands**: `/project-board` command marked as deprecated
-- **Migration**: Users should migrate to Projects v2 (`/project-board`)
+- **Migration**: Users should migrate to Projects v2 (`/board`)
+
+#### Project Board Integration
+- **Automatic Linking**: Link LLPM projects with GitHub Project Boards for seamless integration
+- **Auto-Assignment**: Newly created issues/PRs are automatically added to the linked project board
+- **AI Tools**: Comprehensive AI tools for setting, viewing, and managing project board configurations
+- **Commands**: Use `/board` command for direct project board management
+- **Configuration**: Project board settings are stored in project metadata and persist across sessions
+
+AI Tools for Project Board Management:
+- `set_project_board`: Link a GitHub Project Board to current LLPM project
+- `get_project_board_info`: View current project board configuration with optional validation
+- `remove_project_board`: Remove project board link from current project
+- `list_available_project_boards`: List all available project boards for an owner
+- `update_github_project_item_field`: Update field values for items in GitHub Project v2 boards (supports text, number, date, and single select fields)
+
+Example AI Usage:
+```
+User: Link this project to GitHub project board #8 for user 'myorg'
+Assistant: I'll link your current project to the GitHub project board using the set_project_board tool.
+
+User: Update the priority field to "High" for item ABC123 in project XYZ789
+Assistant: I'll update the project item's priority field using the update_github_project_item_field tool.
+```
 
 ### TypeScript Best Practices
 
