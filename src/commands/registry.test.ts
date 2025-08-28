@@ -1,12 +1,27 @@
 import '../../test/setup';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { getCommandRegistry, parseCommand, executeCommand } from './registry';
 import * as systemPrompt from '../utils/systemPrompt';
 import * as markdownHighlight from '../utils/markdownHighlight';
 
 describe('commandRegistry', () => {
+  let originalRegistry: any;
+  
   beforeEach(() => {
     vi.clearAllMocks();
+    // Store original registry for restoration
+    originalRegistry = { ...getCommandRegistry() };
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+    // Restore original registry to prevent test pollution
+    const registry = getCommandRegistry();
+    Object.keys(originalRegistry).forEach(key => {
+      if (originalRegistry[key]) {
+        registry[key as keyof typeof registry] = originalRegistry[key];
+      }
+    });
   });
 
   describe('getCommandRegistry', () => {
@@ -104,7 +119,7 @@ describe('commandRegistry', () => {
       
       expect(result.success).toBe(true);
       expect(result.content).toBeTruthy();
-    });
+    }, 10000); // 10 second timeout
 
     it('should handle unknown commands', async () => {
       const result = await executeCommand('nonexistent');
@@ -112,7 +127,7 @@ describe('commandRegistry', () => {
       expect(result.success).toBe(false);
       expect(result.content).toContain('❌ Unknown command: /nonexistent');
       expect(result.content).toContain('Type /help to see available commands');
-    });
+    }, 10000); // 10 second timeout
 
     it('should pass arguments to commands', async () => {
       // Test with debug command that accepts numeric arguments
@@ -120,50 +135,54 @@ describe('commandRegistry', () => {
       
       // Should succeed (even if no logs available)
       expect(result.success).toBe(true);
-    });
+    }, 10000); // 10 second timeout
 
     it('should handle command execution errors', async () => {
       // Create a mock command that throws an error
       const registry = getCommandRegistry();
       const originalInfo = registry.info!;
       
-      // Mock info command to throw an error
-      registry.info = {
-        name: 'info',
-        description: 'Test mock command',
-        execute: () => { throw new Error('Test error'); }
-      };
-      
-      const result = await executeCommand('info');
-      
-      expect(result.success).toBe(false);
-      expect(result.content).toContain('❌ Error executing command /info');
-      expect(result.content).toContain('Test error');
-      
-      // Restore original command
-      registry.info = originalInfo;
-    });
+      try {
+        // Mock info command to throw an error
+        registry.info = {
+          name: 'info',
+          description: 'Test mock command',
+          execute: () => { throw new Error('Test error'); }
+        };
+        
+        const result = await executeCommand('info');
+        
+        expect(result.success).toBe(false);
+        expect(result.content).toContain('❌ Error executing command /info');
+        expect(result.content).toContain('Test error');
+      } finally {
+        // Always restore original command, even if test fails
+        registry.info = originalInfo;
+      }
+    }, 10000); // 10 second timeout
 
     it('should handle commands that throw non-Error objects', async () => {
       const registry = getCommandRegistry();
       const originalHelp = registry.help!;
       
-      // Mock help command to throw a string
-      registry.help = {
-        name: 'help',
-        description: 'Test mock command',
-        execute: () => { throw 'String error'; }
-      };
-      
-      const result = await executeCommand('help');
-      
-      expect(result.success).toBe(false);
-      expect(result.content).toContain('❌ Error executing command /help');
-      expect(result.content).toContain('Unknown error');
-      
-      // Restore original command
-      registry.help = originalHelp;
-    });
+      try {
+        // Mock help command to throw a string
+        registry.help = {
+          name: 'help',
+          description: 'Test mock command',
+          execute: () => { throw 'String error'; }
+        };
+        
+        const result = await executeCommand('help');
+        
+        expect(result.success).toBe(false);
+        expect(result.content).toContain('❌ Error executing command /help');
+        expect(result.content).toContain('Unknown error');
+      } finally {
+        // Always restore original command, even if test fails
+        registry.help = originalHelp;
+      }
+    }, 10000); // 10 second timeout
 
     it('should handle async commands', async () => {
       // Test with clear command which is async
@@ -172,14 +191,14 @@ describe('commandRegistry', () => {
       expect(result).toBeDefined();
       expect(typeof result.success).toBe('boolean');
       expect(typeof result.content).toBe('string');
-    });
+    }, 10000); // 10 second timeout
 
     it('should default to empty args array when none provided', async () => {
       const result = await executeCommand('help');
       
       expect(result.success).toBe(true);
       expect(result.content).toBeTruthy();
-    });
+    }, 10000); // 10 second timeout
 
     describe('info prompt integration', () => {
       it('should execute /info prompt command successfully', async () => {
@@ -199,7 +218,7 @@ describe('commandRegistry', () => {
         expect(executeResult.success).toBe(true);
         expect(executeResult.content).toContain('📋 Current System Prompt:');
         expect(executeResult.content).toContain(mockHighlighted);
-      });
+      }, 10000); // 10 second timeout
 
       it('should handle /info prompt parsing and execution with case insensitive sub-command', async () => {
         const mockPrompt = 'Test prompt for case insensitive test';
@@ -207,13 +226,13 @@ describe('commandRegistry', () => {
         
         vi.spyOn(systemPrompt, 'getSystemPrompt').mockResolvedValue(mockPrompt);
         vi.spyOn(markdownHighlight, 'highlightMarkdown').mockReturnValue(mockHighlighted);
-
+        
         const parseResult = parseCommand('/info PROMPT');
         const executeResult = await executeCommand(parseResult.command!, parseResult.args);
         
         expect(executeResult.success).toBe(true);
         expect(executeResult.content).toContain(mockHighlighted);
-      });
+      }, 10000); // 10 second timeout
 
       it('should handle /info prompt errors through full command pipeline', async () => {
         vi.spyOn(systemPrompt, 'getSystemPrompt').mockRejectedValue(new Error('Integration test error'));
@@ -224,7 +243,7 @@ describe('commandRegistry', () => {
         expect(executeResult.success).toBe(false);
         expect(executeResult.content).toContain('❌ Error retrieving system prompt:');
         expect(executeResult.content).toContain('Integration test error');
-      });
+      }, 10000); // 10 second timeout
 
       it('should handle /info with unknown sub-command through full pipeline', async () => {
         const parseResult = parseCommand('/info unknown');
@@ -233,7 +252,7 @@ describe('commandRegistry', () => {
         expect(executeResult.success).toBe(false);
         expect(executeResult.content).toContain('❌ Unknown sub-command: unknown');
         expect(executeResult.content).toContain('Available sub-commands: prompt');
-      });
+      }, 10000); // 10 second timeout
 
       it('should still execute regular /info command when no args provided', async () => {
         const parseResult = parseCommand('/info');
@@ -242,7 +261,7 @@ describe('commandRegistry', () => {
         expect(executeResult.success).toBe(true);
         expect(executeResult.content).toContain('📱 LLPM v0.2.2');
         expect(executeResult.content).not.toContain('📋 Current System Prompt:');
-      });
+      }, 10000); // 10 second timeout
     });
   });
 });

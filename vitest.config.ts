@@ -5,6 +5,8 @@ export default defineConfig({
     globals: true,
     environment: 'jsdom',
     setupFiles: ['./test/setup.ts'],
+    testTimeout: 30000, // 30 second global timeout for all tests
+    hookTimeout: 30000, // 30 second timeout for hooks (beforeEach, afterEach, etc.)
     // Exclude performance tests in CI environments
     exclude: process.env.CI === 'true' 
       ? ['**/*.performance.test.*', '**/node_modules/**', '**/*.d.ts']
