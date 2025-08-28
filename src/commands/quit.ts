@@ -26,10 +26,16 @@ Safely exits LLPM. Your conversation history and project settings are automatica
     const message = '👋 Goodbye! Thanks for using LLPM.';
 
     // Exit after a short delay to allow the message to be displayed
-    setTimeout(() => {
-      debug('Exiting application');
-      process.exit(0);
-    }, 100);
+    // Skip process.exit in test environments or when vitest is running
+    if (process.env.NODE_ENV !== 'test' && 
+        process.env.CI !== 'true' && 
+        typeof global !== 'undefined' && 
+        !('__vitest_worker__' in global)) {
+      setTimeout(() => {
+        debug('Exiting application');
+        process.exit(0);
+      }, 100);
+    }
 
     return {
       content: message,

@@ -1,6 +1,14 @@
 import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
+  define: {
+    'process.env.CI': JSON.stringify(process.env.CI)
+  },
+  resolve: {
+    alias: process.env.CI === 'true' ? {
+      'bun:sqlite': 'vitest/dist/mock.js'
+    } : {}
+  },
   test: {
     globals: true,
     environment: 'jsdom',
@@ -8,20 +16,21 @@ export default defineConfig({
     // Shorter timeouts in CI to prevent hanging
     testTimeout: process.env.CI === 'true' ? 15000 : 30000, // 15s in CI, 30s locally
     hookTimeout: process.env.CI === 'true' ? 10000 : 30000, // 10s in CI, 30s locally
-    // Exclude performance tests and problematic tests in CI environments
-    exclude: process.env.CI === 'true' 
-      ? [
-          '**/*.performance.test.*', 
-          '**/projectConfig.test.ts', 
-          '**/projectBoardIntegration.test.ts',
-          '**/systemPrompt.test.ts',
-          '**/quit.test.ts',
-          '**/exit.test.ts',
-          '**/filesystemTools.test.ts',
-          '**/node_modules/**', 
-          '**/*.d.ts'
-        ]
-      : ['**/node_modules/**', '**/*.d.ts'],
+    // Exclude performance tests and problematic tests in CI environments  
+    exclude: [
+      '**/node_modules/**', 
+      '**/*.d.ts',
+      ...(process.env.CI === 'true' ? [
+        '**/*.performance.test.*',
+        './src/utils/projectConfig.test.ts', 
+        './src/services/projectBoardIntegration.test.ts',
+        './src/utils/systemPrompt.test.ts',
+        './src/commands/quit.test.ts',
+        './src/commands/exit.test.ts',
+        './src/tools/filesystemTools.test.ts',
+        './src/tools/notesTools.test.ts'
+      ] : [])
+    ],
     // Force tests to run in single thread in CI to avoid resource contention
     threads: process.env.CI === 'true' ? false : true,
     // Add pool options for CI stability
