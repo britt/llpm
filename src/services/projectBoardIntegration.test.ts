@@ -74,8 +74,7 @@ describe('Project Board Integration', () => {
     });
 
     it('should fail when no current project exists', async () => {
-      const { getCurrentProject } = require('../utils/projectConfig');
-      getCurrentProject.mockResolvedValue(null);
+      vi.spyOn(projectConfig, 'getCurrentProject').mockResolvedValue(null);
 
       const result = await autoLinkProjectBoard('user');
 
@@ -84,11 +83,8 @@ describe('Project Board Integration', () => {
     });
 
     it('should fail when no matching project found', async () => {
-      const { getCurrentProject } = require('../utils/projectConfig');
-      const { listProjectsV2 } = require('./githubProjects');
-
-      getCurrentProject.mockResolvedValue(mockProject);
-      listProjectsV2.mockResolvedValue([
+      vi.spyOn(projectConfig, 'getCurrentProject').mockResolvedValue(mockProject);
+      vi.spyOn(githubProjects, 'listProjectsV2').mockResolvedValue([
         { ...mockGitHubProject, title: 'Different Project' }
       ]);
 
@@ -99,18 +95,14 @@ describe('Project Board Integration', () => {
     });
 
     it('should extract owner from github_repo when not provided', async () => {
-      const { getCurrentProject } = require('../utils/projectConfig');
-      const { listProjectsV2 } = require('./githubProjects');
-      const { setProjectBoard } = require('../utils/projectConfig');
-
-      getCurrentProject.mockResolvedValue(mockProject);
-      listProjectsV2.mockResolvedValue([mockGitHubProject]);
-      setProjectBoard.mockResolvedValue(mockProject);
+      vi.spyOn(projectConfig, 'getCurrentProject').mockResolvedValue(mockProject);
+      vi.spyOn(githubProjects, 'listProjectsV2').mockResolvedValue([mockGitHubProject]);
+      vi.spyOn(projectConfig, 'setProjectBoard').mockResolvedValue(mockProject);
 
       const result = await autoLinkProjectBoard(); // No owner provided
 
       expect(result.success).toBe(true);
-      expect(listProjectsV2).toHaveBeenCalledWith('user'); // Extracted from github_repo
+      expect(githubProjects.listProjectsV2).toHaveBeenCalledWith('user'); // Extracted from github_repo
     });
   });
 
