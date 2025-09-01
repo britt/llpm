@@ -9,8 +9,9 @@ import { githubCommand } from './github';
 import { debugCommand } from './debug';
 import { modelCommand } from './model';
 import { notesCommand } from './notes';
-import { projectScanCommand } from './project-scan';
-import { projectBoardCommand } from './project-board';
+// Remove old separate commands - now integrated into project command
+// import { projectScanCommand } from './project-scan';
+// import { projectBoardCommand } from './project-board';
 import { credentialsCommand } from './credentials';
 import { debug } from '../utils/logger';
 
@@ -25,8 +26,8 @@ const commandRegistry: CommandRegistry = {
   debug: debugCommand,
   model: modelCommand,
   notes: notesCommand,
-  'project-scan': projectScanCommand,
-  board: projectBoardCommand,
+  // 'project-scan': projectScanCommand, // Now available as /project scan
+  // board: projectBoardCommand, // Now available as /project board
   credentials: credentialsCommand
 };
 
