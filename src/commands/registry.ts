@@ -11,6 +11,7 @@ import { modelCommand } from './model';
 import { notesCommand } from './notes';
 import { projectScanCommand } from './project-scan';
 import { projectBoardCommand } from './project-board';
+import { credentialsCommand } from './credentials';
 import { debug } from '../utils/logger';
 
 const commandRegistry: CommandRegistry = {
@@ -25,7 +26,8 @@ const commandRegistry: CommandRegistry = {
   model: modelCommand,
   notes: notesCommand,
   'project-scan': projectScanCommand,
-  board: projectBoardCommand
+  board: projectBoardCommand,
+  credentials: credentialsCommand
 };
 
 export function getCommandRegistry(): CommandRegistry {

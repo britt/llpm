@@ -2,6 +2,7 @@ import type { Project } from '../types/project';
 import { getCurrentProject, setProjectBoard, getProjectBoard } from '../utils/projectConfig';
 import { getProjectV2, listProjectsV2, addProjectV2Item, getOwnerId } from './githubProjects';
 import { debug } from '../utils/logger';
+import { credentialManager } from '../utils/credentialManager';
 
 /**
  * Auto-detects and links a GitHub Project v2 board to the current LLPM project
@@ -224,9 +225,8 @@ async function getProjectV2ById(projectId: string): Promise<any> {
   const { Octokit } = await import('@octokit/rest');
   const { execSync } = await import('child_process');
   
-  // Get token
-  const envToken = process.env.GITHUB_TOKEN || process.env.GH_TOKEN;
-  let token = envToken;
+  // Get token using credential manager
+  let token = await credentialManager.getGitHubToken();
   
   if (!token) {
     try {

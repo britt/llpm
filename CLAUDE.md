@@ -326,6 +326,39 @@ const myTool = tool({
 4. **Follows Best Practices**: Library authors know their system best
 5. **Saves Time**: No need to reverse-engineer or guess at type structures
 
+### Project Analysis Tools
+
+LLPM includes AI tools that allow the model to analyze and understand project structure:
+
+**AI Tools for Project Analysis:**
+- `scan_project`: Analyze current project codebase and store results in memory
+- `get_project_scan`: Retrieve previously cached project analysis from memory  
+- `list_project_scans`: List all cached project scans across multiple projects
+
+**Command Line Interface:**
+- `/project-scan` - Analyze the current project and display detailed summary
+- `/project-scan help` - Show help for the project scan command
+
+**Key Features:**
+- **Comprehensive Analysis**: File types, languages, directory structure, code metrics
+- **Memory Storage**: Results cached in memory for AI to reference across conversations
+- **Smart Filtering**: Automatically ignores build artifacts, dependencies, hidden files
+- **Performance Optimized**: Limits file scanning to prevent performance issues
+- **Rich Metrics**: Lines of code, file counts, largest files, language distribution
+
+**Example AI Usage:**
+```
+User: "Analyze the current project structure"
+Assistant: I'll scan the project to understand its structure and composition.
+[Uses scan_project tool to analyze codebase and stores results in memory]
+
+User: "What are the main languages used in this project?"
+Assistant: Based on the previous scan, this project primarily uses:
+[References cached scan results from memory without re-scanning]
+```
+
+The AI can now understand project architecture and provide contextually relevant assistance based on the actual codebase structure.
+
 ### Debug Logging
 
 - Use `debug()` function from `src/utils/logger` for debug output

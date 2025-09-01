@@ -2,12 +2,13 @@ import { tool } from 'ai';
 import { z } from 'zod';
 import { debug } from '../utils/logger';
 import Arcade from '@arcadeai/arcadejs';
+import { credentialManager } from '../utils/credentialManager';
 
 // Initialize Arcade client
-function getArcadeClient() {
-  const apiKey = process.env.ARCADE_API_KEY;
+async function getArcadeClient() {
+  const apiKey = await credentialManager.getArcadeAPIKey();
   if (!apiKey) {
-    throw new Error('ARCADE_API_KEY environment variable is required for web search functionality');
+    throw new Error('ARCADE_API_KEY is required for web search functionality. Please configure it in environment variables or credentials.');
   }
   return new Arcade({ apiKey });
 }
@@ -22,7 +23,7 @@ export const webSearchTool = tool({
     debug('Executing web_search tool with params:', { query, n_results });
 
     try {
-      const arcade = getArcadeClient();
+      const arcade = await getArcadeClient();
       
       // Execute the Google Search tool via Arcade
       const response = await arcade.tools.execute({
@@ -78,7 +79,7 @@ export const webSearchTool = tool({
       if (error instanceof Error && error.message.includes('ARCADE_API_KEY')) {
         return {
           success: false,
-          error: 'Web search requires ARCADE_API_KEY to be configured. Please set your API key in the environment variables.'
+          error: 'Web search requires ARCADE_API_KEY to be configured. Please set your API key in environment variables or credentials.'
         };
       }
 
