@@ -7,6 +7,22 @@ import type { Project } from '../types/project';
 
 const DEFAULT_SYSTEM_PROMPT = `You are LLPM (Large Language Model Product Manager), an AI-powered project management assistant that operates within an interactive terminal interface. You help users manage multiple projects, interact with GitHub repositories, and coordinate development workflows through natural language conversation.
 
+## 🎯 Active Project Context
+**IMPORTANT**: When a project is active, detailed project information is automatically injected into this system prompt above the Core Context section. This includes:
+- Current project name, ID, and description
+- GitHub repository information and URLs
+- Local project path for file operations
+- Project board details (if configured)
+- Specific context instructions for project-aware assistance
+
+**When project context is available**, always:
+- Default GitHub operations (issues, PRs) to the current project's repository
+- Target file operations to the current project's directory
+- Scope notes and knowledge management to the specific project
+- Maintain awareness of the project throughout the entire conversation
+
+**When no project is active**, provide general assistance while suggesting users select or create a project for enhanced functionality.
+
 ## Core Context
 - You operate in a terminal UI built with Ink, providing real-time interactive assistance
 - Users can switch between different AI models/providers during conversation using \`/model\` commands
@@ -139,93 +155,151 @@ export async function getSystemPrompt(): Promise<string> {
 }
 
 function formatProjectContext(project: Project): string {
-  const contextLines = [
-    `## 🎯 Current Active Project: ${project.name}`,
-    '',
-    '**Project Details:**',
-    `- **Name**: ${project.name}`,
-    `- **ID**: ${project.id}`,
-    `- **Description**: ${project.description || 'No description provided'}`,
-  ];
+  try {
+    // Safely extract project properties with fallbacks
+    const projectName = project.name || 'Unknown Project';
+    const projectId = project.id || 'unknown-id';
+    const projectDescription = project.description || 'No description provided';
 
-  if (project.repository) {
-    // Handle both full URLs and owner/repo format
-    const repoDisplay = project.repository.startsWith('https://') 
-      ? project.repository.replace('https://github.com/', '')
-      : project.repository;
-    const repoUrl = project.repository.startsWith('https://') 
-      ? project.repository 
-      : `https://github.com/${project.repository}`;
-    
+    const contextLines = [
+      `## 🎯 Current Active Project: ${projectName}`,
+      '',
+      '**Project Details:**',
+      `- **Name**: ${projectName}`,
+      `- **ID**: ${projectId}`,
+      `- **Description**: ${projectDescription}`,
+    ];
+
+    // Safely handle repository information
+    try {
+      const repository = project.repository || project.github_repo;
+      if (repository && repository.trim()) {
+        // Handle both full URLs and owner/repo format
+        const repoDisplay = repository.startsWith('https://') 
+          ? repository.replace('https://github.com/', '')
+          : repository;
+        const repoUrl = repository.startsWith('https://') 
+          ? repository 
+          : `https://github.com/${repository}`;
+        
+        contextLines.push(
+          `- **GitHub Repository**: ${repoDisplay}`,
+          `- **Repository URL**: ${repoUrl}`
+        );
+      }
+    } catch (repoError) {
+      debug('Error processing repository information:', repoError);
+      // Continue without repository info
+    }
+
+    // Safely handle local path
+    try {
+      if (project.path && project.path.trim()) {
+        contextLines.push(`- **Local Path**: ${project.path}`);
+      }
+    } catch (pathError) {
+      debug('Error processing project path:', pathError);
+      // Continue without path info
+    }
+
+    // Safely handle project board information  
+    try {
+      if (project.projectBoardId && project.projectBoardNumber) {
+        contextLines.push(`- **GitHub Project Board**: #${project.projectBoardNumber} (${project.projectBoardId})`);
+      }
+    } catch (boardError) {
+      debug('Error processing project board information:', boardError);
+      // Continue without board info
+    }
+
+    // Always add context instructions
     contextLines.push(
-      `- **GitHub Repository**: ${repoDisplay}`,
-      `- **Repository URL**: ${repoUrl}`
+      '',
+      '**Context Instructions:**',
+      '- All GitHub operations (issues, PRs, repository interactions) should default to this project\'s repository',
+      '- File operations and project analysis should target this project\'s directory',
+      '- Notes and knowledge management are scoped to this specific project',
+      '- When suggesting workflows or best practices, consider this project\'s context and setup',
+      '- Maintain awareness of this project throughout the entire conversation',
+      ''
     );
-  } else if (project.github_repo) {
-    const repoDisplay = project.github_repo.startsWith('https://') 
-      ? project.github_repo.replace('https://github.com/', '')
-      : project.github_repo;
-    const repoUrl = project.github_repo.startsWith('https://') 
-      ? project.github_repo 
-      : `https://github.com/${project.github_repo}`;
-      
-    contextLines.push(
-      `- **GitHub Repository**: ${repoDisplay}`,
-      `- **Repository URL**: ${repoUrl}`
-    );
+
+    return contextLines.join('\n');
+  } catch (error) {
+    debug('Error in formatProjectContext:', error);
+    // Return minimal context as fallback
+    return `## 🎯 Current Active Project: ${project?.name || 'Unknown'}\n\n**Note**: Project context formatting failed, but project is active.\n\n`;
   }
-
-  if (project.path) {
-    contextLines.push(`- **Local Path**: ${project.path}`);
-  }
-
-  if (project.projectBoardId && project.projectBoardNumber) {
-    contextLines.push(`- **GitHub Project Board**: #${project.projectBoardNumber} (${project.projectBoardId})`);
-  }
-
-  contextLines.push(
-    '',
-    '**Context Instructions:**',
-    '- All GitHub operations (issues, PRs, repository interactions) should default to this project\'s repository',
-    '- File operations and project analysis should target this project\'s directory',
-    '- Notes and knowledge management are scoped to this specific project',
-    '- When suggesting workflows or best practices, consider this project\'s context and setup',
-    '- Maintain awareness of this project throughout the entire conversation',
-    ''
-  );
-
-  return contextLines.join('\n');
 }
 
 async function injectProjectContext(basePrompt: string): Promise<string> {
   try {
-    const currentProject = await getCurrentProject();
+    // Attempt to get current project with additional error handling
+    let currentProject: Project | null = null;
+    
+    try {
+      currentProject = await getCurrentProject();
+    } catch (projectError) {
+      debug('Failed to get current project for context injection:', projectError);
+      return basePrompt; // Graceful fallback
+    }
     
     if (!currentProject) {
-      debug('No active project to inject into system prompt');
+      debug('No active project to inject into system prompt - using base prompt');
       return basePrompt;
     }
 
     debug('Injecting project context for:', currentProject.name);
-    const projectContext = formatProjectContext(currentProject);
     
-    // Insert project context after the main header but before core context
-    const lines = basePrompt.split('\n');
-    const coreContextIndex = lines.findIndex(line => line.includes('## Core Context'));
-    
-    if (coreContextIndex > 0) {
-      // Insert project context before Core Context
-      lines.splice(coreContextIndex, 0, projectContext);
-    } else {
-      // If Core Context not found, add at the beginning after the main description
-      const insertIndex = lines.findIndex(line => line.trim() === '') || 3;
-      lines.splice(insertIndex + 1, 0, projectContext);
+    // Safely format project context with error handling
+    let projectContext: string;
+    try {
+      projectContext = formatProjectContext(currentProject);
+    } catch (formatError) {
+      debug('Failed to format project context:', formatError);
+      return basePrompt; // Graceful fallback
     }
     
-    return lines.join('\n');
+    // Insert project context with robust positioning logic
+    try {
+      const lines = basePrompt.split('\n');
+      let insertIndex = -1;
+      
+      // Try to find Core Context section first
+      const coreContextIndex = lines.findIndex(line => line.includes('## Core Context'));
+      if (coreContextIndex > 0) {
+        insertIndex = coreContextIndex;
+        debug('Inserting project context before Core Context section at line:', insertIndex);
+      } else {
+        // Fallback: Find Active Project Context section
+        const activeProjectIndex = lines.findIndex(line => line.includes('## 🎯 Active Project Context'));
+        if (activeProjectIndex > 0) {
+          // Insert after the Active Project Context section
+          const nextSectionIndex = lines.findIndex((line, index) => 
+            index > activeProjectIndex && line.startsWith('##') && !line.includes('🎯 Active Project Context')
+          );
+          insertIndex = nextSectionIndex > 0 ? nextSectionIndex : activeProjectIndex + 15; // Rough estimate after section
+          debug('Inserting project context after Active Project Context section at line:', insertIndex);
+        } else {
+          // Final fallback: Insert after first empty line
+          const firstEmptyIndex = lines.findIndex(line => line.trim() === '');
+          insertIndex = firstEmptyIndex > 0 ? firstEmptyIndex + 1 : 3;
+          debug('Using fallback insertion point at line:', insertIndex);
+        }
+      }
+      
+      // Insert the project context
+      lines.splice(insertIndex, 0, projectContext);
+      return lines.join('\n');
+      
+    } catch (insertError) {
+      debug('Failed to insert project context into prompt:', insertError);
+      return basePrompt; // Graceful fallback
+    }
+    
   } catch (error) {
-    debug('Error injecting project context:', error);
-    return basePrompt;
+    debug('Unexpected error in project context injection:', error);
+    return basePrompt; // Always graceful fallback
   }
 }
 
