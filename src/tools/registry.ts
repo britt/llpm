@@ -55,6 +55,11 @@ import {
   removeProjectBoardTool,
   listAvailableProjectBoardsTool
 } from './projectConfigTools';
+import {
+  scanProjectTool,
+  getProjectScanTool,
+  listProjectScansTool
+} from './projectScanTools';
 
 const toolRegistry: ToolRegistry = {
   get_current_project: getCurrentProjectTool,
@@ -102,7 +107,11 @@ const toolRegistry: ToolRegistry = {
   set_project_board: setProjectBoardTool,
   get_project_board_info: getProjectBoardInfoTool,
   remove_project_board: removeProjectBoardTool,
-  list_available_project_boards: listAvailableProjectBoardsTool
+  list_available_project_boards: listAvailableProjectBoardsTool,
+  // Project Analysis
+  scan_project: scanProjectTool,
+  get_project_scan: getProjectScanTool,
+  list_project_scans: listProjectScansTool
 };
 
 export function getToolRegistry(): ToolRegistry {
