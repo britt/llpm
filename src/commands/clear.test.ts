@@ -14,11 +14,11 @@ describe('clearCommand', () => {
   });
 
   it('should successfully clear session', async () => {
-    const mockSaveChatHistory = vi.spyOn(chatHistory, 'saveChatHistory').mockResolvedValue(undefined);
+    const mockClearChatHistory = vi.spyOn(chatHistory, 'clearChatHistory').mockResolvedValue(undefined);
 
     const result = await clearCommand.execute([]);
 
-    expect(mockSaveChatHistory).toHaveBeenCalledWith([]);
+    expect(mockClearChatHistory).toHaveBeenCalledWith();
     expect(result.success).toBe(true);
     expect(result.content).toContain('🧹 Chat session cleared!');
     expect(result.content).toContain('Starting fresh conversation');
@@ -26,41 +26,35 @@ describe('clearCommand', () => {
     expect(result.content).toContain('~/.llpm');
   });
 
-  it('should handle saveChatHistory failure gracefully', async () => {
-    const mockSaveChatHistory = vi.spyOn(chatHistory, 'saveChatHistory')
-      .mockImplementation(() => {
-        throw new Error('Failed to save history');
-      });
+  it('should handle clearChatHistory failure gracefully', async () => {
+    const mockClearChatHistory = vi.spyOn(chatHistory, 'clearChatHistory')
+      .mockRejectedValue(new Error('Failed to clear history'));
 
     const result = await clearCommand.execute([]);
 
-    expect(mockSaveChatHistory).toHaveBeenCalledWith([]);
-    // The current implementation doesn't await saveChatHistory, but it should still catch sync throws
+    expect(mockClearChatHistory).toHaveBeenCalledWith();
     expect(result.success).toBe(false);
     expect(result.content).toContain('❌ Failed to clear session');
   });
 
   it('should ignore command arguments', async () => {
-    const mockSaveChatHistory = vi.spyOn(chatHistory, 'saveChatHistory').mockResolvedValue(undefined);
+    const mockClearChatHistory = vi.spyOn(chatHistory, 'clearChatHistory').mockResolvedValue(undefined);
 
     const result = await clearCommand.execute(['arg1', 'arg2', 'arg3']);
 
-    expect(mockSaveChatHistory).toHaveBeenCalledWith([]);
+    expect(mockClearChatHistory).toHaveBeenCalledWith();
     expect(result.success).toBe(true);
     expect(result.content).toContain('🧹 Chat session cleared!');
   });
 
   it('should handle different types of errors', async () => {
     // Test with a non-Error object
-    const mockSaveChatHistory = vi.spyOn(chatHistory, 'saveChatHistory')
-      .mockImplementation(() => {
-        throw 'String error';
-      });
+    const mockClearChatHistory = vi.spyOn(chatHistory, 'clearChatHistory')
+      .mockRejectedValue('String error');
 
     const result = await clearCommand.execute([]);
 
-    expect(mockSaveChatHistory).toHaveBeenCalledWith([]);
-    // The current implementation doesn't await saveChatHistory, but it should still catch sync throws
+    expect(mockClearChatHistory).toHaveBeenCalledWith();
     expect(result.success).toBe(false);
     expect(result.content).toContain('❌ Failed to clear session');
   });
