@@ -2,6 +2,8 @@ import { readFile, writeFile } from 'fs/promises';
 import { existsSync } from 'fs';
 import { ensureConfigDir, SYSTEM_PROMPT_FILE } from './config';
 import { debug } from './logger';
+import { getCurrentProject } from './projectConfig';
+import type { Project } from '../types/project';
 
 const DEFAULT_SYSTEM_PROMPT = `You are LLPM (Large Language Model Product Manager), an AI-powered project management assistant that operates within an interactive terminal interface. You help users manage multiple projects, interact with GitHub repositories, and coordinate development workflows through natural language conversation.
 
@@ -120,15 +122,110 @@ export async function getSystemPrompt(): Promise<string> {
     await ensureConfigDir();
     const promptPath = getSystemPromptPath();
 
+    let basePrompt: string;
     if (existsSync(promptPath)) {
       const customPrompt = await readFile(promptPath, 'utf-8');
-      return customPrompt.trim();
+      basePrompt = customPrompt.trim();
     } else {
-      return DEFAULT_SYSTEM_PROMPT;
+      basePrompt = DEFAULT_SYSTEM_PROMPT;
     }
+
+    // Inject current project context
+    return await injectProjectContext(basePrompt);
   } catch (error) {
     debug('Error loading system prompt:', error);
     return DEFAULT_SYSTEM_PROMPT;
+  }
+}
+
+function formatProjectContext(project: Project): string {
+  const contextLines = [
+    `## 🎯 Current Active Project: ${project.name}`,
+    '',
+    '**Project Details:**',
+    `- **Name**: ${project.name}`,
+    `- **ID**: ${project.id}`,
+    `- **Description**: ${project.description || 'No description provided'}`,
+  ];
+
+  if (project.repository) {
+    // Handle both full URLs and owner/repo format
+    const repoDisplay = project.repository.startsWith('https://') 
+      ? project.repository.replace('https://github.com/', '')
+      : project.repository;
+    const repoUrl = project.repository.startsWith('https://') 
+      ? project.repository 
+      : `https://github.com/${project.repository}`;
+    
+    contextLines.push(
+      `- **GitHub Repository**: ${repoDisplay}`,
+      `- **Repository URL**: ${repoUrl}`
+    );
+  } else if (project.github_repo) {
+    const repoDisplay = project.github_repo.startsWith('https://') 
+      ? project.github_repo.replace('https://github.com/', '')
+      : project.github_repo;
+    const repoUrl = project.github_repo.startsWith('https://') 
+      ? project.github_repo 
+      : `https://github.com/${project.github_repo}`;
+      
+    contextLines.push(
+      `- **GitHub Repository**: ${repoDisplay}`,
+      `- **Repository URL**: ${repoUrl}`
+    );
+  }
+
+  if (project.path) {
+    contextLines.push(`- **Local Path**: ${project.path}`);
+  }
+
+  if (project.projectBoardId && project.projectBoardNumber) {
+    contextLines.push(`- **GitHub Project Board**: #${project.projectBoardNumber} (${project.projectBoardId})`);
+  }
+
+  contextLines.push(
+    '',
+    '**Context Instructions:**',
+    '- All GitHub operations (issues, PRs, repository interactions) should default to this project\'s repository',
+    '- File operations and project analysis should target this project\'s directory',
+    '- Notes and knowledge management are scoped to this specific project',
+    '- When suggesting workflows or best practices, consider this project\'s context and setup',
+    '- Maintain awareness of this project throughout the entire conversation',
+    ''
+  );
+
+  return contextLines.join('\n');
+}
+
+async function injectProjectContext(basePrompt: string): Promise<string> {
+  try {
+    const currentProject = await getCurrentProject();
+    
+    if (!currentProject) {
+      debug('No active project to inject into system prompt');
+      return basePrompt;
+    }
+
+    debug('Injecting project context for:', currentProject.name);
+    const projectContext = formatProjectContext(currentProject);
+    
+    // Insert project context after the main header but before core context
+    const lines = basePrompt.split('\n');
+    const coreContextIndex = lines.findIndex(line => line.includes('## Core Context'));
+    
+    if (coreContextIndex > 0) {
+      // Insert project context before Core Context
+      lines.splice(coreContextIndex, 0, projectContext);
+    } else {
+      // If Core Context not found, add at the beginning after the main description
+      const insertIndex = lines.findIndex(line => line.trim() === '') || 3;
+      lines.splice(insertIndex + 1, 0, projectContext);
+    }
+    
+    return lines.join('\n');
+  } catch (error) {
+    debug('Error injecting project context:', error);
+    return basePrompt;
   }
 }
 
@@ -147,6 +244,25 @@ export async function saveSystemPrompt(prompt: string): Promise<void> {
 
 export function getDefaultSystemPrompt(): string {
   return DEFAULT_SYSTEM_PROMPT;
+}
+
+export async function getBaseSystemPrompt(): Promise<string> {
+  // Get the system prompt without project context injection
+  // Used for system tools and management functions
+  try {
+    await ensureConfigDir();
+    const promptPath = getSystemPromptPath();
+
+    if (existsSync(promptPath)) {
+      const customPrompt = await readFile(promptPath, 'utf-8');
+      return customPrompt.trim();
+    } else {
+      return DEFAULT_SYSTEM_PROMPT;
+    }
+  } catch (error) {
+    debug('Error loading base system prompt:', error);
+    return DEFAULT_SYSTEM_PROMPT;
+  }
 }
 
 export async function ensureDefaultSystemPromptFile(): Promise<void> {
