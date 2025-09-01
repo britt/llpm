@@ -1,4 +1,4 @@
-import { readFile, appendFile } from 'fs/promises';
+import { readFile, writeFile, mkdir } from 'fs/promises';
 import { existsSync } from 'fs';
 import { join } from 'path';
 import type { Message } from '../types';
@@ -41,7 +41,6 @@ async function getChatHistoryPath(): Promise<string> {
 async function ensureProjectDir(projectId: string): Promise<void> {
   const projectDir = join(getConfigDir(), 'projects', projectId);
   if (!existsSync(projectDir)) {
-    const { mkdir } = require('fs/promises');
     await mkdir(projectDir, { recursive: true });
     debug('Created project directory:', projectDir);
   }
@@ -98,10 +97,43 @@ export async function saveChatHistory(messages: Message[]): Promise<void> {
 
     const historyPath = await getChatHistoryPath();
 
+    if (messages.length === 0) {
+      // Clear the history file for empty messages array
+      debug('Clearing chat history file');
+      await writeFile(historyPath, '', 'utf-8');
+      return;
+    }
+
+    // Limit messages to prevent excessive file sizes
+    const messagesToSave = messages.slice(-1 * DEFAULT_HISTORY_SIZE);
+    debug('Saving', messagesToSave.length, 'messages (limited from', messages.length, ')');
+
     // Join messages with delimiter to preserve structure
-    const content = messages.map(MessageToLogString).join(MESSAGE_DELIMITER);
-    await appendFile(historyPath, content + MESSAGE_DELIMITER, 'utf-8');
+    const content = messagesToSave.map(MessageToLogString).join(MESSAGE_DELIMITER);
+    await writeFile(historyPath, content + MESSAGE_DELIMITER, 'utf-8');
+    debug('Chat history saved successfully to:', historyPath);
   } catch (error) {
     debug('Error saving chat history:', error);
+  }
+}
+
+export async function clearChatHistory(): Promise<void> {
+  debug('Clearing chat history');
+  
+  try {
+    await ensureConfigDir();
+    
+    // Check if we have a current project and ensure its directory exists
+    const currentProject = await getCurrentProject();
+    if (currentProject) {
+      await ensureProjectDir(currentProject.id);
+    }
+    
+    const historyPath = await getChatHistoryPath();
+    await writeFile(historyPath, '', 'utf-8');
+    debug('Chat history cleared successfully');
+  } catch (error) {
+    debug('Error clearing chat history:', error);
+    throw error;
   }
 }

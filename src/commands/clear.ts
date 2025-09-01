@@ -1,6 +1,6 @@
 import type { Command, CommandResult } from './types';
 import { debug } from '../utils/logger';
-import { saveChatHistory } from '../utils/chatHistory';
+import { clearChatHistory } from '../utils/chatHistory';
 
 export const clearCommand: Command = {
   name: 'clear',
@@ -24,7 +24,7 @@ Previous conversations are automatically saved in ~/.llpm directory.`,
     }
 
     try {
-      saveChatHistory([]);
+      await clearChatHistory();
       return {
         content:
           '🧹 Chat session cleared! Starting fresh conversation.\n\n💡 Your previous conversations are saved in ~/.llpm',

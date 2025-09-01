@@ -30,7 +30,7 @@ export function useChat() {
 
   const messagesRef = useRef<Message[]>([]);
   const processingRef = useRef(false);
-  const savePositionRef = useRef(0);
+  const shouldSaveRef = useRef(false);
 
   // Keep refs in sync with state
   useEffect(() => {
@@ -58,7 +58,6 @@ export function useChat() {
         }
 
         const savedMessages = await loadChatHistory();
-        savePositionRef.current = savedMessages.length;
 
         if (savedMessages.length === 0) {
           // No saved history, use welcome message
@@ -68,10 +67,12 @@ export function useChat() {
               "Hello! I'm LLPM, your AI-powered project manager. How can I help you today?\n\n💡 Type /help to see available commands.",
           };
           setMessages([welcomeMessage]);
+          shouldSaveRef.current = true; // Mark that we need to save the welcome message
           debug('No saved history found, using welcome message');
         } else {
-          // Load saved history and ensure all messages have unique IDs
+          // Load saved history
           setMessages(trimMessages(savedMessages));
+          shouldSaveRef.current = false; // Don't save immediately after loading
           debug('Loaded', savedMessages.length, 'messages from history');
         }
       } catch (error) {
@@ -83,6 +84,7 @@ export function useChat() {
             "Hello! I'm LLPM, your AI-powered project manager. How can I help you today?\n\n💡 Type /help to see available commands.",
         };
         setMessages([welcomeMessage]);
+        shouldSaveRef.current = true; // Mark that we need to save the fallback message
       } finally {
         setHistoryLoaded(true);
       }
@@ -94,11 +96,14 @@ export function useChat() {
 
   // Save messages whenever they change (after history is loaded)
   useEffect(() => {
-    if (historyLoaded && messages.length > 0) {
-      debug('Saving updated chat history');
-      saveChatHistory(messages.slice(savePositionRef.current+1)).
-        then(() => savePositionRef.current = messages.length - 1).
-        catch(error => {
+    if (historyLoaded && messages.length > 0 && shouldSaveRef.current) {
+      debug('Saving updated chat history with', messages.length, 'messages');
+      saveChatHistory(messages)
+        .then(() => {
+          debug('Chat history saved successfully');
+          shouldSaveRef.current = false; // Reset save flag
+        })
+        .catch(error => {
           debug('Failed to save chat history:', error);
         });
     }
@@ -138,6 +143,7 @@ export function useChat() {
                 "Hello! I'm LLPM, your AI-powered project manager. How can I help you today?\n\n💡 Type /help to see available commands.",
             };
             setMessages([welcomeMessage]);
+            shouldSaveRef.current = true; // Mark for saving
             debug('Cleared messages and reset to welcome message');
           } else {
             const responseMessage: Message = {
@@ -145,6 +151,7 @@ export function useChat() {
               content: result.content,
             };
             setMessages(prev => trimMessages([...prev, responseMessage]));
+            shouldSaveRef.current = true; // Mark for saving
             debug('Added command response to state');
           }
         } catch (error) {
@@ -164,6 +171,7 @@ export function useChat() {
             content: errorContent,
           };
           setMessages(prev => trimMessages([...prev, errorMessage]));
+          shouldSaveRef.current = true; // Mark for saving
         } finally {
           setIsLoading(false);
         }
@@ -175,6 +183,7 @@ export function useChat() {
 
       debug('Adding user message to state');
       setMessages(prev => trimMessages([...prev, userMessage]));
+      shouldSaveRef.current = true; // Mark for saving
       setIsLoading(true);
       debug('Set loading state to true');
 
@@ -197,6 +206,7 @@ export function useChat() {
           content: responseContent,
         };
         setMessages(prev => trimMessages([...prev, assistantMessage]));
+        shouldSaveRef.current = true; // Mark for saving
         debug('Added assistant response to state');
       } catch (error) {
         debug('Error in processMessageImmediate:', error);
@@ -215,6 +225,7 @@ export function useChat() {
           content: errorContent,
         };
         setMessages(prev => trimMessages([...prev, errorMessage]));
+        shouldSaveRef.current = true; // Mark for saving
         debug('Added error message to state');
       } finally {
         setIsLoading(false);
@@ -302,6 +313,7 @@ export function useChat() {
       content,
     };
     setMessages(prev => trimMessages([...prev, notification]));
+    shouldSaveRef.current = true; // Mark for saving
     debug('Added system message');
   }, []);
 
@@ -318,6 +330,7 @@ export function useChat() {
         content: result.content,
       };
       setMessages(prev => trimMessages([...prev, responseMessage]));
+      shouldSaveRef.current = true; // Mark for saving
       debug('Model switch completed');
     } catch (error) {
       debug('Error switching model:', error);
@@ -327,6 +340,7 @@ export function useChat() {
         content: '❌ Failed to switch model. Please try again.',
       };
       setMessages(prev => trimMessages([...prev, errorMessage]));
+      shouldSaveRef.current = true; // Mark for saving
     } finally {
       setIsLoading(false);
     }
@@ -358,6 +372,7 @@ export function useChat() {
           content: result.content,
         };
         setMessages(prev => trimMessages([...prev, responseMessage]));
+        shouldSaveRef.current = true; // Mark for saving
       }
     } catch (error) {
       debug('Error triggering model selector:', error);
@@ -367,6 +382,7 @@ export function useChat() {
         content: '❌ Failed to open model selector. Please try again.',
       };
       setMessages(prev => trimMessages([...prev, errorMessage]));
+      shouldSaveRef.current = true; // Mark for saving
     } finally {
       setIsLoading(false);
     }
