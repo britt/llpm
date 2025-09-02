@@ -21,6 +21,7 @@ import {
 } from './githubPullRequestTools';
 import { getSystemPromptTool } from './systemTools';
 import { webSearchTool } from './webSearchTools';
+import { readWebPageTool, summarizeWebPageTool } from './webContentTools';
 import {
   addNoteTool,
   updateNoteTool,
@@ -87,6 +88,8 @@ const toolRegistry: ToolRegistry = {
   create_github_pull_request: createGitHubPullRequestTool,
   get_system_prompt: getSystemPromptTool,
   web_search: webSearchTool,
+  read_web_page: readWebPageTool,
+  summarize_web_page: summarizeWebPageTool,
   add_note: addNoteTool,
   update_note: updateNoteTool,
   search_notes: searchNotesTool,
