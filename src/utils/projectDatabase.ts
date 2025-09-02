@@ -1,7 +1,5 @@
-import Database from 'better-sqlite3';
-import type { Database as DatabaseType } from 'better-sqlite3';
+import { Database } from 'bun:sqlite';
 import { join } from 'path';
-import * as sqlite_vss from 'sqlite-vss';
 import { getConfigDir } from './config';
 import { debug } from './logger';
 import { modelRegistry } from '../services/modelRegistry';
@@ -35,7 +33,7 @@ interface ProjectMetadata {
 }
 
 export class ProjectDatabase {
-  private db: DatabaseType;
+  private db: Database;
   private projectId: string;
 
   constructor(projectId: string) {
@@ -50,13 +48,8 @@ export class ProjectDatabase {
   private initializeTables(): void {
     debug('Initializing database tables for project:', this.projectId);
 
-    try {
-      // Load sqlite-vss extension
-      sqlite_vss.load(this.db);
-      debug('sqlite-vss extension loaded successfully');
-    } catch (error) {
-      debug('Warning: Could not load sqlite-vss extension:', error);
-    }
+    // Note: bun:sqlite doesn't support extensions, so we'll use manual vector operations
+    debug('Using bun:sqlite (extensions not supported)');
 
     // Create notes table with embedding column
     this.db.run(`
@@ -94,29 +87,8 @@ export class ProjectDatabase {
       )
     `);
 
-    // Create virtual table for vector search (if sqlite-vss is available)
-    try {
-      this.db.exec(`
-        CREATE VIRTUAL TABLE IF NOT EXISTS note_embeddings USING vss0(
-          embedding(1536)
-        )
-      `);
-      debug('Note vector search table created successfully');
-    } catch (error) {
-      debug('Warning: Could not create note vector search table:', error);
-    }
-
-    // Create virtual table for file vector search
-    try {
-      this.db.exec(`
-        CREATE VIRTUAL TABLE IF NOT EXISTS file_embeddings USING vss0(
-          embedding(1536)
-        )
-      `);
-      debug('File vector search table created successfully');
-    } catch (error) {
-      debug('Warning: Could not create file vector search table:', error);
-    }
+    // Note: bun:sqlite doesn't support virtual tables, vector search will be done manually
+    debug('Vector search will use manual cosine similarity (no VSS virtual tables)');
 
     // Create index for better search performance
     this.db.run(`
@@ -260,17 +232,9 @@ export class ProjectDatabase {
     const result = stmt.run(title, content, tagsString || null, embeddingBlob, now, now);
     const noteId = result.lastInsertRowid as number;
     
-    // Insert into vector table if embedding was generated
+    // Vector embedding stored in notes table (no separate vector table needed)
     if (embedding) {
-      try {
-        const vectorStmt = this.db.prepare(`
-          INSERT INTO note_embeddings (rowid, embedding) VALUES (?, ?)
-        `);
-        vectorStmt.run(noteId, JSON.stringify(Array.from(embedding)));
-        debug('Added vector embedding for note:', noteId);
-      } catch (error) {
-        debug('Warning: Could not insert vector embedding:', error);
-      }
+      debug('Added vector embedding for note:', noteId);
     }
     
     return {
@@ -339,17 +303,9 @@ export class ProjectDatabase {
     
     stmt.run(finalTitle, finalContent, finalTags || null, embeddingBlob, now, id);
     
-    // Update vector table if we generated a new embedding
+    // Vector embedding updated in notes table (no separate vector table needed)
     if (embedding) {
-      try {
-        const vectorStmt = this.db.prepare(`
-          INSERT OR REPLACE INTO note_embeddings (rowid, embedding) VALUES (?, ?)
-        `);
-        vectorStmt.run(id, JSON.stringify(Array.from(embedding)));
-        debug('Updated vector embedding for note:', id);
-      } catch (error) {
-        debug('Warning: Could not update vector embedding:', error);
-      }
+      debug('Updated vector embedding for note:', id);
     }
     
     return {
@@ -397,52 +353,29 @@ export class ProjectDatabase {
       return this.searchNotes(query).slice(0, limit).map(note => ({ ...note, similarity: 0 }));
     }
 
-    try {
-      // Try using sqlite-vss vector search first
-      const vectorResults = this.db.prepare(`
-        SELECT 
-          n.id, n.title, n.content, n.tags, n.createdAt, n.updatedAt,
-          distance
-        FROM note_embeddings 
-        LEFT JOIN notes n ON note_embeddings.rowid = n.id
-        WHERE vss_search(embedding, ?)
-        ORDER BY distance
-        LIMIT ?
-      `).all(JSON.stringify(Array.from(queryEmbedding)), limit) as Array<ProjectNote & { distance: number }>;
-
-      // Convert distance to similarity score (higher is more similar)
-      return vectorResults.map(result => ({
-        ...result,
-        similarity: 1 / (1 + result.distance) // Convert distance to similarity
-      }));
-
-    } catch (error) {
-      debug('VSS search failed, falling back to manual similarity calculation:', error);
+    // Manual similarity calculation (no VSS virtual tables in bun:sqlite)
+    const stmt = this.db.prepare(`
+      SELECT * FROM notes WHERE embedding IS NOT NULL
+    `);
+    const notes = stmt.all() as ProjectNote[];
+    
+    // Calculate similarities
+    const results: Array<ProjectNote & { similarity: number }> = [];
+    
+    for (const note of notes) {
+      if (!note.embedding) continue;
       
-      // Fallback to manual similarity calculation
-      const stmt = this.db.prepare(`
-        SELECT * FROM notes WHERE embedding IS NOT NULL
-      `);
-      const notes = stmt.all() as ProjectNote[];
+      // Convert blob back to Float32Array
+      const embeddingBuffer = Buffer.from(note.embedding as any);
+      const noteEmbedding = new Float32Array(embeddingBuffer.buffer);
       
-      // Calculate similarities
-      const results: Array<ProjectNote & { similarity: number }> = [];
-      
-      for (const note of notes) {
-        if (!note.embedding) continue;
-        
-        // Convert blob back to Float32Array
-        const embeddingBuffer = Buffer.from(note.embedding as any);
-        const noteEmbedding = new Float32Array(embeddingBuffer.buffer);
-        
-        const similarity = this.cosineSimilarity(queryEmbedding, noteEmbedding);
-        results.push({ ...note, similarity });
-      }
-      
-      // Sort by similarity (highest first) and limit results
-      results.sort((a, b) => b.similarity - a.similarity);
-      return results.slice(0, limit);
+      const similarity = this.cosineSimilarity(queryEmbedding, noteEmbedding);
+      results.push({ ...note, similarity });
     }
+    
+    // Sort by similarity (highest first) and limit results
+    results.sort((a, b) => b.similarity - a.similarity);
+    return results.slice(0, limit);
   }
 
   // File operations
@@ -464,17 +397,9 @@ export class ProjectDatabase {
     const result = stmt.run(path, content, fileType, size, embeddingBlob, now, now);
     const fileId = result.lastInsertRowid as number;
     
-    // Insert into vector table if embedding was generated
+    // Vector embedding stored in files table (no separate vector table needed)
     if (embedding) {
-      try {
-        const vectorStmt = this.db.prepare(`
-          INSERT OR REPLACE INTO file_embeddings (rowid, embedding) VALUES (?, ?)
-        `);
-        vectorStmt.run(fileId, JSON.stringify(Array.from(embedding)));
-        debug('Added vector embedding for file:', path);
-      } catch (error) {
-        debug('Warning: Could not insert file vector embedding:', error);
-      }
+      debug('Added vector embedding for file:', path);
     }
     
     return {
@@ -543,52 +468,29 @@ export class ProjectDatabase {
       return this.searchFiles(query).slice(0, limit).map(file => ({ ...file, similarity: 0 }));
     }
 
-    try {
-      // Try using sqlite-vss vector search first
-      const vectorResults = this.db.prepare(`
-        SELECT 
-          f.id, f.path, f.content, f.fileType, f.size, f.createdAt, f.updatedAt,
-          distance
-        FROM file_embeddings 
-        LEFT JOIN files f ON file_embeddings.rowid = f.id
-        WHERE vss_search(embedding, ?)
-        ORDER BY distance
-        LIMIT ?
-      `).all(JSON.stringify(Array.from(queryEmbedding)), limit) as Array<ProjectFile & { distance: number }>;
-
-      // Convert distance to similarity score (higher is more similar)
-      return vectorResults.map(result => ({
-        ...result,
-        similarity: 1 / (1 + result.distance) // Convert distance to similarity
-      }));
-
-    } catch (error) {
-      debug('VSS search failed for files, falling back to manual similarity calculation:', error);
+    // Manual similarity calculation (no VSS virtual tables in bun:sqlite)
+    const stmt = this.db.prepare(`
+      SELECT * FROM files WHERE embedding IS NOT NULL
+    `);
+    const files = stmt.all() as ProjectFile[];
+    
+    // Calculate similarities
+    const results: Array<ProjectFile & { similarity: number }> = [];
+    
+    for (const file of files) {
+      if (!file.embedding) continue;
       
-      // Fallback to manual similarity calculation
-      const stmt = this.db.prepare(`
-        SELECT * FROM files WHERE embedding IS NOT NULL
-      `);
-      const files = stmt.all() as ProjectFile[];
+      // Convert blob back to Float32Array
+      const embeddingBuffer = Buffer.from(file.embedding as any);
+      const fileEmbedding = new Float32Array(embeddingBuffer.buffer);
       
-      // Calculate similarities
-      const results: Array<ProjectFile & { similarity: number }> = [];
-      
-      for (const file of files) {
-        if (!file.embedding) continue;
-        
-        // Convert blob back to Float32Array
-        const embeddingBuffer = Buffer.from(file.embedding as any);
-        const fileEmbedding = new Float32Array(embeddingBuffer.buffer);
-        
-        const similarity = this.cosineSimilarity(queryEmbedding, fileEmbedding);
-        results.push({ ...file, similarity });
-      }
-      
-      // Sort by similarity (highest first) and limit results
-      results.sort((a, b) => b.similarity - a.similarity);
-      return results.slice(0, limit);
+      const similarity = this.cosineSimilarity(queryEmbedding, fileEmbedding);
+      results.push({ ...file, similarity });
     }
+    
+    // Sort by similarity (highest first) and limit results
+    results.sort((a, b) => b.similarity - a.similarity);
+    return results.slice(0, limit);
   }
 
   // Metadata operations
