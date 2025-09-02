@@ -2,6 +2,9 @@ import { tool } from 'ai';
 import { z } from 'zod';
 import { debug } from '../utils/logger';
 import { credentialManager } from '../utils/credentialManager';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { promises as fs } from 'node:fs';
 
 /**
  * Screenshot capture tools using Jina.ai API
@@ -17,6 +20,33 @@ interface ScreenshotResponse {
     description?: string;
     screenshot_base64?: string;
   };
+  localImagePath?: string;
+}
+
+/**
+ * Download screenshot image from URL and save to temporary file
+ */
+async function downloadScreenshotImage(imageUrl: string, format: 'png' | 'jpeg'): Promise<string> {
+  const response = await fetch(imageUrl);
+  
+  if (!response.ok) {
+    throw new Error(`Failed to download screenshot image: ${response.status} ${response.statusText}`);
+  }
+  
+  const imageBuffer = await response.arrayBuffer();
+  const uint8Array = new Uint8Array(imageBuffer);
+  
+  // Generate temporary file path
+  const timestamp = Date.now();
+  const randomId = Math.random().toString(36).substring(2, 15);
+  const fileName = `screenshot-${timestamp}-${randomId}.${format}`;
+  const tempFilePath = join(tmpdir(), fileName);
+  
+  // Save image to temporary file
+  await fs.writeFile(tempFilePath, uint8Array);
+  
+  debug('Screenshot image saved to:', tempFilePath);
+  return tempFilePath;
 }
 
 /**
@@ -122,7 +152,13 @@ async function captureScreenshot(
       title: result.data.title
     });
 
-    return result;
+    // Download the screenshot image and save to temporary file
+    const localImagePath = await downloadScreenshotImage(result.data.screenshot_url, options.format || 'png');
+    
+    return {
+      ...result,
+      localImagePath
+    };
 
   } catch (error) {
     debug('Screenshot capture error:', error);
@@ -131,7 +167,7 @@ async function captureScreenshot(
 }
 
 export const captureScreenshotTool = tool({
-  description: 'Capture a screenshot of a web page using Jina.ai API. Returns the screenshot URL and optional page metadata.',
+  description: 'Capture a screenshot of a web page using Jina.ai API. Downloads the image and saves to a temporary file, returning both the remote URL and local file path.',
   inputSchema: z.object({
     url: z.string().describe('The URL of the web page to capture a screenshot of'),
     waitForSelector: z.string().optional().describe('CSS selector to wait for before capturing (optional)'),
@@ -173,6 +209,7 @@ export const captureScreenshotTool = tool({
         success: true,
         url: result.data.url,
         screenshotUrl: result.data.screenshot_url,
+        localImagePath: result.localImagePath,
         title: result.data.title,
         description: result.data.description,
         format,

@@ -1,4 +1,6 @@
 import { describe, it, expect, beforeAll, beforeEach, mock } from 'bun:test';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { captureScreenshotTool } from './screenshotTools';
 
 // Create mock for credential manager
@@ -10,6 +12,9 @@ const mockCredentialManager = {
 mock.module('../utils/credentialManager', () => ({
   credentialManager: mockCredentialManager
 }));
+
+// Mock fs writeFile specifically for screenshot tool
+const mockWriteFile = mock(() => Promise.resolve());
 
 // Mock successful Jina.ai response
 const MOCK_SUCCESS_RESPONSE = {
@@ -43,20 +48,30 @@ describe('screenshotTools', () => {
       // Reset mocks before each test
       mockFetch.mockReset();
       mockCredentialManager.getJinaAPIKey.mockReset();
+      
+      // Setup default mock behavior for sequential calls
+      // First call: Jina.ai API response
+      // Second call: Image download
+      mockFetch
+        .mockResolvedValueOnce(new Response(
+          JSON.stringify(MOCK_SUCCESS_RESPONSE),
+          { 
+            status: 200, 
+            headers: { 'content-type': 'application/json' } 
+          }
+        ))
+        .mockResolvedValueOnce(new Response(
+          new ArrayBuffer(1024), // Mock image data
+          { 
+            status: 200,
+            headers: { 'content-type': 'image/png' }
+          }
+        ));
     });
 
     it('should successfully capture screenshot with default options', async () => {
       // Mock API key availability
       mockCredentialManager.getJinaAPIKey.mockResolvedValue('test-jina-key');
-      
-      // Mock successful API response
-      mockFetch.mockResolvedValue(new Response(
-        JSON.stringify(MOCK_SUCCESS_RESPONSE),
-        { 
-          status: 200, 
-          headers: { 'content-type': 'application/json' } 
-        }
-      ));
 
       const result = await captureScreenshotTool.execute({
         url: 'https://example.com'
@@ -65,20 +80,33 @@ describe('screenshotTools', () => {
       expect(result.success).toBe(true);
       expect(result.url).toBe('https://example.com');
       expect(result.screenshotUrl).toBe('https://r.jina.ai/screenshots/abc123.png');
+      expect(result.localImagePath).toBeDefined();
+      expect(result.localImagePath).toContain(tmpdir());
+      expect(result.localImagePath).toMatch(/screenshot-\d+-\w+\.png$/);
       expect(result.title).toBe('Example Site');
       expect(result.description).toBe('This is an example website');
       expect(result.format).toBe('png');
       expect(result.fullPage).toBe(true);
       expect(result.dimensions).toEqual({ width: 1920, height: 1080 });
       expect(result.capturedAt).toBeDefined();
+      
+      // Verify that a local file path is returned
+      expect(result.localImagePath).toContain('screenshot-');
     });
 
     it('should handle custom screenshot options', async () => {
+      // Reset and setup specific mocks for this test
+      mockFetch.mockReset();
       mockCredentialManager.getJinaAPIKey.mockResolvedValue('test-jina-key');
-      mockFetch.mockResolvedValue(new Response(
-        JSON.stringify(MOCK_SUCCESS_RESPONSE),
-        { status: 200, headers: { 'content-type': 'application/json' } }
-      ));
+      mockFetch
+        .mockResolvedValueOnce(new Response(
+          JSON.stringify(MOCK_SUCCESS_RESPONSE),
+          { status: 200, headers: { 'content-type': 'application/json' } }
+        ))
+        .mockResolvedValueOnce(new Response(
+          new ArrayBuffer(2048), // Mock JPEG image data
+          { status: 200, headers: { 'content-type': 'image/jpeg' } }
+        ));
 
       const result = await captureScreenshotTool.execute({
         url: 'https://example.com',
@@ -97,6 +125,8 @@ describe('screenshotTools', () => {
       expect(result.fullPage).toBe(false);
       expect(result.dimensions).toEqual({ width: 1280, height: 720 });
       expect(result.waitForSelector).toBe('#content');
+      expect(result.localImagePath).toBeDefined();
+      expect(result.localImagePath).toMatch(/screenshot-\d+-\w+\.jpeg$/);
 
       // Verify the API was called with correct parameters
       const fetchCall = mockFetch.mock.calls[0];
@@ -111,11 +141,18 @@ describe('screenshotTools', () => {
     });
 
     it('should normalize URLs by adding protocol', async () => {
+      // Reset mocks for this test
+      mockFetch.mockReset();
       mockCredentialManager.getJinaAPIKey.mockResolvedValue('test-jina-key');
-      mockFetch.mockResolvedValue(new Response(
-        JSON.stringify(MOCK_SUCCESS_RESPONSE),
-        { status: 200, headers: { 'content-type': 'application/json' } }
-      ));
+      mockFetch
+        .mockResolvedValueOnce(new Response(
+          JSON.stringify(MOCK_SUCCESS_RESPONSE),
+          { status: 200, headers: { 'content-type': 'application/json' } }
+        ))
+        .mockResolvedValueOnce(new Response(
+          new ArrayBuffer(1024),
+          { status: 200, headers: { 'content-type': 'image/png' } }
+        ));
 
       const result = await captureScreenshotTool.execute({
         url: 'example.com'
@@ -148,6 +185,8 @@ describe('screenshotTools', () => {
     });
 
     it('should handle API errors', async () => {
+      // Reset mocks for error test
+      mockFetch.mockReset();
       mockCredentialManager.getJinaAPIKey.mockResolvedValue('test-jina-key');
       mockFetch.mockResolvedValue(new Response(
         JSON.stringify(MOCK_ERROR_RESPONSE),
@@ -166,6 +205,8 @@ describe('screenshotTools', () => {
     });
 
     it('should handle network errors', async () => {
+      // Reset mocks for error test
+      mockFetch.mockReset();
       mockCredentialManager.getJinaAPIKey.mockResolvedValue('test-jina-key');
       mockFetch.mockRejectedValue(new Error('Network error'));
 
@@ -189,11 +230,18 @@ describe('screenshotTools', () => {
     });
 
     it('should use correct authorization header', async () => {
+      // Reset mocks for this test
+      mockFetch.mockReset();
       mockCredentialManager.getJinaAPIKey.mockResolvedValue('test-api-key-123');
-      mockFetch.mockResolvedValue(new Response(
-        JSON.stringify(MOCK_SUCCESS_RESPONSE),
-        { status: 200, headers: { 'content-type': 'application/json' } }
-      ));
+      mockFetch
+        .mockResolvedValueOnce(new Response(
+          JSON.stringify(MOCK_SUCCESS_RESPONSE),
+          { status: 200, headers: { 'content-type': 'application/json' } }
+        ))
+        .mockResolvedValueOnce(new Response(
+          new ArrayBuffer(1024),
+          { status: 200, headers: { 'content-type': 'image/png' } }
+        ));
 
       await captureScreenshotTool.execute({
         url: 'https://example.com'
