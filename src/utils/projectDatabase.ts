@@ -98,7 +98,7 @@ export class ProjectDatabase {
     try {
       this.db.exec(`
         CREATE VIRTUAL TABLE IF NOT EXISTS note_embeddings USING vss0(
-          embedding(384)
+          embedding(1536)
         )
       `);
       debug('Note vector search table created successfully');
@@ -110,7 +110,7 @@ export class ProjectDatabase {
     try {
       this.db.exec(`
         CREATE VIRTUAL TABLE IF NOT EXISTS file_embeddings USING vss0(
-          embedding(384)
+          embedding(1536)
         )
       `);
       debug('File vector search table created successfully');
@@ -164,9 +164,11 @@ export class ProjectDatabase {
         const { openai } = await import('@ai-sdk/openai');
         const { embed } = await import('ai');
         
-        // Use OpenAI's text-embedding-3-small model (384 dimensions)
+        // Use OpenAI's text-embedding-3-small model (1536 dimensions)
         const result = await embed({
-          model: openai.embedding('text-embedding-3-small'),
+          model: openai.embedding('text-embedding-3-small', {
+            dimensions: 1536
+          }),
           value: text,
         });
         
@@ -189,7 +191,7 @@ export class ProjectDatabase {
   // Create a simple hash-based embedding (fallback when proper embeddings aren't available)
   private async createSimpleEmbedding(text: string): Promise<Float32Array> {
     const words = text.toLowerCase().split(/\s+/);
-    const embedding = new Float32Array(384); // Match the vector table size
+    const embedding = new Float32Array(1536); // Match the vector table size
     
     // Simple hash-based approach for demonstration
     for (let i = 0; i < words.length; i++) {
@@ -197,7 +199,7 @@ export class ProjectDatabase {
       if (word) {
         for (let j = 0; j < word.length; j++) {
           const charCode = word.charCodeAt(j);
-          const index = (charCode + j + i) % 384;
+          const index = (charCode + j + i) % 1536;
           if (embedding[index] !== undefined) {
             embedding[index] += 1 / (words.length + 1);
           }
