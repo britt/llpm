@@ -60,6 +60,13 @@ import {
   getProjectScanTool,
   listProjectScansTool
 } from './projectScanTools';
+import {
+  indexProjectFiles,
+  semanticSearchProject,
+  addProjectNote,
+  searchProjectNotes,
+  getProjectVectorStats
+} from './vectorSearchTools';
 
 const toolRegistry: ToolRegistry = {
   get_current_project: getCurrentProjectTool,
@@ -111,7 +118,13 @@ const toolRegistry: ToolRegistry = {
   // Project Analysis
   scan_project: scanProjectTool,
   get_project_scan: getProjectScanTool,
-  list_project_scans: listProjectScansTool
+  list_project_scans: listProjectScansTool,
+  // Vector Search
+  index_project_files: indexProjectFiles,
+  semantic_search_project: semanticSearchProject,
+  add_project_note: addProjectNote,
+  search_project_notes: searchProjectNotes,
+  get_project_vector_stats: getProjectVectorStats
 };
 
 export function getToolRegistry(): ToolRegistry {

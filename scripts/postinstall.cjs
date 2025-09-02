@@ -267,6 +267,25 @@ async function main() {
     // Always initialize system prompt, regardless of environment
     initializeSystemPrompt();
     
+    // Setup sqlite-vss system dependencies if not in CI
+    if (!process.env.CI && !process.env.GITHUB_ACTIONS && !process.env.LLPM_TEST_MODE) {
+      try {
+        log('Checking sqlite-vss system dependencies...');
+        
+        // Only install if needed (check if sqlite-vss package exists)
+        const sqliteVssPath = path.join(__dirname, '..', 'node_modules', 'sqlite-vss');
+        if (fs.existsSync(sqliteVssPath)) {
+          log('sqlite-vss package found, dependencies may be required');
+          log('Run: node scripts/install-sqlite-vss-deps.cjs to install system dependencies');
+        } else {
+          log('sqlite-vss package not found, no system dependencies needed');
+        }
+      } catch (err) {
+        log(`Warning: sqlite-vss check failed: ${err.message}`);
+        // Don't fail the entire installation for this
+      }
+    }
+    
     // Skip binary installation in development environments
     if (process.env.NODE_ENV === 'development' || 
         process.env.CI === 'true' || 
