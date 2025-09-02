@@ -1,8 +1,9 @@
-import { Database } from 'bun:sqlite';
+import Database from 'better-sqlite3';
+import type { Database as DatabaseType } from 'better-sqlite3';
 import { join } from 'path';
+import * as sqlite_vss from 'sqlite-vss';
 import { getConfigDir } from './config';
 import { debug } from './logger';
-import { generateText } from 'ai';
 import { modelRegistry } from '../services/modelRegistry';
 import type { Project } from '../types/project';
 
@@ -16,6 +17,17 @@ interface ProjectNote {
   updatedAt: string;
 }
 
+interface ProjectFile {
+  id: number;
+  path: string;
+  content: string;
+  fileType: string;
+  size: number;
+  embedding?: Float32Array;
+  createdAt: string;
+  updatedAt: string;
+}
+
 interface ProjectMetadata {
   key: string;
   value: string;
@@ -23,7 +35,7 @@ interface ProjectMetadata {
 }
 
 export class ProjectDatabase {
-  private db: Database;
+  private db: DatabaseType;
   private projectId: string;
 
   constructor(projectId: string) {
@@ -39,11 +51,11 @@ export class ProjectDatabase {
     debug('Initializing database tables for project:', this.projectId);
 
     try {
-      // Load sqlite-vec extension
-      this.db.loadExtension('sqlite-vec');
-      debug('sqlite-vec extension loaded successfully');
+      // Load sqlite-vss extension
+      sqlite_vss.load(this.db);
+      debug('sqlite-vss extension loaded successfully');
     } catch (error) {
-      debug('Warning: Could not load sqlite-vec extension:', error);
+      debug('Warning: Could not load sqlite-vss extension:', error);
     }
 
     // Create notes table with embedding column
@@ -59,6 +71,20 @@ export class ProjectDatabase {
       )
     `);
 
+    // Create files table for indexing project files
+    this.db.run(`
+      CREATE TABLE IF NOT EXISTS files (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        path TEXT UNIQUE NOT NULL,
+        content TEXT NOT NULL,
+        fileType TEXT NOT NULL,
+        size INTEGER NOT NULL,
+        embedding BLOB,
+        createdAt TEXT NOT NULL,
+        updatedAt TEXT NOT NULL
+      )
+    `);
+
     // Create metadata table for storing key-value pairs
     this.db.run(`
       CREATE TABLE IF NOT EXISTS metadata (
@@ -68,17 +94,28 @@ export class ProjectDatabase {
       )
     `);
 
-    // Create virtual table for vector search (if sqlite-vec is available)
+    // Create virtual table for vector search (if sqlite-vss is available)
     try {
-      this.db.run(`
-        CREATE VIRTUAL TABLE IF NOT EXISTS note_embeddings USING vec0(
-          id INTEGER PRIMARY KEY,
-          embedding FLOAT[384]
+      this.db.exec(`
+        CREATE VIRTUAL TABLE IF NOT EXISTS note_embeddings USING vss0(
+          embedding(1536)
         )
       `);
-      debug('Vector search table created successfully');
+      debug('Note vector search table created successfully');
     } catch (error) {
-      debug('Warning: Could not create vector search table:', error);
+      debug('Warning: Could not create note vector search table:', error);
+    }
+
+    // Create virtual table for file vector search
+    try {
+      this.db.exec(`
+        CREATE VIRTUAL TABLE IF NOT EXISTS file_embeddings USING vss0(
+          embedding(1536)
+        )
+      `);
+      debug('File vector search table created successfully');
+    } catch (error) {
+      debug('Warning: Could not create file vector search table:', error);
     }
 
     // Create index for better search performance
@@ -88,6 +125,14 @@ export class ProjectDatabase {
 
     this.db.run(`
       CREATE INDEX IF NOT EXISTS idx_notes_tags ON notes(tags)
+    `);
+
+    this.db.run(`
+      CREATE INDEX IF NOT EXISTS idx_files_path ON files(path)
+    `);
+
+    this.db.run(`
+      CREATE INDEX IF NOT EXISTS idx_files_type ON files(fileType)
     `);
 
     // Check if embedding column exists and add it if not (migration)
@@ -106,7 +151,7 @@ export class ProjectDatabase {
     debug('Database tables initialized successfully');
   }
 
-  // Generate embedding for text using the current model
+  // Generate embedding for text using OpenAI embeddings API
   private async generateEmbedding(text: string): Promise<Float32Array | null> {
     try {
       debug('Generating embedding for text:', text.substring(0, 50) + '...');
@@ -114,13 +159,29 @@ export class ProjectDatabase {
       // Initialize model registry if needed
       await modelRegistry.init();
       
-      // Create language model for embeddings
-      const model = await modelRegistry.createLanguageModel();
-      
-      // For now, we'll create a simple hash-based embedding as a fallback
-      // In a real implementation, you'd use a proper embedding model
-      const hash = await this.createSimpleEmbedding(text);
-      return hash;
+      // Try to get OpenAI embeddings first
+      try {
+        const { openai } = await import('@ai-sdk/openai');
+        const { embed } = await import('ai');
+        
+        // Use OpenAI's text-embedding-3-small model (1536 dimensions)
+        const result = await embed({
+          model: openai.embedding('text-embedding-3-small', {
+            dimensions: 1536
+          }),
+          value: text,
+        });
+        
+        const embedding = new Float32Array(result.embedding);
+        debug('Generated OpenAI embedding with', embedding.length, 'dimensions');
+        return embedding;
+      } catch (openaiError) {
+        debug('OpenAI embedding failed, trying fallback:', openaiError);
+        
+        // Fallback to simple embedding if OpenAI is not available
+        const fallbackEmbedding = await this.createSimpleEmbedding(text);
+        return fallbackEmbedding;
+      }
     } catch (error) {
       debug('Error generating embedding:', error);
       return null;
@@ -130,7 +191,7 @@ export class ProjectDatabase {
   // Create a simple hash-based embedding (fallback when proper embeddings aren't available)
   private async createSimpleEmbedding(text: string): Promise<Float32Array> {
     const words = text.toLowerCase().split(/\s+/);
-    const embedding = new Float32Array(384); // Match the vector table size
+    const embedding = new Float32Array(1536); // Match the vector table size
     
     // Simple hash-based approach for demonstration
     for (let i = 0; i < words.length; i++) {
@@ -138,7 +199,7 @@ export class ProjectDatabase {
       if (word) {
         for (let j = 0; j < word.length; j++) {
           const charCode = word.charCodeAt(j);
-          const index = (charCode + j + i) % 384;
+          const index = (charCode + j + i) % 1536;
           if (embedding[index] !== undefined) {
             embedding[index] += 1 / (words.length + 1);
           }
@@ -203,7 +264,7 @@ export class ProjectDatabase {
     if (embedding) {
       try {
         const vectorStmt = this.db.prepare(`
-          INSERT INTO note_embeddings (id, embedding) VALUES (?, ?)
+          INSERT INTO note_embeddings (rowid, embedding) VALUES (?, ?)
         `);
         vectorStmt.run(noteId, JSON.stringify(Array.from(embedding)));
         debug('Added vector embedding for note:', noteId);
@@ -243,7 +304,7 @@ export class ProjectDatabase {
     return stmt.get(id) as ProjectNote | null;
   }
 
-  updateNote(id: number, title?: string, content?: string, tags?: string[]): ProjectNote | null {
+  async updateNote(id: number, title?: string, content?: string, tags?: string[]): Promise<ProjectNote | null> {
     debug('Updating note:', id);
     
     const existing = this.getNote(id);
@@ -256,19 +317,47 @@ export class ProjectDatabase {
     const finalContent = content ?? existing.content;
     const finalTags = tags ? tags.join(',') : existing.tags;
 
+    // Check if content changed and regenerate embedding if needed
+    const contentChanged = (title && title !== existing.title) || 
+                          (content && content !== existing.content);
+    
+    let embedding: Float32Array | undefined;
+    let embeddingBlob: Buffer | null = null;
+    
+    if (contentChanged) {
+      debug('Content changed, regenerating embedding for note:', id);
+      embedding = await this.generateEmbedding(`${finalTitle} ${finalContent}`);
+      embeddingBlob = embedding ? Buffer.from(embedding.buffer) : null;
+    }
+
+    // Update note in database
     const stmt = this.db.prepare(`
       UPDATE notes 
-      SET title = ?, content = ?, tags = ?, updatedAt = ?
+      SET title = ?, content = ?, tags = ?, embedding = COALESCE(?, embedding), updatedAt = ?
       WHERE id = ?
     `);
     
-    stmt.run(finalTitle, finalContent, finalTags || null, now, id);
+    stmt.run(finalTitle, finalContent, finalTags || null, embeddingBlob, now, id);
+    
+    // Update vector table if we generated a new embedding
+    if (embedding) {
+      try {
+        const vectorStmt = this.db.prepare(`
+          INSERT OR REPLACE INTO note_embeddings (rowid, embedding) VALUES (?, ?)
+        `);
+        vectorStmt.run(id, JSON.stringify(Array.from(embedding)));
+        debug('Updated vector embedding for note:', id);
+      } catch (error) {
+        debug('Warning: Could not update vector embedding:', error);
+      }
+    }
     
     return {
       id,
       title: finalTitle,
       content: finalContent,
       tags: finalTags,
+      embedding: embedding || existing.embedding,
       createdAt: existing.createdAt,
       updatedAt: now
     };
@@ -308,29 +397,198 @@ export class ProjectDatabase {
       return this.searchNotes(query).slice(0, limit).map(note => ({ ...note, similarity: 0 }));
     }
 
-    // Get all notes with embeddings
+    try {
+      // Try using sqlite-vss vector search first
+      const vectorResults = this.db.prepare(`
+        SELECT 
+          n.id, n.title, n.content, n.tags, n.createdAt, n.updatedAt,
+          distance
+        FROM note_embeddings 
+        LEFT JOIN notes n ON note_embeddings.rowid = n.id
+        WHERE vss_search(embedding, ?)
+        ORDER BY distance
+        LIMIT ?
+      `).all(JSON.stringify(Array.from(queryEmbedding)), limit) as Array<ProjectNote & { distance: number }>;
+
+      // Convert distance to similarity score (higher is more similar)
+      return vectorResults.map(result => ({
+        ...result,
+        similarity: 1 / (1 + result.distance) // Convert distance to similarity
+      }));
+
+    } catch (error) {
+      debug('VSS search failed, falling back to manual similarity calculation:', error);
+      
+      // Fallback to manual similarity calculation
+      const stmt = this.db.prepare(`
+        SELECT * FROM notes WHERE embedding IS NOT NULL
+      `);
+      const notes = stmt.all() as ProjectNote[];
+      
+      // Calculate similarities
+      const results: Array<ProjectNote & { similarity: number }> = [];
+      
+      for (const note of notes) {
+        if (!note.embedding) continue;
+        
+        // Convert blob back to Float32Array
+        const embeddingBuffer = Buffer.from(note.embedding as any);
+        const noteEmbedding = new Float32Array(embeddingBuffer.buffer);
+        
+        const similarity = this.cosineSimilarity(queryEmbedding, noteEmbedding);
+        results.push({ ...note, similarity });
+      }
+      
+      // Sort by similarity (highest first) and limit results
+      results.sort((a, b) => b.similarity - a.similarity);
+      return results.slice(0, limit);
+    }
+  }
+
+  // File operations
+  async addFile(path: string, content: string, fileType: string): Promise<ProjectFile> {
+    debug('Adding file to project database:', path);
+    
+    const now = new Date().toISOString();
+    const size = content.length;
+    
+    // Generate embedding for the file content
+    const embedding = await this.generateEmbedding(`${path} ${content}`);
+    const embeddingBlob = embedding ? Buffer.from(embedding.buffer) : null;
+    
     const stmt = this.db.prepare(`
-      SELECT * FROM notes WHERE embedding IS NOT NULL
+      INSERT OR REPLACE INTO files (path, content, fileType, size, embedding, createdAt, updatedAt)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
     `);
-    const notes = stmt.all() as ProjectNote[];
     
-    // Calculate similarities
-    const results: Array<ProjectNote & { similarity: number }> = [];
+    const result = stmt.run(path, content, fileType, size, embeddingBlob, now, now);
+    const fileId = result.lastInsertRowid as number;
     
-    for (const note of notes) {
-      if (!note.embedding) continue;
-      
-      // Convert blob back to Float32Array
-      const embeddingBuffer = Buffer.from(note.embedding as any);
-      const noteEmbedding = new Float32Array(embeddingBuffer.buffer);
-      
-      const similarity = this.cosineSimilarity(queryEmbedding, noteEmbedding);
-      results.push({ ...note, similarity });
+    // Insert into vector table if embedding was generated
+    if (embedding) {
+      try {
+        const vectorStmt = this.db.prepare(`
+          INSERT OR REPLACE INTO file_embeddings (rowid, embedding) VALUES (?, ?)
+        `);
+        vectorStmt.run(fileId, JSON.stringify(Array.from(embedding)));
+        debug('Added vector embedding for file:', path);
+      } catch (error) {
+        debug('Warning: Could not insert file vector embedding:', error);
+      }
     }
     
-    // Sort by similarity (highest first) and limit results
-    results.sort((a, b) => b.similarity - a.similarity);
-    return results.slice(0, limit);
+    return {
+      id: fileId,
+      path,
+      content,
+      fileType,
+      size,
+      embedding: embedding || undefined,
+      createdAt: now,
+      updatedAt: now
+    };
+  }
+
+  getFiles(): ProjectFile[] {
+    debug('Retrieving all files for project:', this.projectId);
+    
+    const stmt = this.db.prepare(`
+      SELECT * FROM files ORDER BY path
+    `);
+    
+    return stmt.all() as ProjectFile[];
+  }
+
+  getFile(path: string): ProjectFile | null {
+    debug('Retrieving file by path:', path);
+    
+    const stmt = this.db.prepare(`
+      SELECT * FROM files WHERE path = ?
+    `);
+    
+    return stmt.get(path) as ProjectFile | null;
+  }
+
+  deleteFile(path: string): boolean {
+    debug('Deleting file:', path);
+    
+    const stmt = this.db.prepare(`
+      DELETE FROM files WHERE path = ?
+    `);
+    
+    const result = stmt.run(path);
+    return result.changes > 0;
+  }
+
+  searchFiles(query: string): ProjectFile[] {
+    debug('Searching files with query:', query);
+    
+    const stmt = this.db.prepare(`
+      SELECT * FROM files 
+      WHERE path LIKE ? OR content LIKE ? OR fileType LIKE ?
+      ORDER BY path
+    `);
+    
+    const searchTerm = `%${query}%`;
+    return stmt.all(searchTerm, searchTerm, searchTerm) as ProjectFile[];
+  }
+
+  async searchFilesSemantic(query: string, limit: number = 10): Promise<Array<ProjectFile & { similarity: number }>> {
+    debug('Performing semantic search for files with query:', query);
+    
+    // Generate embedding for the search query
+    const queryEmbedding = await this.generateEmbedding(query);
+    if (!queryEmbedding) {
+      debug('Could not generate query embedding, falling back to text search');
+      return this.searchFiles(query).slice(0, limit).map(file => ({ ...file, similarity: 0 }));
+    }
+
+    try {
+      // Try using sqlite-vss vector search first
+      const vectorResults = this.db.prepare(`
+        SELECT 
+          f.id, f.path, f.content, f.fileType, f.size, f.createdAt, f.updatedAt,
+          distance
+        FROM file_embeddings 
+        LEFT JOIN files f ON file_embeddings.rowid = f.id
+        WHERE vss_search(embedding, ?)
+        ORDER BY distance
+        LIMIT ?
+      `).all(JSON.stringify(Array.from(queryEmbedding)), limit) as Array<ProjectFile & { distance: number }>;
+
+      // Convert distance to similarity score (higher is more similar)
+      return vectorResults.map(result => ({
+        ...result,
+        similarity: 1 / (1 + result.distance) // Convert distance to similarity
+      }));
+
+    } catch (error) {
+      debug('VSS search failed for files, falling back to manual similarity calculation:', error);
+      
+      // Fallback to manual similarity calculation
+      const stmt = this.db.prepare(`
+        SELECT * FROM files WHERE embedding IS NOT NULL
+      `);
+      const files = stmt.all() as ProjectFile[];
+      
+      // Calculate similarities
+      const results: Array<ProjectFile & { similarity: number }> = [];
+      
+      for (const file of files) {
+        if (!file.embedding) continue;
+        
+        // Convert blob back to Float32Array
+        const embeddingBuffer = Buffer.from(file.embedding as any);
+        const fileEmbedding = new Float32Array(embeddingBuffer.buffer);
+        
+        const similarity = this.cosineSimilarity(queryEmbedding, fileEmbedding);
+        results.push({ ...file, similarity });
+      }
+      
+      // Sort by similarity (highest first) and limit results
+      results.sort((a, b) => b.similarity - a.similarity);
+      return results.slice(0, limit);
+    }
   }
 
   // Metadata operations
@@ -386,15 +644,18 @@ export class ProjectDatabase {
   }
 
   // Utility methods
-  getStats(): { notesCount: number; metadataCount: number } {
+  getStats(): { notesCount: number; filesCount: number; metadataCount: number } {
     const notesStmt = this.db.prepare(`SELECT COUNT(*) as count FROM notes`);
+    const filesStmt = this.db.prepare(`SELECT COUNT(*) as count FROM files`);
     const metadataStmt = this.db.prepare(`SELECT COUNT(*) as count FROM metadata`);
     
     const notesResult = notesStmt.get() as { count: number };
+    const filesResult = filesStmt.get() as { count: number };
     const metadataResult = metadataStmt.get() as { count: number };
     
     return {
       notesCount: notesResult.count,
+      filesCount: filesResult.count,
       metadataCount: metadataResult.count
     };
   }

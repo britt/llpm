@@ -67,7 +67,7 @@ export const updateNoteTool = tool({
     }
 
     try {
-      const updatedNote = db.updateNote(id, title, content, tags);
+      const updatedNote = await db.updateNote(id, title, content, tags);
       db.close();
 
       if (!updatedNote) {
