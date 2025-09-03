@@ -73,7 +73,11 @@ describe('Screenshot Tools', () => {
         // In CI without uv, may not have installInstructions but should have userMessage
         expect(result.installInstructions || result.userMessage).toBeDefined();
         if (result.installCommand) {
-          expect(result.installCommand).toContain('pip install shot-scraper');
+          // CI environments may return different installation commands (uv vs pip)
+          expect(
+            result.installCommand.includes('pip install shot-scraper') ||
+            result.installCommand.includes('uv/install.sh')
+          ).toBe(true);
         }
       }
     });
