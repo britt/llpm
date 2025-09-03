@@ -2,7 +2,7 @@
 // The functionality is tested manually and works correctly
 // TODO: Implement proper cross-platform mocking for both Bun and Vitest
 
-import { describe } from 'bun:test';
+import { describe } from 'vitest';
 
 describe.skip('GitHub Assets Upload', () => {
   // Tests temporarily disabled due to cross-platform mocking complexity
