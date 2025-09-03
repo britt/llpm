@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'bun:test';
+import { describe, it, expect } from 'vitest';
 import { takeScreenshotTool, checkScreenshotSetupTool } from './screenshotTools';
 
 describe('Screenshot Tools', () => {
