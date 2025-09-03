@@ -49,6 +49,11 @@ beforeAll(() => {
       };
     }
   }
+  
+  // Set NODE_ENV to test for all test runs to ensure temp config dirs are used
+  if (typeof process !== 'undefined' && process.env) {
+    process.env.NODE_ENV = 'test';
+  }
 });
 
 // Cleanup after each test

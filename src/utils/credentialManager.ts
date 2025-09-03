@@ -29,10 +29,6 @@ export interface CredentialConfig {
     apiKey?: string;
   };
   
-  // Screenshot Service
-  jina?: {
-    apiKey?: string;
-  };
 }
 
 export interface ProfileConfig {
@@ -215,12 +211,6 @@ export class CredentialManager {
     return this.getCredential('arcade', 'apiKey', 'ARCADE_API_KEY');
   }
 
-  /**
-   * Get Jina API key (env: JINA_API_KEY)
-   */
-  public async getJinaAPIKey(): Promise<string | undefined> {
-    return this.getCredential('jina', 'apiKey', 'JINA_API_KEY');
-  }
 
   /**
    * Set a credential in the specified profile (or current profile)
@@ -392,7 +382,6 @@ export class CredentialManager {
     const vertexProjectId = await this.getGoogleVertexProjectId();
     const githubToken = await this.getGitHubToken();
     const arcadeKey = await this.getArcadeAPIKey();
-    const jinaKey = await this.getJinaAPIKey();
 
     status.openai = { apiKey: !!openaiKey };
     status.anthropic = { apiKey: !!anthropicKey };
@@ -403,7 +392,6 @@ export class CredentialManager {
     };
     status.github = { token: !!githubToken };
     status.arcade = { apiKey: !!arcadeKey };
-    status.jina = { apiKey: !!jinaKey };
 
     return status;
   }
