@@ -1,7 +1,7 @@
-import Database from 'better-sqlite3';
-import type { Database as DatabaseType } from 'better-sqlite3';
+import { Database } from 'bun:sqlite';
+import type { Database as DatabaseType } from 'bun:sqlite';
 import { join } from 'path';
-import * as sqlite_vss from 'sqlite-vss';
+// Note: SQLite VSS extensions not available with bun:sqlite, using simple similarity instead
 import { getConfigDir } from './config';
 import { debug } from './logger';
 import { modelRegistry } from '../services/modelRegistry';
@@ -50,13 +50,7 @@ export class ProjectDatabase {
   private initializeTables(): void {
     debug('Initializing database tables for project:', this.projectId);
 
-    try {
-      // Load sqlite-vss extension
-      sqlite_vss.load(this.db);
-      debug('sqlite-vss extension loaded successfully');
-    } catch (error) {
-      debug('Warning: Could not load sqlite-vss extension:', error);
-    }
+    // Note: Using bun:sqlite without VSS extension - vector search uses cosine similarity
 
     // Create notes table with embedding column
     this.db.run(`
