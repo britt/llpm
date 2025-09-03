@@ -2,7 +2,8 @@ import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
   define: {
-    'process.env.CI': JSON.stringify(process.env.CI)
+    'process.env.CI': JSON.stringify(process.env.CI),
+    'process.env.NODE_ENV': JSON.stringify('test')
   },
   resolve: {
     alias: process.env.CI === 'true' ? {

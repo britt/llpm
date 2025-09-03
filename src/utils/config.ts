@@ -1,12 +1,36 @@
 import { existsSync } from 'fs';
 import { mkdir } from 'fs/promises';
 import { join } from 'path';
-import { homedir } from 'os';
+import { homedir, tmpdir } from 'os';
 import { debug } from './logger';
 import { ensureDefaultSystemPromptFile } from './systemPrompt';
 import { loadProjectConfig } from './projectConfig';
 
-export const CONFIG_DIR = join(homedir(), '.llpm');
+// Allow override for testing
+function getBaseConfigDir(): string {
+  // Check for test environment variable
+  if (process.env.LLPM_CONFIG_DIR) {
+    return process.env.LLPM_CONFIG_DIR;
+  }
+  
+  // In test environment, use temporary directory
+  // Check for various test environment indicators
+  const isTest = process.env.NODE_ENV === 'test' || 
+                 process.env.BUN_TEST === 'true' ||
+                 (process.argv.includes('test') || process.argv.some(arg => arg.endsWith('.test.ts') || arg.endsWith('.test.js'))) ||
+                 process.title?.includes('bun test');
+                 
+  if (isTest && !process.env.LLPM_USE_REAL_CONFIG) {
+    // Create a unique temp dir for this test session
+    const testDir = join(tmpdir(), `llpm-test-${process.pid}-${Date.now()}`);
+    debug('Using temporary config directory for tests:', testDir);
+    return testDir;
+  }
+  
+  return join(homedir(), '.llpm');
+}
+
+export const CONFIG_DIR = getBaseConfigDir();
 export const CONFIG_FILE = join(CONFIG_DIR, 'config.json');
 export const SYSTEM_PROMPT_FILE = join(CONFIG_DIR, 'system_prompt.txt');
 

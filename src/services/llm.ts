@@ -29,7 +29,7 @@ export async function generateResponse(messages: Message[]): Promise<string> {
       } as ModelMessage))
     ];
 
-    const tools = getToolRegistry();
+    const tools = await getToolRegistry();
     debug(
       'Calling AI API with model:',
       currentModel.displayName,
@@ -50,6 +50,25 @@ export async function generateResponse(messages: Message[]): Promise<string> {
     debug('AI SDK result text:', JSON.stringify(result.text));
     debug('Tool calls present:', result.toolCalls?.length || 0);
     debug('Tool results present:', result.toolResults?.length || 0);
+
+    // Check for user messages in tool results that should be displayed directly
+    const userMessages: string[] = [];
+    if (result.toolResults) {
+      for (const toolResult of result.toolResults) {
+        if (toolResult.result && typeof toolResult.result === 'object') {
+          const resultObj = toolResult.result as any;
+          if (resultObj.userMessage) {
+            userMessages.push(resultObj.userMessage);
+          }
+        }
+      }
+    }
+
+    // If we have user messages, prepend them to the AI's response
+    if (userMessages.length > 0) {
+      const userMessageSection = userMessages.join('\n\n---\n\n');
+      return userMessageSection + '\n\n' + result.text;
+    }
 
     return result.text;
   } catch (error) {

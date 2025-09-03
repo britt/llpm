@@ -137,6 +137,43 @@ For more information, read the Bun API docs in `node_modules/bun-types/docs/**.m
 - Use `generateText()` for single responses, `streamText()` for streaming
 - Environment variables: Store API keys in `.env` (Bun loads automatically)
 
+### Screenshot Tools
+
+LLPM uses ONLY shot-scraper for screenshots. NEVER use JINA screenshot tools!
+
+**AI Tools for Screenshots (shot-scraper ONLY):**
+- `take_screenshot`: Take a screenshot of any web page with customizable options
+- `check_screenshot_setup`: Check if shot-scraper is properly installed and configured
+
+**IMPORTANT: Use only the shot-scraper tools for screenshots!**
+
+**Key Features:**
+- **URL Screenshots**: Capture any web page by URL
+- **Custom Dimensions**: Specify browser width/height (default: 1280x720)
+- **Element Selection**: Screenshot specific CSS selectors instead of full page
+- **Wait Delays**: Add delays before capture for dynamic content
+- **Custom Filenames**: Specify screenshot filename (auto-generates if not provided)
+- **Temporary Storage**: Screenshots saved to system temp directory
+
+**Setup Requirements:**
+1. Install uv: `curl -LsSf https://astral.sh/uv/install.sh | sh`
+2. Install shot-scraper: `uv pip install shot-scraper`
+3. Verify: `uvx shot-scraper --version`
+
+**AI Tool Usage Examples:**
+```
+User: "Take a screenshot of https://example.com"
+Assistant: I'll take a screenshot using shot-scraper.
+[Uses take_screenshot tool (shot-scraper) with URL parameter]
+
+User: "Screenshot just the main content area of the page"
+Assistant: I'll take a screenshot of the specific content area using shot-scraper with a CSS selector.
+[Uses take_screenshot tool (shot-scraper) with selector parameter]
+```
+
+**CRITICAL RULE: ONLY use shot-scraper for screenshots!**
+The AI automatically uses shot-scraper when requested and provides the file path for viewing.
+
 ### CLI Development with Ink
 
 - Use Ink for terminal UI components: `import { Box, Text, useInput } from 'ink'`
@@ -211,6 +248,44 @@ GOOGLE_VERTEX_REGION=us-central1  # optional
 - **Provider factory**: Creates appropriate AI SDK instances based on provider
 - **Type-safe configuration**: Full TypeScript support for model configurations
 
+### File Attachments for GitHub Issues and PRs
+
+LLPM can upload and attach files when creating or commenting on GitHub issues and pull requests:
+
+**AI Tools with File Attachment Support:**
+- `create_github_issue`: Create issues with optional file attachments
+- `comment_on_github_issue`: Add comments with optional file attachments  
+- `create_github_pull_request`: Create PRs with optional file attachments
+
+**Key Features:**
+- **Automatic Upload**: Files are uploaded to GitHub gists for reliable hosting
+- **Smart Detection**: Images get image markdown syntax, other files get download links
+- **Multiple Files**: Support for attaching multiple files at once
+- **Error Handling**: Graceful handling of upload failures with user feedback
+- **File Size Info**: Shows file sizes in attachment links
+
+**Supported File Types:**
+- **Images**: PNG, JPG, JPEG, GIF, BMP, WEBP (displayed inline)
+- **Text Files**: TXT, MD, JSON, JS, TS, HTML, CSS, LOG, YAML, XML, CSV
+- **Binary Files**: Any other file type (linked for download)
+
+**AI Tool Usage Examples:**
+```
+User: "Create an issue about the login bug and attach the error screenshot"
+Assistant: I'll create the issue and upload your screenshot.
+[Uses create_github_issue tool with attachments parameter]
+
+User: "Comment on issue #123 and attach the debug logs"
+Assistant: I'll add a comment with the log file attached.
+[Uses comment_on_github_issue tool with attachments parameter]
+```
+
+**Implementation Details:**
+- Files are uploaded as private GitHub gists for secure, permanent hosting
+- Attachment markdown is appended to issue/PR/comment body automatically
+- Upload failures are handled gracefully without blocking issue/PR creation
+- GitHub token is required for file uploads
+
 ### GitHub Integration
 
 - Use `@octokit/rest` for GitHub API interactions
@@ -268,6 +343,40 @@ Assistant: I'll update the project item's priority field using the update_github
   // ❌ Bad - regular import for types
   import { Message } from '../types';
   ```
+
+### AI Tool Creation Rules
+
+**CRITICAL: Always Use `inputSchema` for AI Tools**
+- **NEVER use `parameters`** when creating tools with the `tool()` function from `ai` SDK
+- **ALWAYS use `inputSchema`** - this is required for proper JSON Schema generation
+- **Check existing tools in the codebase** before creating new ones to follow the same pattern
+
+```typescript
+// ✅ CORRECT - Use inputSchema
+export const myTool = tool({
+  description: 'Description of the tool',
+  inputSchema: z.object({
+    param: z.string().describe('Parameter description')
+  }),
+  execute: async ({ param }) => { ... }
+});
+
+// ❌ WRONG - Never use parameters
+export const myTool = tool({
+  description: 'Description of the tool',
+  parameters: z.object({ ... }), // This will cause JSON Schema validation errors
+  execute: async ({ param }) => { ... }
+});
+```
+
+**Why This Matters:**
+- Using `parameters` causes `"Invalid schema for function: schema must be a JSON Schema of 'type: \"object\"', got 'type: \"None\"'"` errors
+- The AI SDK expects `inputSchema` to properly convert Zod schemas to JSON Schema
+- This is a breaking error that prevents the tool from being registered with LLM APIs
+
+**CRITICAL SCREENSHOT RULE:**
+- **ONLY use shot-scraper tools for screenshots** (`take_screenshot`, `check_screenshot_setup`)
+- **Use built-in web content tools** for web page reading (`read_web_page`, `summarize_web_page`)
 
 ### Type System Rules
 

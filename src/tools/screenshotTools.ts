@@ -1,235 +1,247 @@
 import { tool } from 'ai';
 import { z } from 'zod';
-import { debug } from '../utils/logger';
-import { credentialManager } from '../utils/credentialManager';
-import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { exec } from 'node:child_process';
+import { promisify } from 'node:util';
 import { promises as fs } from 'node:fs';
+import { join } from 'node:path';
+import { tmpdir } from 'node:os';
+import { debug } from '../utils/logger';
+
+const execAsync = promisify(exec);
 
 /**
- * Screenshot capture tools using Jina.ai API
+ * Take a screenshot of a web page using shot-scraper
  */
-
-interface ScreenshotResponse {
-  code: number;
-  status: string;
-  data: {
-    url: string;
-    screenshot_url: string;
-    title?: string;
-    description?: string;
-    screenshot_base64?: string;
-  };
-  localImagePath?: string;
-}
-
-/**
- * Download screenshot image from URL and save to temporary file
- */
-async function downloadScreenshotImage(imageUrl: string, format: 'png' | 'jpeg'): Promise<string> {
-  const response = await fetch(imageUrl);
-  
-  if (!response.ok) {
-    throw new Error(`Failed to download screenshot image: ${response.status} ${response.statusText}`);
-  }
-  
-  const imageBuffer = await response.arrayBuffer();
-  const uint8Array = new Uint8Array(imageBuffer);
-  
-  // Generate temporary file path
-  const timestamp = Date.now();
-  const randomId = Math.random().toString(36).substring(2, 15);
-  const fileName = `screenshot-${timestamp}-${randomId}.${format}`;
-  const tempFilePath = join(tmpdir(), fileName);
-  
-  // Save image to temporary file
-  await fs.writeFile(tempFilePath, uint8Array);
-  
-  debug('Screenshot image saved to:', tempFilePath);
-  return tempFilePath;
-}
-
-/**
- * Validate and normalize URL for screenshot capture
- */
-function normalizeUrl(url: string): string {
-  try {
-    if (!url || url.trim().length === 0) {
-      throw new Error('URL cannot be empty');
-    }
-    
-    url = url.trim();
-    
-    // Check for invalid characters
-    if (/\s/.test(url) && !url.startsWith('http')) {
-      throw new Error('Invalid characters in URL');
-    }
-    
-    // Add protocol if missing
-    if (!url.startsWith('http://') && !url.startsWith('https://')) {
-      url = 'https://' + url;
-    }
-    
-    // Validate URL format
-    new URL(url);
-    return url;
-  } catch (error) {
-    if (error instanceof Error && error.message.includes('Invalid')) {
-      throw error;
-    }
-    throw new Error(`Invalid URL format: ${url}`);
-  }
-}
-
-/**
- * Capture screenshot using Jina.ai API
- */
-async function captureScreenshot(
-  url: string, 
-  options: {
-    waitForSelector?: string;
-    fullPage?: boolean;
-    format?: 'png' | 'jpeg';
-    quality?: number;
-    width?: number;
-    height?: number;
-    timeout?: number;
-  } = {}
-): Promise<ScreenshotResponse> {
-  const jinaApiKey = await credentialManager.getJinaAPIKey();
-  
-  if (!jinaApiKey) {
-    throw new Error('Jina API key not configured. Set JINA_API_KEY environment variable or configure via /credentials command.');
-  }
-
-  const {
-    waitForSelector,
-    fullPage = true,
-    format = 'png',
-    quality = 90,
-    width = 1920,
-    height = 1080,
-    timeout = 30000
-  } = options;
-
-  const screenshotUrl = 'https://r.jina.ai';
-  const params = new URLSearchParams({
-    url: url,
-    full_page: fullPage.toString(),
-    format: format,
-    quality: quality.toString(),
-    width: width.toString(),
-    height: height.toString(),
-    timeout: timeout.toString()
-  });
-
-  if (waitForSelector) {
-    params.append('wait_for_selector', waitForSelector);
-  }
-
-  debug('Capturing screenshot with Jina.ai:', { url, options });
-
-  try {
-    const response = await fetch(`${screenshotUrl}?${params.toString()}`, {
-      method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${jinaApiKey}`,
-        'Accept': 'application/json',
-        'User-Agent': 'LLPM Screenshot Tool/1.0 (https://github.com/britt/llpm)',
-      },
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`Jina.ai API error ${response.status}: ${response.statusText}\n${errorText}`);
-    }
-
-    const result: ScreenshotResponse = await response.json();
-    
-    debug('Screenshot captured successfully:', {
-      url: result.data.url,
-      screenshot_url: result.data.screenshot_url,
-      title: result.data.title
-    });
-
-    // Download the screenshot image and save to temporary file
-    const localImagePath = await downloadScreenshotImage(result.data.screenshot_url, options.format || 'png');
-    
-    return {
-      ...result,
-      localImagePath
-    };
-
-  } catch (error) {
-    debug('Screenshot capture error:', error);
-    throw error instanceof Error ? error : new Error('Unknown error occurred during screenshot capture');
-  }
-}
-
-export const captureScreenshotTool = tool({
-  description: 'Capture a screenshot of a web page using Jina.ai API. Downloads the image and saves to a temporary file, returning both the remote URL and local file path.',
+export const takeScreenshotTool = tool({
+  description: 'Take a screenshot of a web page using the shot-scraper CLI tool. Returns the path to the saved screenshot file.',
   inputSchema: z.object({
-    url: z.string().describe('The URL of the web page to capture a screenshot of'),
-    waitForSelector: z.string().optional().describe('CSS selector to wait for before capturing (optional)'),
-    fullPage: z.boolean().optional().default(true).describe('Whether to capture the full page or just the viewport (default: true)'),
-    format: z.enum(['png', 'jpeg']).optional().default('png').describe('Image format for the screenshot (default: png)'),
-    quality: z.number().min(1).max(100).optional().default(90).describe('Image quality for JPEG format (1-100, default: 90)'),
-    width: z.number().optional().default(1920).describe('Viewport width in pixels (default: 1920)'),
-    height: z.number().optional().default(1080).describe('Viewport height in pixels (default: 1080)'),
-    timeout: z.number().optional().default(30000).describe('Maximum time to wait for page load in milliseconds (default: 30000)')
+    url: z.string().describe('The URL of the web page to screenshot'),
+    width: z.number().optional().describe('Browser width in pixels (default: 1280)'),
+    height: z.number().optional().describe('Browser height in pixels (default: 720)'),
+    selector: z.string().optional().describe('CSS selector to screenshot specific element instead of full page'),
+    wait: z.number().optional().describe('Milliseconds to wait before taking screenshot'),
+    filename: z.string().optional().describe('Custom filename for the screenshot (without extension)')
   }),
-  execute: async ({ 
-    url, 
-    waitForSelector, 
-    fullPage = true, 
-    format = 'png', 
-    quality = 90, 
-    width = 1920, 
-    height = 1080,
-    timeout = 30000
-  }) => {
-    debug('Screenshot tool called:', { url, fullPage, format, quality, width, height });
-    
+  execute: async ({ url, width, height, selector, wait, filename }) => {
     try {
-      // Normalize and validate URL
-      const normalizedUrl = normalizeUrl(url);
+      debug('Taking screenshot of:', url);
+
+      // Check if uv and shot-scraper are available
+      try {
+        await execAsync('uv --version');
+      } catch (error) {
+        const instructions = [
+          '📸 Screenshot Setup Required',
+          '',
+          'To take screenshots, you need to install uv and shot-scraper:',
+          '',
+          '1. Install uv (Python package manager):',
+          '   curl -LsSf https://astral.sh/uv/install.sh | sh',
+          '',
+          '2. Install shot-scraper:',
+          '   uv pip install shot-scraper',
+          '',
+          '3. Verify installation:',
+          '   uvx shot-scraper --version',
+          '',
+          'After installation, try your screenshot request again!'
+        ].join('\n');
+
+        return {
+          success: false,
+          userMessage: instructions,
+          error: 'uv is not installed - installation instructions provided to user'
+        };
+      }
+
+      try {
+        await execAsync('uvx shot-scraper --version');
+      } catch (error) {
+        const instructions = [
+          '📸 Shot-scraper Setup Required',
+          '',
+          'uv is installed, but shot-scraper is not available.',
+          '',
+          'To install shot-scraper:',
+          '   uv pip install shot-scraper',
+          '',
+          'Then verify with:',
+          '   uvx shot-scraper --version',
+          '',
+          'After installation, try your screenshot request again!'
+        ].join('\n');
+
+        return {
+          success: false,
+          userMessage: instructions,
+          error: 'shot-scraper is not available - installation instructions provided to user'
+        };
+      }
+
+      // Generate filename if not provided
+      const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+      const screenshotFilename = filename 
+        ? `${filename}.png` 
+        : `screenshot-${timestamp}.png`;
       
-      // Capture screenshot
-      const result = await captureScreenshot(normalizedUrl, {
-        waitForSelector,
-        fullPage,
-        format,
-        quality,
-        width,
-        height,
-        timeout
+      const outputPath = join(tmpdir(), screenshotFilename);
+
+      // Build uvx shot-scraper command
+      const args = [
+        'uvx', 'shot-scraper',
+        `"${url}"`,
+        '--output', `"${outputPath}"`
+      ];
+
+      if (width && height) {
+        args.push('--width', width.toString(), '--height', height.toString());
+      }
+
+      if (selector) {
+        args.push('--selector', `"${selector}"`);
+      }
+
+      if (wait) {
+        args.push('--wait', wait.toString());
+      }
+
+      const command = args.join(' ');
+      debug('Executing uvx shot-scraper command:', command);
+
+      // Execute screenshot command
+      const { stdout, stderr } = await execAsync(command, {
+        timeout: 60000 // 60 second timeout for slow network/rendering
       });
+
+      debug('shot-scraper stdout:', stdout);
+      if (stderr) {
+        debug('shot-scraper stderr:', stderr);
+        // Only treat stderr as error if it contains actual error indicators
+        if (stderr.toLowerCase().includes('error') || stderr.toLowerCase().includes('failed')) {
+          return {
+            success: false,
+            error: `shot-scraper error: ${stderr}`,
+            userMessage: `Screenshot failed: ${stderr}`
+          };
+        }
+      }
+
+      // Check if file was created
+      try {
+        await fs.access(outputPath);
+        const stats = await fs.stat(outputPath);
+        
+        if (stats.size === 0) {
+          return {
+            success: false,
+            error: `Screenshot file created but is empty`,
+            userMessage: `Screenshot of ${url} failed - file was created but is empty. The page might have failed to load or render properly.`
+          };
+        }
+        
+        debug('Screenshot saved:', outputPath, 'Size:', stats.size, 'bytes');
+        
+        return {
+          success: true,
+          path: outputPath,
+          filename: screenshotFilename,
+          size: stats.size,
+          url: url,
+          message: `Screenshot of ${url} saved successfully`,
+          userMessage: `📸 Screenshot saved to: ${outputPath}\nFile size: ${Math.round(stats.size / 1024)}KB`
+        };
+      } catch (fileError) {
+        debug('File access error:', fileError);
+        return {
+          success: false,
+          error: `Screenshot file not created at ${outputPath}: ${fileError}`,
+          userMessage: `Screenshot of ${url} failed - file was not created. This might be due to network issues, invalid URL, or rendering problems.`
+        };
+      }
+
+    } catch (error) {
+      debug('Screenshot error:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      return {
+        success: false,
+        error: `Failed to take screenshot: ${errorMessage}`,
+        userMessage: `Screenshot of ${url} failed: ${errorMessage}`
+      };
+    }
+  }
+});
+
+/**
+ * Check if shot-scraper is installed and ready to use
+ */
+export const checkScreenshotSetupTool = tool({
+  description: 'Check if shot-scraper is properly installed and configured for taking screenshots',
+  inputSchema: z.object({}),
+  execute: async () => {
+    try {
+      debug('Checking uv and shot-scraper installation');
+
+      // Check if uv is installed
+      try {
+        await execAsync('uv --version');
+      } catch (uvError) {
+        const instructions = [
+          '📸 Screenshot Setup Required',
+          '',
+          'To use screenshots, you need to install uv and shot-scraper:',
+          '',
+          '1. Install uv (Python package manager):',
+          '   curl -LsSf https://astral.sh/uv/install.sh | sh',
+          '',
+          '2. Install shot-scraper:',
+          '   uv pip install shot-scraper',
+          '',
+          '3. Test with:',
+          '   uvx shot-scraper --version',
+          '',
+          'Once installed, screenshots will work automatically!'
+        ].join('\n');
+
+        return {
+          success: false,
+          userMessage: instructions,
+          error: 'uv is not installed',
+          installCommand: 'curl -LsSf https://astral.sh/uv/install.sh | sh'
+        };
+      }
+
+      // Check if shot-scraper is available via uvx
+      const { stdout } = await execAsync('uvx shot-scraper --version');
       
       return {
         success: true,
-        url: result.data.url,
-        screenshotUrl: result.data.screenshot_url,
-        localImagePath: result.localImagePath,
-        title: result.data.title,
-        description: result.data.description,
-        format,
-        quality: format === 'jpeg' ? quality : undefined,
-        dimensions: {
-          width,
-          height
-        },
-        fullPage,
-        waitForSelector,
-        capturedAt: new Date().toISOString()
+        version: stdout.trim(),
+        message: 'shot-scraper is available via uvx and ready to use',
+        installCommand: 'uv pip install shot-scraper'
       };
-      
+
     } catch (error) {
-      debug('Screenshot capture failed:', error);
+      debug('shot-scraper check failed:', error);
+      
+      const instructions = [
+        '📸 Shot-scraper Not Available',
+        '',
+        'uv is installed, but shot-scraper needs to be installed:',
+        '',
+        '1. Install shot-scraper:',
+        '   uv pip install shot-scraper',
+        '',
+        '2. Test the installation:',
+        '   uvx shot-scraper --version',
+        '',
+        'After installation, screenshots will work!'
+      ].join('\n');
       
       return {
         success: false,
-        url,
-        error: error instanceof Error ? error.message : 'Unknown error occurred while capturing screenshot'
+        userMessage: instructions,
+        error: 'shot-scraper is not available via uvx',
+        installCommand: 'uv pip install shot-scraper'
       };
     }
   }
