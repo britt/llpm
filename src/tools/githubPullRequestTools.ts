@@ -1,6 +1,7 @@
 import { tool } from 'ai';
 import { z } from 'zod';
 import { listPullRequests, createPullRequest } from '../services/github';
+import { uploadFilesToGitHub } from '../services/githubAssets';
 import { debug } from '../utils/logger';
 
 export const listGitHubPullRequestsTool = tool({
@@ -83,7 +84,7 @@ export const listGitHubPullRequestsTool = tool({
 });
 
 export const createGitHubPullRequestTool = tool({
-  description: 'Create a new pull request in a GitHub repository',
+  description: 'Create a new pull request in a GitHub repository with optional file attachments',
   inputSchema: z.object({
     owner: z.string().describe('Repository owner/organization name'),
     repo: z.string().describe('Repository name'),
@@ -91,9 +92,10 @@ export const createGitHubPullRequestTool = tool({
     head: z.string().describe('Branch to merge from (source branch)'),
     base: z.string().describe('Branch to merge into (target branch, usually "main" or "master")'),
     body: z.string().optional().describe('Pull request description/body'),
-    draft: z.boolean().optional().describe('Create as draft pull request (default: false)')
+    draft: z.boolean().optional().describe('Create as draft pull request (default: false)'),
+    attachments: z.array(z.string()).optional().describe('Array of file paths to upload and attach to the pull request')
   }),
-  execute: async ({ owner, repo, title, head, base, body, draft = false }) => {
+  execute: async ({ owner, repo, title, head, base, body, draft = false, attachments }) => {
     debug('Executing create_github_pull_request tool with params:', { 
       owner, 
       repo, 
@@ -101,17 +103,40 @@ export const createGitHubPullRequestTool = tool({
       head, 
       base, 
       body: body ? `${body.substring(0, 50)}...` : undefined, 
-      draft 
+      draft,
+      attachments: attachments?.length || 0
     });
 
     try {
+      // Handle file attachments if provided
+      let finalBody = body || '';
+      if (attachments && attachments.length > 0) {
+        debug(`Uploading ${attachments.length} attachments for PR`);
+        
+        try {
+          const uploadResults = await uploadFilesToGitHub(attachments);
+          const attachmentMarkdown = uploadResults
+            .filter(result => result.markdown) // Only include successful uploads
+            .map(result => result.markdown)
+            .join('\n\n');
+          
+          if (attachmentMarkdown) {
+            finalBody += (finalBody ? '\n\n---\n\n' : '') + '**Attachments:**\n\n' + attachmentMarkdown;
+          }
+        } catch (uploadError) {
+          debug('Failed to upload some attachments:', uploadError);
+          // Continue with PR creation, but note the upload failure
+          finalBody += (finalBody ? '\n\n' : '') + '⚠️ Some file attachments failed to upload.';
+        }
+      }
+
       const pullRequest = await createPullRequest(
         owner, 
         repo, 
         title, 
         head, 
         base, 
-        body, 
+        finalBody, 
         draft
       );
 

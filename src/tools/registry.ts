@@ -22,7 +22,6 @@ import {
 import { getSystemPromptTool } from './systemTools';
 import { webSearchTool } from './webSearchTools';
 import { readWebPageTool, summarizeWebPageTool } from './webContentTools';
-import { captureScreenshotTool } from './screenshotTools';
 import {
   addNoteTool,
   updateNoteTool,
@@ -69,6 +68,7 @@ import {
   searchProjectNotes,
   getProjectVectorStats
 } from './vectorSearchTools';
+import { takeScreenshotTool, checkScreenshotSetupTool } from './screenshotTools';
 
 const toolRegistry: ToolRegistry = {
   get_current_project: getCurrentProjectTool,
@@ -91,7 +91,6 @@ const toolRegistry: ToolRegistry = {
   web_search: webSearchTool,
   read_web_page: readWebPageTool,
   summarize_web_page: summarizeWebPageTool,
-  capture_screenshot: captureScreenshotTool,
   add_note: addNoteTool,
   update_note: updateNoteTool,
   search_notes: searchNotesTool,
@@ -129,9 +128,13 @@ const toolRegistry: ToolRegistry = {
   semantic_search_project: semanticSearchProject,
   add_project_note: addProjectNote,
   search_project_notes: searchProjectNotes,
-  get_project_vector_stats: getProjectVectorStats
+  get_project_vector_stats: getProjectVectorStats,
+  // Screenshots
+  take_screenshot: takeScreenshotTool,
+  check_screenshot_setup: checkScreenshotSetupTool
 };
 
-export function getToolRegistry(): ToolRegistry {
+export async function getToolRegistry(): Promise<ToolRegistry> {
+  // Return only the base tools - no MCP integration
   return toolRegistry;
 }

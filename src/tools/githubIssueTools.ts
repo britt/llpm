@@ -9,6 +9,7 @@ import {
   searchIssues
 } from '../services/github';
 import { autoAddToProjectBoard } from '../services/projectBoardIntegration';
+import { uploadFilesToGitHub } from '../services/githubAssets';
 import { debug } from '../utils/logger';
 
 async function getProjectRepoInfo() {
@@ -31,18 +32,41 @@ async function getProjectRepoInfo() {
 }
 
 export const createGitHubIssueTool = tool({
-  description: "Create a new GitHub issue in the active project's repository",
+  description: "Create a new GitHub issue in the active project's repository with optional file attachments",
   inputSchema: z.object({
     title: z.string().describe('The issue title'),
     body: z.string().optional().describe('The issue body/description'),
-    labels: z.array(z.string()).optional().describe('Array of label names to assign to the issue')
+    labels: z.array(z.string()).optional().describe('Array of label names to assign to the issue'),
+    attachments: z.array(z.string()).optional().describe('Array of file paths to upload and attach to the issue')
   }),
-  execute: async ({ title, body, labels }) => {
+  execute: async ({ title, body, labels, attachments }) => {
     try {
       const { owner, repo, projectName } = await getProjectRepoInfo();
       debug(`Creating issue in ${owner}/${repo} for project ${projectName}`);
 
-      const issue = await createIssue(owner, repo, title, body, labels);
+      // Handle file attachments if provided
+      let finalBody = body || '';
+      if (attachments && attachments.length > 0) {
+        debug(`Uploading ${attachments.length} attachments`);
+        
+        try {
+          const uploadResults = await uploadFilesToGitHub(attachments);
+          const attachmentMarkdown = uploadResults
+            .filter(result => result.markdown) // Only include successful uploads
+            .map(result => result.markdown)
+            .join('\n\n');
+          
+          if (attachmentMarkdown) {
+            finalBody += (finalBody ? '\n\n---\n\n' : '') + '**Attachments:**\n\n' + attachmentMarkdown;
+          }
+        } catch (uploadError) {
+          debug('Failed to upload some attachments:', uploadError);
+          // Continue with issue creation, but note the upload failure
+          finalBody += (finalBody ? '\n\n' : '') + '⚠️ Some file attachments failed to upload.';
+        }
+      }
+
+      const issue = await createIssue(owner, repo, title, finalBody, labels);
 
       // Attempt to automatically add the issue to the project board
       try {
@@ -164,19 +188,42 @@ export const updateGitHubIssueTool = tool({
 });
 
 export const commentOnGitHubIssueTool = tool({
-  description: "Add a comment to a GitHub issue in the active project's repository",
+  description: "Add a comment to a GitHub issue in the active project's repository with optional file attachments",
   inputSchema: z.object({
     issueNumber: z.number().describe('The issue number to comment on'),
-    body: z.string().describe('The comment body/text')
+    body: z.string().describe('The comment body/text'),
+    attachments: z.array(z.string()).optional().describe('Array of file paths to upload and attach to the comment')
   }),
-  execute: async ({ issueNumber, body }) => {
+  execute: async ({ issueNumber, body, attachments }) => {
     try {
       const { owner, repo, projectName } = await getProjectRepoInfo();
       debug(
         `Adding comment to issue #${issueNumber} in ${owner}/${repo} for project ${projectName}`
       );
 
-      const comment = await commentOnIssue(owner, repo, issueNumber, body);
+      // Handle file attachments if provided
+      let finalBody = body;
+      if (attachments && attachments.length > 0) {
+        debug(`Uploading ${attachments.length} attachments for comment`);
+        
+        try {
+          const uploadResults = await uploadFilesToGitHub(attachments);
+          const attachmentMarkdown = uploadResults
+            .filter(result => result.markdown) // Only include successful uploads
+            .map(result => result.markdown)
+            .join('\n\n');
+          
+          if (attachmentMarkdown) {
+            finalBody += '\n\n**Attachments:**\n\n' + attachmentMarkdown;
+          }
+        } catch (uploadError) {
+          debug('Failed to upload some attachments:', uploadError);
+          // Continue with comment creation, but note the upload failure
+          finalBody += '\n\n⚠️ Some file attachments failed to upload.';
+        }
+      }
+
+      const comment = await commentOnIssue(owner, repo, issueNumber, finalBody);
 
       return {
         success: true,
