@@ -23,6 +23,8 @@ export function useChat() {
   const [historyLoaded, setHistoryLoaded] = useState(false);
   const [currentProjectId, setCurrentProjectId] = useState<string | null>(null);
   const [interactiveCommand, setInteractiveCommand] = useState<ModelSelectCommand | null>(null);
+  const [projectSwitchTrigger, setProjectSwitchTrigger] = useState(0);
+  const [isProjectSwitching, setIsProjectSwitching] = useState(false);
 
   // Message queue state
   const [messageQueue, setMessageQueue] = useState<QueuedMessage[]>([]);
@@ -91,7 +93,7 @@ export function useChat() {
     };
 
     initializeChatHistory();
-  }, [currentProjectId]);
+  }, [currentProjectId, projectSwitchTrigger]);
 
 
   // Save messages whenever they change (after history is loaded)
@@ -113,6 +115,12 @@ export function useChat() {
   const processMessageImmediate = useCallback(
     async (content: string) => {
       debug('processMessageImmediate called with:', content);
+      
+      // If we're in the middle of a project switch, wait for it to complete
+      if (isProjectSwitching) {
+        debug('Waiting for project switch to complete before processing message');
+        await new Promise(resolve => setTimeout(resolve, 300));
+      }
 
       // Check if this is a command
       const parsed = parseCommand(content);
@@ -132,6 +140,18 @@ export function useChat() {
             });
             debug('Showing interactive model selector');
             return;
+          }
+
+          // Special handling for project switch command
+          if (parsed.command === 'project' && 
+              (parsed.args?.[0] === 'switch' || parsed.args?.[0] === 'set') && 
+              result.success) {
+            debug('Project switch command executed, triggering context refresh');
+            setIsProjectSwitching(true);
+            setProjectSwitchTrigger(prev => prev + 1);
+            // Wait for the project context to be updated
+            await new Promise(resolve => setTimeout(resolve, 200));
+            setIsProjectSwitching(false);
           }
 
           // Special handling for clear command
@@ -232,7 +252,7 @@ export function useChat() {
         debug('Set loading state to false');
       }
     },
-    []
+    [isProjectSwitching]
   );
 
   // Auto-process queue when processing completes and messages are queued
@@ -388,6 +408,16 @@ export function useChat() {
     }
   }, []);
 
+  // Callback to notify of project switch
+  const notifyProjectSwitch = useCallback(async () => {
+    debug('Project switch notification received');
+    setIsProjectSwitching(true);
+    setProjectSwitchTrigger(prev => prev + 1);
+    // Wait for the project context to be updated
+    await new Promise(resolve => setTimeout(resolve, 200));
+    setIsProjectSwitching(false);
+  }, []);
+
   return {
     messages,
     sendMessage,
@@ -397,6 +427,7 @@ export function useChat() {
     handleModelSelect,
     cancelModelSelection,
     triggerModelSelector,
+    notifyProjectSwitch,
     // Queue status for UI indicators
     queueLength: messageQueue.length,
     isProcessing,

@@ -22,6 +22,7 @@ interface ChatInterfaceProps {
   onModelSelect?: (modelValue: string) => void;
   onCancelModelSelection?: () => void;
   onTriggerModelSelector?: () => void;
+  onProjectSwitch?: () => Promise<void>;
   isProcessing?: boolean;
   queuedMessages?: Array<QueuedMessage>;
 }
@@ -146,6 +147,7 @@ export const ChatInterface = memo(function ChatInterface({
   onModelSelect,
   onCancelModelSelection,
   onTriggerModelSelector,
+  onProjectSwitch,
   isProcessing = false,
   queuedMessages = []
 }: ChatInterfaceProps) {
@@ -225,6 +227,11 @@ To add a new project, complete the command with these parameters:
         setCurrentProject(updatedProject);
         setShowProjectSelector(false);
         setActiveInput('main');
+        
+        // Notify the chat system that project has switched and wait for it to complete
+        if (onProjectSwitch) {
+          await onProjectSwitch();
+        }
       } catch (error) {
         console.error('Failed to set current project:', error);
         setShowProjectSelector(false);
