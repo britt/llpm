@@ -115,12 +115,6 @@ export function useChat() {
   const processMessageImmediate = useCallback(
     async (content: string) => {
       debug('processMessageImmediate called with:', content);
-      
-      // If we're in the middle of a project switch, wait for it to complete
-      if (isProjectSwitching) {
-        debug('Waiting for project switch to complete before processing message');
-        await new Promise(resolve => setTimeout(resolve, 300));
-      }
 
       // Check if this is a command
       const parsed = parseCommand(content);
@@ -147,11 +141,7 @@ export function useChat() {
               (parsed.args?.[0] === 'switch' || parsed.args?.[0] === 'set') && 
               result.success) {
             debug('Project switch command executed, triggering context refresh');
-            setIsProjectSwitching(true);
             setProjectSwitchTrigger(prev => prev + 1);
-            // Wait for the project context to be updated
-            await new Promise(resolve => setTimeout(resolve, 200));
-            setIsProjectSwitching(false);
           }
 
           // Special handling for clear command
@@ -409,13 +399,9 @@ export function useChat() {
   }, []);
 
   // Callback to notify of project switch
-  const notifyProjectSwitch = useCallback(async () => {
+  const notifyProjectSwitch = useCallback(() => {
     debug('Project switch notification received');
-    setIsProjectSwitching(true);
     setProjectSwitchTrigger(prev => prev + 1);
-    // Wait for the project context to be updated
-    await new Promise(resolve => setTimeout(resolve, 200));
-    setIsProjectSwitching(false);
   }, []);
 
   return {
