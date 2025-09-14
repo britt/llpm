@@ -6,6 +6,7 @@ import { useChat } from './src/hooks/useChat';
 import { setVerbose, debug } from './src/utils/logger';
 import { ensureDefaultSystemPromptFile } from './src/utils/systemPrompt';
 import { validateEnvironment } from './src/utils/validation';
+import { credentialManager } from './src/utils/credentialManager';
 
 // Re-export validateEnvironment for external use
 export { validateEnvironment } from './src/utils/validation';
@@ -20,6 +21,7 @@ export function App() {
     handleModelSelect,
     cancelModelSelection,
     triggerModelSelector,
+    notifyProjectSwitch,
     isProcessing,
     queuedMessages
   } = useChat();
@@ -33,6 +35,7 @@ export function App() {
     onModelSelect: handleModelSelect,
     onCancelModelSelection: cancelModelSelection,
     onTriggerModelSelector: triggerModelSelector,
+    onProjectSwitch: notifyProjectSwitch,
     isProcessing,
     queuedMessages
   });

@@ -23,6 +23,7 @@ export function useChat() {
   const [historyLoaded, setHistoryLoaded] = useState(false);
   const [currentProjectId, setCurrentProjectId] = useState<string | null>(null);
   const [interactiveCommand, setInteractiveCommand] = useState<ModelSelectCommand | null>(null);
+  const [projectSwitchTrigger, setProjectSwitchTrigger] = useState(0);
 
   // Message queue state
   const [messageQueue, setMessageQueue] = useState<QueuedMessage[]>([]);
@@ -91,7 +92,7 @@ export function useChat() {
     };
 
     initializeChatHistory();
-  }, [currentProjectId]);
+  }, [currentProjectId, projectSwitchTrigger]);
 
 
   // Save messages whenever they change (after history is loaded)
@@ -132,6 +133,14 @@ export function useChat() {
             });
             debug('Showing interactive model selector');
             return;
+          }
+
+          // Special handling for project switch command
+          if (parsed.command === 'project' && 
+              (parsed.args?.[0] === 'switch' || parsed.args?.[0] === 'set') && 
+              result.success) {
+            debug('Project switch command executed, triggering context refresh');
+            setProjectSwitchTrigger(prev => prev + 1);
           }
 
           // Special handling for clear command
@@ -388,6 +397,12 @@ export function useChat() {
     }
   }, []);
 
+  // Callback to notify of project switch
+  const notifyProjectSwitch = useCallback(() => {
+    debug('Project switch notification received');
+    setProjectSwitchTrigger(prev => prev + 1);
+  }, []);
+
   return {
     messages,
     sendMessage,
@@ -397,6 +412,7 @@ export function useChat() {
     handleModelSelect,
     cancelModelSelection,
     triggerModelSelector,
+    notifyProjectSwitch,
     // Queue status for UI indicators
     queueLength: messageQueue.length,
     isProcessing,
