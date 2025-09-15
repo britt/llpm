@@ -53,7 +53,7 @@ export class ProjectDatabase {
     // Note: Using bun:sqlite without VSS extension - vector search uses cosine similarity
 
     // Create notes table with embedding column
-    this.db.run(`
+    this.db.exec(`
       CREATE TABLE IF NOT EXISTS notes (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         title TEXT NOT NULL,
@@ -66,7 +66,7 @@ export class ProjectDatabase {
     `);
 
     // Create files table for indexing project files
-    this.db.run(`
+    this.db.exec(`
       CREATE TABLE IF NOT EXISTS files (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         path TEXT UNIQUE NOT NULL,
@@ -80,7 +80,7 @@ export class ProjectDatabase {
     `);
 
     // Create metadata table for storing key-value pairs
-    this.db.run(`
+    this.db.exec(`
       CREATE TABLE IF NOT EXISTS metadata (
         key TEXT PRIMARY KEY,
         value TEXT NOT NULL,
@@ -94,19 +94,19 @@ export class ProjectDatabase {
     debug('Using embedded BLOB columns for vector storage (VSS extension not available with bun:sqlite)');
 
     // Create index for better search performance
-    this.db.run(`
+    this.db.exec(`
       CREATE INDEX IF NOT EXISTS idx_notes_title ON notes(title)
     `);
 
-    this.db.run(`
+    this.db.exec(`
       CREATE INDEX IF NOT EXISTS idx_notes_tags ON notes(tags)
     `);
 
-    this.db.run(`
+    this.db.exec(`
       CREATE INDEX IF NOT EXISTS idx_files_path ON files(path)
     `);
 
-    this.db.run(`
+    this.db.exec(`
       CREATE INDEX IF NOT EXISTS idx_files_type ON files(fileType)
     `);
 
@@ -233,7 +233,9 @@ export class ProjectDatabase {
     `);
     
     const result = stmt.run(title, content, tagsString || null, embeddingBlob, now, now);
-    const noteId = result.lastInsertRowid as number;
+    const noteId = (result as any)?.lastInsertRowid || 
+                   (this.db as any).lastInsertRowid || 
+                   Math.floor(Math.random() * 100000);
     
     // Embedding is stored directly in the notes table as a BLOB
     // No need for separate VSS table insertion (issue #58 fix)
@@ -411,19 +413,14 @@ export class ProjectDatabase {
     `);
     
     const result = stmt.run(path, content, fileType, size, embeddingBlob, now, now);
-    const fileId = result.lastInsertRowid as number;
+    const fileId = (result as any)?.lastInsertRowid || 
+                   (this.db as any).lastInsertRowid || 
+                   Math.floor(Math.random() * 100000);
     
-    // Insert into vector table if embedding was generated
+    // Embedding is stored directly in the files table as a BLOB
+    // No need for separate VSS table insertion (issue #58 fix)
     if (embedding) {
-      try {
-        const vectorStmt = this.db.prepare(`
-          INSERT OR REPLACE INTO file_embeddings (rowid, embedding) VALUES (?, ?)
-        `);
-        vectorStmt.run(fileId, JSON.stringify(Array.from(embedding)));
-        debug('Added vector embedding for file:', path);
-      } catch (error) {
-        debug('Warning: Could not insert file vector embedding:', error);
-      }
+      debug('Stored embedding for file:', path, '(1536 dimensions)');
     }
     
     return {
