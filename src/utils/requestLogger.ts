@@ -1,4 +1,5 @@
 import { randomUUID } from 'crypto';
+import { EventEmitter } from 'events';
 
 export type LogLevel = 'off' | 'error' | 'info' | 'debug' | 'trace';
 
@@ -19,7 +20,9 @@ export interface RequestLogEntry {
   metadata?: Record<string, any>;
 }
 
-export class RequestLogger {
+export type { RequestLogEntry as LogEntry };
+
+export class RequestLogger extends EventEmitter {
   private static config: LoggingConfig = {
     enabled: process.env.LLPM_TRACE === '1' || process.env.NODE_ENV === 'development',
     level: 'info',
@@ -41,6 +44,7 @@ export class RequestLogger {
   private shouldLog: boolean;
 
   constructor(requestId?: string) {
+    super();
     this.requestId = requestId || randomUUID();
     this.shouldLog = RequestLogger.config.enabled && Math.random() < RequestLogger.config.sampleRate;
   }
@@ -126,8 +130,14 @@ export class RequestLogger {
     return parts.join(' ');
   }
 
-  private output(message: string): void {
-    if (RequestLogger.config.output === 'terminal' || RequestLogger.config.output === 'both') {
+  private output(message: string, entry: RequestLogEntry): void {
+    // Emit event for UI display
+    this.emit('log', entry);
+    
+    // Don't write to stderr when in development mode to avoid cluttering the UI
+    // The RequestLogDisplay component will handle the display
+    if (process.env.NODE_ENV !== 'development' && 
+        (RequestLogger.config.output === 'terminal' || RequestLogger.config.output === 'both')) {
       // Write to stderr to avoid mixing with program output
       process.stderr.write(message + '\n');
     }
@@ -166,7 +176,7 @@ export class RequestLogger {
     };
     
     const message = this.formatLogEntry(entry);
-    this.output(message);
+    this.output(message, entry);
   }
 
   logLLMCall(phase: 'start' | 'end', model: string, metadata?: {
@@ -226,6 +236,10 @@ export class RequestLogger {
       error: errorMessage,
       status: 'failed'
     });
+  }
+  
+  clearLogs(): void {
+    this.emit('clear');
   }
 }
 

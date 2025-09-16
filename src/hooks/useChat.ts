@@ -257,6 +257,14 @@ export function useChat() {
       } finally {
         setIsLoading(false);
         debug('Set loading state to false');
+        
+        // Clear request logs after a short delay
+        const logger = RequestContext.getLogger();
+        if (logger) {
+          setTimeout(() => {
+            logger.clearLogs();
+          }, 500);
+        }
       }
     },
     [isProjectSwitching]

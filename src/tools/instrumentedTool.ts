@@ -5,8 +5,8 @@ import { debug } from '../utils/logger';
 /**
  * Instrumented version of the AI SDK's tool function that adds request logging
  */
-export function tool<T extends { description: string; inputSchema: any; execute: (...args: any[]) => any }>(
-  config: T
+export function tool(
+  config: Parameters<typeof baseTool>[0]
 ): ReturnType<typeof baseTool> {
   // Extract the tool name from the description (first few words)
   const toolName = config.description.split(' ').slice(0, 3).join('_').toLowerCase().replace(/[^a-z0-9_]/g, '_');
