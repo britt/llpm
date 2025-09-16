@@ -8,6 +8,7 @@ import { getCurrentProject } from '../utils/projectConfig';
 import type { ModelSelectCommand } from '../types/models';
 import { DEFAULT_HISTORY_SIZE } from '../constants';
 import { RequestContext } from '../utils/requestContext';
+import { loggerRegistry } from '../components/RequestLogDisplay';
 
 export interface QueuedMessage {
   content: string;
@@ -214,6 +215,12 @@ export function useChat() {
         
         // Wrap the entire request processing in a request context
         const response = await RequestContext.run(async () => {
+          // Register the logger with the display component
+          const logger = RequestContext.getLogger();
+          if (logger) {
+            loggerRegistry.setLogger(logger);
+          }
+          
           RequestContext.logStep('prompt_assembly', 'start');
           RequestContext.logStep('prompt_assembly', 'end');
           return await generateResponse(allMessages);
@@ -259,12 +266,13 @@ export function useChat() {
         debug('Set loading state to false');
         
         // Clear request logs after a short delay
-        const logger = RequestContext.getLogger();
-        if (logger) {
-          setTimeout(() => {
+        setTimeout(() => {
+          // Get the logger from the registry and clear
+          const logger = RequestContext.getLogger();
+          if (logger) {
             logger.clearLogs();
-          }, 500);
-        }
+          }
+        }, 500);
       }
     },
     [isProjectSwitching]

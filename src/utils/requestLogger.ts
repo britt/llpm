@@ -24,9 +24,9 @@ export type { RequestLogEntry as LogEntry };
 
 export class RequestLogger extends EventEmitter {
   private static config: LoggingConfig = {
-    enabled: process.env.LLPM_TRACE === '1' || process.env.NODE_ENV === 'development',
-    level: 'info',
-    sampleRate: process.env.NODE_ENV === 'production' ? 0.01 : 1.0,
+    enabled: true, // Always enabled for UI display
+    level: 'debug', // Show debug level for tool calls
+    sampleRate: 1.0, // Always sample for UI display
     piiRedaction: true,
     output: 'terminal'
   };
@@ -134,9 +134,9 @@ export class RequestLogger extends EventEmitter {
     // Emit event for UI display
     this.emit('log', entry);
     
-    // Don't write to stderr when in development mode to avoid cluttering the UI
-    // The RequestLogDisplay component will handle the display
-    if (process.env.NODE_ENV !== 'development' && 
+    // Don't write to stderr anymore - the UI component handles display
+    // Only write to stderr if explicitly requested via environment variable
+    if (process.env.LLPM_TRACE_STDERR === '1' && 
         (RequestLogger.config.output === 'terminal' || RequestLogger.config.output === 'both')) {
       // Write to stderr to avoid mixing with program output
       process.stderr.write(message + '\n');
@@ -150,6 +150,11 @@ export class RequestLogger extends EventEmitter {
 
   logStep(step: string, phase: 'start' | 'end', level: LogLevel = 'info', metadata?: Record<string, any>): void {
     if (!this.shouldLogAtLevel(level)) return;
+    
+    // Debug to ensure we're actually logging
+    if (process.env.DEBUG_LOGGING === '1') {
+      console.error(`[DEBUG] Logging step: ${step} ${phase}`);
+    }
     
     const timestamp = new Date().toISOString();
     
