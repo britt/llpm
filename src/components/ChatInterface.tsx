@@ -12,6 +12,8 @@ import HybridInput from './HybridInput';
 import ProjectSelector from './ProjectSelector';
 import ModelSelector from './ModelSelector';
 import type { QueuedMessage } from '../hooks/useChat';
+import { RequestLogDisplay } from './RequestLogDisplay';
+import type { LogEntry } from './RequestLogDisplay';
 
 interface ChatInterfaceProps {
   messages: Message[];
@@ -29,8 +31,9 @@ interface ChatInterfaceProps {
 
 const ThinkingIndicator = memo(() => {
   return (
-    <Box>
+    <Box flexDirection="column">
       <Text color="red">PM is thinking...</Text>
+      <RequestLogDisplay isVisible={true} />
     </Box>
   );
 });

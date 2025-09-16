@@ -1,4 +1,4 @@
-import { tool } from 'ai';
+import { tool } from './instrumentedTool';
 import { z } from 'zod';
 import { getCurrentProjectDatabase } from '../utils/projectDatabase';
 import { debug } from '../utils/logger';
