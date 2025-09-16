@@ -74,24 +74,39 @@ export class RequestLogger extends EventEmitter {
     if (typeof data === 'string') {
       // Redact email addresses
       data = data.replace(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g, '[EMAIL_REDACTED]');
-      // Redact API keys (common patterns)
-      data = data.replace(/[a-zA-Z0-9]{32,}/g, (match) => {
-        if (match.length > 40) return '[API_KEY_REDACTED]';
-        return match;
-      });
-      // Redact tokens in headers
+      
+      // Redact common API key patterns
+      // OpenAI/Anthropic style keys (sk-...)
+      data = data.replace(/sk-[a-zA-Z0-9]{20,}/g, '[REDACTED]');
+      // GitHub tokens (ghp_...)
+      data = data.replace(/ghp_[a-zA-Z0-9]{20,}/g, '[REDACTED]');
+      // Generic long alphanumeric strings that could be keys
+      data = data.replace(/[a-zA-Z0-9]{40,}/g, '[REDACTED]');
+      
+      // Redact JWT/Bearer tokens
       data = data.replace(/Bearer\s+[a-zA-Z0-9._-]+/gi, 'Bearer [TOKEN_REDACTED]');
+      data = data.replace(/eyJ[a-zA-Z0-9._-]+/g, '[TOKEN_REDACTED]');
+      
       return data;
     }
     
     if (typeof data === 'object' && data !== null) {
       const redacted: any = Array.isArray(data) ? [] : {};
       for (const key in data) {
-        if (key.toLowerCase().includes('token') || 
-            key.toLowerCase().includes('key') || 
-            key.toLowerCase().includes('secret') ||
-            key.toLowerCase().includes('password')) {
+        const lowerKey = key.toLowerCase();
+        if (lowerKey.includes('token') || 
+            lowerKey.includes('key') || 
+            lowerKey.includes('secret') ||
+            lowerKey.includes('password')) {
           redacted[key] = '[REDACTED]';
+        } else if (lowerKey.includes('auth')) {
+          // Special handling for auth headers - preserve "Bearer " prefix
+          const value = data[key];
+          if (typeof value === 'string' && value.startsWith('Bearer ')) {
+            redacted[key] = 'Bearer [TOKEN_REDACTED]';
+          } else {
+            redacted[key] = '[REDACTED]';
+          }
         } else {
           redacted[key] = this.redactPII(data[key]);
         }
@@ -103,7 +118,8 @@ export class RequestLogger extends EventEmitter {
   }
 
   private formatLogEntry(entry: RequestLogEntry): string {
-    const metadata = entry.metadata ? this.redactPII(entry.metadata) : {};
+    // Metadata has already been redacted in logStep
+    const metadata = entry.metadata || {};
     
     const parts = [
       `[${entry.timestamp}]`,
@@ -171,13 +187,16 @@ export class RequestLogger extends EventEmitter {
       }
     }
     
+    // Apply PII redaction to metadata before creating the entry
+    const redactedMetadata = metadata ? this.redactPII(metadata) : undefined;
+    
     const entry: RequestLogEntry = {
       timestamp,
       requestId: this.requestId,
       step,
       phase,
       duration,
-      metadata
+      metadata: redactedMetadata
     };
     
     const message = this.formatLogEntry(entry);

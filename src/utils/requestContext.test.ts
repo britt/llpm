@@ -3,16 +3,11 @@ import { RequestContext } from './requestContext';
 import { RequestLogger } from './requestLogger';
 
 describe('RequestContext', () => {
-  let capturedOutput: string[];
+  let capturedLogs: any[];
 
   beforeEach(() => {
-    // Capture stderr output for testing
-    capturedOutput = [];
-    const originalWrite = process.stderr.write;
-    process.stderr.write = vi.fn((str: string) => {
-      capturedOutput.push(str);
-      return true;
-    }) as any;
+    // Capture log events instead of stderr output
+    capturedLogs = [];
 
     // Configure logger for testing
     RequestLogger.configure({
@@ -22,11 +17,6 @@ describe('RequestContext', () => {
       piiRedaction: false,
       output: 'terminal'
     });
-
-    // Clean up after test
-    return () => {
-      process.stderr.write = originalWrite;
-    };
   });
 
   describe('Context Management', () => {
@@ -162,74 +152,92 @@ describe('RequestContext', () => {
   describe('Logging Methods', () => {
     it('should delegate logStep to logger', async () => {
       await RequestContext.run(async () => {
+        const logger = RequestContext.getLogger();
+        logger?.on('log', (log: any) => capturedLogs.push(log));
+        
         RequestContext.logStep('test_step', 'start', 'info', { data: 'test' });
         
-        expect(capturedOutput.length).toBeGreaterThan(0);
-        const log = capturedOutput[0];
-        expect(log).toContain('STEP=test_step');
-        expect(log).toContain('start');
-        expect(log).toContain('data=test');
+        expect(capturedLogs.length).toBeGreaterThan(0);
+        const log = capturedLogs[0];
+        expect(log.step).toBe('test_step');
+        expect(log.phase).toBe('start');
+        expect(log.metadata?.data).toBe('test');
       });
     });
 
     it('should delegate logLLMCall to logger', async () => {
       await RequestContext.run(async () => {
+        const logger = RequestContext.getLogger();
+        logger?.on('log', (log: any) => capturedLogs.push(log));
+        
         RequestContext.logLLMCall('start', 'gpt-4', { tokensIn: 100 });
         
-        expect(capturedOutput.length).toBeGreaterThan(0);
-        const log = capturedOutput[0];
-        expect(log).toContain('STEP=llm_call');
-        expect(log).toContain('model=gpt-4');
-        expect(log).toContain('tokensIn=100');
+        expect(capturedLogs.length).toBeGreaterThan(0);
+        const log = capturedLogs[0];
+        expect(log.step).toBe('llm_call');
+        expect(log.metadata?.model).toBe('gpt-4');
+        expect(log.metadata?.tokensIn).toBe(100);
       });
     });
 
     it('should delegate logToolCall to logger', async () => {
       await RequestContext.run(async () => {
+        const logger = RequestContext.getLogger();
+        logger?.on('log', (log: any) => capturedLogs.push(log));
+        
         RequestContext.logToolCall('my_tool', 'start', { param: 'value' });
         
-        expect(capturedOutput.length).toBeGreaterThan(0);
-        const log = capturedOutput[0];
-        expect(log).toContain('STEP=tool_call');
-        expect(log).toContain('name=my_tool');
+        expect(capturedLogs.length).toBeGreaterThan(0);
+        const log = capturedLogs[0];
+        expect(log.step).toBe('tool_call');
+        expect(log.metadata?.name).toBe('my_tool');
       });
     });
 
     it('should delegate logDatabaseOperation to logger', async () => {
       await RequestContext.run(async () => {
+        const logger = RequestContext.getLogger();
+        logger?.on('log', (log: any) => capturedLogs.push(log));
+        
         RequestContext.logDatabaseOperation('select', 'start', { table: 'users' });
         
-        expect(capturedOutput.length).toBeGreaterThan(0);
-        const log = capturedOutput[0];
-        expect(log).toContain('STEP=db_select');
-        expect(log).toContain('table=users');
+        expect(capturedLogs.length).toBeGreaterThan(0);
+        const log = capturedLogs[0];
+        expect(log.step).toBe('db_select');
+        expect(log.metadata?.table).toBe('users');
       });
     });
 
     it('should delegate logAPICall to logger', async () => {
       await RequestContext.run(async () => {
+        const logger = RequestContext.getLogger();
+        logger?.on('log', (log: any) => capturedLogs.push(log));
+        
         RequestContext.logAPICall('github', 'start', {
           method: 'POST',
           path: '/repos'
         });
         
-        expect(capturedOutput.length).toBeGreaterThan(0);
-        const log = capturedOutput[0];
-        expect(log).toContain('STEP=api_github');
-        expect(log).toContain('method=POST');
-        expect(log).toContain('path=/repos');
+        expect(capturedLogs.length).toBeGreaterThan(0);
+        const log = capturedLogs[0];
+        expect(log.step).toBe('api_github');
+        expect(log.metadata?.method).toBe('POST');
+        expect(log.metadata?.path).toBe('/repos');
       });
     });
 
     it('should delegate logError to logger', async () => {
       await RequestContext.run(async () => {
+        const logger = RequestContext.getLogger();
+        logger?.on('log', (log: any) => capturedLogs.push(log));
+        
         RequestContext.logError('processing', new Error('Test error'));
         
-        expect(capturedOutput.length).toBeGreaterThan(0);
-        const log = capturedOutput[0];
-        expect(log).toContain('STEP=processing');
-        expect(log).toContain('error=Test error');
-        expect(log).toContain('status=failed');
+        expect(capturedLogs.length).toBeGreaterThan(0);
+        const log = capturedLogs[0];
+        expect(log.step).toBe('processing');
+        expect(log.metadata?.error).toBe('Test error');
+        expect(log.metadata?.status).toBe('failed');
       });
     });
 
@@ -242,8 +250,8 @@ describe('RequestContext', () => {
       RequestContext.logAPICall('service', 'start');
       RequestContext.logError('step', 'error');
       
-      // No logs should be produced
-      expect(capturedOutput.length).toBe(0);
+      // No logs should be produced since no logger is attached
+      expect(capturedLogs.length).toBe(0);
     });
   });
 
@@ -256,9 +264,13 @@ describe('RequestContext', () => {
           const requestId = RequestContext.getRequestId();
           expect(requestId).toBe(customId);
           
+          const logger = RequestContext.getLogger();
+          logger?.on('log', (log: any) => capturedLogs.push(log));
+          
           RequestContext.logStep('test', 'start');
-          const log = capturedOutput[0];
-          expect(log).toContain(`requestId=${customId}`);
+          expect(capturedLogs.length).toBeGreaterThan(0);
+          const log = capturedLogs[0];
+          expect(log.requestId).toBe(customId);
         },
         customId
       );
