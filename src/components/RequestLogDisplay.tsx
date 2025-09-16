@@ -74,57 +74,82 @@ interface ProcessedLog {
   status: 'running' | 'completed';
   duration?: number;
   metadata?: Record<string, any>;
+  orderIndex: number; // Track insertion order
 }
 
 export function RequestLogDisplay({ isVisible }: RequestLogDisplayProps) {
   const [processedLogs, setProcessedLogs] = useState<Map<string, ProcessedLog>>(new Map());
   const logMapRef = useRef<Map<string, ProcessedLog>>(new Map());
+  const orderCounterRef = useRef(0);
   
   useEffect(() => {
     if (!isVisible) {
       setProcessedLogs(new Map());
       logMapRef.current = new Map();
+      orderCounterRef.current = 0;
       return;
     }
     
     const handleLog = (log: LogEntry) => {
-      const key = `${log.step}_${log.requestId}`;
+      // Create a normalized key - use just the step name without request ID
+      // since there's typically only one request in flight
+      const stepKey = log.step;
       
       if (log.phase === 'start') {
-        // Add or update with running status
-        const newLog: ProcessedLog = {
-          key,
-          step: log.step,
-          status: 'running',
-          metadata: log.metadata
-        };
-        logMapRef.current.set(key, newLog);
+        // Check if this step already exists and is running
+        const existing = Array.from(logMapRef.current.values()).find(
+          l => l.step === log.step && l.status === 'running'
+        );
+        
+        if (!existing) {
+          // Add new running log
+          const newLog: ProcessedLog = {
+            key: `${stepKey}_${orderCounterRef.current++}`,
+            step: log.step,
+            status: 'running',
+            metadata: log.metadata,
+            orderIndex: orderCounterRef.current
+          };
+          logMapRef.current.set(newLog.key, newLog);
+        }
       } else if (log.phase === 'end') {
-        // Update existing log with completed status and duration
-        const existingLog = logMapRef.current.get(key);
-        if (existingLog) {
+        // Find the matching running log for this step
+        let foundKey: string | null = null;
+        for (const [key, value] of logMapRef.current.entries()) {
+          if (value.step === log.step && value.status === 'running') {
+            foundKey = key;
+            break;
+          }
+        }
+        
+        if (foundKey) {
+          // Update existing log with completed status
+          const existingLog = logMapRef.current.get(foundKey)!;
           existingLog.status = 'completed';
           existingLog.duration = log.duration;
           if (log.metadata) {
             existingLog.metadata = { ...existingLog.metadata, ...log.metadata };
           }
         } else {
-          // If we don't have a start, create a completed entry
-          logMapRef.current.set(key, {
-            key,
+          // If no matching start found, create a new completed entry
+          const newLog: ProcessedLog = {
+            key: `${stepKey}_${orderCounterRef.current++}`,
             step: log.step,
             status: 'completed',
             duration: log.duration,
-            metadata: log.metadata
-          });
+            metadata: log.metadata,
+            orderIndex: orderCounterRef.current
+          };
+          logMapRef.current.set(newLog.key, newLog);
         }
       }
       
       // Keep only last 5 entries
       if (logMapRef.current.size > 5) {
-        const keys = Array.from(logMapRef.current.keys());
-        const toRemove = keys.slice(0, keys.length - 5);
-        toRemove.forEach(k => logMapRef.current.delete(k));
+        const entries = Array.from(logMapRef.current.entries())
+          .sort((a, b) => a[1].orderIndex - b[1].orderIndex);
+        const toRemove = entries.slice(0, entries.length - 5);
+        toRemove.forEach(([key]) => logMapRef.current.delete(key));
       }
       
       // Update state with new map
@@ -134,6 +159,7 @@ export function RequestLogDisplay({ isVisible }: RequestLogDisplayProps) {
     const handleClear = () => {
       logMapRef.current.clear();
       setProcessedLogs(new Map());
+      orderCounterRef.current = 0;
     };
     
     loggerRegistry.addLogListener(handleLog);
@@ -149,7 +175,9 @@ export function RequestLogDisplay({ isVisible }: RequestLogDisplayProps) {
     return null;
   }
 
-  const logs = Array.from(processedLogs.values());
+  // Sort logs by insertion order
+  const logs = Array.from(processedLogs.values())
+    .sort((a, b) => a.orderIndex - b.orderIndex);
 
   return React.createElement(
     Box,
@@ -175,13 +203,7 @@ export function RequestLogDisplay({ isVisible }: RequestLogDisplayProps) {
 function formatProcessedLog(log: ProcessedLog): string {
   const parts = [`→ ${formatStepName(log.step)}`];
   
-  if (log.status === 'completed' && log.duration !== undefined) {
-    parts.push(`✓ (${log.duration}ms)`);
-  } else if (log.status === 'running') {
-    parts.push('⋯');
-  }
-  
-  // Add key metadata
+  // Add metadata that should appear before status
   if (log.metadata) {
     if (log.metadata.model) {
       parts.push(`[${log.metadata.model}]`);
@@ -195,9 +217,18 @@ function formatProcessedLog(log: ProcessedLog): string {
     if (log.metadata.path) {
       parts.push(`[${log.metadata.path}]`);
     }
-    if (log.metadata.error) {
-      parts.push(`❌ ${log.metadata.error}`);
-    }
+  }
+  
+  // Add status indicator at the end
+  if (log.status === 'completed' && log.duration !== undefined) {
+    parts.push(`✓ (${log.duration}ms)`);
+  } else if (log.status === 'running') {
+    parts.push('⋯');
+  }
+  
+  // Add error if present
+  if (log.metadata?.error) {
+    parts.push(`❌ ${log.metadata.error}`);
   }
   
   return parts.join(' ');
