@@ -54,8 +54,8 @@ export async function generateResponse(messages: Message[]): Promise<string> {
     // Log LLM call end with token counts if available
     const metadata: any = { status: 200 };
     if (result.usage) {
-      metadata.tokensIn = result.usage.promptTokens;
-      metadata.tokensOut = result.usage.completionTokens;
+      metadata.tokensIn = (result.usage as any).promptTokens || (result.usage as any).totalTokens;
+      metadata.tokensOut = (result.usage as any).completionTokens;
     }
     RequestContext.logLLMCall('end', `${currentModel.provider}/${currentModel.modelId}`, metadata);
 
@@ -124,12 +124,11 @@ export async function* streamResponse(messages: ModelMessage[]) {
     }
     
     // Log streaming LLM call end
-    const currentModel = modelRegistry.getCurrentModel();
     RequestContext.logLLMCall('end', `${currentModel.provider}/${currentModel.modelId}`, { status: 200 });
   } catch (error) {
-    // Log streaming LLM error
-    const currentModel = modelRegistry.getCurrentModel();
-    RequestContext.logLLMCall('end', `${currentModel.provider}/${currentModel.modelId}`, {
+    // Log streaming LLM error  
+    const errorModel = modelRegistry.getCurrentModel();
+    RequestContext.logLLMCall('end', `${errorModel.provider}/${errorModel.modelId}`, {
       error: error instanceof Error ? error.message : String(error)
     });
     console.error('Error streaming response:', error);
