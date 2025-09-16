@@ -3,6 +3,7 @@ import { debug, getVerbose } from '../utils/logger';
 import { execSync } from 'child_process';
 import { getUserReposViaGhCli, searchReposViaGhCli, getRepoViaGhCli } from './githubCli';
 import { credentialManager } from '../utils/credentialManager';
+import { RequestContext } from '../utils/requestContext';
 
 export interface GitHubRepo {
   id: number;

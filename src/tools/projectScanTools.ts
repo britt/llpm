@@ -1,4 +1,4 @@
-import { tool } from 'ai';
+import { tool } from './instrumentedTool';
 import { z } from 'zod';
 import { projectScanCommand } from '../commands/project-scan';
 import { getCurrentProject } from '../utils/projectConfig';

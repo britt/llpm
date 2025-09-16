@@ -4,6 +4,7 @@ import { debug, getVerbose } from '../utils/logger';
 import { getToolRegistry } from '../tools/registry';
 import { getSystemPrompt } from '../utils/systemPrompt';
 import { modelRegistry } from './modelRegistry';
+import { RequestContext } from '../utils/requestContext';
 
 const MAX_STEPS = 10;
 
@@ -39,6 +40,9 @@ export async function generateResponse(messages: Message[]): Promise<string> {
       'tools'
     );
 
+    // Log LLM call start
+    RequestContext.logLLMCall('start', `${currentModel.provider}/${currentModel.modelId}`);
+
     const result = await generateText({
       model,
       messages: allMessages,
@@ -46,6 +50,14 @@ export async function generateResponse(messages: Message[]): Promise<string> {
       toolChoice: 'auto',
       stopWhen: [stepCountIs(MAX_STEPS)]
     });
+
+    // Log LLM call end with token counts if available
+    const metadata: any = { status: 200 };
+    if (result.usage) {
+      metadata.tokensIn = result.usage.promptTokens;
+      metadata.tokensOut = result.usage.completionTokens;
+    }
+    RequestContext.logLLMCall('end', `${currentModel.provider}/${currentModel.modelId}`, metadata);
 
     debug('AI SDK result text:', JSON.stringify(result.text));
     debug('Tool calls present:', result.toolCalls?.length || 0);
@@ -72,6 +84,12 @@ export async function generateResponse(messages: Message[]): Promise<string> {
 
     return result.text;
   } catch (error) {
+    // Log LLM error
+    const currentModel = modelRegistry.getCurrentModel();
+    RequestContext.logLLMCall('end', `${currentModel.provider}/${currentModel.modelId}`, {
+      error: error instanceof Error ? error.message : String(error)
+    });
+    
     debug('Error in generateResponse:', error);
     console.error('Error generating response:', error);
 
@@ -91,6 +109,10 @@ export async function generateResponse(messages: Message[]): Promise<string> {
 export async function* streamResponse(messages: ModelMessage[]) {
   try {
     const model = await modelRegistry.createLanguageModel();
+    const currentModel = modelRegistry.getCurrentModel();
+    
+    // Log streaming LLM call start
+    RequestContext.logLLMCall('start', `${currentModel.provider}/${currentModel.modelId}`);
     
     const { textStream } = await streamText({
       model,
@@ -100,7 +122,16 @@ export async function* streamResponse(messages: ModelMessage[]) {
     for await (const delta of textStream) {
       yield delta;
     }
+    
+    // Log streaming LLM call end
+    const currentModel = modelRegistry.getCurrentModel();
+    RequestContext.logLLMCall('end', `${currentModel.provider}/${currentModel.modelId}`, { status: 200 });
   } catch (error) {
+    // Log streaming LLM error
+    const currentModel = modelRegistry.getCurrentModel();
+    RequestContext.logLLMCall('end', `${currentModel.provider}/${currentModel.modelId}`, {
+      error: error instanceof Error ? error.message : String(error)
+    });
     console.error('Error streaming response:', error);
 
     let errorMessage = 'Sorry, I encountered an error while processing your request.';

@@ -6,6 +6,7 @@ import { getConfigDir } from './config';
 import { debug } from './logger';
 import { modelRegistry } from '../services/modelRegistry';
 import type { Project } from '../types/project';
+import { RequestContext } from './requestContext';
 
 interface ProjectNote {
   id: number;
@@ -218,6 +219,7 @@ export class ProjectDatabase {
 
   // Notes operations
   async addNote(title: string, content: string, tags?: string[]): Promise<ProjectNote> {
+    RequestContext.logDatabaseOperation('insert', 'start', { table: 'notes' });
     debug('Adding note to project database:', title);
     
     const now = new Date().toISOString();
@@ -243,6 +245,8 @@ export class ProjectDatabase {
       debug('Stored embedding for note:', noteId, '(1536 dimensions)');
     }
     
+    RequestContext.logDatabaseOperation('insert', 'end', { table: 'notes', rowCount: 1 });
+    
     return {
       id: noteId,
       title,
@@ -255,26 +259,33 @@ export class ProjectDatabase {
   }
 
   getNotes(): ProjectNote[] {
+    RequestContext.logDatabaseOperation('select', 'start', { table: 'notes' });
     debug('Retrieving all notes for project:', this.projectId);
     
     const stmt = this.db.prepare(`
       SELECT * FROM notes ORDER BY updatedAt DESC
     `);
     
-    return stmt.all() as ProjectNote[];
+    const notes = stmt.all() as ProjectNote[];
+    RequestContext.logDatabaseOperation('select', 'end', { table: 'notes', rowCount: notes.length });
+    return notes;
   }
 
   getNote(id: number): ProjectNote | null {
+    RequestContext.logDatabaseOperation('select', 'start', { table: 'notes' });
     debug('Retrieving note by id:', id);
     
     const stmt = this.db.prepare(`
       SELECT * FROM notes WHERE id = ?
     `);
     
-    return stmt.get(id) as ProjectNote | null;
+    const note = stmt.get(id) as ProjectNote | null;
+    RequestContext.logDatabaseOperation('select', 'end', { table: 'notes', rowCount: note ? 1 : 0 });
+    return note;
   }
 
   async updateNote(id: number, title?: string, content?: string, tags?: string[]): Promise<ProjectNote | null> {
+    RequestContext.logDatabaseOperation('update', 'start', { table: 'notes' });
     debug('Updating note:', id);
     
     const existing = this.getNote(id);

@@ -12,6 +12,7 @@ export interface Project {
 }
 
 import type { ModelConfig } from './models';
+import type { LoggingConfig } from '../utils/requestLogger';
 
 export interface AppConfig {
   projects: Record<string, Project>;
@@ -20,6 +21,7 @@ export interface AppConfig {
     currentModel?: ModelConfig;
     lastUpdated?: string;
   };
+  logging?: LoggingConfig;
 }
 
 // Keep backwards compatibility
