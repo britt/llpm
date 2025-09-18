@@ -22,5 +22,20 @@ EOF
 # Export for CLI tools
 export OPENAI_API_KEY="${OPENAI_API_KEY}"
 
-# Run the command passed to docker run
-exec "$@"
+# Parse CLI options from environment
+OPENAI_CLI_OPTS="${OPENAI_CLI_OPTIONS:-}"
+
+# If starting an interactive shell and OpenAI CLI exists, show options
+if [ "$1" = "/bin/bash" ] && command -v openai &> /dev/null; then
+    echo "OpenAI CLI available. Default options: $OPENAI_CLI_OPTS"
+    echo "Run: openai $OPENAI_CLI_OPTS [additional-args]"
+fi
+
+# If the command is specifically 'openai', add default options
+if [ "$1" = "openai" ]; then
+    shift
+    exec openai $OPENAI_CLI_OPTS "$@"
+else
+    # Run the command passed to docker run
+    exec "$@"
+fi

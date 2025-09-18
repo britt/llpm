@@ -41,5 +41,31 @@ cat > ~/.opencode/config.json <<EOF
 }
 EOF
 
-# Run the command passed to docker run
-exec "$@"
+# Parse CLI options from environment
+OLLAMA_CLI_OPTS="${OLLAMA_CLI_OPTIONS:-}"
+LITELLM_CLI_OPTS="${LITELLM_CLI_OPTIONS:-}"
+
+# If starting an interactive shell, show available CLIs and options
+if [ "$1" = "/bin/bash" ]; then
+    if command -v ollama &> /dev/null; then
+        echo "Ollama CLI available. Default options: $OLLAMA_CLI_OPTS"
+        echo "Run: ollama $OLLAMA_CLI_OPTS [command]"
+    fi
+    if command -v litellm &> /dev/null; then
+        echo "LiteLLM CLI available. Default options: $LITELLM_CLI_OPTS"
+        echo "Run: litellm $LITELLM_CLI_OPTS [command]"
+    fi
+fi
+
+# If the command is specifically 'ollama', add default options
+if [ "$1" = "ollama" ]; then
+    shift
+    exec ollama $OLLAMA_CLI_OPTS "$@"
+# If the command is specifically 'litellm', add default options
+elif [ "$1" = "litellm" ]; then
+    shift
+    exec litellm $LITELLM_CLI_OPTS "$@"
+else
+    # Run the command passed to docker run
+    exec "$@"
+fi

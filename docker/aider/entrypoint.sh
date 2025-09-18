@@ -33,5 +33,20 @@ if [ ! -f ~/.gitconfig ]; then
     git config --global init.defaultBranch main
 fi
 
-# Run the command passed to docker run
-exec "$@"
+# Parse CLI options from environment
+AIDER_CLI_OPTS="${AIDER_CLI_OPTIONS:-}"
+
+# If starting an interactive shell, show Aider options
+if [ "$1" = "/bin/bash" ]; then
+    echo "Aider CLI available. Default options: $AIDER_CLI_OPTS"
+    echo "Run: aider $AIDER_CLI_OPTS [files...]"
+fi
+
+# If the command is specifically 'aider', add default options
+if [ "$1" = "aider" ]; then
+    shift
+    exec aider $AIDER_CLI_OPTS "$@"
+else
+    # Run the command passed to docker run
+    exec "$@"
+fi

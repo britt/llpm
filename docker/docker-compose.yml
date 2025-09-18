@@ -22,6 +22,7 @@ services:
     environment:
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
       - CLAUDE_MODEL=${CLAUDE_MODEL:-claude-3-opus-20240229}
+      - CLAUDE_CLI_OPTIONS=${CLAUDE_CLI_OPTIONS:-}
     volumes:
       - ../workspace:/claude-workspace
       - ${HOME}/.ssh:/root/.ssh:ro
@@ -53,6 +54,7 @@ services:
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - OPENAI_MODEL=${OPENAI_MODEL:-gpt-4-turbo-preview}
       - OPENAI_ORG_ID=${OPENAI_ORG_ID}
+      - OPENAI_CLI_OPTIONS=${OPENAI_CLI_OPTIONS:-}
     volumes:
       - ../workspace:/codex-workspace
       - ${HOME}/.ssh:/root/.ssh:ro
@@ -86,6 +88,7 @@ services:
       - AIDER_MODEL=${AIDER_MODEL:-gpt-4-turbo-preview}
       - AIDER_AUTO_COMMITS=${AIDER_AUTO_COMMITS:-false}
       - AIDER_DARK_MODE=${AIDER_DARK_MODE:-true}
+      - AIDER_CLI_OPTIONS=${AIDER_CLI_OPTIONS:-}
     volumes:
       - ../workspace:/aider-workspace
       - ${HOME}/.ssh:/root/.ssh:ro
@@ -118,6 +121,8 @@ services:
       - OLLAMA_HOST=${OLLAMA_HOST:-http://localhost:11434}
       - OPENCODE_MODEL=${OPENCODE_MODEL:-codellama}
       - LITELLM_MODEL=${LITELLM_MODEL}
+      - OLLAMA_CLI_OPTIONS=${OLLAMA_CLI_OPTIONS:-}
+      - LITELLM_CLI_OPTIONS=${LITELLM_CLI_OPTIONS:-}
     volumes:
       - ../workspace:/opencode-workspace
       - ${HOME}/.ssh:/root/.ssh:ro

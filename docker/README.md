@@ -165,6 +165,58 @@ The API proxy service provides a secure way to manage API credentials:
    curl http://localhost:8080/health
    ```
 
+## CLI Options Configuration
+
+Each AI assistant supports configurable default CLI options through environment variables. These options are automatically added when running the respective CLI tools.
+
+### Setting Default CLI Options
+
+Add CLI options to your `docker/.env` file:
+
+```bash
+# Claude Code CLI options
+CLAUDE_CLI_OPTIONS=--max-tokens 4096 --temperature 0.8
+
+# OpenAI CLI options
+OPENAI_CLI_OPTIONS=--temperature 0.7 --top-p 0.9
+
+# Aider CLI options
+AIDER_CLI_OPTIONS=--no-auto-commits --dark-mode --model gpt-4
+
+# Ollama CLI options (OpenCode)
+OLLAMA_CLI_OPTIONS=--verbose
+
+# LiteLLM CLI options (OpenCode)
+LITELLM_CLI_OPTIONS=--debug
+```
+
+### Using CLI Options
+
+When you run a container, the CLI options are automatically applied:
+
+```bash
+# Start container with bash
+docker-compose exec claude-code bash
+
+# Inside container, claude-code will use default options
+claude-code  # Runs with --max-tokens 4096 --temperature 0.8
+
+# You can still add additional options
+claude-code --verbose  # Runs with all default options plus --verbose
+```
+
+### Overriding CLI Options
+
+You can override options for a specific run:
+
+```bash
+# Run with custom options (ignores defaults)
+docker-compose exec claude-code claude-code --max-tokens 2048
+
+# Run Aider with different model
+docker-compose exec aider aider --model claude-3-opus
+```
+
 ## Customization
 
 ### Adding New Tools

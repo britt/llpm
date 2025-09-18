@@ -18,5 +18,20 @@ cat > ~/.claude-code/config.json <<EOF
 }
 EOF
 
-# Run the command passed to docker run
-exec "$@"
+# Parse CLI options from environment
+CLAUDE_CLI_OPTS="${CLAUDE_CLI_OPTIONS:-}"
+
+# If starting an interactive shell and Claude CLI exists, show options
+if [ "$1" = "/bin/bash" ] && command -v claude-code &> /dev/null; then
+    echo "Claude Code CLI available. Default options: $CLAUDE_CLI_OPTS"
+    echo "Run: claude-code $CLAUDE_CLI_OPTS [additional-args]"
+fi
+
+# If the command is specifically 'claude-code', add default options
+if [ "$1" = "claude-code" ]; then
+    shift
+    exec claude-code $CLAUDE_CLI_OPTS "$@"
+else
+    # Run the command passed to docker run
+    exec "$@"
+fi
