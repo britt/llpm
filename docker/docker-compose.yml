@@ -1,11 +1,11 @@
 services:
-  # LiteLLM Proxy - Central AI Gateway
+  # LiteLLM Proxy - Central AI Gateway (singleton - not scaled)
   litellm-proxy:
     build:
       context: ./litellm-proxy
       dockerfile: Dockerfile
     image: llpm-litellm-proxy:latest
-    container_name: litellm-proxy
+    container_name: litellm-proxy  # Keep container_name for singleton services
     env_file:
       - .env
     environment:
@@ -30,16 +30,16 @@ services:
       start_period: 10s
     restart: unless-stopped
 
-  # Base image builder
+  # Base image builder (singleton - not scaled)
   base:
     build:
       context: ./base
       dockerfile: Dockerfile
     image: llpm-base:latest
-    container_name: llpm-base-builder
+    container_name: llpm-base-builder  # Keep container_name for singleton services
     command: /bin/true
 
-  # Claude Code Assistant
+  # Claude Code Assistant (scalable)
   claude-code:
     build:
       context: ./claude-code
@@ -48,7 +48,7 @@ services:
       - base
       - litellm-proxy
     image: llpm-claude-code:latest
-    container_name: claude-code
+    # No container_name to allow scaling
     env_file:
       - .env
     environment:
@@ -73,7 +73,7 @@ services:
       retries: 3
       start_period: 10s
 
-  # OpenAI Codex Assistant
+  # OpenAI Codex Assistant (scalable)
   openai-codex:
     build:
       context: ./openai-codex
@@ -82,7 +82,7 @@ services:
       - base
       - litellm-proxy
     image: llpm-openai-codex:latest
-    container_name: openai-codex
+    # No container_name to allow scaling
     env_file:
       - .env
     environment:
@@ -108,7 +108,7 @@ services:
       retries: 3
       start_period: 10s
 
-  # Aider Assistant
+  # Aider Assistant (scalable)
   aider:
     build:
       context: ./aider
@@ -117,7 +117,7 @@ services:
       - base
       - litellm-proxy
     image: llpm-aider:latest
-    container_name: aider
+    # No container_name to allow scaling
     env_file:
       - .env
     environment:
@@ -147,7 +147,7 @@ services:
       retries: 3
       start_period: 10s
 
-  # OpenCode Assistant (Open-source models)
+  # OpenCode Assistant (scalable)
   opencode:
     build:
       context: ./opencode
@@ -155,7 +155,7 @@ services:
     depends_on:
       - base
     image: llpm-opencode:latest
-    container_name: opencode
+    # No container_name to allow scaling
     env_file:
       - .env
     environment:

@@ -62,18 +62,29 @@ The LLPM Docker environment provides containerized versions of popular AI coding
    docker-compose build base
    ```
 
-4. **Start a specific assistant:**
+4. **Start agents using the scale script (recommended):**
    ```bash
-   # Start Claude Code
-   docker-compose up -d claude-code
-   docker-compose exec claude-code bash
+   # Development setup (1 of each agent)
+   ./scale.sh dev
 
-   # Start Aider
-   docker-compose up -d aider
-   docker-compose exec aider aider
+   # Team setup (2 codex, 2 aider, 1 claude, 1 opencode)
+   ./scale.sh team
 
-   # Start all services
-   docker-compose up -d
+   # Custom setup
+   ./scale.sh custom --codex 2 --aider 1 --claude 1
+
+   # Check status
+   ./scale.sh status
+   ```
+
+5. **Or use docker-compose directly:**
+   ```bash
+   # Start with scaling
+   docker-compose up -d --scale aider=2 --scale openai-codex=3
+
+   # Access specific instance
+   docker-compose exec --index=1 aider bash
+   docker-compose exec --index=2 openai-codex bash
    ```
 
 ## Installed Development Tools
@@ -218,6 +229,79 @@ curl -X POST http://localhost:4000/v1/chat/completions \
     "messages": [{"role": "user", "content": "Hello"}]
   }'
 ```
+
+## Agent Scaling
+
+### Overview
+
+All AI agents (except singleton services) support horizontal scaling. You can run multiple instances of each agent type to handle parallel workloads, testing, or team development.
+
+### Using the Scale Script
+
+The `scale.sh` script provides preset configurations:
+
+```bash
+# Available presets
+./scale.sh dev      # 1 of each agent (development)
+./scale.sh team     # 2 codex, 2 aider, 1 claude, 1 opencode (team setup)
+./scale.sh heavy    # 3 codex, 3 aider, 2 claude, 2 opencode (heavy workload)
+./scale.sh minimal  # 1 aider only (minimal setup)
+./scale.sh stop     # Stop all agents (scale to 0)
+./scale.sh status   # Show current agent status
+
+# Custom scaling
+./scale.sh custom --codex 2 --aider 1 --claude 1 --opencode 0
+```
+
+### Manual Scaling with Docker Compose
+
+```bash
+# Scale specific services
+docker-compose up -d --scale aider=3 --scale openai-codex=2
+
+# Scale all agents at once
+docker-compose up -d \
+  --scale claude-code=1 \
+  --scale openai-codex=2 \
+  --scale aider=2 \
+  --scale opencode=1
+
+# Scale to zero (stop instances)
+docker-compose up -d --scale aider=0
+```
+
+### Accessing Scaled Instances
+
+When scaled, containers are numbered:
+- `docker-aider-1`, `docker-aider-2`, `docker-aider-3`
+- `docker-openai-codex-1`, `docker-openai-codex-2`
+
+Access specific instances:
+```bash
+# Execute command on specific instance
+docker-compose exec --index=2 aider bash
+
+# View logs from specific instance
+docker logs docker-aider-2
+
+# List all instances of a service
+docker-compose ps aider
+```
+
+### Use Cases for Scaling
+
+1. **Parallel Development**: Multiple developers working simultaneously
+2. **Load Distribution**: Spread workload across instances
+3. **A/B Testing**: Test different configurations in parallel
+4. **Resource Management**: Scale based on demand
+5. **Isolation**: Separate instances for different projects
+
+### Important Notes
+
+- LiteLLM proxy and base services are singletons (not scaled)
+- Each instance shares the same workspace volume
+- All instances connect through the central LiteLLM proxy
+- Instance names include index numbers for identification
 
 ## CLI Options Configuration
 
