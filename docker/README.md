@@ -57,34 +57,58 @@ The LLPM Docker environment provides containerized versions of popular AI coding
    # Edit .env and add your API keys
    ```
 
-3. **Build the base image:**
+3. **Build the base image and LiteLLM proxy:**
    ```bash
-   docker-compose build base
+   docker-compose build base litellm-proxy
    ```
 
-4. **Start agents using the scale script (recommended):**
+4. **Start multiple agents with scaling:**
+
+   **Option A: Using the scale script (easiest)**
    ```bash
-   # Development setup (1 of each agent)
-   ./scale.sh dev
-
-   # Team setup (2 codex, 2 aider, 1 claude, 1 opencode)
-   ./scale.sh team
-
-   # Custom setup
-   ./scale.sh custom --codex 2 --aider 1 --claude 1
-
-   # Check status
-   ./scale.sh status
+   # First, ensure LiteLLM proxy is running
+   docker-compose up -d litellm-proxy
+   
+   # Then start agents with presets:
+   ./scale.sh dev      # 1 of each agent
+   ./scale.sh team     # 2 codex, 2 aider, 1 claude, 1 opencode
+   ./scale.sh heavy    # 3 codex, 3 aider, 2 claude, 2 opencode
+   
+   # Or custom configuration:
+   ./scale.sh custom --codex 2 --aider 1 --claude 1 --opencode 0
    ```
 
-5. **Or use docker-compose directly:**
+   **Option B: Using docker-compose directly**
    ```bash
-   # Start with scaling
+   # Start LiteLLM proxy and agents with specific counts
+   docker-compose up -d litellm-proxy \
+     --scale claude-code=1 \
+     --scale openai-codex=2 \
+     --scale aider=1 \
+     --scale opencode=1
+   
+   # Or start services individually with scaling
+   docker-compose up -d litellm-proxy  # Start proxy first
    docker-compose up -d --scale aider=2 --scale openai-codex=3
+   ```
 
-   # Access specific instance
+5. **Access scaled instances:**
+   ```bash
+   # When you have multiple instances, they're numbered:
+   # aider-1, aider-2, openai-codex-1, openai-codex-2, etc.
+   
+   # Access specific instance by index
    docker-compose exec --index=1 aider bash
    docker-compose exec --index=2 openai-codex bash
+   
+   # Or by container name
+   docker exec -it llpm-docker-aider-1 bash
+   docker exec -it llpm-docker-openai-codex-2 bash
+   
+   # Check which instances are running
+   ./scale.sh status
+   # Or
+   docker-compose ps
    ```
 
 ## Installed Development Tools
@@ -390,6 +414,25 @@ docker-compose build --no-cache base
 docker-compose build --no-cache [service-name]
 ```
 
+### Scaling Issues
+```bash
+# Error: "container name already in use"
+# Solution: Remove container_name from service definition (already done for agents)
+
+# Can't access specific instance
+# Use --index flag:
+docker-compose exec --index=2 aider bash
+
+# Services not scaling
+# Ensure you're using the correct syntax:
+docker-compose up -d --scale service-name=count  # Correct
+docker-compose scale service-name=count  # Deprecated
+
+# Check running instances
+docker-compose ps
+./scale.sh status
+```
+
 ### Permission Issues
 ```bash
 # Fix volume permissions
@@ -402,13 +445,21 @@ chmod 644 ~/.gitconfig
 # Check Docker resources
 docker system df
 docker system prune -a  # Clean unused resources
+
+# Running many instances may require more memory
+# Adjust Docker Desktop memory allocation if needed
 ```
 
 ### Service Logs
 ```bash
-# View logs for a service
-docker-compose logs -f claude-code
-docker-compose logs -f api-proxy
+# View logs for all instances of a service
+docker-compose logs -f aider
+
+# View logs for specific instance
+docker logs llpm-docker-aider-2
+
+# View LiteLLM proxy logs
+docker-compose logs -f litellm-proxy
 ```
 
 ## Security Considerations
