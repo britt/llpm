@@ -42,16 +42,16 @@ The LLPM Docker environment provides containerized versions of popular AI coding
 
 ## Quick Start
 
-1. **Clone the repository and navigate to the project root:**
+1. **Clone the repository and navigate to the docker directory:**
    ```bash
    git clone https://github.com/britt/llpm.git
-   cd llpm
+   cd llpm/docker
    ```
 
 2. **Copy the environment example and add your API keys:**
    ```bash
-   cp .env.example .env
-   # Edit .env and add your API keys
+   cp ../.env.example ../.env
+   # Edit ../.env and add your API keys
    ```
 
 3. **Build the base image:**
