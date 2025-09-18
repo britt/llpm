@@ -4,7 +4,7 @@ This directory contains Docker configurations for running major AI coding assist
 
 ## Overview
 
-The LLPM Docker environment provides containerized versions of popular AI coding assistants, each running in a Ubuntu 22.04 LTS base image with a comprehensive set of development tools and language runtimes.
+The LLPM Docker environment provides containerized versions of popular AI coding assistants, each running in a Ubuntu 22.04 LTS base image with a comprehensive set of development tools and language runtimes. All AI agents connect through a centralized LiteLLM proxy server, providing unified API management, model routing, and usage tracking.
 
 ## Available Services
 
@@ -28,10 +28,13 @@ The LLPM Docker environment provides containerized versions of popular AI coding
 - Optional: `HUGGINGFACE_TOKEN`
 - Default model: `codellama`
 
-### 5. API Proxy (`api-proxy`)
-- Secure credential proxy service
-- Manages API keys centrally
-- Exposes endpoints: `/openai/*`, `/anthropic/*`, `/huggingface/*`
+### 5. LiteLLM Proxy (`litellm-proxy`)
+- **Central AI Gateway** for all agents
+- Unified OpenAI-compatible API endpoint
+- Routes requests to 100+ LLM providers
+- Features: model fallbacks, caching, usage tracking
+- Port: 4000
+- All agents use this proxy instead of direct API connections
 
 ## Prerequisites
 
@@ -146,24 +149,75 @@ Run health check manually:
 docker-compose exec claude-code /usr/local/bin/healthcheck.sh
 ```
 
-## API Proxy Service
+## LiteLLM Proxy Architecture
 
-The API proxy service provides a secure way to manage API credentials:
+### How It Works
 
-1. Start the proxy:
+The LiteLLM proxy acts as a central AI gateway for all agents:
+
+```
+[Claude Code] ─┐
+[OpenAI Codex] ├─→ [LiteLLM Proxy:4000] ─→ [OpenAI/Anthropic/Groq/etc.]
+[Aider] ────────┘
+```
+
+### Benefits
+
+1. **Unified Configuration**: All model settings in `litellm-proxy/litellm_config.yaml`
+2. **Model Flexibility**: Switch between providers without changing agent code
+3. **Cost Control**: Track usage across all agents in one place
+4. **Fallbacks**: Automatic failover between models
+5. **Caching**: Response caching reduces API calls
+
+### Configuration
+
+1. **Set your API keys** in `docker/.env`:
    ```bash
-   docker-compose up -d api-proxy
+   OPENAI_API_KEY=sk-...
+   ANTHROPIC_API_KEY=sk-ant-...
+   GROQ_API_KEY=gsk_...
    ```
 
-2. Access proxied endpoints:
-   - OpenAI: `http://localhost:8080/openai/v1/...`
-   - Anthropic: `http://localhost:8080/anthropic/v1/...`
-   - HuggingFace: `http://localhost:8080/huggingface/...`
-
-3. Check proxy status:
+2. **Set the master key** (used by agents to authenticate):
    ```bash
-   curl http://localhost:8080/health
+   LITELLM_MASTER_KEY=your-secure-key-here
    ```
+
+3. **Start the proxy**:
+   ```bash
+   docker-compose up -d litellm-proxy
+   ```
+
+4. **Check proxy status**:
+   ```bash
+   curl http://localhost:4000/health
+   curl http://localhost:4000/models  # List available models
+   ```
+
+### Adding New Models
+
+Edit `litellm-proxy/litellm_config.yaml` to add models:
+
+```yaml
+model_list:
+  - model_name: my-custom-model
+    litellm_params:
+      model: provider/model-name
+      api_key: os.environ/MY_API_KEY
+```
+
+### Testing the Proxy
+
+Test with curl:
+```bash
+curl -X POST http://localhost:4000/v1/chat/completions \
+  -H "Authorization: Bearer sk-1234" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "gpt-4-turbo-preview",
+    "messages": [{"role": "user", "content": "Hello"}]
+  }'
+```
 
 ## CLI Options Configuration
 
