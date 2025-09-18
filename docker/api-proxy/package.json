@@ -1,0 +1,15 @@
+{
+  "name": "llpm-api-proxy",
+  "version": "1.0.0",
+  "description": "API proxy for secure credential management in LLPM Docker environment",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "http-proxy-middleware": "^2.0.6",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1"
+  }
+}
