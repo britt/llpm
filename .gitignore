@@ -37,4 +37,5 @@ report.[0-9]_.[0-9]_.[0-9]_.[0-9]_.json
 workspace/*
 !workspace/.gitkeep
 docker/**/*.log
+docker/.env
 ollama-data/

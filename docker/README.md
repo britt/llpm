@@ -50,8 +50,8 @@ The LLPM Docker environment provides containerized versions of popular AI coding
 
 2. **Copy the environment example and add your API keys:**
    ```bash
-   cp ../.env.example ../.env
-   # Edit ../.env and add your API keys
+   cp .env.example .env
+   # Edit .env and add your API keys
    ```
 
 3. **Build the base image:**
@@ -188,7 +188,7 @@ RUN wget -q -O go.tar.gz https://go.dev/dl/go1.21.6.linux-amd64.tar.gz
 
 ### Environment Variables
 
-See `.env.example` for all available configuration options.
+See `docker/.env.example` for all available configuration options. The Docker environment uses its own `.env` file located in the `docker/` directory, separate from the main LLPM application's `.env` file.
 
 ## Troubleshooting
 
