@@ -69,6 +69,14 @@ import {
   getProjectVectorStats
 } from './vectorSearchTools';
 import { takeScreenshotTool, checkScreenshotSetupTool } from './screenshotTools';
+import {
+  listDockerAgentsTool,
+  submitDockerAgentJobTool,
+  getDockerAgentJobStatusTool,
+  listDockerAgentJobsTool,
+  cancelDockerAgentJobTool,
+  checkDockerBrokerHealthTool
+} from './dockerAgentTools';
 
 const toolRegistry: ToolRegistry = {
   get_current_project: getCurrentProjectTool,
@@ -131,7 +139,14 @@ const toolRegistry: ToolRegistry = {
   get_project_vector_stats: getProjectVectorStats,
   // Screenshots
   take_screenshot: takeScreenshotTool,
-  check_screenshot_setup: checkScreenshotSetupTool
+  check_screenshot_setup: checkScreenshotSetupTool,
+  // Docker Agent Tools
+  list_docker_agents: listDockerAgentsTool,
+  submit_docker_agent_job: submitDockerAgentJobTool,
+  get_docker_agent_job_status: getDockerAgentJobStatusTool,
+  list_docker_agent_jobs: listDockerAgentJobsTool,
+  cancel_docker_agent_job: cancelDockerAgentJobTool,
+  check_docker_broker_health: checkDockerBrokerHealthTool
 };
 
 export async function getToolRegistry(): Promise<ToolRegistry> {

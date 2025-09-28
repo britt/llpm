@@ -66,6 +66,7 @@
     "@arcadeai/arcadejs": "^1.9.1",
     "@octokit/rest": "^22.0.0",
     "ai": "^5.0.8",
+    "axios": "^1.12.2",
     "better-sqlite3": "^12.2.0",
     "clipboardy": "^4.0.0",
     "ink": "^6.1.0",
