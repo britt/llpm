@@ -1,13 +1,17 @@
 # LiteLLM Proxy Server Container
 FROM python:3.11-slim
 
-# Install dependencies
+# Install dependencies including build tools for Python packages with C extensions
 RUN apt-get update && apt-get install -y \
     curl \
+    gcc \
+    g++ \
+    build-essential \
     && rm -rf /var/lib/apt/lists/*
 
-# Install LiteLLM
-RUN pip install litellm[proxy] litellm[extra_proxy]
+# Install LiteLLM with extra proxy features
+RUN pip install --upgrade pip && \
+    pip install litellm[proxy] litellm[extra_proxy]
 
 # Create config directory
 WORKDIR /app

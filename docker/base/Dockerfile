@@ -31,7 +31,7 @@ RUN apt-get update && apt-get upgrade -y && \
     nano \
     jq \
     sed \
-    awk \
+    gawk \
     rsync \
     htop \
     tree \
@@ -96,8 +96,17 @@ ENV PATH="/root/.cargo/bin:$PATH"
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
 ENV PATH="/root/.cargo/bin:$PATH"
 
-# Install Go
-RUN wget -q -O go.tar.gz https://go.dev/dl/go1.21.6.linux-amd64.tar.gz && \
+# Install Go (architecture-aware)
+RUN ARCH=$(dpkg --print-architecture) && \
+    GO_VERSION="1.21.6" && \
+    if [ "$ARCH" = "amd64" ]; then \
+        GO_ARCH="amd64"; \
+    elif [ "$ARCH" = "arm64" ]; then \
+        GO_ARCH="arm64"; \
+    else \
+        echo "Unsupported architecture: $ARCH" && exit 1; \
+    fi && \
+    wget -q -O go.tar.gz "https://go.dev/dl/go${GO_VERSION}.linux-${GO_ARCH}.tar.gz" && \
     tar -C /usr/local -xzf go.tar.gz && \
     rm go.tar.gz
 ENV PATH="/usr/local/go/bin:$PATH"
@@ -155,12 +164,22 @@ RUN apt-get update && \
     apt-get install -y r-base r-base-dev && \
     rm -rf /var/lib/apt/lists/*
 
-# Install Dart
-RUN sh -c 'wget -qO- https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add -' && \
-    sh -c 'wget -qO- https://storage.googleapis.com/download.dartlang.org/linux/debian/dart_stable.list > /etc/apt/sources.list.d/dart_stable.list' && \
-    apt-get update && \
-    apt-get install -y dart && \
-    rm -rf /var/lib/apt/lists/*
+# Install Dart (using modern repository configuration)
+# Note: Dart SDK currently only provides amd64 binaries, not arm64
+RUN ARCH=$(dpkg --print-architecture) && \
+    if [ "$ARCH" = "amd64" ]; then \
+        apt-get update && \
+        apt-get install -y apt-transport-https && \
+        wget -qO- https://dl-ssl.google.com/linux/linux_signing_key.pub | \
+            gpg --dearmor -o /usr/share/keyrings/dart.gpg && \
+        echo 'deb [signed-by=/usr/share/keyrings/dart.gpg arch=amd64] https://storage.googleapis.com/download.dartlang.org/linux/debian stable main' | \
+            tee /etc/apt/sources.list.d/dart_stable.list && \
+        apt-get update && \
+        apt-get install -y dart && \
+        rm -rf /var/lib/apt/lists/*; \
+    else \
+        echo "Dart SDK not available for architecture: $ARCH (only amd64 supported)"; \
+    fi
 
 # Install C/C++ tools
 RUN apt-get update && \
@@ -195,15 +214,16 @@ RUN curl -fsSL https://get.docker.com | sh
 RUN npm install -g eslint prettier typescript typescript-language-server && \
     pip3 install black isort flake8 mypy pylint pyright && \
     gem install rubocop solargraph && \
-    go install golang.org/x/tools/gopls@latest && \
-    go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest && \
-    cargo install rust-analyzer
+    GOARCH=$(dpkg --print-architecture | sed 's/amd64/amd64/;s/arm64/arm64/') \
+    CGO_ENABLED=0 go install golang.org/x/tools/gopls@latest && \
+    CGO_ENABLED=0 go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest && \
+    rustup component add rust-analyzer
 
 # Install language servers
 RUN npm install -g pyright && \
-    dotnet tool install --global csharp-ls && \
     npm install -g vscode-langservers-extracted && \
     npm install -g bash-language-server
+# Note: csharp-ls is broken, using OmniSharp or other C# language servers is recommended
 
 # Install additional development tools
 RUN apt-get update && \
