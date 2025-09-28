@@ -519,3 +519,8 @@ This project follows semantic versioning (MAJOR.MINOR.PATCH):
 - **Bump version appropriately**: Use semantic versioning rules above to determine version bumps
 - Commit with descriptive messages including Claude Code attribution
 - Push to GitHub repository after commits to keep remote updated
+
+### YAML Configuration Rules
+
+- **NEVER use comments in YAML files**: Do not add any comments (lines starting with #) to YAML configuration files
+- Keep YAML files clean and comment-free for better compatibility and parsing

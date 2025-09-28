@@ -73,6 +73,8 @@ services:
       - .env
     environment:
       - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - OPENAI_ORG_ID=${OPENAI_ORG_ID}
+      - OPENAI_ORGANIZATION=${OPENAI_ORG_ID}  # OpenAI SDK expects this exact name
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
       - GROQ_API_KEY=${GROQ_API_KEY}
       - HUGGINGFACE_TOKEN=${HUGGINGFACE_TOKEN}
@@ -83,7 +85,7 @@ services:
       - DATABASE_URL=postgresql://litellm:litellm123@postgres:5432/litellm
       - STORE_MODEL_IN_DB=True
     volumes:
-      - ./litellm-proxy/db_config.yaml:/app/config.yaml:ro
+      - ./litellm-proxy/proxy_config.yaml:/app/config.yaml:ro
     command: ["--config", "/app/config.yaml", "--port", "4000", "--detailed_debug"]
     ports:
       - "4000:4000"
