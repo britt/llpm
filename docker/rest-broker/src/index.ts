@@ -21,7 +21,7 @@ import { JobQueue } from './services/JobQueue';
 config();
 
 const app: Express = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3010;
 const HOST = process.env.HOST || '0.0.0.0';
 
 // Load OpenAPI specification
@@ -37,16 +37,7 @@ app.locals.agentManager = agentManager;
 app.locals.jobQueue = jobQueue;
 
 // Security middleware
-app.use(helmet({
-  contentSecurityPolicy: {
-    directives: {
-      defaultSrc: ["'self'"],
-      styleSrc: ["'self'", "'unsafe-inline'"],
-      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
-      imgSrc: ["'self'", "data:", "https:"],
-    },
-  },
-}));
+app.use(helmet());
 
 // CORS configuration
 app.use(cors({
@@ -76,6 +67,7 @@ app.use(requestLogger);
 app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument, {
   customCss: '.swagger-ui .topbar { display: none }',
   customSiteTitle: 'LLPM REST API Broker',
+  explorer: true,
 }));
 
 // Serve OpenAPI spec as JSON

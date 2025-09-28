@@ -31,5 +31,9 @@ fi
 
 echo "LiteLLM Proxy starting on port 4000..."
 
+# Explicitly disable database to avoid Prisma issues
+export DISABLE_PRISMA_CLIENT=true
+export STORE_MODEL_IN_DB=false
+
 # Run the command passed to docker run
 exec "$@"

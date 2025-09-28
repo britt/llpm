@@ -9,7 +9,7 @@ services:
     env_file:
       - .env
     environment:
-      - PORT=3000
+      - PORT=3010
       - HOST=0.0.0.0
       - NODE_ENV=production
       - LOG_LEVEL=${LOG_LEVEL:-info}
@@ -22,7 +22,7 @@ services:
       - AUTH_ENABLED=${AUTH_ENABLED:-false}
       - AUTH_TOKEN=${AUTH_TOKEN}
     ports:
-      - "3000:3000"
+      - "3010:3010"
     networks:
       - llpm-network
     depends_on:
@@ -35,20 +35,40 @@ services:
       - /var/run/llpm:/var/run/llpm  # Unix socket directory (if used)
       - ./workspace:/workspace:rw
     healthcheck:
-      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000/health', (r) => r.statusCode === 200 ? process.exit(0) : process.exit(1))"]
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3010/health', (r) => r.statusCode === 200 ? process.exit(0) : process.exit(1))"]
       interval: 30s
       timeout: 3s
       retries: 3
       start_period: 10s
     restart: unless-stopped
 
+  # PostgreSQL Database for LiteLLM
+  postgres:
+    image: postgres:15-alpine
+    container_name: litellm-postgres
+    environment:
+      - POSTGRES_USER=litellm
+      - POSTGRES_PASSWORD=litellm123
+      - POSTGRES_DB=litellm
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - llpm-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U litellm"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 30s
+    restart: unless-stopped
+
   # LiteLLM Proxy - Central AI Gateway (singleton - not scaled)
   litellm-proxy:
-    build:
-      context: ./litellm-proxy
-      dockerfile: Dockerfile
-    image: llpm-litellm-proxy:latest
+    image: ghcr.io/berriai/litellm:main-latest
     container_name: litellm-proxy  # Keep container_name for singleton services
+    depends_on:
+      postgres:
+        condition: service_healthy
     env_file:
       - .env
     environment:
@@ -60,7 +80,10 @@ services:
       - GOOGLE_VERTEX_REGION=${GOOGLE_VERTEX_REGION:-us-central1}
       - OLLAMA_API_BASE=http://opencode:11434
       - LITELLM_MASTER_KEY=${LITELLM_MASTER_KEY:-sk-1234}
-      - DATABASE_URL=${DATABASE_URL}
+      - DATABASE_URL=postgresql://litellm:litellm123@postgres:5432/litellm
+    volumes:
+      - ./litellm-proxy/simple_config.yaml:/app/config.yaml:ro
+    command: ["--config", "/app/config.yaml", "--port", "4000"]
     ports:
       - "4000:4000"
     networks:
@@ -235,4 +258,6 @@ networks:
 
 volumes:
   ollama-data:
+    driver: local
+  postgres-data:
     driver: local

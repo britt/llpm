@@ -5,26 +5,28 @@ import { JobQueue } from '../services/JobQueue';
 export const jobsRouter = Router({ mergeParams: true });
 
 // Submit a job
-jobsRouter.post('/', async (req: Request, res: Response) => {
+jobsRouter.post('/', async (req: Request, res: Response): Promise<void> => {
   const { agentId } = req.params;
   const agentManager: AgentManager = req.app.locals.agentManager;
   const jobQueue: JobQueue = req.app.locals.jobQueue;
 
   const agent = agentManager.getAgent(agentId);
   if (!agent) {
-    return res.status(404).json({
+    res.status(404).json({
       status: 404,
       code: 'AGENT_NOT_FOUND',
       message: `Agent ${agentId} not found`,
     });
+    return;
   }
 
   if (agent.status === 'offline') {
-    return res.status(503).json({
+    res.status(503).json({
       status: 503,
       code: 'AGENT_OFFLINE',
       message: `Agent ${agentId} is currently offline`,
     });
+    return;
   }
 
   try {
@@ -48,34 +50,36 @@ jobsRouter.post('/', async (req: Request, res: Response) => {
 });
 
 // Get job status
-jobsRouter.get('/:jobId', (req: Request, res: Response) => {
+jobsRouter.get('/:jobId', (req: Request, res: Response): void => {
   const { agentId, jobId } = req.params;
   const jobQueue: JobQueue = req.app.locals.jobQueue;
 
   const job = jobQueue.getJob(jobId);
   if (!job || job.agentId !== agentId) {
-    return res.status(404).json({
+    res.status(404).json({
       status: 404,
       code: 'JOB_NOT_FOUND',
       message: `Job ${jobId} not found`,
     });
+    return;
   }
 
   res.json(job);
 });
 
 // Cancel a job
-jobsRouter.post('/:jobId/cancel', async (req: Request, res: Response) => {
+jobsRouter.post('/:jobId/cancel', async (req: Request, res: Response): Promise<void> => {
   const { agentId, jobId } = req.params;
   const jobQueue: JobQueue = req.app.locals.jobQueue;
 
   const job = jobQueue.getJob(jobId);
   if (!job || job.agentId !== agentId) {
-    return res.status(404).json({
+    res.status(404).json({
       status: 404,
       code: 'JOB_NOT_FOUND',
       message: `Job ${jobId} not found`,
     });
+    return;
   }
 
   const cancelled = await jobQueue.cancelJob(jobId);

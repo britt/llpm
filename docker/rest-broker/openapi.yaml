@@ -13,9 +13,9 @@ info:
     url: https://opensource.org/licenses/MIT
 
 servers:
-  - url: http://localhost:3000
+  - url: http://localhost:3010
     description: Local development server
-  - url: http://rest-broker:3000
+  - url: http://rest-broker:3010
     description: Docker service endpoint
 
 paths:

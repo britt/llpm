@@ -9,15 +9,15 @@ RUN apt-get update && apt-get install -y \
     build-essential \
     && rm -rf /var/lib/apt/lists/*
 
-# Install LiteLLM with extra proxy features
+# Install LiteLLM without database dependencies
 RUN pip install --upgrade pip && \
-    pip install litellm[proxy] litellm[extra_proxy]
+    pip install litellm
 
 # Create config directory
 WORKDIR /app
 
 # Copy configuration files
-COPY litellm_config.yaml /app/config.yaml
+COPY simple_config.yaml /app/config.yaml
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
@@ -29,4 +29,4 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
     CMD curl -f http://localhost:4000/health || exit 1
 
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
-CMD ["litellm", "--config", "/app/config.yaml", "--port", "4000", "--host", "0.0.0.0"]
+CMD ["litellm", "--config", "/app/config.yaml", "--port", "4000", "--host", "0.0.0.0", "--telemetry", "False"]
