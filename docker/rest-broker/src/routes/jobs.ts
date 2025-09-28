@@ -4,6 +4,40 @@ import { JobQueue } from '../services/JobQueue';
 
 export const jobsRouter = Router({ mergeParams: true });
 
+// List all jobs for an agent
+jobsRouter.get('/', (req: Request, res: Response): void => {
+  const { agentId } = req.params;
+  const { status, limit = '50', offset = '0' } = req.query;
+  const agentManager: AgentManager = req.app.locals.agentManager;
+  const jobQueue: JobQueue = req.app.locals.jobQueue;
+
+  const agent = agentManager.getAgent(agentId);
+  if (!agent) {
+    res.status(404).json({
+      status: 404,
+      code: 'AGENT_NOT_FOUND',
+      message: `Agent ${agentId} not found`,
+    });
+    return;
+  }
+
+  const limitNum = Math.min(100, Math.max(1, parseInt(limit as string, 10)));
+  const offsetNum = Math.max(0, parseInt(offset as string, 10));
+  
+  const jobs = jobQueue.getJobsByAgent(agentId, {
+    status: status as string | undefined,
+    limit: limitNum,
+    offset: offsetNum,
+  });
+
+  res.json({
+    jobs: jobs.items,
+    total: jobs.total,
+    offset: offsetNum,
+    limit: limitNum,
+  });
+});
+
 // Submit a job
 jobsRouter.post('/', async (req: Request, res: Response): Promise<void> => {
   const { agentId } = req.params;

@@ -98,8 +98,33 @@ export class JobQueue extends EventEmitter {
     return this.jobs.get(jobId);
   }
 
-  getJobsByAgent(agentId: string): Job[] {
-    return Array.from(this.jobs.values()).filter(job => job.agentId === agentId);
+  getJobsByAgent(agentId: string, options?: {
+    status?: string;
+    limit?: number;
+    offset?: number;
+  }): { items: Job[]; total: number } {
+    // Get all jobs for the agent
+    let agentJobs = Array.from(this.jobs.values()).filter(job => job.agentId === agentId);
+    
+    // Filter by status if provided
+    if (options?.status) {
+      agentJobs = agentJobs.filter(job => job.status === options.status);
+    }
+    
+    // Sort by creation date (newest first)
+    agentJobs.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    
+    const total = agentJobs.length;
+    
+    // Apply pagination
+    const offset = options?.offset || 0;
+    const limit = options?.limit || 50;
+    const paginatedJobs = agentJobs.slice(offset, offset + limit);
+    
+    return {
+      items: paginatedJobs,
+      total,
+    };
   }
 
   async cancelJob(jobId: string): Promise<boolean> {

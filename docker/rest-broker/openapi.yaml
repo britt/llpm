@@ -42,6 +42,69 @@ paths:
           $ref: '#/components/responses/InternalServerError'
 
   /agents/{agentId}/jobs:
+    get:
+      summary: List all jobs for an agent
+      description: Returns all jobs submitted to the specified agent with their current statuses
+      operationId: listAgentJobs
+      tags:
+        - Jobs
+      parameters:
+        - $ref: '#/components/parameters/AgentId'
+        - name: status
+          in: query
+          description: Filter jobs by status
+          required: false
+          schema:
+            type: string
+            enum:
+              - queued
+              - running
+              - completed
+              - failed
+              - cancelled
+        - name: limit
+          in: query
+          description: Maximum number of jobs to return
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 50
+        - name: offset
+          in: query
+          description: Number of jobs to skip for pagination
+          required: false
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+      responses:
+        '200':
+          description: Successfully retrieved jobs list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  jobs:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/JobStatus'
+                  total:
+                    type: integer
+                    description: Total number of jobs for this agent
+                  offset:
+                    type: integer
+                    description: Current offset for pagination
+                  limit:
+                    type: integer
+                    description: Current limit for pagination
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
     post:
       summary: Submit a job to an agent
       description: Submit a new job to the specified agent for processing
