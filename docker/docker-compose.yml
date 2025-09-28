@@ -81,9 +81,10 @@ services:
       - OLLAMA_API_BASE=http://opencode:11434
       - LITELLM_MASTER_KEY=${LITELLM_MASTER_KEY:-sk-1234}
       - DATABASE_URL=postgresql://litellm:litellm123@postgres:5432/litellm
+      - STORE_MODEL_IN_DB=True
     volumes:
-      - ./litellm-proxy/simple_config.yaml:/app/config.yaml:ro
-    command: ["--config", "/app/config.yaml", "--port", "4000"]
+      - ./litellm-proxy/db_config.yaml:/app/config.yaml:ro
+    command: ["--config", "/app/config.yaml", "--port", "4000", "--detailed_debug"]
     ports:
       - "4000:4000"
     networks:
