@@ -1,4 +1,47 @@
 services:
+  # REST API Broker - HTTP interface for agents (singleton - not scaled)
+  rest-broker:
+    build:
+      context: ./rest-broker
+      dockerfile: Dockerfile
+    image: llpm-rest-broker:latest
+    container_name: rest-broker
+    env_file:
+      - .env
+    environment:
+      - PORT=3000
+      - HOST=0.0.0.0
+      - NODE_ENV=production
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+      - CORS_ORIGIN=${CORS_ORIGIN:-*}
+      - RATE_LIMIT_WINDOW=60000
+      - RATE_LIMIT_MAX=100
+      - HEALTH_CHECK_INTERVAL=30000
+      - USE_UNIX_SOCKETS=${USE_UNIX_SOCKETS:-false}
+      - LITELLM_PROXY_URL=http://litellm-proxy:4000
+      - AUTH_ENABLED=${AUTH_ENABLED:-false}
+      - AUTH_TOKEN=${AUTH_TOKEN}
+    ports:
+      - "3000:3000"
+    networks:
+      - llpm-network
+    depends_on:
+      - litellm-proxy
+      - claude-code
+      - openai-codex
+      - aider
+      - opencode
+    volumes:
+      - /var/run/llpm:/var/run/llpm  # Unix socket directory (if used)
+      - ./workspace:/workspace:rw
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000/health', (r) => r.statusCode === 200 ? process.exit(0) : process.exit(1))"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+
   # LiteLLM Proxy - Central AI Gateway (singleton - not scaled)
   litellm-proxy:
     build:
