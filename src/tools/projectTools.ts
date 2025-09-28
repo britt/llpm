@@ -31,7 +31,7 @@ function normalizeRepository(repository: string): string {
 }
 
 export const getCurrentProjectTool = tool({
-  description: 'Get information about the currently active project',
+  description: 'Get information about the currently active project. ALWAYS use this tool when determining the current project.',
   inputSchema: z.object({}),
   execute: async () => {
     debug('Executing get_current_project tool');

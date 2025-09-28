@@ -1,0 +1,195 @@
+services:
+  # LiteLLM Proxy - Central AI Gateway (singleton - not scaled)
+  litellm-proxy:
+    build:
+      context: ./litellm-proxy
+      dockerfile: Dockerfile
+    image: llpm-litellm-proxy:latest
+    container_name: litellm-proxy  # Keep container_name for singleton services
+    env_file:
+      - .env
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - GROQ_API_KEY=${GROQ_API_KEY}
+      - HUGGINGFACE_TOKEN=${HUGGINGFACE_TOKEN}
+      - GOOGLE_VERTEX_PROJECT_ID=${GOOGLE_VERTEX_PROJECT_ID}
+      - GOOGLE_VERTEX_REGION=${GOOGLE_VERTEX_REGION:-us-central1}
+      - OLLAMA_API_BASE=http://opencode:11434
+      - LITELLM_MASTER_KEY=${LITELLM_MASTER_KEY:-sk-1234}
+      - DATABASE_URL=${DATABASE_URL}
+    ports:
+      - "4000:4000"
+    networks:
+      - llpm-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4000/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+
+  # Base image builder (singleton - not scaled)
+  base:
+    build:
+      context: ./base
+      dockerfile: Dockerfile
+    image: llpm-base:latest
+    container_name: llpm-base-builder  # Keep container_name for singleton services
+    command: /bin/true
+
+  # Claude Code Assistant (scalable)
+  claude-code:
+    build:
+      context: ./claude-code
+      dockerfile: Dockerfile
+    depends_on:
+      - base
+      - litellm-proxy
+    image: llpm-claude-code:latest
+    # No container_name to allow scaling
+    env_file:
+      - .env
+    environment:
+      # Use LiteLLM proxy for Anthropic API
+      - ANTHROPIC_BASE_URL=http://litellm-proxy:4000
+      - ANTHROPIC_API_KEY=${LITELLM_MASTER_KEY:-sk-1234}
+      - CLAUDE_MODEL=${CLAUDE_MODEL:-claude-3-opus-20240229}
+      - CLAUDE_CLI_OPTIONS=${CLAUDE_CLI_OPTIONS:-}
+    volumes:
+      - ../workspace:/claude-workspace
+      - ${HOME}/.ssh:/root/.ssh:ro
+      - ${HOME}/.gitconfig:/root/.gitconfig:ro
+    working_dir: /claude-workspace
+    stdin_open: true
+    tty: true
+    networks:
+      - llpm-network
+    healthcheck:
+      test: ["CMD", "/usr/local/bin/healthcheck.sh"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+
+  # OpenAI Codex Assistant (scalable)
+  openai-codex:
+    build:
+      context: ./openai-codex
+      dockerfile: Dockerfile
+    depends_on:
+      - base
+      - litellm-proxy
+    image: llpm-openai-codex:latest
+    # No container_name to allow scaling
+    env_file:
+      - .env
+    environment:
+      # Use LiteLLM proxy for OpenAI API
+      - OPENAI_API_BASE=http://litellm-proxy:4000
+      - OPENAI_API_KEY=${LITELLM_MASTER_KEY:-sk-1234}
+      - OPENAI_MODEL=${OPENAI_MODEL:-gpt-4-turbo-preview}
+      - OPENAI_ORG_ID=${OPENAI_ORG_ID}
+      - OPENAI_CLI_OPTIONS=${OPENAI_CLI_OPTIONS:-}
+    volumes:
+      - ../workspace:/codex-workspace
+      - ${HOME}/.ssh:/root/.ssh:ro
+      - ${HOME}/.gitconfig:/root/.gitconfig:ro
+    working_dir: /codex-workspace
+    stdin_open: true
+    tty: true
+    networks:
+      - llpm-network
+    healthcheck:
+      test: ["CMD", "/usr/local/bin/healthcheck.sh"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+
+  # Aider Assistant (scalable)
+  aider:
+    build:
+      context: ./aider
+      dockerfile: Dockerfile
+    depends_on:
+      - base
+      - litellm-proxy
+    image: llpm-aider:latest
+    # No container_name to allow scaling
+    env_file:
+      - .env
+    environment:
+      # Use LiteLLM proxy for all APIs
+      - OPENAI_API_BASE=http://litellm-proxy:4000
+      - OPENAI_API_KEY=${LITELLM_MASTER_KEY:-sk-1234}
+      - AIDER_OPENAI_API_BASE=http://litellm-proxy:4000
+      - ANTHROPIC_BASE_URL=http://litellm-proxy:4000
+      - ANTHROPIC_API_KEY=${LITELLM_MASTER_KEY:-sk-1234}
+      - AIDER_MODEL=${AIDER_MODEL:-gpt-4-turbo-preview}
+      - AIDER_AUTO_COMMITS=${AIDER_AUTO_COMMITS:-false}
+      - AIDER_DARK_MODE=${AIDER_DARK_MODE:-true}
+      - AIDER_CLI_OPTIONS=${AIDER_CLI_OPTIONS:-}
+    volumes:
+      - ../workspace:/aider-workspace
+      - ${HOME}/.ssh:/root/.ssh:ro
+      - ${HOME}/.gitconfig:/root/.gitconfig:ro
+    working_dir: /aider-workspace
+    stdin_open: true
+    tty: true
+    networks:
+      - llpm-network
+    healthcheck:
+      test: ["CMD", "bash", "-c", "/usr/local/bin/healthcheck.sh && which aider"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+
+  # OpenCode Assistant (scalable)
+  opencode:
+    build:
+      context: ./opencode
+      dockerfile: Dockerfile
+    depends_on:
+      - base
+    image: llpm-opencode:latest
+    # No container_name to allow scaling
+    env_file:
+      - .env
+    environment:
+      - HUGGINGFACE_TOKEN=${HUGGINGFACE_TOKEN}
+      - OLLAMA_HOST=${OLLAMA_HOST:-http://localhost:11434}
+      - OPENCODE_MODEL=${OPENCODE_MODEL:-codellama}
+      # OpenCode can use its own LiteLLM or connect to proxy
+      - LITELLM_PROXY_BASE=http://litellm-proxy:4000
+      - LITELLM_PROXY_KEY=${LITELLM_MASTER_KEY:-sk-1234}
+      - OLLAMA_CLI_OPTIONS=${OLLAMA_CLI_OPTIONS:-}
+      - LITELLM_CLI_OPTIONS=${LITELLM_CLI_OPTIONS:-}
+    volumes:
+      - ../workspace:/opencode-workspace
+      - ${HOME}/.ssh:/root/.ssh:ro
+      - ${HOME}/.gitconfig:/root/.gitconfig:ro
+      - ollama-data:/root/.ollama
+    working_dir: /opencode-workspace
+    stdin_open: true
+    tty: true
+    networks:
+      - llpm-network
+    healthcheck:
+      test: ["CMD", "/usr/local/bin/healthcheck.sh"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+
+
+networks:
+  llpm-network:
+    driver: bridge
+    name: llpm-network
+
+volumes:
+  ollama-data:
+    driver: local
