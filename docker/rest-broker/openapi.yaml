@@ -228,6 +228,143 @@ paths:
                   # TYPE rest_broker_requests_total counter
                   rest_broker_requests_total{method="GET",endpoint="/agents",status="200"} 42
 
+  /register:
+    post:
+      summary: Register a new agent
+      description: Dynamically register a new agent with the REST broker
+      operationId: registerAgent
+      tags:
+        - Agents
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AgentRegistration'
+      responses:
+        '201':
+          description: Agent registered successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 201
+                  message:
+                    type: string
+                    example: Agent registered successfully
+                  agentId:
+                    type: string
+                    example: custom-agent-1
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          description: Agent already registered
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /register/{agentId}:
+    delete:
+      summary: Deregister an agent
+      description: Remove an agent from the REST broker registry
+      operationId: deregisterAgent
+      tags:
+        - Agents
+      parameters:
+        - name: agentId
+          in: path
+          description: Unique identifier of the agent to deregister
+          required: true
+          schema:
+            type: string
+            example: custom-agent-1
+      responses:
+        '200':
+          description: Agent deregistered successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: Agent deregistered successfully
+                  agentId:
+                    type: string
+                    example: custom-agent-1
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /heartbeat/{agentId}:
+    post:
+      summary: Send agent heartbeat
+      description: Update agent status and metadata via heartbeat
+      operationId: agentHeartbeat
+      tags:
+        - Agents
+      parameters:
+        - name: agentId
+          in: path
+          description: Unique identifier of the agent
+          required: true
+          schema:
+            type: string
+            example: custom-agent-1
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  enum:
+                    - available
+                    - busy
+                  description: Current agent status
+                  example: available
+                metadata:
+                  type: object
+                  additionalProperties: true
+                  description: Additional agent metadata to update
+      responses:
+        '200':
+          description: Heartbeat received successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: Heartbeat received
+                  agentId:
+                    type: string
+                    example: custom-agent-1
+        '404':
+          description: Agent not found - needs to register first
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
   /openapi.json:
     get:
       summary: Get OpenAPI specification
@@ -329,6 +466,42 @@ components:
           type: string
           description: Optional health status message
           example: Agent responding normally
+
+    AgentRegistration:
+      type: object
+      required:
+        - agentId
+        - name
+        - type
+      properties:
+        agentId:
+          type: string
+          description: Unique identifier for the agent
+          pattern: '^[a-z0-9-]+$'
+          example: custom-agent-1
+        name:
+          type: string
+          description: Display name of the agent
+          example: Custom Agent
+        type:
+          type: string
+          description: Type of agent
+          example: custom-agent
+        host:
+          type: string
+          description: Host where agent is running (optional, defaults to request IP)
+          example: 192.168.1.100
+        port:
+          type: integer
+          description: Port where agent is listening (optional)
+          example: 8080
+        metadata:
+          type: object
+          additionalProperties: true
+          description: Additional agent-specific metadata
+          example:
+            version: "1.0.0"
+            capabilities: ["code-generation", "refactoring"]
 
     JobRequest:
       type: object
