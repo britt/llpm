@@ -99,7 +99,7 @@ export class DockerExecutor {
     switch (agentId) {
       case 'claude-code':
         // Use the actual Claude CLI installed from npm
-        let claudeCmd = `echo '${escapedPrompt}' | claude`;
+        let claudeCmd = `echo '${escapedPrompt}' | claude --permission-mode bypassPermissions`;
         
         // Add model if specified
         if (options?.model) {
