@@ -119,6 +119,21 @@ For more information, read the Bun API docs in `node_modules/bun-types/docs/**.m
 
 **IMPORTANT**: Always answer questions and fulfill requests honestly. Do not just be compliant. If you cannot do something or don't know an answer say so.
 
+### Docker Container Management
+
+When making changes to Docker services in the `docker/` directory:
+
+1. **Rebuild containers after code changes**: Use `docker-compose build <service-name>` from the project root
+2. **Restart to apply changes**: Use `docker-compose restart <service-name>` after rebuilding
+3. **Complete rebuild workflow**: `docker-compose build <service-name> && docker-compose restart <service-name>`
+4. **Check logs after restart**: Use `docker logs <service-name> --tail 20` to verify successful startup
+
+Example for rest-broker:
+```bash
+docker-compose build rest-broker && docker-compose restart rest-broker
+docker logs rest-broker --tail 20
+```
+
 ### Testing
 
 - Use `bun run test` to run Vitest tests (installed in this project)
