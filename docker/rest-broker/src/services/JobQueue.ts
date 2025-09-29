@@ -45,7 +45,7 @@ export class JobQueue extends EventEmitter {
     this.jobs.set(job.id, job);
     this.emit('job:created', job);
 
-    // Simulate job processing
+    // Process job in Docker container
     this.processJob(job);
 
     return job;

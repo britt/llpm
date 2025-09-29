@@ -207,14 +207,9 @@ export class AgentManager extends EventEmitter {
     // Mark agent as busy
     agent.status = 'busy';
 
-    // This is handled by JobQueue now, which uses DockerExecutor
-    // to execute real commands in Docker containers
+    // Job execution is handled by JobQueue, which uses DockerExecutor
     const jobId = `job-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-    
-    // The actual Docker execution happens in JobQueue.processJob()
-    // We just return the job ID here
-    // The agent status will be updated when the job completes
-    
+
     return jobId;
   }
 
