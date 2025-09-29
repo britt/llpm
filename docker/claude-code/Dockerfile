@@ -2,7 +2,7 @@
 FROM llpm-base:latest
 
 # Install Claude Code specific dependencies
-RUN npm install -g @anthropic/claude-code-cli || true
+RUN npm install -g @anthropic-ai/claude-code
 
 # Create Claude Code workspace
 WORKDIR /claude-workspace
@@ -12,7 +12,8 @@ COPY --chmod=755 entrypoint.sh /usr/local/bin/entrypoint.sh
 
 # Environment variables (will be overridden by .env)
 ENV ANTHROPIC_API_KEY=""
-ENV CLAUDE_MODEL="claude-3-opus-20240229"
+ENV CLAUDE_MODEL=""
+ENV CLAUDE_CLI_OPTIONS="--permission-mode bypassPermissions"
 
 # Healthcheck
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \

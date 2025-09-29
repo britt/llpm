@@ -12,6 +12,7 @@ import { healthRouter } from './routes/health';
 import { agentsRouter } from './routes/agents';
 import { jobsRouter } from './routes/jobs';
 import { metricsRouter } from './routes/metrics';
+import registerRouter from './routes/register';
 import { errorHandler } from './middleware/errorHandler';
 import { requestLogger } from './middleware/requestLogger';
 import { AgentManager } from './services/AgentManager';
@@ -80,6 +81,7 @@ app.use('/health', healthRouter);
 app.use('/agents', agentsRouter);
 app.use('/agents/:agentId/jobs', jobsRouter);
 app.use('/metrics', metricsRouter);
+app.use('/api', registerRouter);
 
 // Root endpoint
 app.get('/', (_req: Request, res: Response) => {

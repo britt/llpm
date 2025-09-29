@@ -1,7 +1,7 @@
 import { EventEmitter } from 'events';
 import { logger } from '../utils/logger';
 import * as net from 'net';
-import axios from 'axios';
+import { DockerExecutor } from './DockerExecutor';
 
 export interface Agent {
   id: string;
@@ -13,18 +13,24 @@ export interface Agent {
     lastCheck: string;
     message?: string;
   };
+  host?: string;
+  port?: number;
   metadata?: Record<string, any>;
+  registeredAt?: string;
+  lastHeartbeat?: string;
 }
 
 export class AgentManager extends EventEmitter {
   private agents: Map<string, Agent>;
   private socketConnections: Map<string, net.Socket>;
   private healthCheckInterval: NodeJS.Timeout | null = null;
+  private dockerExecutor: DockerExecutor;
 
   constructor() {
     super();
     this.agents = new Map();
     this.socketConnections = new Map();
+    this.dockerExecutor = new DockerExecutor();
   }
 
   async initialize(): Promise<void> {
@@ -151,40 +157,32 @@ export class AgentManager extends EventEmitter {
 
   private async checkHttpHealth(agent: Agent): Promise<void> {
     try {
-      // For Docker services, use the container name as hostname
-      const url = `http://${agent.id}:8080/health`;
-      const response = await axios.get(url, { timeout: 5000 });
+      // Check if the Docker container is actually running
+      const isHealthy = await this.dockerExecutor.checkContainerHealth(agent.id);
       
-      if (response.status === 200) {
-        agent.status = 'available';
-        agent.health = {
-          status: 'healthy',
-          lastCheck: new Date().toISOString(),
-          message: 'HTTP health check passed',
-        };
-      } else {
-        throw new Error(`Health check returned status ${response.status}`);
-      }
-    } catch (error) {
-      // Agents don't expose HTTP endpoints, but they're available in Docker network
-      // Mark as available if we can resolve the hostname
-      try {
-        const dns = require('dns').promises;
-        await dns.lookup(agent.id);
+      if (isHealthy) {
         agent.status = 'available';
         agent.health = {
           status: 'healthy',
           lastCheck: new Date().toISOString(),
           message: 'Docker container is running',
         };
-      } catch (dnsError) {
+      } else {
         agent.status = 'offline';
         agent.health = {
-          status: 'unknown',
+          status: 'unhealthy',
           lastCheck: new Date().toISOString(),
-          message: 'Container not reachable',
+          message: 'Docker container not found or not running',
         };
       }
+    } catch (error) {
+      logger.error(`Docker health check failed for ${agent.id}:`, error);
+      agent.status = 'offline';
+      agent.health = {
+        status: 'unknown',
+        lastCheck: new Date().toISOString(),
+        message: error instanceof Error ? error.message : 'Health check failed',
+      };
     }
   }
 
@@ -209,16 +207,103 @@ export class AgentManager extends EventEmitter {
     // Mark agent as busy
     agent.status = 'busy';
 
-    // In a real implementation, this would communicate with the actual agent
-    // For now, return a mock job ID
+    // This is handled by JobQueue now, which uses DockerExecutor
+    // to execute real commands in Docker containers
     const jobId = `job-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     
-    // Simulate job submission
-    setTimeout(() => {
-      agent.status = 'available';
-    }, 1000);
-
+    // The actual Docker execution happens in JobQueue.processJob()
+    // We just return the job ID here
+    // The agent status will be updated when the job completes
+    
     return jobId;
+  }
+
+  async registerAgent(agentData: {
+    id: string;
+    name: string;
+    type: string;
+    host?: string;
+    port?: number;
+    metadata?: Record<string, any>;
+  }): Promise<boolean> {
+    // Check if agent already exists
+    if (this.agents.has(agentData.id)) {
+      logger.info(`Agent ${agentData.id} is already registered`);
+      return false;
+    }
+    
+    const agent: Agent = {
+      id: agentData.id,
+      name: agentData.name,
+      type: agentData.type,
+      status: 'available',
+      health: {
+        status: 'healthy',
+        lastCheck: new Date().toISOString(),
+        message: 'Agent registered',
+      },
+      host: agentData.host,
+      port: agentData.port,
+      metadata: agentData.metadata || {},
+      registeredAt: new Date().toISOString(),
+      lastHeartbeat: new Date().toISOString(),
+    };
+    
+    this.agents.set(agent.id, agent);
+    logger.info(`Agent ${agent.id} registered successfully`);
+    this.emit('agent:registered', agent);
+    
+    return true;
+  }
+  
+  async deregisterAgent(agentId: string): Promise<boolean> {
+    const agent = this.agents.get(agentId);
+    if (!agent) {
+      return false;
+    }
+    
+    this.agents.delete(agentId);
+    logger.info(`Agent ${agentId} deregistered`);
+    this.emit('agent:deregistered', agent);
+    
+    // Close any existing socket connections
+    const socket = this.socketConnections.get(agentId);
+    if (socket) {
+      socket.end();
+      this.socketConnections.delete(agentId);
+    }
+    
+    return true;
+  }
+  
+  async updateAgentHeartbeat(
+    agentId: string,
+    status?: 'available' | 'busy',
+    metadata?: Record<string, any>
+  ): Promise<boolean> {
+    const agent = this.agents.get(agentId);
+    if (!agent) {
+      return false;
+    }
+    
+    agent.lastHeartbeat = new Date().toISOString();
+    agent.health = {
+      status: 'healthy',
+      lastCheck: new Date().toISOString(),
+      message: 'Heartbeat received',
+    };
+    
+    if (status) {
+      agent.status = status;
+    }
+    
+    if (metadata) {
+      agent.metadata = { ...agent.metadata, ...metadata };
+    }
+    
+    this.emit('agent:heartbeat', agent);
+    
+    return true;
   }
 
   async shutdown(): Promise<void> {

@@ -1,8 +1,8 @@
 # REST API Broker for LLPM Agents
 FROM node:20-alpine
 
-# Install build dependencies
-RUN apk add --no-cache python3 make g++
+# Install build dependencies and Docker CLI
+RUN apk add --no-cache python3 make g++ docker-cli
 
 # Create app directory
 WORKDIR /app

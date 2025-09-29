@@ -19,6 +19,7 @@ services:
       - HEALTH_CHECK_INTERVAL=30000
       - USE_UNIX_SOCKETS=${USE_UNIX_SOCKETS:-false}
       - LITELLM_PROXY_URL=http://litellm-proxy:4000
+      - LITELLM_MASTER_KEY=${LITELLM_MASTER_KEY:-sk-1234}
       - AUTH_ENABLED=${AUTH_ENABLED:-false}
       - AUTH_TOKEN=${AUTH_TOKEN}
     ports:
@@ -32,6 +33,7 @@ services:
       - aider
       - opencode
     volumes:
+      - /var/run/docker.sock:/var/run/docker.sock  # Docker socket for container management
       - /var/run/llpm:/var/run/llpm  # Unix socket directory (if used)
       - ./workspace:/workspace:rw
     healthcheck:
@@ -124,7 +126,8 @@ services:
       # Use LiteLLM proxy for Anthropic API
       - ANTHROPIC_BASE_URL=http://litellm-proxy:4000
       - ANTHROPIC_API_KEY=${LITELLM_MASTER_KEY:-sk-1234}
-      - CLAUDE_MODEL=${CLAUDE_MODEL:-claude-3-opus-20240229}
+      - LITELLM_MASTER_KEY=${LITELLM_MASTER_KEY:-sk-1234}
+      - CLAUDE_MODEL=${CLAUDE_MODEL:-}
       - CLAUDE_CLI_OPTIONS=${CLAUDE_CLI_OPTIONS:-}
     volumes:
       - ../workspace:/claude-workspace
@@ -158,6 +161,7 @@ services:
       # Use LiteLLM proxy for OpenAI API
       - OPENAI_API_BASE=http://litellm-proxy:4000
       - OPENAI_API_KEY=${LITELLM_MASTER_KEY:-sk-1234}
+      - LITELLM_MASTER_KEY=${LITELLM_MASTER_KEY:-sk-1234}
       - OPENAI_MODEL=${OPENAI_MODEL:-gpt-4-turbo-preview}
       - OPENAI_ORG_ID=${OPENAI_ORG_ID}
       - OPENAI_CLI_OPTIONS=${OPENAI_CLI_OPTIONS:-}
@@ -193,6 +197,7 @@ services:
       # Use LiteLLM proxy for all APIs
       - OPENAI_API_BASE=http://litellm-proxy:4000
       - OPENAI_API_KEY=${LITELLM_MASTER_KEY:-sk-1234}
+      - LITELLM_MASTER_KEY=${LITELLM_MASTER_KEY:-sk-1234}
       - AIDER_OPENAI_API_BASE=http://litellm-proxy:4000
       - ANTHROPIC_BASE_URL=http://litellm-proxy:4000
       - ANTHROPIC_API_KEY=${LITELLM_MASTER_KEY:-sk-1234}
@@ -234,6 +239,7 @@ services:
       # OpenCode can use its own LiteLLM or connect to proxy
       - LITELLM_PROXY_BASE=http://litellm-proxy:4000
       - LITELLM_PROXY_KEY=${LITELLM_MASTER_KEY:-sk-1234}
+      - LITELLM_MASTER_KEY=${LITELLM_MASTER_KEY:-sk-1234}
       - OLLAMA_CLI_OPTIONS=${OLLAMA_CLI_OPTIONS:-}
       - LITELLM_CLI_OPTIONS=${LITELLM_CLI_OPTIONS:-}
     volumes:

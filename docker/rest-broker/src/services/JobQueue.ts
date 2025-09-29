@@ -1,6 +1,7 @@
 import { EventEmitter } from 'events';
 import { v4 as uuidv4 } from 'uuid';
 import { logger } from '../utils/logger';
+import { DockerExecutor, AgentJobPayload } from './DockerExecutor';
 
 export type JobStatus = 'queued' | 'running' | 'completed' | 'failed' | 'cancelled';
 
@@ -20,10 +21,12 @@ export interface Job {
 
 export class JobQueue extends EventEmitter {
   private jobs: Map<string, Job>;
+  private dockerExecutor: DockerExecutor;
 
   constructor() {
     super();
     this.jobs = new Map();
+    this.dockerExecutor = new DockerExecutor();
   }
 
   createJob(agentId: string, jobData: any): Job {
@@ -49,49 +52,56 @@ export class JobQueue extends EventEmitter {
   }
 
   private async processJob(job: Job): Promise<void> {
-    // Simulate job execution
-    setTimeout(() => {
+    try {
+      // Update job status to running
       job.status = 'running';
-      job.progress = 25;
+      job.progress = 10;
       job.updatedAt = new Date().toISOString();
       this.emit('job:running', job);
-    }, 1000);
-
-    setTimeout(() => {
-      job.progress = 50;
-      job.updatedAt = new Date().toISOString();
-    }, 2000);
-
-    setTimeout(() => {
-      job.progress = 75;
-      job.updatedAt = new Date().toISOString();
-    }, 3000);
-
-    setTimeout(() => {
-      job.status = 'completed';
-      job.progress = 100;
-      job.updatedAt = new Date().toISOString();
-      job.result = {
-        output: `def fibonacci(n):
-    if n <= 0:
-        return []
-    elif n == 1:
-        return [0]
-    elif n == 2:
-        return [0, 1]
-    else:
-        fib = [0, 1]
-        for i in range(2, n):
-            fib.append(fib[i-1] + fib[i-2])
-        return fib`,
-        files: [],
-        metrics: {
-          tokensUsed: 150,
-          executionTime: 4000,
-        },
+      
+      logger.info(`Processing job ${job.id} for agent ${job.agentId}`);
+      
+      // Prepare payload for Docker execution
+      const payload: AgentJobPayload = {
+        prompt: job.prompt,
+        context: job.context,
+        options: job.options,
       };
-      this.emit('job:completed', job);
-    }, 4000);
+      
+      // Execute in Docker container
+      const result = await this.dockerExecutor.executeInContainer(job.agentId, payload);
+      
+      // Process result
+      if (result.exitCode === 0) {
+        job.status = 'completed';
+        job.progress = 100;
+        job.result = {
+          output: result.stdout,
+          stderr: result.stderr,
+          exitCode: result.exitCode,
+          completedAt: new Date().toISOString(),
+        };
+        logger.info(`Job ${job.id} completed successfully`);
+      } else {
+        job.status = 'failed';
+        job.error = {
+          message: 'Container execution failed',
+          stderr: result.stderr,
+          exitCode: result.exitCode,
+        };
+        logger.error(`Job ${job.id} failed with exit code ${result.exitCode}`);
+      }
+    } catch (error: any) {
+      job.status = 'failed';
+      job.error = {
+        message: error.message,
+        stack: error.stack,
+      };
+      logger.error(`Job ${job.id} failed with error:`, error);
+    } finally {
+      job.updatedAt = new Date().toISOString();
+      this.emit(`job:${job.status}`, job);
+    }
   }
 
   getJob(jobId: string): Job | undefined {
