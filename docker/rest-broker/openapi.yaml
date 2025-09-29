@@ -228,7 +228,7 @@ paths:
                   # TYPE rest_broker_requests_total counter
                   rest_broker_requests_total{method="GET",endpoint="/agents",status="200"} 42
 
-  /register:
+  /api/register:
     post:
       summary: Register a new agent
       description: Dynamically register a new agent with the REST broker
@@ -269,7 +269,7 @@ paths:
         '500':
           $ref: '#/components/responses/InternalServerError'
 
-  /register/{agentId}:
+  /api/register/{agentId}:
     delete:
       summary: Deregister an agent
       description: Remove an agent from the REST broker registry
@@ -306,7 +306,7 @@ paths:
         '500':
           $ref: '#/components/responses/InternalServerError'
 
-  /heartbeat/{agentId}:
+  /api/heartbeat/{agentId}:
     post:
       summary: Send agent heartbeat
       description: Update agent status and metadata via heartbeat
