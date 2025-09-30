@@ -1,9 +1,6 @@
 # Claude Code Assistant Container
 FROM llpm-base:latest
 
-# Install Claude Code specific dependencies
-RUN npm install -g @anthropic-ai/claude-code
-
 # Install sudo
 RUN apt-get update && apt-get install -y sudo && rm -rf /var/lib/apt/lists/*
 
@@ -18,13 +15,25 @@ RUN mkdir -p /home/claude/workspace && \
 # Copy entrypoint script
 COPY --chmod=755 entrypoint.sh /usr/local/bin/entrypoint.sh
 
+# Switch to claude user
+USER claude
+WORKDIR /home/claude
+
+# Set up npm prefix for user-local global installs
+RUN npm config set prefix /home/claude/.npm-global
+
+# Add npm global bin to PATH
+ENV PATH="/home/claude/.npm-global/bin:$PATH"
+
+# Install Claude Code as the claude user
+RUN npm install -g @anthropic-ai/claude-code
+
 # Environment variables (will be overridden by .env)
 ENV ANTHROPIC_API_KEY=""
 ENV CLAUDE_MODEL=""
 ENV CLAUDE_CLI_OPTIONS="--permission-mode bypassPermissions"
 
-# Switch to claude user
-USER claude
+# Set working directory to workspace
 WORKDIR /home/claude/workspace
 
 # Healthcheck
