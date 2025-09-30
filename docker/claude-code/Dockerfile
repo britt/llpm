@@ -31,7 +31,7 @@ RUN npm install -g @anthropic-ai/claude-code
 # Environment variables (will be overridden by .env)
 ENV ANTHROPIC_API_KEY=""
 ENV CLAUDE_MODEL=""
-ENV CLAUDE_CLI_OPTIONS="--permission-mode bypassPermissions"
+ENV CLAUDE_CLI_OPTIONS="--dangerously-skip-permissions"
 
 # Set working directory to workspace
 WORKDIR /home/claude/workspace

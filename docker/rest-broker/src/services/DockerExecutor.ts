@@ -99,23 +99,27 @@ export class DockerExecutor {
     switch (agentId) {
       case 'claude-code':
         // Use the actual Claude CLI installed from npm
-        let claudeCmd = `echo '${escapedPrompt}' | claude --permission-mode bypassPermissions`;
-        
+        // Always include --dangerously-skip-permissions for non-interactive use
+        let claudeCmd = `echo '${escapedPrompt}' | claude --dangerously-skip-permissions`;
+
         // Add model if specified
         if (options?.model) {
-          claudeCmd = `echo '${escapedPrompt}' | CLAUDE_MODEL=${options.model} claude`;
+          claudeCmd = `echo '${escapedPrompt}' | CLAUDE_MODEL=${options.model} claude --dangerously-skip-permissions`;
         }
-        
-        // Add any additional CLI options
+
+        // Add any additional CLI options (always ensure permissions flag is included)
         if (options?.cliOptions) {
-          claudeCmd = `echo '${escapedPrompt}' | claude ${options.cliOptions}`;
+          const hasPermissionFlag = options.cliOptions.includes('--dangerously-skip-permissions') ||
+                                     options.cliOptions.includes('--permission-mode');
+          const permissionFlag = hasPermissionFlag ? '' : '--dangerously-skip-permissions ';
+          claudeCmd = `echo '${escapedPrompt}' | claude ${permissionFlag}${options.cliOptions}`;
         }
-        
+
         // Add workspace if specified
         if (context?.workspace && typeof context.workspace === 'string' && context.workspace !== 'string') {
           claudeCmd = `cd ${context.workspace} && ${claudeCmd}`;
         }
-        
+
         return claudeCmd;
         
       case 'openai-codex':
