@@ -1,11 +1,20 @@
 #!/bin/bash
 
 # Aider entrypoint script
-echo "Starting Aider environment..."
+echo "Starting Aider environment as user: $(whoami)"
+echo "Home directory: $HOME"
+echo "Working directory: $(pwd)"
 
 # Check for API keys
 if [ -z "$OPENAI_API_KEY" ] && [ -z "$ANTHROPIC_API_KEY" ]; then
     echo "Warning: Neither OPENAI_API_KEY nor ANTHROPIC_API_KEY is set. Aider will not function properly."
+fi
+
+# Initialize git config if not exists
+if [ ! -f ~/.gitconfig ]; then
+    git config --global user.email "aider@llpm.local"
+    git config --global user.name "Aider Assistant"
+    git config --global init.defaultBranch main
 fi
 
 # Set up Aider configuration
@@ -25,13 +34,6 @@ EOF
 # Export API keys for Aider
 export OPENAI_API_KEY="${OPENAI_API_KEY}"
 export ANTHROPIC_API_KEY="${ANTHROPIC_API_KEY}"
-
-# Initialize git config if not exists
-if [ ! -f ~/.gitconfig ]; then
-    git config --global user.email "aider@docker.local"
-    git config --global user.name "Aider Assistant"
-    git config --global init.defaultBranch main
-fi
 
 # Parse CLI options from environment
 AIDER_CLI_OPTS="${AIDER_CLI_OPTIONS:-}"

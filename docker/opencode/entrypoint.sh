@@ -1,7 +1,16 @@
 #!/bin/bash
 
 # OpenCode entrypoint script
-echo "Starting OpenCode environment..."
+echo "Starting OpenCode environment as user: $(whoami)"
+echo "Home directory: $HOME"
+echo "Working directory: $(pwd)"
+
+# Initialize git config for user if not exists
+if [ ! -f ~/.gitconfig ]; then
+    git config --global user.email "opencode@llpm.local"
+    git config --global user.name "OpenCode Assistant"
+    git config --global init.defaultBranch main
+fi
 
 # Set up HuggingFace configuration if token is provided
 if [ -n "$HUGGINGFACE_TOKEN" ]; then
@@ -13,9 +22,10 @@ fi
 # Start Ollama service if available
 if command -v ollama &> /dev/null; then
     echo "Starting Ollama service..."
-    ollama serve > /var/log/ollama.log 2>&1 &
+    sudo mkdir -p /var/log
+    sudo ollama serve > /var/log/ollama.log 2>&1 &
     sleep 2
-    
+
     # Pull the default model if specified
     if [ -n "$OPENCODE_MODEL" ]; then
         echo "Pulling model: $OPENCODE_MODEL"
@@ -37,7 +47,7 @@ cat > ~/.opencode/config.json <<EOF
     "ollama_host": "${OLLAMA_HOST:-http://localhost:11434}",
     "huggingface_token": "${HUGGINGFACE_TOKEN}",
     "litellm_model": "${LITELLM_MODEL}",
-    "workspace": "/opencode-workspace"
+    "workspace": "/home/opencode/workspace"
 }
 EOF
 
