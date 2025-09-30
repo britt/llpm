@@ -130,10 +130,9 @@ services:
       - CLAUDE_MODEL=${CLAUDE_MODEL:-}
       - CLAUDE_CLI_OPTIONS=${CLAUDE_CLI_OPTIONS:-}
     volumes:
-      - ../workspace:/claude-workspace
-      - ${HOME}/.ssh:/root/.ssh:ro
-      - ${HOME}/.gitconfig:/root/.gitconfig:ro
-    working_dir: /claude-workspace
+      - ../workspace:/home/claude/workspace
+      - ${HOME}/.ssh:/home/claude/.ssh:ro
+      - ${HOME}/.gitconfig:/home/claude/.gitconfig:ro
     stdin_open: true
     tty: true
     networks:
