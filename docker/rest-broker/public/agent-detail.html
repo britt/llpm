@@ -427,12 +427,12 @@
         <div class="modal">
             <div class="modal-header">
                 <h2>🔌 Connect to Agent</h2>
-                <button class="modal-close" onclick="closeConnectModal()">×</button>
+                <button class="modal-close" id="modalCloseButton">×</button>
             </div>
             <div class="modal-body">
                 <p>To connect to this agent container, run the following command in your terminal:</p>
                 <div class="command-box" id="connectCommand"></div>
-                <button class="copy-button" id="copyButton" onclick="copyCommand()">
+                <button class="copy-button" id="copyButton">
                     📋 Copy to Clipboard
                 </button>
             </div>

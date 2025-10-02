@@ -285,4 +285,16 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
+
+    // Add close button event listener
+    const closeButton = document.getElementById('modalCloseButton');
+    if (closeButton) {
+        closeButton.addEventListener('click', closeConnectModal);
+    }
+
+    // Add copy button event listener
+    const copyButton = document.getElementById('copyButton');
+    if (copyButton) {
+        copyButton.addEventListener('click', copyCommand);
+    }
 });
