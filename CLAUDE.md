@@ -121,18 +121,61 @@ For more information, read the Bun API docs in `node_modules/bun-types/docs/**.m
 
 ### Docker Container Management
 
-When making changes to Docker services in the `docker/` directory:
+**When to Rebuild vs Restart:**
+- **Code changes in `src/`**: Rebuild + restart
+- **New files added**: Rebuild with `--no-cache` + restart
+- **Dockerfile changes**: Rebuild with `--no-cache` + restart
+- **Configuration changes only**: Restart only
+- **Dependency changes (package.json)**: Rebuild + restart
 
-1. **Rebuild containers after code changes**: Use `docker-compose build <service-name>` from the project root
-2. **Restart to apply changes**: Use `docker-compose restart <service-name>` after rebuilding
-3. **Complete rebuild workflow**: `docker-compose build <service-name> && docker-compose restart <service-name>`
-4. **Check logs after restart**: Use `docker logs <service-name> --tail 20` to verify successful startup
+**Standard Rebuild Workflow:**
 
-Example for rest-broker:
+Use this for most code changes:
+```bash
+docker-compose build <service-name> && docker-compose restart <service-name>
+docker logs <service-name> --tail 20
+```
+
+**Force Rebuild Workflow (when caching causes issues):**
+
+Use this when new files aren't being included or changes aren't appearing:
+```bash
+docker-compose stop <service-name>
+docker-compose rm -f <service-name>
+docker rmi <image-name>:latest
+docker-compose build --no-cache <service-name>
+docker-compose up -d <service-name>
+docker logs <service-name> --tail 20
+```
+
+**Common Services:**
+- `rest-broker` (image: `llpm-rest-broker`)
+- `claude-code` (image: `llpm-claude-code`)
+- `openai-codex` (image: `llpm-openai-codex`)
+- `aider` (image: `llpm-aider`)
+- `opencode` (image: `llpm-opencode`)
+
+**Example: Standard rebuild for rest-broker:**
 ```bash
 docker-compose build rest-broker && docker-compose restart rest-broker
 docker logs rest-broker --tail 20
 ```
+
+**Example: Force rebuild for rest-broker:**
+```bash
+docker-compose stop rest-broker
+docker-compose rm -f rest-broker
+docker rmi llpm-rest-broker:latest
+docker-compose build --no-cache rest-broker
+docker-compose up -d rest-broker
+docker logs rest-broker --tail 20
+```
+
+**Verifying Changes Were Applied:**
+- Check container logs for startup messages
+- Inspect files inside container: `docker exec <service-name> ls -la /path/to/files`
+- Check TypeScript compilation: Look for "Compilation complete" in logs
+- Test endpoints: Use curl or browser to verify API changes
 
 ### Testing
 

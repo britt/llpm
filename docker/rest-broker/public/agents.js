@@ -58,7 +58,7 @@ function renderStats(agents) {
 
 function renderAgent(agent) {
     return `
-        <div class="agent-card" onclick="window.location.href='/ui/agent-detail?id=${agent.id}'" style="cursor: pointer;">
+        <div class="agent-card" data-agent-id="${agent.id}" style="cursor: pointer;">
             <div class="agent-header">
                 <div>
                     <div class="agent-name">${agent.name}</div>
@@ -127,6 +127,14 @@ async function loadAgents() {
                 ${agents.map(renderAgent).join('')}
             </div>
         `;
+
+        // Add click handlers to agent cards
+        document.querySelectorAll('.agent-card').forEach(card => {
+            card.addEventListener('click', () => {
+                const agentId = card.getAttribute('data-agent-id');
+                window.location.href = `/ui/agent-detail?id=${agentId}`;
+            });
+        });
 
         document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString();
     } catch (error) {
