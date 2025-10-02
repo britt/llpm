@@ -40,6 +40,17 @@ export async function generateResponse(messages: Message[]): Promise<string> {
       'tools'
     );
 
+    // Debug: Check tool schemas
+    if (getVerbose()) {
+      Object.entries(tools).forEach(([name, tool]) => {
+        debug(`Tool ${name}:`, {
+          hasParameters: 'parameters' in tool,
+          parametersType: tool.parameters?.type,
+          parametersShape: tool.parameters?.shape
+        });
+      });
+    }
+
     // Log LLM call start
     RequestContext.logLLMCall('start', `${currentModel.provider}/${currentModel.modelId}`);
 
