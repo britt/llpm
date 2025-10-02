@@ -12,12 +12,16 @@ export interface Agent {
     status: 'healthy' | 'unhealthy' | 'unknown';
     lastCheck: string;
     message?: string;
+    authenticated?: boolean;
   };
   host?: string;
   port?: number;
   metadata?: Record<string, any>;
   registeredAt?: string;
   lastHeartbeat?: string;
+  authType?: 'subscription' | 'api_key';
+  provider?: string;
+  model?: string;
 }
 
 export class AgentManager extends EventEmitter {
@@ -223,34 +227,54 @@ export class AgentManager extends EventEmitter {
     host?: string;
     port?: number;
     metadata?: Record<string, any>;
+    authType?: 'subscription' | 'api_key';
+    provider?: string;
+    model?: string;
   }): Promise<boolean> {
     // Check if agent already exists
     if (this.agents.has(agentData.id)) {
       logger.info(`Agent ${agentData.id} is already registered`);
       return false;
     }
-    
+
+    // Default to 'api_key' auth type if not specified
+    const authType = agentData.authType || 'api_key';
+
+    // Validate that subscription agents have provider and model
+    if (authType === 'subscription') {
+      if (!agentData.provider) {
+        throw new Error('provider is required for subscription auth type');
+      }
+      if (!agentData.model) {
+        throw new Error('model is required for subscription auth type');
+      }
+    }
+
     const agent: Agent = {
       id: agentData.id,
       name: agentData.name,
       type: agentData.type,
-      status: 'available',
+      status: authType === 'subscription' ? 'available' : 'available',
       health: {
-        status: 'healthy',
+        status: authType === 'subscription' ? 'healthy' : 'healthy',
         lastCheck: new Date().toISOString(),
-        message: 'Agent registered',
+        message: authType === 'subscription' ? 'Agent registered - awaiting authentication' : 'Agent registered',
+        authenticated: authType === 'subscription' ? false : undefined,
       },
       host: agentData.host,
       port: agentData.port,
       metadata: agentData.metadata || {},
       registeredAt: new Date().toISOString(),
       lastHeartbeat: new Date().toISOString(),
+      authType,
+      provider: agentData.provider,
+      model: agentData.model,
     };
-    
+
     this.agents.set(agent.id, agent);
-    logger.info(`Agent ${agent.id} registered successfully`);
+    logger.info(`Agent ${agent.id} registered successfully with auth_type=${authType}`);
     this.emit('agent:registered', agent);
-    
+
     return true;
   }
   
@@ -283,25 +307,73 @@ export class AgentManager extends EventEmitter {
     if (!agent) {
       return false;
     }
-    
+
     agent.lastHeartbeat = new Date().toISOString();
     agent.health = {
       status: 'healthy',
       lastCheck: new Date().toISOString(),
       message: 'Heartbeat received',
+      authenticated: agent.health.authenticated,
     };
-    
+
     if (status) {
       agent.status = status;
     }
-    
+
     if (metadata) {
       agent.metadata = { ...agent.metadata, ...metadata };
     }
-    
+
     this.emit('agent:heartbeat', agent);
-    
+
     return true;
+  }
+
+  async markAgentAuthenticated(agentId: string): Promise<boolean> {
+    const agent = this.agents.get(agentId);
+    if (!agent) {
+      return false;
+    }
+
+    // Only subscription agents need to be marked as authenticated
+    if (agent.authType !== 'subscription') {
+      throw new Error('Only subscription agents can be marked as authenticated');
+    }
+
+    agent.health = {
+      ...agent.health,
+      authenticated: true,
+      message: 'Agent authenticated successfully',
+    };
+
+    logger.info(`Agent ${agentId} marked as authenticated`);
+    this.emit('agent:authenticated', agent);
+
+    return true;
+  }
+
+  getLiteLLMPassthroughUrl(agent: Agent): string | null {
+    if (agent.authType !== 'subscription' || !agent.provider) {
+      return null;
+    }
+
+    const litellmBaseUrl = process.env.LITELLM_BASE_URL || 'http://localhost:4000';
+
+    // Map provider to passthrough path
+    const providerPathMap: Record<string, string> = {
+      'claude': '/claude',
+      'codex': '/codex',
+      'openai': '/codex',
+      'anthropic': '/claude',
+    };
+
+    const path = providerPathMap[agent.provider.toLowerCase()];
+    if (!path) {
+      logger.warn(`Unknown provider ${agent.provider} for agent ${agent.id}`);
+      return null;
+    }
+
+    return `${litellmBaseUrl}${path}`;
   }
 
   async shutdown(): Promise<void> {

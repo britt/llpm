@@ -5,8 +5,8 @@ const router = Router();
 
 // Agent registration endpoint - agents can call this to register themselves
 router.post('/register', async (req: Request, res: Response) => {
-  const { agentId, name, type, host, port, metadata } = req.body;
-  
+  const { agentId, name, type, host, port, metadata, authType, provider, model } = req.body;
+
   if (!agentId || !name || !type) {
     return res.status(400).json({
       status: 400,
@@ -15,9 +15,36 @@ router.post('/register', async (req: Request, res: Response) => {
     });
   }
 
+  // Validate authType if provided
+  if (authType && authType !== 'subscription' && authType !== 'api_key') {
+    return res.status(400).json({
+      status: 400,
+      code: 'INVALID_AUTH_TYPE',
+      message: 'authType must be either "subscription" or "api_key"',
+    });
+  }
+
+  // Validate that subscription agents have provider and model
+  if (authType === 'subscription') {
+    if (!provider) {
+      return res.status(400).json({
+        status: 400,
+        code: 'MISSING_PROVIDER',
+        message: 'provider is required for subscription auth type',
+      });
+    }
+    if (!model) {
+      return res.status(400).json({
+        status: 400,
+        code: 'MISSING_MODEL',
+        message: 'model is required for subscription auth type',
+      });
+    }
+  }
+
   try {
     const agentManager = req.app.locals.agentManager as AgentManager;
-    
+
     // Register the agent
     const registered = await agentManager.registerAgent({
       id: agentId,
@@ -26,14 +53,29 @@ router.post('/register', async (req: Request, res: Response) => {
       host: host || req.ip,
       port: port || null,
       metadata: metadata || {},
+      authType,
+      provider,
+      model,
     });
-    
+
     if (registered) {
-      return res.status(201).json({
+      const agent = agentManager.getAgent(agentId);
+      const responseData: any = {
         status: 201,
         message: 'Agent registered successfully',
         agentId,
-      });
+      };
+
+      // Include LiteLLM passthrough URL for subscription agents
+      if (agent && agent.authType === 'subscription') {
+        const passthroughUrl = agentManager.getLiteLLMPassthroughUrl(agent);
+        if (passthroughUrl) {
+          responseData.litellmUrl = passthroughUrl;
+          responseData.message = 'Agent registered successfully - please authenticate';
+        }
+      }
+
+      return res.status(201).json(responseData);
     } else {
       return res.status(409).json({
         status: 409,
