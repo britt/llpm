@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LLPM Agents - REST API Broker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1em;
+        }
+
+        .refresh-bar {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            padding: 15px 20px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .refresh-bar button {
+            background: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            color: #667eea;
+            transition: transform 0.2s;
+        }
+
+        .refresh-bar button:hover {
+            transform: scale(1.05);
+        }
+
+        .refresh-bar .last-update {
+            color: white;
+            opacity: 0.9;
+        }
+
+        .agents-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .agent-card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .agent-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .agent-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 16px;
+        }
+
+        .agent-name {
+            font-size: 1.3em;
+            font-weight: 700;
+            color: #2d3748;
+        }
+
+        .agent-id {
+            font-size: 0.85em;
+            color: #718096;
+            margin-top: 4px;
+        }
+
+        .status-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-available {
+            background: #c6f6d5;
+            color: #22543d;
+        }
+
+        .status-busy {
+            background: #feebc8;
+            color: #7c2d12;
+        }
+
+        .status-offline {
+            background: #fed7d7;
+            color: #742a2a;
+        }
+
+        .health-indicator {
+            display: flex;
+            align-items: center;
+            margin-top: 12px;
+            padding: 12px;
+            background: #f7fafc;
+            border-radius: 8px;
+        }
+
+        .health-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+
+        .health-healthy {
+            background: #48bb78;
+        }
+
+        .health-unhealthy {
+            background: #f56565;
+        }
+
+        .health-unknown {
+            background: #cbd5e0;
+        }
+
+        .health-text {
+            font-size: 0.9em;
+            color: #4a5568;
+        }
+
+        .agent-metadata {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .metadata-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 0.9em;
+        }
+
+        .metadata-label {
+            color: #718096;
+        }
+
+        .metadata-value {
+            color: #2d3748;
+            font-weight: 500;
+        }
+
+        .loading {
+            text-align: center;
+            color: white;
+            font-size: 1.2em;
+            padding: 40px;
+        }
+
+        .error {
+            background: #fed7d7;
+            color: #742a2a;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .stats {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            padding: 20px;
+            color: white;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2em;
+            font-weight: 700;
+        }
+
+        .stat-label {
+            opacity: 0.9;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🤖 LLPM Agents Dashboard</h1>
+            <p>Real-time monitoring of coding agents</p>
+        </div>
+
+        <div class="refresh-bar">
+            <div class="last-update">Last updated: <span id="lastUpdate">Never</span></div>
+            <button onclick="loadAgents()">🔄 Refresh</button>
+        </div>
+
+        <div id="stats" class="stats"></div>
+        <div id="agentsContainer"></div>
+    </div>
+
+    <script>
+        let autoRefresh = null;
+
+        function formatTime(isoString) {
+            const date = new Date(isoString);
+            return date.toLocaleString();
+        }
+
+        function getStatusClass(status) {
+            const statusMap = {
+                'available': 'status-available',
+                'busy': 'status-busy',
+                'offline': 'status-offline'
+            };
+            return statusMap[status] || 'status-offline';
+        }
+
+        function getHealthClass(status) {
+            const healthMap = {
+                'healthy': 'health-healthy',
+                'unhealthy': 'health-unhealthy',
+                'unknown': 'health-unknown'
+            };
+            return healthMap[status] || 'health-unknown';
+        }
+
+        function renderStats(agents) {
+            const stats = {
+                total: agents.length,
+                available: agents.filter(a => a.status === 'available').length,
+                busy: agents.filter(a => a.status === 'busy').length,
+                offline: agents.filter(a => a.status === 'offline').length,
+                healthy: agents.filter(a => a.health.status === 'healthy').length
+            };
+
+            return `
+                <div class="stat-item">
+                    <div class="stat-value">${stats.total}</div>
+                    <div class="stat-label">Total Agents</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">${stats.available}</div>
+                    <div class="stat-label">Available</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">${stats.busy}</div>
+                    <div class="stat-label">Busy</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">${stats.offline}</div>
+                    <div class="stat-label">Offline</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">${stats.healthy}</div>
+                    <div class="stat-label">Healthy</div>
+                </div>
+            `;
+        }
+
+        function renderAgent(agent) {
+            return `
+                <div class="agent-card">
+                    <div class="agent-header">
+                        <div>
+                            <div class="agent-name">${agent.name}</div>
+                            <div class="agent-id">${agent.id}</div>
+                        </div>
+                        <span class="status-badge ${getStatusClass(agent.status)}">${agent.status}</span>
+                    </div>
+
+                    <div class="health-indicator">
+                        <div class="health-dot ${getHealthClass(agent.health.status)}"></div>
+                        <div class="health-text">
+                            ${agent.health.status} ${agent.health.message ? `- ${agent.health.message}` : ''}
+                        </div>
+                    </div>
+
+                    <div class="agent-metadata">
+                        <div class="metadata-item">
+                            <span class="metadata-label">Type:</span>
+                            <span class="metadata-value">${agent.type}</span>
+                        </div>
+                        <div class="metadata-item">
+                            <span class="metadata-label">Last Check:</span>
+                            <span class="metadata-value">${formatTime(agent.health.lastCheck)}</span>
+                        </div>
+                        ${agent.registeredAt ? `
+                        <div class="metadata-item">
+                            <span class="metadata-label">Registered:</span>
+                            <span class="metadata-value">${formatTime(agent.registeredAt)}</span>
+                        </div>
+                        ` : ''}
+                        ${agent.lastHeartbeat ? `
+                        <div class="metadata-item">
+                            <span class="metadata-label">Last Heartbeat:</span>
+                            <span class="metadata-value">${formatTime(agent.lastHeartbeat)}</span>
+                        </div>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+        }
+
+        async function loadAgents() {
+            const container = document.getElementById('agentsContainer');
+            const statsContainer = document.getElementById('stats');
+
+            try {
+                container.innerHTML = '<div class="loading">Loading agents...</div>';
+
+                const response = await fetch('/agents');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                const agents = data.agents || [];
+
+                if (agents.length === 0) {
+                    container.innerHTML = '<div class="error">No agents registered</div>';
+                    statsContainer.innerHTML = '';
+                    return;
+                }
+
+                statsContainer.innerHTML = renderStats(agents);
+                container.innerHTML = `
+                    <div class="agents-grid">
+                        ${agents.map(renderAgent).join('')}
+                    </div>
+                `;
+
+                document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString();
+            } catch (error) {
+                container.innerHTML = `<div class="error">Error loading agents: ${error.message}</div>`;
+                statsContainer.innerHTML = '';
+            }
+        }
+
+        // Load agents on page load
+        loadAgents();
+
+        // Auto-refresh every 10 seconds
+        autoRefresh = setInterval(loadAgents, 10000);
+    </script>
+</body>
+</html>

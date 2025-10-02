@@ -76,6 +76,14 @@ app.get('/openapi.json', (_req: Request, res: Response) => {
   res.json(swaggerDocument);
 });
 
+// Serve static UI files
+app.use('/ui', express.static(path.join(__dirname, '..', 'public')));
+
+// Agents UI page
+app.get('/ui/agents', (_req: Request, res: Response) => {
+  res.sendFile(path.join(__dirname, '..', 'public', 'agents.html'));
+});
+
 // API Routes
 app.use('/health', healthRouter);
 app.use('/agents', agentsRouter);
@@ -91,6 +99,7 @@ app.get('/', (_req: Request, res: Response) => {
     documentation: '/docs',
     openapi: '/openapi.json',
     health: '/health',
+    ui: '/ui/agents',
   });
 });
 

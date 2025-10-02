@@ -19,6 +19,7 @@ RUN npm install --production && \
 # Copy source code
 COPY src ./src
 COPY openapi.yaml ./
+COPY public ./public
 
 # Build TypeScript
 RUN npm run build
