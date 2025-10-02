@@ -1,7 +1,7 @@
-import { openai } from '@ai-sdk/openai';
-import { anthropic } from '@ai-sdk/anthropic';
-import { groq } from '@ai-sdk/groq';
-import { vertex } from '@ai-sdk/google-vertex';
+import { createOpenAI } from '@ai-sdk/openai';
+import { createAnthropic } from '@ai-sdk/anthropic';
+import { createGroq } from '@ai-sdk/groq';
+import { createVertex } from '@ai-sdk/google-vertex';
 import type { LanguageModel } from 'ai';
 import type { ModelProvider, ModelConfig, ModelProviderConfig, ModelState, DEFAULT_MODELS } from '../types/models';
 import { DEFAULT_MODELS as DEFAULT_MODEL_CONFIGS } from '../types/models';
@@ -97,36 +97,54 @@ class ModelRegistry {
 
   public async createLanguageModel(modelConfig?: ModelConfig): Promise<LanguageModel> {
     await this.init(); // Ensure initialized
-    
+
     const config = modelConfig || this.currentModel;
     const providerConfig = this.providerConfigs[config.provider];
-    
+
     debug('Creating language model for provider:', config.provider, 'model:', config.modelId);
+    debug('Provider config:', { hasApiKey: !!providerConfig.apiKey, hasProjectId: !!providerConfig.projectId });
 
     switch (config.provider) {
       case 'openai':
         if (!providerConfig.apiKey) {
           throw new Error('OpenAI API key not configured');
         }
-        return openai(config.modelId);
+        debug('Creating OpenAI provider with API key');
+        const openaiProvider = createOpenAI({
+          apiKey: providerConfig.apiKey
+        });
+        debug('OpenAI provider created, creating model instance');
+        const openaiModel = openaiProvider(config.modelId);
+        debug('OpenAI model instance created');
+        return openaiModel;
 
       case 'anthropic':
         if (!providerConfig.apiKey) {
           throw new Error('Anthropic API key not configured');
         }
-        return anthropic(config.modelId);
+        const anthropicProvider = createAnthropic({
+          apiKey: providerConfig.apiKey
+        });
+        return anthropicProvider(config.modelId);
 
       case 'groq':
         if (!providerConfig.apiKey) {
           throw new Error('Groq API key not configured');
         }
-        return groq(config.modelId);
+        const groqProvider = createGroq({
+          apiKey: providerConfig.apiKey
+        });
+        return groqProvider(config.modelId);
 
       case 'google-vertex':
         if (!providerConfig.projectId) {
           throw new Error('Google Vertex project ID not configured');
         }
-        return vertex(config.modelId);
+        const vertexProvider = createVertex({
+          project: providerConfig.projectId,
+          location: providerConfig.region || 'us-central1'
+        });
+        return vertexProvider(config.modelId);
 
       default:
         throw new Error(`Unsupported model provider: ${config.provider}`);

@@ -16,7 +16,7 @@ import { glob } from 'glob';
 
 export const indexProjectFiles = tool({
   description: 'Index project files for semantic vector search. This scans the project directory and creates vector embeddings for searchable files.',
-  inputSchema: z.object({
+  parameters: z.object({
     patterns: z.array(z.string()).optional().describe('Glob patterns for files to index (default: common code files)'),
     maxFileSize: z.number().optional().describe('Maximum file size in bytes to index (default: 100KB)'),
     forceReindex: z.boolean().optional().describe('Force re-indexing of all files even if already indexed')
@@ -116,7 +116,7 @@ export const indexProjectFiles = tool({
 
 export const semanticSearchProject = tool({
   description: 'Perform semantic search across project files and notes using vector embeddings. This finds content similar in meaning to the query, not just keyword matches.',
-  inputSchema: z.object({
+  parameters: z.object({
     query: z.string().describe('The search query to find semantically similar content'),
     limit: z.number().optional().default(10).describe('Maximum number of results to return'),
     includeFiles: z.boolean().optional().default(true).describe('Include project files in search results'),
@@ -195,7 +195,7 @@ export const semanticSearchProject = tool({
 
 export const addProjectNote = tool({
   description: 'Add a note to the current project with vector embedding for semantic search.',
-  inputSchema: z.object({
+  parameters: z.object({
     title: z.string().describe('Title of the note'),
     content: z.string().describe('Content of the note'),
     tags: z.array(z.string()).optional().describe('Optional tags for the note')
@@ -228,7 +228,7 @@ export const addProjectNote = tool({
 
 export const searchProjectNotes = tool({
   description: 'Search project notes using semantic vector search.',
-  inputSchema: z.object({
+  parameters: z.object({
     query: z.string().describe('Search query for finding relevant notes'),
     limit: z.number().optional().default(10).describe('Maximum number of results to return')
   }),
@@ -263,7 +263,6 @@ export const searchProjectNotes = tool({
 
 export const getProjectVectorStats = tool({
   description: 'Get statistics about the project vector database including indexed files, notes, and search capabilities.',
-  inputSchema: z.object({}),
   execute: async () => {
     try {
       const db = await getCurrentProjectDatabase();
