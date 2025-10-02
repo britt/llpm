@@ -208,15 +208,58 @@ function connectToAgent() {
     // Create a command that opens a new terminal connected to the container
     const command = `docker exec -it ${containerName} /bin/bash`;
 
-    // Try to copy to clipboard for user to paste
+    // Show modal with command
+    showConnectModal(command);
+}
+
+function showConnectModal(command) {
+    const modal = document.getElementById('connectModal');
+    const commandBox = document.getElementById('connectCommand');
+
+    commandBox.textContent = command;
+    modal.classList.add('show');
+
+    // Store command for copying
+    modal.dataset.command = command;
+}
+
+function closeConnectModal() {
+    const modal = document.getElementById('connectModal');
+    modal.classList.remove('show');
+
+    // Reset copy button text
+    const copyButton = document.getElementById('copyButton');
+    copyButton.textContent = '📋 Copy to Clipboard';
+    copyButton.classList.remove('copied');
+}
+
+function copyCommand() {
+    const modal = document.getElementById('connectModal');
+    const command = modal.dataset.command;
+    const copyButton = document.getElementById('copyButton');
+
     if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(command).then(() => {
-            alert(`Connection command copied to clipboard!\n\nPaste this in your terminal:\n${command}`);
+            copyButton.textContent = '✅ Copied!';
+            copyButton.classList.add('copied');
+
+            setTimeout(() => {
+                copyButton.textContent = '📋 Copy to Clipboard';
+                copyButton.classList.remove('copied');
+            }, 2000);
         }).catch(() => {
-            alert(`Run this command in your terminal:\n\n${command}`);
+            copyButton.textContent = '❌ Failed to copy';
         });
     } else {
-        alert(`Run this command in your terminal:\n\n${command}`);
+        // Fallback: select text
+        const commandBox = document.getElementById('connectCommand');
+        const range = document.createRange();
+        range.selectNodeContents(commandBox);
+        const selection = window.getSelection();
+        selection.removeAllRanges();
+        selection.addRange(range);
+
+        copyButton.textContent = 'Text selected - press Ctrl+C';
     }
 }
 
@@ -231,5 +274,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const connectButton = document.getElementById('connectButton');
     if (connectButton) {
         connectButton.addEventListener('click', connectToAgent);
+    }
+
+    // Close modal when clicking outside of it
+    const modal = document.getElementById('connectModal');
+    if (modal) {
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                closeConnectModal();
+            }
+        });
     }
 });
