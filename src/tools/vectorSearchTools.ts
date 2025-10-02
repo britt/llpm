@@ -263,7 +263,6 @@ export const searchProjectNotes = tool({
 
 export const getProjectVectorStats = tool({
   description: 'Get statistics about the project vector database including indexed files, notes, and search capabilities.',
-  parameters: z.object({}),
   execute: async () => {
     try {
       const db = await getCurrentProjectDatabase();
