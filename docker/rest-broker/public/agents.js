@@ -58,7 +58,7 @@ function renderStats(agents) {
 
 function renderAgent(agent) {
     return `
-        <div class="agent-card">
+        <div class="agent-card" onclick="window.location.href='/ui/agent-detail?id=${agent.id}'" style="cursor: pointer;">
             <div class="agent-header">
                 <div>
                     <div class="agent-name">${agent.name}</div>

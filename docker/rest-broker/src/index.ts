@@ -84,6 +84,11 @@ app.get('/ui/agents', (_req: Request, res: Response) => {
   res.sendFile(path.join(__dirname, '..', 'public', 'agents.html'));
 });
 
+// Agent detail UI page
+app.get('/ui/agent-detail', (_req: Request, res: Response) => {
+  res.sendFile(path.join(__dirname, '..', 'public', 'agent-detail.html'));
+});
+
 // API Routes
 app.use('/health', healthRouter);
 app.use('/agents', agentsRouter);
