@@ -32,6 +32,7 @@ function normalizeRepository(repository: string): string {
 
 export const getCurrentProjectTool = tool({
   description: 'Get information about the currently active project. ALWAYS use this tool when determining the current project.',
+  inputSchema: z.object({}),
   execute: async () => {
     debug('Executing get_current_project tool');
 
@@ -62,6 +63,7 @@ export const getCurrentProjectTool = tool({
 
 export const listProjectsTool = tool({
   description: 'List all available projects',
+  inputSchema: z.object({}),
   execute: async () => {
     debug('Executing list_projects tool');
 
@@ -96,7 +98,7 @@ export const listProjectsTool = tool({
 
 export const addProjectTool = tool({
   description: 'Add a new project to the system. Repository can be a full URL or GitHub owner/repo format (e.g., "user/repo")',
-  parameters: z.object({
+  inputSchema: z.object({
     name: z.string().describe('The name of the project'),
     repository: z.string().describe('The GitHub repository URL or owner/repo format (e.g., "user/repo" or "https://github.com/user/repo")'),
     path: z.string().describe('The local file system path to the project'),
@@ -135,7 +137,7 @@ export const addProjectTool = tool({
 
 export const setCurrentProjectTool = tool({
   description: 'Set the currently active project',
-  parameters: z.object({
+  inputSchema: z.object({
     projectId: z.string().describe('The ID of the project')
   }),
   execute: async ({ projectId }) => {
@@ -160,7 +162,7 @@ export const setCurrentProjectTool = tool({
 
 export const removeProjectTool = tool({
   description: 'Remove a project from the system',
-  parameters: z.object({
+  inputSchema: z.object({
     projectId: z.string().describe('The ID of the project')
   }),
   execute: async ({ projectId }) => {
@@ -185,7 +187,7 @@ export const removeProjectTool = tool({
 
 export const updateProjectTool = tool({
   description: 'Update a project\'s information (currently supports updating description)',
-  parameters: z.object({
+  inputSchema: z.object({
     projectId: z.string().describe('The ID of the project to update'),
     description: z.string().describe('The new description for the project')
   }),
