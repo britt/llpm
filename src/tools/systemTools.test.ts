@@ -70,5 +70,13 @@ describe('systemTools', () => {
       expect(getSystemPromptTool.inputSchema).toBeDefined();
       expect(getSystemPromptTool.execute).toBeDefined();
     });
+
+    it('should have a valid Zod schema as inputSchema', () => {
+      expect(getSystemPromptTool.inputSchema).toBeDefined();
+      expect(typeof getSystemPromptTool.inputSchema.parse).toBe('function');
+      expect(typeof getSystemPromptTool.inputSchema.safeParse).toBe('function');
+      // Verify it's actually a Zod schema by testing parse
+      expect(() => getSystemPromptTool.inputSchema.parse({})).not.toThrow();
+    });
   });
 });

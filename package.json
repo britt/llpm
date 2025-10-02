@@ -1,6 +1,6 @@
 {
   "name": "llpm",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "description": "Large Language Model Product Manager - AI-powered CLI for software development",
   "keywords": ["llm", "ai", "cli", "product-manager", "development", "tools"],
   "author": "britt",
@@ -66,6 +66,7 @@
     "@arcadeai/arcadejs": "^1.9.1",
     "@octokit/rest": "^22.0.0",
     "ai": "^5.0.8",
+    "axios": "^1.12.2",
     "better-sqlite3": "^12.2.0",
     "clipboardy": "^4.0.0",
     "ink": "^6.1.0",

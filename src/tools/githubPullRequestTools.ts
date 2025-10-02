@@ -1,5 +1,5 @@
 import { tool } from './instrumentedTool';
-import { z } from 'zod';
+import * as z from "zod";
 import { listPullRequests, createPullRequest } from '../services/github';
 import { uploadFilesToGitHub } from '../services/githubAssets';
 import { debug } from '../utils/logger';

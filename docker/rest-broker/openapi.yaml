@@ -1,0 +1,743 @@
+openapi: 3.0.3
+info:
+  title: LLPM REST API Broker
+  description: |
+    REST API broker service for interacting with dockerized coding agents.
+    Provides a simple HTTP JSON interface to submit jobs, check status, and manage agent operations.
+  version: 1.0.0
+  contact:
+    name: LLPM Team
+    url: https://github.com/britt/llpm
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: http://localhost:3010
+    description: Local development server
+  - url: http://rest-broker:3010
+    description: Docker service endpoint
+
+paths:
+  /agents:
+    get:
+      summary: List available agents
+      description: Returns all available coding agents with their metadata and health status
+      operationId: listAgents
+      tags:
+        - Agents
+      responses:
+        '200':
+          description: Successfully retrieved agents list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  agents:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Agent'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /agents/{agentId}/jobs:
+    get:
+      summary: List all jobs for an agent
+      description: Returns all jobs submitted to the specified agent with their current statuses
+      operationId: listAgentJobs
+      tags:
+        - Jobs
+      parameters:
+        - $ref: '#/components/parameters/AgentId'
+        - name: status
+          in: query
+          description: Filter jobs by status
+          required: false
+          schema:
+            type: string
+            enum:
+              - queued
+              - running
+              - completed
+              - failed
+              - cancelled
+        - name: limit
+          in: query
+          description: Maximum number of jobs to return
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 50
+        - name: offset
+          in: query
+          description: Number of jobs to skip for pagination
+          required: false
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+      responses:
+        '200':
+          description: Successfully retrieved jobs list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  jobs:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/JobStatus'
+                  total:
+                    type: integer
+                    description: Total number of jobs for this agent
+                  offset:
+                    type: integer
+                    description: Current offset for pagination
+                  limit:
+                    type: integer
+                    description: Current limit for pagination
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    post:
+      summary: Submit a job to an agent
+      description: Submit a new job to the specified agent for processing
+      operationId: submitJob
+      tags:
+        - Jobs
+      parameters:
+        - $ref: '#/components/parameters/AgentId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JobRequest'
+      responses:
+        '202':
+          description: Job accepted for processing
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobResponse'
+          headers:
+            Location:
+              description: URL to check job status
+              schema:
+                type: string
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /agents/{agentId}/jobs/{jobId}:
+    get:
+      summary: Get job status
+      description: Retrieve the current status and result of a submitted job
+      operationId: getJobStatus
+      tags:
+        - Jobs
+      parameters:
+        - $ref: '#/components/parameters/AgentId'
+        - $ref: '#/components/parameters/JobId'
+      responses:
+        '200':
+          description: Job status retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobStatus'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /agents/{agentId}/jobs/{jobId}/cancel:
+    post:
+      summary: Cancel a job
+      description: Attempt to cancel a queued or running job
+      operationId: cancelJob
+      tags:
+        - Jobs
+      parameters:
+        - $ref: '#/components/parameters/AgentId'
+        - $ref: '#/components/parameters/JobId'
+      responses:
+        '200':
+          description: Job cancellation initiated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CancelResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: Job cannot be cancelled (already completed or failed)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /health:
+    get:
+      summary: Health check
+      description: Check if the REST broker is operational and can reach required services
+      operationId: healthCheck
+      tags:
+        - System
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthStatus'
+        '503':
+          description: Service is unhealthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthStatus'
+
+  /metrics:
+    get:
+      summary: Get metrics
+      description: Retrieve service metrics in Prometheus format
+      operationId: getMetrics
+      tags:
+        - System
+      responses:
+        '200':
+          description: Metrics retrieved successfully
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: |
+                  # HELP rest_broker_requests_total Total number of requests
+                  # TYPE rest_broker_requests_total counter
+                  rest_broker_requests_total{method="GET",endpoint="/agents",status="200"} 42
+
+  /api/register:
+    post:
+      summary: Register a new agent
+      description: Dynamically register a new agent with the REST broker
+      operationId: registerAgent
+      tags:
+        - Agents
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AgentRegistration'
+      responses:
+        '201':
+          description: Agent registered successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 201
+                  message:
+                    type: string
+                    example: Agent registered successfully
+                  agentId:
+                    type: string
+                    example: custom-agent-1
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          description: Agent already registered
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/register/{agentId}:
+    delete:
+      summary: Deregister an agent
+      description: Remove an agent from the REST broker registry
+      operationId: deregisterAgent
+      tags:
+        - Agents
+      parameters:
+        - name: agentId
+          in: path
+          description: Unique identifier of the agent to deregister
+          required: true
+          schema:
+            type: string
+            example: custom-agent-1
+      responses:
+        '200':
+          description: Agent deregistered successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: Agent deregistered successfully
+                  agentId:
+                    type: string
+                    example: custom-agent-1
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/heartbeat/{agentId}:
+    post:
+      summary: Send agent heartbeat
+      description: Update agent status and metadata via heartbeat
+      operationId: agentHeartbeat
+      tags:
+        - Agents
+      parameters:
+        - name: agentId
+          in: path
+          description: Unique identifier of the agent
+          required: true
+          schema:
+            type: string
+            example: custom-agent-1
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  enum:
+                    - available
+                    - busy
+                  description: Current agent status
+                  example: available
+                metadata:
+                  type: object
+                  additionalProperties: true
+                  description: Additional agent metadata to update
+      responses:
+        '200':
+          description: Heartbeat received successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: Heartbeat received
+                  agentId:
+                    type: string
+                    example: custom-agent-1
+        '404':
+          description: Agent not found - needs to register first
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /openapi.json:
+    get:
+      summary: Get OpenAPI specification
+      description: Retrieve the OpenAPI specification in JSON format
+      operationId: getOpenApiJson
+      tags:
+        - Documentation
+      responses:
+        '200':
+          description: OpenAPI specification retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+
+components:
+  parameters:
+    AgentId:
+      name: agentId
+      in: path
+      description: Unique identifier of the agent
+      required: true
+      schema:
+        type: string
+        pattern: '^[a-z0-9-]+$'
+        example: claude-code
+
+    JobId:
+      name: jobId
+      in: path
+      description: Unique identifier of the job
+      required: true
+      schema:
+        type: string
+        format: uuid
+        example: 123e4567-e89b-12d3-a456-426614174000
+
+  schemas:
+    Agent:
+      type: object
+      required:
+        - id
+        - name
+        - type
+        - status
+        - health
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the agent
+          example: claude-code
+        name:
+          type: string
+          description: Display name of the agent
+          example: Claude Code Assistant
+        type:
+          type: string
+          description: Type of agent
+          enum:
+            - claude-code
+            - openai-codex
+            - aider
+            - opencode
+          example: claude-code
+        status:
+          type: string
+          description: Current agent status
+          enum:
+            - available
+            - busy
+            - offline
+          example: available
+        health:
+          $ref: '#/components/schemas/AgentHealth'
+        metadata:
+          type: object
+          additionalProperties: true
+          description: Additional agent-specific metadata
+
+    AgentHealth:
+      type: object
+      required:
+        - status
+        - lastCheck
+      properties:
+        status:
+          type: string
+          enum:
+            - healthy
+            - unhealthy
+            - unknown
+          example: healthy
+        lastCheck:
+          type: string
+          format: date-time
+          description: Last health check timestamp
+          example: '2024-01-15T09:30:00Z'
+        message:
+          type: string
+          description: Optional health status message
+          example: Agent responding normally
+
+    AgentRegistration:
+      type: object
+      required:
+        - agentId
+        - name
+        - type
+      properties:
+        agentId:
+          type: string
+          description: Unique identifier for the agent
+          pattern: '^[a-z0-9-]+$'
+          example: custom-agent-1
+        name:
+          type: string
+          description: Display name of the agent
+          example: Custom Agent
+        type:
+          type: string
+          description: Type of agent
+          example: custom-agent
+        host:
+          type: string
+          description: Host where agent is running (optional, defaults to request IP)
+          example: 192.168.1.100
+        port:
+          type: integer
+          description: Port where agent is listening (optional)
+          example: 8080
+        metadata:
+          type: object
+          additionalProperties: true
+          description: Additional agent-specific metadata
+          example:
+            version: "1.0.0"
+            capabilities: ["code-generation", "refactoring"]
+
+    JobRequest:
+      type: object
+      required:
+        - prompt
+      properties:
+        prompt:
+          type: string
+          description: The task or prompt for the agent to process
+          example: Create a Python function to calculate fibonacci numbers
+        context:
+          type: object
+          description: Optional context for the job
+          properties:
+            files:
+              type: array
+              items:
+                type: string
+              description: File paths to include as context
+            workspace:
+              type: string
+              description: Workspace directory path
+        options:
+          type: object
+          description: Agent-specific options
+          additionalProperties: true
+        idempotencyKey:
+          type: string
+          description: Optional key to ensure idempotent job submission
+          example: week-2024-03-task-fibonacci
+
+    JobResponse:
+      type: object
+      required:
+        - jobId
+        - status
+        - createdAt
+      properties:
+        jobId:
+          type: string
+          format: uuid
+          description: Unique identifier for the submitted job
+          example: 123e4567-e89b-12d3-a456-426614174000
+        status:
+          type: string
+          enum:
+            - queued
+            - running
+            - completed
+            - failed
+            - cancelled
+          example: queued
+        createdAt:
+          type: string
+          format: date-time
+          example: '2024-01-15T09:30:00Z'
+
+    JobStatus:
+      allOf:
+        - $ref: '#/components/schemas/JobResponse'
+        - type: object
+          properties:
+            progress:
+              type: integer
+              minimum: 0
+              maximum: 100
+              description: Job progress percentage
+              example: 45
+            updatedAt:
+              type: string
+              format: date-time
+              example: '2024-01-15T09:31:30Z'
+            result:
+              type: object
+              description: Job result (when completed)
+              properties:
+                output:
+                  type: string
+                  description: Generated output or code
+                files:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      path:
+                        type: string
+                      content:
+                        type: string
+                metrics:
+                  type: object
+                  additionalProperties: true
+            error:
+              $ref: '#/components/schemas/JobError'
+
+    JobError:
+      type: object
+      properties:
+        code:
+          type: string
+          description: Error code
+          example: AGENT_TIMEOUT
+        message:
+          type: string
+          description: Human-readable error message
+          example: Agent did not respond within timeout period
+        agentError:
+          type: object
+          description: Raw error from the agent
+          additionalProperties: true
+
+    CancelResponse:
+      type: object
+      required:
+        - jobId
+        - status
+        - cancelled
+      properties:
+        jobId:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum:
+            - cancelled
+            - cancelling
+          example: cancelling
+        cancelled:
+          type: boolean
+          description: Whether cancellation was successful
+          example: true
+        message:
+          type: string
+          example: Job cancellation initiated
+
+    HealthStatus:
+      type: object
+      required:
+        - status
+        - timestamp
+        - services
+      properties:
+        status:
+          type: string
+          enum:
+            - healthy
+            - unhealthy
+            - degraded
+          example: healthy
+        timestamp:
+          type: string
+          format: date-time
+          example: '2024-01-15T09:30:00Z'
+        services:
+          type: object
+          additionalProperties:
+            type: object
+            properties:
+              status:
+                type: string
+                enum:
+                  - up
+                  - down
+                  - unknown
+              message:
+                type: string
+          example:
+            socket-connection:
+              status: up
+              message: Unix socket connected
+            litellm-proxy:
+              status: up
+              message: Reachable at http://litellm-proxy:4000
+
+    Error:
+      type: object
+      required:
+        - status
+        - code
+        - message
+      properties:
+        status:
+          type: integer
+          description: HTTP status code
+          example: 400
+        code:
+          type: string
+          description: Application-specific error code
+          example: INVALID_AGENT_ID
+        message:
+          type: string
+          description: Human-readable error message
+          example: The specified agent ID does not exist
+        details:
+          type: object
+          additionalProperties: true
+          description: Additional error details
+
+  responses:
+    BadRequest:
+      description: Bad request - invalid input
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    InternalServerError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Optional JWT token for authenticated endpoints
+
+security:
+  - {}  # No auth required by default
+  - BearerAuth: []  # Optional auth
+
+tags:
+  - name: Agents
+    description: Agent management operations
+  - name: Jobs
+    description: Job submission and management
+  - name: System
+    description: System health and metrics
+  - name: Documentation
+    description: API documentation endpoints

@@ -7,6 +7,7 @@ import { setVerbose, debug } from './src/utils/logger';
 import { ensureDefaultSystemPromptFile } from './src/utils/systemPrompt';
 import { validateEnvironment } from './src/utils/validation';
 import { credentialManager } from './src/utils/credentialManager';
+import { modelRegistry } from './src/services/modelRegistry';
 
 // Re-export validateEnvironment for external use
 export { validateEnvironment } from './src/utils/validation';
@@ -73,6 +74,11 @@ if (import.meta.main) {
 
     debug('Starting LLPM CLI');
     await validateEnvironment();
+
+    // Initialize model registry with credentials
+    debug('Initializing model registry');
+    await modelRegistry.init();
+    debug('Model registry initialized');
 
     // Ensure default system prompt file exists
     try {

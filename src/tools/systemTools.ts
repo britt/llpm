@@ -1,5 +1,5 @@
 import { tool } from './instrumentedTool';
-import { z } from 'zod';
+import * as z from "zod";
 import { getSystemPrompt, getBaseSystemPrompt } from '../utils/systemPrompt';
 import { debug } from '../utils/logger';
 

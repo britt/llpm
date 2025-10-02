@@ -67,8 +67,8 @@ export async function generateResponse(messages: Message[]): Promise<string> {
     const userMessages: string[] = [];
     if (result.toolResults) {
       for (const toolResult of result.toolResults) {
-        if (toolResult.result && typeof toolResult.result === 'object') {
-          const resultObj = toolResult.result as any;
+        if (toolResult.output && typeof toolResult.output === 'object') {
+          const resultObj = toolResult.output as any;
           if (resultObj.userMessage) {
             userMessages.push(resultObj.userMessage);
           }

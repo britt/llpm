@@ -1,15 +1,82 @@
 services:
+  # REST API Broker - HTTP interface for agents (singleton - not scaled)
+  rest-broker:
+    build:
+      context: ./rest-broker
+      dockerfile: Dockerfile
+    image: llpm-rest-broker:latest
+    container_name: rest-broker
+    env_file:
+      - .env
+    environment:
+      - PORT=3010
+      - HOST=0.0.0.0
+      - NODE_ENV=production
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+      - CORS_ORIGIN=${CORS_ORIGIN:-*}
+      - RATE_LIMIT_WINDOW=60000
+      - RATE_LIMIT_MAX=100
+      - HEALTH_CHECK_INTERVAL=30000
+      - USE_UNIX_SOCKETS=${USE_UNIX_SOCKETS:-false}
+      - LITELLM_PROXY_URL=http://litellm-proxy:4000
+      - LITELLM_MASTER_KEY=${LITELLM_MASTER_KEY:-sk-1234}
+      - AUTH_ENABLED=${AUTH_ENABLED:-false}
+      - AUTH_TOKEN=${AUTH_TOKEN}
+    ports:
+      - "3010:3010"
+    networks:
+      - llpm-network
+    depends_on:
+      - litellm-proxy
+      - claude-code
+      - openai-codex
+      - aider
+      - opencode
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock  # Docker socket for container management
+      - /var/run/llpm:/var/run/llpm  # Unix socket directory (if used)
+      - ./workspace:/workspace:rw
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3010/health', (r) => r.statusCode === 200 ? process.exit(0) : process.exit(1))"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+
+  # PostgreSQL Database for LiteLLM
+  postgres:
+    image: postgres:15-alpine
+    container_name: litellm-postgres
+    environment:
+      - POSTGRES_USER=litellm
+      - POSTGRES_PASSWORD=litellm123
+      - POSTGRES_DB=litellm
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - llpm-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U litellm"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 30s
+    restart: unless-stopped
+
   # LiteLLM Proxy - Central AI Gateway (singleton - not scaled)
   litellm-proxy:
-    build:
-      context: ./litellm-proxy
-      dockerfile: Dockerfile
-    image: llpm-litellm-proxy:latest
+    image: ghcr.io/berriai/litellm:main-latest
     container_name: litellm-proxy  # Keep container_name for singleton services
+    depends_on:
+      postgres:
+        condition: service_healthy
     env_file:
       - .env
     environment:
       - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - OPENAI_ORG_ID=${OPENAI_ORG_ID}
+      - OPENAI_ORGANIZATION=${OPENAI_ORG_ID}  # OpenAI SDK expects this exact name
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
       - GROQ_API_KEY=${GROQ_API_KEY}
       - HUGGINGFACE_TOKEN=${HUGGINGFACE_TOKEN}
@@ -17,7 +84,11 @@ services:
       - GOOGLE_VERTEX_REGION=${GOOGLE_VERTEX_REGION:-us-central1}
       - OLLAMA_API_BASE=http://opencode:11434
       - LITELLM_MASTER_KEY=${LITELLM_MASTER_KEY:-sk-1234}
-      - DATABASE_URL=${DATABASE_URL}
+      - DATABASE_URL=postgresql://litellm:litellm123@postgres:5432/litellm
+      - STORE_MODEL_IN_DB=True
+    volumes:
+      - ./litellm-proxy/proxy_config.yaml:/app/config.yaml:ro
+    command: ["--config", "/app/config.yaml", "--port", "4000", "--detailed_debug"]
     ports:
       - "4000:4000"
     networks:
@@ -55,13 +126,13 @@ services:
       # Use LiteLLM proxy for Anthropic API
       - ANTHROPIC_BASE_URL=http://litellm-proxy:4000
       - ANTHROPIC_API_KEY=${LITELLM_MASTER_KEY:-sk-1234}
-      - CLAUDE_MODEL=${CLAUDE_MODEL:-claude-3-opus-20240229}
+      - LITELLM_MASTER_KEY=${LITELLM_MASTER_KEY:-sk-1234}
+      - CLAUDE_MODEL=${CLAUDE_MODEL:-}
       - CLAUDE_CLI_OPTIONS=${CLAUDE_CLI_OPTIONS:-}
     volumes:
-      - ../workspace:/claude-workspace
-      - ${HOME}/.ssh:/root/.ssh:ro
-      - ${HOME}/.gitconfig:/root/.gitconfig:ro
-    working_dir: /claude-workspace
+      - ../workspace:/home/claude/workspace
+      - ${HOME}/.ssh:/home/claude/.ssh:ro
+      - ${HOME}/.gitconfig:/home/claude/.gitconfig:ro
     stdin_open: true
     tty: true
     networks:
@@ -89,6 +160,7 @@ services:
       # Use LiteLLM proxy for OpenAI API
       - OPENAI_API_BASE=http://litellm-proxy:4000
       - OPENAI_API_KEY=${LITELLM_MASTER_KEY:-sk-1234}
+      - LITELLM_MASTER_KEY=${LITELLM_MASTER_KEY:-sk-1234}
       - OPENAI_MODEL=${OPENAI_MODEL:-gpt-4-turbo-preview}
       - OPENAI_ORG_ID=${OPENAI_ORG_ID}
       - OPENAI_CLI_OPTIONS=${OPENAI_CLI_OPTIONS:-}
@@ -124,6 +196,7 @@ services:
       # Use LiteLLM proxy for all APIs
       - OPENAI_API_BASE=http://litellm-proxy:4000
       - OPENAI_API_KEY=${LITELLM_MASTER_KEY:-sk-1234}
+      - LITELLM_MASTER_KEY=${LITELLM_MASTER_KEY:-sk-1234}
       - AIDER_OPENAI_API_BASE=http://litellm-proxy:4000
       - ANTHROPIC_BASE_URL=http://litellm-proxy:4000
       - ANTHROPIC_API_KEY=${LITELLM_MASTER_KEY:-sk-1234}
@@ -165,6 +238,7 @@ services:
       # OpenCode can use its own LiteLLM or connect to proxy
       - LITELLM_PROXY_BASE=http://litellm-proxy:4000
       - LITELLM_PROXY_KEY=${LITELLM_MASTER_KEY:-sk-1234}
+      - LITELLM_MASTER_KEY=${LITELLM_MASTER_KEY:-sk-1234}
       - OLLAMA_CLI_OPTIONS=${OLLAMA_CLI_OPTIONS:-}
       - LITELLM_CLI_OPTIONS=${LITELLM_CLI_OPTIONS:-}
     volumes:
@@ -192,4 +266,6 @@ networks:
 
 volumes:
   ollama-data:
+    driver: local
+  postgres-data:
     driver: local

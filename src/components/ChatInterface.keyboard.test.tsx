@@ -1,4 +1,4 @@
-import { describe } from 'vitest';
+import { describe, it, expect } from 'vitest';
 
 // Completely skip this test file due to WebAssembly/yoga-layout compatibility issues in CI
 // The React imports and render testing cause yoga-layout to load and fail in CI environments

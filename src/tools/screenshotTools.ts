@@ -1,5 +1,5 @@
 import { tool } from './instrumentedTool';
-import { z } from 'zod';
+import * as z from "zod";
 import { exec } from 'node:child_process';
 import { promisify } from 'node:util';
 import { promises as fs } from 'node:fs';

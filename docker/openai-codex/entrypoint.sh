@@ -1,11 +1,20 @@
 #!/bin/bash
 
 # OpenAI Codex entrypoint script
-echo "Starting OpenAI Codex environment..."
+echo "Starting OpenAI Codex environment as user: $(whoami)"
+echo "Home directory: $HOME"
+echo "Working directory: $(pwd)"
 
 # Check for API key
 if [ -z "$OPENAI_API_KEY" ]; then
     echo "Warning: OPENAI_API_KEY not set. OpenAI features will be limited."
+fi
+
+# Initialize git config for user if not exists
+if [ ! -f ~/.gitconfig ]; then
+    git config --global user.email "codex@llpm.local"
+    git config --global user.name "Codex Assistant"
+    git config --global init.defaultBranch main
 fi
 
 # Set up OpenAI configuration
@@ -15,7 +24,7 @@ cat > ~/.openai/config.json <<EOF
     "api_key": "${OPENAI_API_KEY}",
     "model": "${OPENAI_MODEL:-gpt-4-turbo-preview}",
     "organization": "${OPENAI_ORG_ID}",
-    "workspace": "/codex-workspace"
+    "workspace": "/home/codex/workspace"
 }
 EOF
 

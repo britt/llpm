@@ -22,6 +22,16 @@ describe('Screenshot Tools', () => {
       expect(typeof takeScreenshotTool.inputSchema.parse).toBe('function');
     });
 
+    it('should have a valid Zod schema as inputSchema', () => {
+      expect(takeScreenshotTool.inputSchema).toBeDefined();
+      expect(typeof takeScreenshotTool.inputSchema.parse).toBe('function');
+      expect(typeof takeScreenshotTool.inputSchema.safeParse).toBe('function');
+
+      expect(checkScreenshotSetupTool.inputSchema).toBeDefined();
+      expect(typeof checkScreenshotSetupTool.inputSchema.parse).toBe('function');
+      expect(typeof checkScreenshotSetupTool.inputSchema.safeParse).toBe('function');
+    });
+
     it('should validate valid parameters', () => {
       const validParams = {
         url: 'https://example.com',
@@ -29,7 +39,7 @@ describe('Screenshot Tools', () => {
         height: 1080,
         filename: 'test'
       };
-      
+
       // Should not throw
       expect(() => takeScreenshotTool.inputSchema.parse(validParams)).not.toThrow();
     });
@@ -38,7 +48,7 @@ describe('Screenshot Tools', () => {
       const invalidParams = {
         width: 1920
       };
-      
+
       // Should throw because URL is required
       expect(() => takeScreenshotTool.inputSchema.parse(invalidParams)).toThrow();
     });

@@ -119,6 +119,64 @@ For more information, read the Bun API docs in `node_modules/bun-types/docs/**.m
 
 **IMPORTANT**: Always answer questions and fulfill requests honestly. Do not just be compliant. If you cannot do something or don't know an answer say so.
 
+### Docker Container Management
+
+**When to Rebuild vs Restart:**
+- **Code changes in `src/`**: Rebuild + restart
+- **New files added**: Rebuild with `--no-cache` + restart
+- **Dockerfile changes**: Rebuild with `--no-cache` + restart
+- **Configuration changes only**: Restart only
+- **Dependency changes (package.json)**: Rebuild + restart
+
+**Standard Rebuild Workflow:**
+
+Use this for most code changes:
+```bash
+docker-compose build <service-name> && docker-compose restart <service-name>
+docker logs <service-name> --tail 20
+```
+
+**Force Rebuild Workflow (when caching causes issues):**
+
+Use this when new files aren't being included or changes aren't appearing:
+```bash
+docker-compose stop <service-name>
+docker-compose rm -f <service-name>
+docker rmi <image-name>:latest
+docker-compose build --no-cache <service-name>
+docker-compose up -d <service-name>
+docker logs <service-name> --tail 20
+```
+
+**Common Services:**
+- `rest-broker` (image: `llpm-rest-broker`)
+- `claude-code` (image: `llpm-claude-code`)
+- `openai-codex` (image: `llpm-openai-codex`)
+- `aider` (image: `llpm-aider`)
+- `opencode` (image: `llpm-opencode`)
+
+**Example: Standard rebuild for rest-broker:**
+```bash
+docker-compose build rest-broker && docker-compose restart rest-broker
+docker logs rest-broker --tail 20
+```
+
+**Example: Force rebuild for rest-broker:**
+```bash
+docker-compose stop rest-broker
+docker-compose rm -f rest-broker
+docker rmi llpm-rest-broker:latest
+docker-compose build --no-cache rest-broker
+docker-compose up -d rest-broker
+docker logs rest-broker --tail 20
+```
+
+**Verifying Changes Were Applied:**
+- Check container logs for startup messages
+- Inspect files inside container: `docker exec <service-name> ls -la /path/to/files`
+- Check TypeScript compilation: Look for "Compilation complete" in logs
+- Test endpoints: Use curl or browser to verify API changes
+
 ### Testing
 
 - Use `bun run test` to run Vitest tests (installed in this project)
@@ -346,33 +404,33 @@ Assistant: I'll update the project item's priority field using the update_github
 
 ### AI Tool Creation Rules
 
-**CRITICAL: Always Use `inputSchema` for AI Tools**
-- **NEVER use `parameters`** when creating tools with the `tool()` function from `ai` SDK
-- **ALWAYS use `inputSchema`** - this is required for proper JSON Schema generation
+**CRITICAL: Always Use `parameters` for AI Tools**
+- **NEVER use `inputSchema`** when creating tools with the `tool()` function from `ai` SDK
+- **ALWAYS use `parameters`** - this is required for proper Zod schema handling
 - **Check existing tools in the codebase** before creating new ones to follow the same pattern
 
 ```typescript
-// ✅ CORRECT - Use inputSchema
+// ✅ CORRECT - Use parameters
 export const myTool = tool({
   description: 'Description of the tool',
-  inputSchema: z.object({
+  parameters: z.object({
     param: z.string().describe('Parameter description')
   }),
   execute: async ({ param }) => { ... }
 });
 
-// ❌ WRONG - Never use parameters
+// ❌ WRONG - Never use inputSchema
 export const myTool = tool({
   description: 'Description of the tool',
-  parameters: z.object({ ... }), // This will cause JSON Schema validation errors
+  inputSchema: z.object({ ... }), // This will cause schema._zod errors
   execute: async ({ param }) => { ... }
 });
 ```
 
 **Why This Matters:**
-- Using `parameters` causes `"Invalid schema for function: schema must be a JSON Schema of 'type: \"object\"', got 'type: \"None\"'"` errors
-- The AI SDK expects `inputSchema` to properly convert Zod schemas to JSON Schema
-- This is a breaking error that prevents the tool from being registered with LLM APIs
+- Using `inputSchema` causes `"undefined is not an object (evaluating 'schema._zod')"` errors
+- The AI SDK v5 expects `parameters` to properly convert Zod schemas
+- This is a breaking error that prevents the LLM from using tools
 
 **CRITICAL SCREENSHOT RULE:**
 - **ONLY use shot-scraper tools for screenshots** (`take_screenshot`, `check_screenshot_setup`)
@@ -519,3 +577,8 @@ This project follows semantic versioning (MAJOR.MINOR.PATCH):
 - **Bump version appropriately**: Use semantic versioning rules above to determine version bumps
 - Commit with descriptive messages including Claude Code attribution
 - Push to GitHub repository after commits to keep remote updated
+
+### YAML Configuration Rules
+
+- **NEVER use comments in YAML files**: Do not add any comments (lines starting with #) to YAML configuration files
+- Keep YAML files clean and comment-free for better compatibility and parsing

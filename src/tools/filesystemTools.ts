@@ -1,7 +1,7 @@
 import { readFile, readdir, stat } from 'fs/promises';
 import { existsSync } from 'fs';
 import { join, relative, resolve, sep } from 'path';
-import { z } from 'zod';
+import * as z from "zod";
 import { tool } from './instrumentedTool';
 import { getCurrentProject } from '../utils/projectConfig';
 import { debug } from '../utils/logger';

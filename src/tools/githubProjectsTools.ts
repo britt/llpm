@@ -1,5 +1,5 @@
 import { tool } from './instrumentedTool';
-import { z } from 'zod';
+import * as z from "zod";
 import { credentialManager } from '../utils/credentialManager';
 import { 
   listProjectsV2,
