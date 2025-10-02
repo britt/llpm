@@ -404,33 +404,33 @@ Assistant: I'll update the project item's priority field using the update_github
 
 ### AI Tool Creation Rules
 
-**CRITICAL: Always Use `inputSchema` for AI Tools**
-- **NEVER use `parameters`** when creating tools with the `tool()` function from `ai` SDK
-- **ALWAYS use `inputSchema`** - this is required for proper JSON Schema generation
+**CRITICAL: Always Use `parameters` for AI Tools**
+- **NEVER use `inputSchema`** when creating tools with the `tool()` function from `ai` SDK
+- **ALWAYS use `parameters`** - this is required for proper Zod schema handling
 - **Check existing tools in the codebase** before creating new ones to follow the same pattern
 
 ```typescript
-// ✅ CORRECT - Use inputSchema
+// ✅ CORRECT - Use parameters
 export const myTool = tool({
   description: 'Description of the tool',
-  inputSchema: z.object({
+  parameters: z.object({
     param: z.string().describe('Parameter description')
   }),
   execute: async ({ param }) => { ... }
 });
 
-// ❌ WRONG - Never use parameters
+// ❌ WRONG - Never use inputSchema
 export const myTool = tool({
   description: 'Description of the tool',
-  parameters: z.object({ ... }), // This will cause JSON Schema validation errors
+  inputSchema: z.object({ ... }), // This will cause schema._zod errors
   execute: async ({ param }) => { ... }
 });
 ```
 
 **Why This Matters:**
-- Using `parameters` causes `"Invalid schema for function: schema must be a JSON Schema of 'type: \"object\"', got 'type: \"None\"'"` errors
-- The AI SDK expects `inputSchema` to properly convert Zod schemas to JSON Schema
-- This is a breaking error that prevents the tool from being registered with LLM APIs
+- Using `inputSchema` causes `"undefined is not an object (evaluating 'schema._zod')"` errors
+- The AI SDK v5 expects `parameters` to properly convert Zod schemas
+- This is a breaking error that prevents the LLM from using tools
 
 **CRITICAL SCREENSHOT RULE:**
 - **ONLY use shot-scraper tools for screenshots** (`take_screenshot`, `check_screenshot_setup`)
