@@ -69,13 +69,16 @@ export class AgentManager extends EventEmitter {
     ];
 
     for (const config of agentConfigs) {
+      const now = new Date().toISOString();
       const agent: Agent = {
         ...config,
         status: 'offline',
         health: {
           status: 'unknown',
-          lastCheck: new Date().toISOString(),
+          lastCheck: now,
         },
+        registeredAt: now,
+        lastHeartbeat: now,
       };
       this.agents.set(agent.id, agent);
     }
