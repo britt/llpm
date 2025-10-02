@@ -196,10 +196,40 @@ async function loadAgentDetail() {
     }
 }
 
+function connectToAgent() {
+    if (!agentId) {
+        alert('No agent ID available');
+        return;
+    }
+
+    // Execute docker exec command to connect to the agent container
+    const containerName = `docker-${agentId}-1`;
+
+    // Create a command that opens a new terminal connected to the container
+    const command = `docker exec -it ${containerName} /bin/bash`;
+
+    // Try to copy to clipboard for user to paste
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(command).then(() => {
+            alert(`Connection command copied to clipboard!\n\nPaste this in your terminal:\n${command}`);
+        }).catch(() => {
+            alert(`Run this command in your terminal:\n\n${command}`);
+        });
+    } else {
+        alert(`Run this command in your terminal:\n\n${command}`);
+    }
+}
+
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', () => {
     agentId = getAgentIdFromUrl();
     loadAgentDetail();
     // Auto-refresh every 10 seconds
     autoRefresh = setInterval(loadAgentDetail, 10000);
+
+    // Add connect button event listener
+    const connectButton = document.getElementById('connectButton');
+    if (connectButton) {
+        connectButton.addEventListener('click', connectToAgent);
+    }
 });
