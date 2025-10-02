@@ -1,5 +1,5 @@
 import { tool } from './instrumentedTool';
-import { z } from 'zod';
+import * as z from "zod";
 import { debug } from '../utils/logger';
 import Arcade from '@arcadeai/arcadejs';
 import { credentialManager } from '../utils/credentialManager';
@@ -15,7 +15,7 @@ async function getArcadeClient() {
 
 export const webSearchTool = tool({
   description: 'Search the web using Google Search to find current information, news, and web content',
-  parameters: z.object({
+  inputSchema: z.object({
     query: z.string().describe('The search query to look up on the web'),
     n_results: z.number().optional().describe('Number of search results to return (default: 5, max: 10)')
   }),

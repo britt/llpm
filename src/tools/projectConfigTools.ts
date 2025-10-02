@@ -1,5 +1,5 @@
 import { tool } from './instrumentedTool';
-import { z } from 'zod';
+import * as z from "zod";
 import { 
   getCurrentProject, 
   setProjectBoard, 
@@ -15,7 +15,7 @@ import { debug } from '../utils/logger';
 
 export const setProjectBoardTool = tool({
   description: 'Set or link a GitHub Project Board to the current LLPM project for automatic issue/PR assignment',
-  parameters: z.object({
+  inputSchema: z.object({
     owner: z.string().describe('GitHub username or organization name'),
     projectNumber: z.number().optional().describe('GitHub Project Board number (e.g., 8). If not provided, will auto-detect by name matching'),
     projectBoardId: z.string().optional().describe('Direct GitHub Project Board ID (e.g., gid://Project/123). Use this if you already know the exact project ID')
@@ -70,7 +70,7 @@ export const setProjectBoardTool = tool({
 
 export const getProjectBoardInfoTool = tool({
   description: 'Get information about the current project\'s linked GitHub Project Board',
-  parameters: z.object({
+  inputSchema: z.object({
     validate: z.boolean().optional().default(false).describe('If true, validates that the project board integration is working correctly')
   }),
   execute: async ({ validate }) => {
@@ -129,7 +129,7 @@ export const getProjectBoardInfoTool = tool({
 
 export const removeProjectBoardTool = tool({
   description: 'Remove the GitHub Project Board link from the current LLPM project',
-  parameters: z.object({
+  inputSchema: z.object({
     confirm: z.boolean().default(false).describe('Set to true to confirm removal of project board link')
   }),
   execute: async ({ confirm }) => {
@@ -184,7 +184,7 @@ export const removeProjectBoardTool = tool({
 
 export const listAvailableProjectBoardsTool = tool({
   description: 'List available GitHub Project Boards for a given owner (user or organization)',
-  parameters: z.object({
+  inputSchema: z.object({
     owner: z.string().describe('GitHub username or organization name to list project boards for')
   }),
   execute: async ({ owner }) => {

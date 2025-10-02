@@ -1,11 +1,11 @@
 import { tool } from './instrumentedTool';
-import { z } from 'zod';
+import * as z from "zod";
 import { getSystemPrompt, getBaseSystemPrompt } from '../utils/systemPrompt';
 import { debug } from '../utils/logger';
 
 export const getSystemPromptTool = tool({
   description: 'Get the currently loaded system prompt text',
-  parameters: z.object({}),
+  inputSchema: z.object({}),
   execute: async () => {
     debug('Executing get_system_prompt tool');
 

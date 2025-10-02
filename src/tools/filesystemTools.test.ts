@@ -1,6 +1,6 @@
 import '../../test/setup';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { existsSync, mkdirSync, unlinkSync, rmSync } from 'fs';
+import { existsSync, mkdirSync, rmSync } from 'fs';
 import { writeFile } from 'fs/promises';
 import { join } from 'path';
 import { tmpdir } from 'os';
@@ -196,6 +196,23 @@ describe('filesystemTools', () => {
       
       const lines = result.split('\n').filter(line => line.includes('📄'));
       expect(lines.length).toBeLessThanOrEqual(2);
+    });
+  });
+
+  describe('Schema Validation', () => {
+    it('should have valid Zod schemas for all filesystem tools', () => {
+      const tools = [
+        readProjectFile,
+        listProjectDirectory,
+        getProjectFileInfo,
+        findProjectFiles
+      ];
+
+      tools.forEach((tool) => {
+        expect(tool.inputSchema).toBeDefined();
+        expect(typeof tool.inputSchema.parse).toBe('function');
+        expect(typeof tool.inputSchema.safeParse).toBe('function');
+      });
     });
   });
 });

@@ -1,5 +1,5 @@
 import { tool } from './instrumentedTool';
-import { z } from 'zod';
+import * as z from "zod";
 import { credentialManager } from '../utils/credentialManager';
 import { 
   listProjectsV2,
@@ -19,7 +19,7 @@ import { debug } from '../utils/logger';
 // Project management tools
 export const listGitHubProjectsV2Tool = tool({
   description: 'List GitHub Projects v2 for a user or organization',
-  parameters: z.object({
+  inputSchema: z.object({
     owner: z.string().describe('Username or organization name')
   }),
   execute: async ({ owner }) => {
@@ -54,7 +54,7 @@ export const listGitHubProjectsV2Tool = tool({
 
 export const createGitHubProjectV2Tool = tool({
   description: 'Create a new GitHub Project v2',
-  parameters: z.object({
+  inputSchema: z.object({
     owner: z.string().describe('Username or organization name'),
     title: z.string().describe('Project title')
   }),
@@ -89,7 +89,7 @@ export const createGitHubProjectV2Tool = tool({
 
 export const getGitHubProjectV2Tool = tool({
   description: 'Get details of a specific GitHub Project v2',
-  parameters: z.object({
+  inputSchema: z.object({
     owner: z.string().describe('Username or organization name'),
     number: z.number().describe('Project number')
   }),
@@ -124,7 +124,7 @@ export const getGitHubProjectV2Tool = tool({
 
 export const updateGitHubProjectV2Tool = tool({
   description: 'Update an existing GitHub Project v2',
-  parameters: z.object({
+  inputSchema: z.object({
     projectId: z.string().describe('Project ID'),
     title: z.string().optional().describe('New project title'),
     public: z.boolean().optional().describe('Make project public or private'),
@@ -165,7 +165,7 @@ export const updateGitHubProjectV2Tool = tool({
 
 export const deleteGitHubProjectV2Tool = tool({
   description: 'Delete a GitHub Project v2',
-  parameters: z.object({
+  inputSchema: z.object({
     projectId: z.string().describe('Project ID to delete')
   }),
   execute: async ({ projectId }) => {
@@ -190,7 +190,7 @@ export const deleteGitHubProjectV2Tool = tool({
 // Item management tools
 export const listGitHubProjectV2ItemsTool = tool({
   description: 'List items in a GitHub Project v2',
-  parameters: z.object({
+  inputSchema: z.object({
     projectId: z.string().describe('Project ID')
   }),
   execute: async ({ projectId }) => {
@@ -222,7 +222,7 @@ export const listGitHubProjectV2ItemsTool = tool({
 
 export const addGitHubProjectV2ItemTool = tool({
   description: 'Add an issue or pull request to a GitHub Project v2',
-  parameters: z.object({
+  inputSchema: z.object({
     projectId: z.string().describe('Project ID'),
     contentId: z.string().describe('Issue or Pull Request ID (node ID, not number)')
   }),
@@ -254,7 +254,7 @@ export const addGitHubProjectV2ItemTool = tool({
 
 export const removeGitHubProjectV2ItemTool = tool({
   description: 'Remove an item from a GitHub Project v2',
-  parameters: z.object({
+  inputSchema: z.object({
     projectId: z.string().describe('Project ID'),
     itemId: z.string().describe('Item ID to remove')
   }),
@@ -280,7 +280,7 @@ export const removeGitHubProjectV2ItemTool = tool({
 // Field management tools
 export const listGitHubProjectV2FieldsTool = tool({
   description: 'List custom fields in a GitHub Project v2',
-  parameters: z.object({
+  inputSchema: z.object({
     projectId: z.string().describe('Project ID')
   }),
   execute: async ({ projectId }) => {
@@ -311,7 +311,7 @@ export const listGitHubProjectV2FieldsTool = tool({
 // Utility tools
 export const getGitHubOwnerIdTool = tool({
   description: 'Get GitHub user or organization ID (needed for Projects v2 operations)',
-  parameters: z.object({
+  inputSchema: z.object({
     login: z.string().describe('Username or organization login')
   }),
   execute: async ({ login }) => {
@@ -337,7 +337,7 @@ export const getGitHubOwnerIdTool = tool({
 // Helper tool to get issue/PR node IDs for adding to projects
 export const getGitHubIssueNodeIdTool = tool({
   description: 'Get GitHub issue or pull request node ID (needed for adding to Projects v2)',
-  parameters: z.object({
+  inputSchema: z.object({
     owner: z.string().describe('Repository owner'),
     repo: z.string().describe('Repository name'),
     number: z.number().describe('Issue or pull request number'),
@@ -431,7 +431,7 @@ export const getGitHubIssueNodeIdTool = tool({
 
 export const updateGitHubProjectV2ItemFieldValueTool = tool({
   description: 'Update field values for items in a GitHub Project v2 board',
-  parameters: z.object({
+  inputSchema: z.object({
     projectId: z.string().describe('Project ID'),
     itemId: z.string().describe('Project item ID to update'),
     fieldId: z.string().describe('Field ID to update'),

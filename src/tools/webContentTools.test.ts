@@ -177,4 +177,16 @@ describe('WebContentTools', () => {
       expect(result.error).toContain('Failed to read web page');
     });
   });
+
+  describe('Schema Validation', () => {
+    it('should have valid Zod schemas for all web content tools', () => {
+      const tools = [readWebPageTool, summarizeWebPageTool];
+
+      tools.forEach((tool) => {
+        expect(tool.inputSchema).toBeDefined();
+        expect(typeof tool.inputSchema.parse).toBe('function');
+        expect(typeof tool.inputSchema.safeParse).toBe('function');
+      });
+    });
+  });
 });

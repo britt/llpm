@@ -1,5 +1,5 @@
 import { tool } from './instrumentedTool';
-import { z } from 'zod';
+import * as z from "zod";
 import { debug } from '../utils/logger';
 
 /**
@@ -152,7 +152,7 @@ async function fetchWebContent(url: string, timeout: number = 10000): Promise<{ 
 
 export const readWebPageTool = tool({
   description: 'Read and extract text content from a web page URL. Supports HTML pages, plain text, and basic content extraction.',
-  parameters: z.object({
+  inputSchema: z.object({
     url: z.string().describe('The URL of the web page to read and extract content from'),
     maxLength: z.number().optional().default(10000).describe('Maximum length of content to return (default: 10000 characters)'),
     timeout: z.number().optional().default(10000).describe('Request timeout in milliseconds (default: 10000)')
@@ -244,7 +244,7 @@ export const readWebPageTool = tool({
 
 export const summarizeWebPageTool = tool({
   description: 'Read a web page and provide a structured summary with key information extracted.',
-  parameters: z.object({
+  inputSchema: z.object({
     url: z.string().describe('The URL of the web page to read and summarize'),
     focusAreas: z.array(z.string()).optional().describe('Specific areas to focus on when summarizing (e.g., "pricing", "features", "contact info")'),
     maxContentLength: z.number().optional().default(5000).describe('Maximum length of content to analyze (default: 5000)')

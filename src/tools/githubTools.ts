@@ -1,11 +1,11 @@
 import { tool } from './instrumentedTool';
-import { z } from 'zod';
+import * as z from "zod";
 import { getUserRepos, searchRepos, getRepo } from '../services/github';
 import { debug } from '../utils/logger';
 
 export const listGitHubReposTool = tool({
   description: 'List GitHub repositories for the authenticated user',
-  parameters: z.object({
+  inputSchema: z.object({
     type: z
       .string()
       .optional()
@@ -54,7 +54,7 @@ export const listGitHubReposTool = tool({
 
 export const searchGitHubReposTool = tool({
   description: 'Search for GitHub repositories',
-  parameters: z.object({
+  inputSchema: z.object({
     query: z.string().describe('Search query for repositories'),
     sort: z
       .string()
@@ -99,7 +99,7 @@ export const searchGitHubReposTool = tool({
 
 export const getGitHubRepoTool = tool({
   description: 'Get detailed information about a specific GitHub repository',
-  parameters: z.object({
+  inputSchema: z.object({
     owner: z.string().describe('Repository owner/organization name'),
     repo: z.string().describe('Repository name')
   }),

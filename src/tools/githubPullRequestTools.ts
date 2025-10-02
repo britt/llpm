@@ -1,12 +1,12 @@
 import { tool } from './instrumentedTool';
-import { z } from 'zod';
+import * as z from "zod";
 import { listPullRequests, createPullRequest } from '../services/github';
 import { uploadFilesToGitHub } from '../services/githubAssets';
 import { debug } from '../utils/logger';
 
 export const listGitHubPullRequestsTool = tool({
   description: 'List pull requests for a GitHub repository',
-  parameters: z.object({
+  inputSchema: z.object({
     owner: z.string().describe('Repository owner/organization name'),
     repo: z.string().describe('Repository name'),
     state: z
@@ -85,7 +85,7 @@ export const listGitHubPullRequestsTool = tool({
 
 export const createGitHubPullRequestTool = tool({
   description: 'Create a new pull request in a GitHub repository with optional file attachments',
-  parameters: z.object({
+  inputSchema: z.object({
     owner: z.string().describe('Repository owner/organization name'),
     repo: z.string().describe('Repository name'),
     title: z.string().describe('Pull request title'),

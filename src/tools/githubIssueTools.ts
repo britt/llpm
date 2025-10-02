@@ -1,5 +1,5 @@
 import { tool } from './instrumentedTool';
-import { z } from 'zod';
+import * as z from "zod";
 import { getCurrentProject } from '../utils/projectConfig';
 import {
   createIssue,
@@ -33,7 +33,7 @@ async function getProjectRepoInfo() {
 
 export const createGitHubIssueTool = tool({
   description: "Create a new GitHub issue in the active project's repository with optional file attachments",
-  parameters: z.object({
+  inputSchema: z.object({
     title: z.string().describe('The issue title'),
     body: z.string().optional().describe('The issue body/description'),
     labels: z.array(z.string()).optional().describe('Array of label names to assign to the issue'),
@@ -100,7 +100,7 @@ export const createGitHubIssueTool = tool({
 
 export const listGitHubIssuesTool = tool({
   description: "List GitHub issues in the active project's repository",
-  parameters: z.object({
+  inputSchema: z.object({
     state: z
       .enum(['open', 'closed', 'all'])
       .optional()
@@ -146,7 +146,7 @@ export const listGitHubIssuesTool = tool({
 
 export const updateGitHubIssueTool = tool({
   description: "Update a GitHub issue in the active project's repository",
-  parameters: z.object({
+  inputSchema: z.object({
     issueNumber: z.number().describe('The issue number to update'),
     title: z.string().optional().describe('New issue title'),
     body: z.string().optional().describe('New issue body/description'),
@@ -189,7 +189,7 @@ export const updateGitHubIssueTool = tool({
 
 export const commentOnGitHubIssueTool = tool({
   description: "Add a comment to a GitHub issue in the active project's repository with optional file attachments",
-  parameters: z.object({
+  inputSchema: z.object({
     issueNumber: z.number().describe('The issue number to comment on'),
     body: z.string().describe('The comment body/text'),
     attachments: z.array(z.string()).optional().describe('Array of file paths to upload and attach to the comment')
@@ -247,7 +247,7 @@ export const commentOnGitHubIssueTool = tool({
 
 export const searchGitHubIssuesTool = tool({
   description: "Search GitHub issues in the active project's repository",
-  parameters: z.object({
+  inputSchema: z.object({
     query: z.string().describe('Search query (e.g., "bug", "feature request", etc.)'),
     state: z
       .enum(['open', 'closed', 'all'])

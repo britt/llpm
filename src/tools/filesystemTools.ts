@@ -1,7 +1,7 @@
 import { readFile, readdir, stat } from 'fs/promises';
 import { existsSync } from 'fs';
 import { join, relative, resolve, sep } from 'path';
-import { z } from 'zod';
+import * as z from "zod";
 import { tool } from './instrumentedTool';
 import { getCurrentProject } from '../utils/projectConfig';
 import { debug } from '../utils/logger';
@@ -42,7 +42,7 @@ async function validateProjectPath(requestedPath: string): Promise<string> {
  */
 export const readProjectFile = tool({
   description: 'Read the contents of a file within the current project directory. Useful for understanding code structure, configuration files, documentation, etc.',
-  parameters: z.object({
+  inputSchema: z.object({
     path: z.string().describe('The file path to read (relative to project root or absolute path within project)'),
     encoding: z.enum(['utf8', 'binary']).default('utf8').describe('File encoding (default: utf8)')
   }),
@@ -78,7 +78,7 @@ export const readProjectFile = tool({
  */
 export const listProjectDirectory = tool({
   description: 'List files and directories within the current project. Useful for exploring project structure and finding relevant files.',
-  parameters: z.object({
+  inputSchema: z.object({
     path: z.string().default('.').describe('Directory path to list (relative to project root or absolute path within project)'),
     includeHidden: z.boolean().default(false).describe('Include hidden files and directories (starting with .)'),
     recursive: z.boolean().default(false).describe('Recursively list subdirectories'),
@@ -142,7 +142,7 @@ export const listProjectDirectory = tool({
  */
 export const getProjectFileInfo = tool({
   description: 'Get detailed information about a file or directory within the current project (size, modification time, type, etc.).',
-  parameters: z.object({
+  inputSchema: z.object({
     path: z.string().describe('The file or directory path to inspect (relative to project root or absolute path within project)')
   }),
   execute: async ({ path }) => {
@@ -201,7 +201,7 @@ export const getProjectFileInfo = tool({
  */
 export const findProjectFiles = tool({
   description: 'Search for files within the current project by name pattern. Useful for finding specific files or file types.',
-  parameters: z.object({
+  inputSchema: z.object({
     pattern: z.string().describe('File name pattern to search for (supports glob-like patterns: *.js, **/*.ts, etc.)'),
     maxResults: z.number().default(50).describe('Maximum number of results to return'),
     includeHidden: z.boolean().default(false).describe('Include hidden files and directories')
