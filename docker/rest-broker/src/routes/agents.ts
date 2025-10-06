@@ -25,7 +25,7 @@ agentsRouter.get('/:agentId', (req: Request, res: Response) => {
     });
   }
 
-  res.json({ agent });
+  return res.json({ agent });
 });
 
 agentsRouter.patch('/:agentId/auth', async (req: Request, res: Response) => {
@@ -45,7 +45,7 @@ agentsRouter.patch('/:agentId/auth', async (req: Request, res: Response) => {
     }
 
     const agent = agentManager.getAgent(agentId);
-    res.json({
+    return res.json({
       status: 200,
       message: 'Agent marked as authenticated',
       agent,
@@ -60,7 +60,7 @@ agentsRouter.patch('/:agentId/auth', async (req: Request, res: Response) => {
       });
     }
 
-    res.status(500).json({
+    return res.status(500).json({
       status: 500,
       code: 'AUTHENTICATION_FAILED',
       message: error.message || 'Failed to mark agent as authenticated',
