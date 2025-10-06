@@ -19,6 +19,7 @@ services:
       - HEALTH_CHECK_INTERVAL=30000
       - USE_UNIX_SOCKETS=${USE_UNIX_SOCKETS:-false}
       - LITELLM_PROXY_URL=http://litellm-proxy:4000
+      - LITELLM_BASE_URL=http://litellm-proxy:4000
       - LITELLM_MASTER_KEY=${LITELLM_MASTER_KEY:-sk-1234}
       - AUTH_ENABLED=${AUTH_ENABLED:-false}
       - AUTH_TOKEN=${AUTH_TOKEN}
@@ -129,6 +130,10 @@ services:
       - LITELLM_MASTER_KEY=${LITELLM_MASTER_KEY:-sk-1234}
       - CLAUDE_MODEL=${CLAUDE_MODEL:-}
       - CLAUDE_CLI_OPTIONS=${CLAUDE_CLI_OPTIONS:-}
+      # Agent registration configuration
+      - AGENT_AUTH_TYPE=${AGENT_AUTH_TYPE:-api_key}
+      - AGENT_PROVIDER=claude
+      - AGENT_MODEL=${CLAUDE_MODEL:-claude-3-5-sonnet-20241022}
     volumes:
       - ../workspace:/home/claude/workspace
       - ${HOME}/.ssh:/home/claude/.ssh:ro
@@ -164,6 +169,10 @@ services:
       - OPENAI_MODEL=${OPENAI_MODEL:-gpt-4-turbo-preview}
       - OPENAI_ORG_ID=${OPENAI_ORG_ID}
       - OPENAI_CLI_OPTIONS=${OPENAI_CLI_OPTIONS:-}
+      # Agent registration configuration
+      - AGENT_AUTH_TYPE=${AGENT_AUTH_TYPE:-api_key}
+      - AGENT_PROVIDER=openai
+      - AGENT_MODEL=${OPENAI_MODEL:-gpt-4-turbo-preview}
     volumes:
       - ../workspace:/codex-workspace
       - ${HOME}/.ssh:/root/.ssh:ro
