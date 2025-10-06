@@ -48,17 +48,30 @@ export class AgentManager extends EventEmitter {
   }
 
   private initializeAgents(): void {
+    // Get auth configuration from environment
+    const authType = (process.env.AGENT_AUTH_TYPE as 'subscription' | 'api_key') || 'api_key';
+
     // Define available agents - in production, this would come from config
-    const agentConfigs = [
+    const agentConfigs: Array<{
+      id: string;
+      name: string;
+      type: string;
+      provider?: string;
+      model?: string;
+    }> = [
       {
         id: 'claude-code',
         name: 'Claude Code Assistant',
         type: 'claude-code',
+        provider: 'claude',
+        model: process.env.CLAUDE_MODEL || 'claude-3-5-sonnet-20241022',
       },
       {
         id: 'openai-codex',
         name: 'OpenAI Codex',
         type: 'openai-codex',
+        provider: 'openai',
+        model: process.env.OPENAI_MODEL || 'gpt-4-turbo-preview',
       },
       {
         id: 'aider',
@@ -74,20 +87,27 @@ export class AgentManager extends EventEmitter {
 
     for (const config of agentConfigs) {
       const now = new Date().toISOString();
+      const hasAuthConfig = authType === 'subscription' && config.provider && config.model;
+
       const agent: Agent = {
         ...config,
         status: 'offline',
         health: {
           status: 'unknown',
           lastCheck: now,
+          authenticated: hasAuthConfig ? false : undefined,
+          message: hasAuthConfig ? 'Agent initialized - awaiting authentication' : undefined,
         },
         registeredAt: now,
         lastHeartbeat: now,
+        authType: hasAuthConfig ? 'subscription' : 'api_key',
+        provider: hasAuthConfig ? config.provider : undefined,
+        model: hasAuthConfig ? config.model : undefined,
       };
       this.agents.set(agent.id, agent);
     }
 
-    logger.info(`Initialized ${this.agents.size} agents`);
+    logger.info(`Initialized ${this.agents.size} agents with auth_type=${authType}`);
   }
 
   private startHealthChecks(): void {
