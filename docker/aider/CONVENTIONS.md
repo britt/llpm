@@ -4,7 +4,11 @@
 - Write clean, maintainable code that follows language-specific best practices
 - Use meaningful variable and function names that clearly express intent
 - Keep functions small and focused on a single responsibility
+- **DRY (Don't Repeat Yourself)**: Before coding something from scratch, search the codebase for similar operations, functions, or patterns and follow the same approach for consistency
 - Avoid code duplication - extract common logic into reusable functions
+- **YAGNI (You Aren't Gonna Need It)**: Only implement what is actually needed now, not what might be needed in the future
+- **Clean up after yourself**: Delete unused code, imports, functions, and files when making changes that render them obsolete
+- **No fake implementations**: Never hard code values or create fake/stub implementations unless explicitly asked to do so - always implement real, functional code
 - Add appropriate error handling and validation
 
 ## Testing
@@ -20,7 +24,15 @@
 - Document API endpoints, parameters, and return values
 
 ## Version Control
-- Write clear, descriptive commit messages
+- Write clear, descriptive commit messages using conventional commits format:
+  - `feat:` for new features
+  - `fix:` for bug fixes
+  - `docs:` for documentation changes
+  - `refactor:` for code refactoring
+  - `test:` for adding or updating tests
+  - `chore:` for maintenance tasks
+  - `perf:` for performance improvements
+  - Add `!` after type or include `BREAKING CHANGE:` in footer for breaking changes
 - Make atomic commits focused on single changes
 - Review diffs before committing to avoid accidental changes
 - Keep commits small and reviewable
