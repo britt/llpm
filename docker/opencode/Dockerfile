@@ -13,11 +13,17 @@ RUN mkdir -p /home/opencode/workspace && \
     chown -R opencode:opencode /home/opencode
 
 # Copy entrypoint script
-COPY --chmod=755 entrypoint.sh /usr/local/bin/entrypoint.sh
+COPY ./opencode/entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
 
-# Copy OpenCode instruction file
-COPY AGENT.md /home/opencode/workspace/AGENT.md
-RUN chown opencode:opencode /home/opencode/workspace/AGENT.md
+# Generate agent rules file from template
+COPY ./rules /tmp/rules
+COPY ./opencode /tmp/opencode
+WORKDIR /tmp/rules
+RUN npm install --production --silent && \
+    node generate-rules.js opencode && \
+    cp ../opencode/AGENT.md /home/opencode/workspace/AGENT.md && \
+    chown opencode:opencode /home/opencode/workspace/AGENT.md
 
 # Switch to opencode user
 USER opencode

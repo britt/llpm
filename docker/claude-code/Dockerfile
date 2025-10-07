@@ -13,11 +13,17 @@ RUN mkdir -p /home/claude/workspace && \
     chown -R claude:claude /home/claude
 
 # Copy entrypoint script
-COPY --chmod=755 entrypoint.sh /usr/local/bin/entrypoint.sh
+COPY ./claude-code/entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
 
-# Copy Claude Code instruction file
-COPY CLAUDE.md /home/claude/workspace/CLAUDE.md
-RUN chown claude:claude /home/claude/workspace/CLAUDE.md
+# Generate agent rules file from template
+COPY ./rules /tmp/rules
+COPY ./claude-code /tmp/claude-code
+WORKDIR /tmp/rules
+RUN npm install --production --silent && \
+    node generate-rules.js claude-code && \
+    cp ../claude-code/CLAUDE.md /home/claude/workspace/CLAUDE.md && \
+    chown claude:claude /home/claude/workspace/CLAUDE.md
 
 # Switch to claude user
 USER claude

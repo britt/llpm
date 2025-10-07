@@ -28,13 +28,23 @@ const agents = {
   }
 };
 
+// Check if specific agent requested via command line
+const requestedAgent = process.argv[2];
+const agentsToProcess = requestedAgent ? { [requestedAgent]: agents[requestedAgent] } : agents;
+
+if (requestedAgent && !agents[requestedAgent]) {
+  console.error(`Error: Unknown agent "${requestedAgent}"`);
+  console.error(`Available agents: ${Object.keys(agents).join(', ')}`);
+  process.exit(1);
+}
+
 // Read the base template
 const templatePath = path.join(__dirname, 'AGENT_RULES.base.md');
 const templateContent = fs.readFileSync(templatePath, 'utf8');
 const template = Handlebars.compile(templateContent);
 
 // Process each agent
-for (const [agentId, config] of Object.entries(agents)) {
+for (const [agentId, config] of Object.entries(agentsToProcess)) {
   // Check if agent has specific rules file
   const specificRulesPath = path.join(__dirname, agentId, 'specific-rules.md');
   if (fs.existsSync(specificRulesPath)) {
@@ -51,4 +61,4 @@ for (const [agentId, config] of Object.entries(agents)) {
   console.log(`Generated ${outputPath}`);
 }
 
-console.log('All agent rules files generated successfully!');
+console.log(requestedAgent ? `Generated rules for ${requestedAgent}` : 'All agent rules files generated successfully!');
