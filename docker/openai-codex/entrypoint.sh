@@ -34,10 +34,21 @@ export OPENAI_API_KEY="${OPENAI_API_KEY}"
 # Parse CLI options from environment
 OPENAI_CLI_OPTS="${OPENAI_CLI_OPTIONS:-}"
 
-# If starting an interactive shell and OpenAI CLI exists, show options
-if [ "$1" = "/bin/bash" ] && command -v openai &> /dev/null; then
-    echo "OpenAI CLI available. Default options: $OPENAI_CLI_OPTS"
-    echo "Run: openai $OPENAI_CLI_OPTS [additional-args]"
+# Add authentication helper alias to .bashrc
+if [ ! -f ~/.bashrc ] || ! grep -q "signal-authenticated" ~/.bashrc; then
+    cat >> ~/.bashrc << 'EOF'
+
+# Helper command to signal authentication to REST broker
+alias signal-authenticated='curl -X PATCH http://rest-broker:3010/agents/openai-codex/auth && echo "Authentication signaled successfully"'
+EOF
+fi
+
+# If starting an interactive shell and Codex CLI exists, show options
+if [ "$1" = "/bin/bash" ] && command -v codex &> /dev/null; then
+    echo "OpenAI Codex CLI available. Default options: $OPENAI_CLI_OPTS"
+    echo "Run: codex $OPENAI_CLI_OPTS [additional-args]"
+    echo ""
+    echo "After authenticating with OpenAI Codex, run: signal-authenticated"
 fi
 
 # If the command is specifically 'openai', add default options
