@@ -1,0 +1,112 @@
+id: research-agent-rules
+name: Research Agent Rule Set
+description: Standard hygiene rules for AI research agents
+version: "1.0"
+agent_types:
+  - research
+  - analysis
+
+rules:
+  - id: cite_sources
+    name: Always Cite Sources
+    description: Research findings must include proper source citations
+    enforcement: enforce
+    scope: workflow
+    enabled: true
+    validation:
+      type: regex
+      pattern: '\[(https?://|doi:|arxiv:)'
+    metadata:
+      priority: 100
+      tags:
+        - accuracy
+        - citations
+      docs_url: https://github.com/britt/llpm/wiki/Agent-Rules#cite-sources
+
+  - id: fact_check_claims
+    name: Fact Check Claims
+    description: Verify factual claims before presenting them
+    enforcement: warn
+    scope: workflow
+    enabled: true
+    metadata:
+      priority: 90
+      tags:
+        - accuracy
+        - verification
+      docs_url: https://github.com/britt/llpm/wiki/Agent-Rules#fact-check
+
+  - id: multiple_sources
+    name: Use Multiple Sources
+    description: Cross-reference information from multiple independent sources
+    enforcement: advisory
+    scope: workflow
+    enabled: true
+    validation:
+      type: command
+      command: |
+        # Count unique domains in citations
+        citation_count=$(grep -oE 'https?://[^/]+' | sort -u | wc -l)
+        if [ $citation_count -lt 2 ]; then
+          echo "Found only $citation_count unique source(s), recommend at least 2"
+          exit 1
+        fi
+      success_code: 0
+    metadata:
+      priority: 80
+      tags:
+        - accuracy
+        - thoroughness
+      docs_url: https://github.com/britt/llpm/wiki/Agent-Rules#multiple-sources
+
+  - id: timestamp_research
+    name: Timestamp Research
+    description: Include timestamps for when research was conducted
+    enforcement: warn
+    scope: workflow
+    enabled: true
+    metadata:
+      priority: 70
+      tags:
+        - documentation
+        - timeliness
+      docs_url: https://github.com/britt/llpm/wiki/Agent-Rules#timestamp
+
+  - id: bias_disclosure
+    name: Disclose Potential Bias
+    description: Acknowledge potential biases in sources or methodology
+    enforcement: advisory
+    scope: workflow
+    enabled: true
+    metadata:
+      priority: 60
+      tags:
+        - transparency
+        - ethics
+      docs_url: https://github.com/britt/llpm/wiki/Agent-Rules#bias-disclosure
+
+  - id: data_quality_check
+    name: Data Quality Check
+    description: Verify data quality and reliability of sources
+    enforcement: warn
+    scope: workflow
+    enabled: true
+    metadata:
+      priority: 85
+      tags:
+        - quality
+        - verification
+      docs_url: https://github.com/britt/llpm/wiki/Agent-Rules#data-quality
+
+  - id: structured_output
+    name: Structured Output Format
+    description: Present research findings in a consistent, structured format
+    enforcement: advisory
+    scope: workflow
+    enabled: true
+    metadata:
+      priority: 50
+      tags:
+        - formatting
+        - readability
+      docs_url: https://github.com/britt/llpm/wiki/Agent-Rules#structured-output

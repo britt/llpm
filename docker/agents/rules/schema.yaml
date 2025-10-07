@@ -1,0 +1,125 @@
+# Agent Rule Schema Definition
+# This schema defines the structure for agent rule sets
+
+schema_version: "1.0"
+
+# Rule Set Structure
+rule_set:
+  # Unique identifier for the rule set
+  id: string
+
+  # Human-readable name
+  name: string
+
+  # Description of the rule set purpose
+  description: string
+
+  # Version of this rule set
+  version: string
+
+  # Target agent types (e.g., coding, research, writing)
+  agent_types:
+    - string
+
+  # List of rules
+  rules:
+    - rule:
+        # Unique rule identifier
+        id: string
+
+        # Human-readable name
+        name: string
+
+        # Detailed description
+        description: string
+
+        # Enforcement level: warn | enforce | advisory
+        enforcement: enum[warn, enforce, advisory]
+
+        # Scope: commit | workflow | pr | push | precommit
+        scope: enum[commit, workflow, pr, push, precommit]
+
+        # Enabled by default
+        enabled: boolean
+
+        # Optional conditions for rule activation
+        conditions:
+          # File patterns to match (glob)
+          file_patterns:
+            - string
+
+          # Branch patterns to match (regex)
+          branch_patterns:
+            - string
+
+          # Minimum confidence threshold (0.0 - 1.0)
+          confidence_threshold: float
+
+        # Auto-fix configuration (optional)
+        autofix:
+          # Whether auto-fix is available
+          enabled: boolean
+
+          # Command to run for auto-fix
+          command: string
+
+          # Requires manual approval
+          requires_approval: boolean
+
+          # Timeout in seconds
+          timeout: integer
+
+        # Validation configuration
+        validation:
+          # Type of validation: command | regex | api
+          type: enum[command, regex, api]
+
+          # Command to run (if type=command)
+          command: string
+
+          # Regex pattern (if type=regex)
+          pattern: string
+
+          # API endpoint (if type=api)
+          endpoint: string
+
+          # Expected exit code for success
+          success_code: integer
+
+        # Metadata
+        metadata:
+          # Priority (higher = more important)
+          priority: integer
+
+          # Tags for categorization
+          tags:
+            - string
+
+          # Documentation URL
+          docs_url: string
+
+# Examples of common rule patterns:
+#
+# 1. Always Unit Tests Rule:
+#    id: always_unit_tests
+#    enforcement: enforce
+#    scope: commit
+#    validation:
+#      type: command
+#      command: "test -f *test* || echo 'No tests found'"
+#
+# 2. Branch and PR Rule:
+#    id: always_branch_and_pr
+#    enforcement: enforce
+#    scope: workflow
+#    validation:
+#      type: command
+#      command: "git branch --show-current | grep -v '^main$'"
+#
+# 3. Commit Message Convention:
+#    id: commit_message_convention
+#    enforcement: warn
+#    scope: commit
+#    validation:
+#      type: regex
+#      pattern: "^(feat|fix|docs|style|refactor|test|chore)(\\(.+\\))?: .+"

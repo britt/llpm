@@ -1,0 +1,183 @@
+id: writing-agent-rules
+name: Writing Agent Rule Set
+description: Standard hygiene rules for AI writing agents
+version: "1.0"
+agent_types:
+  - writing
+  - documentation
+
+rules:
+  - id: spell_check
+    name: Spell Check
+    description: Run spell checker on all written content
+    enforcement: warn
+    scope: workflow
+    enabled: true
+    validation:
+      type: command
+      command: |
+        # Run spell checker if available
+        if command -v aspell >/dev/null 2>&1; then
+          aspell list < "$FILE" | head -10
+          [ $(aspell list < "$FILE" | wc -l) -eq 0 ]
+        fi
+      success_code: 0
+    autofix:
+      enabled: true
+      command: "aspell check $FILE"
+      requires_approval: true
+      timeout: 60
+    metadata:
+      priority: 80
+      tags:
+        - quality
+        - grammar
+      docs_url: https://github.com/britt/llpm/wiki/Agent-Rules#spell-check
+
+  - id: grammar_check
+    name: Grammar Check
+    description: Verify grammatical correctness of content
+    enforcement: warn
+    scope: workflow
+    enabled: true
+    metadata:
+      priority: 75
+      tags:
+        - quality
+        - grammar
+      docs_url: https://github.com/britt/llpm/wiki/Agent-Rules#grammar-check
+
+  - id: readability_score
+    name: Readability Score
+    description: Maintain appropriate readability level for target audience
+    enforcement: advisory
+    scope: workflow
+    enabled: true
+    validation:
+      type: command
+      command: |
+        # Check readability using textstat if available
+        if command -v python3 >/dev/null 2>&1; then
+          python3 -c "
+import sys
+try:
+    import textstat
+    text = sys.stdin.read()
+    score = textstat.flesch_reading_ease(text)
+    if score < 50:  # Below average readability
+        print(f'Readability score: {score} (target: >50)')
+        sys.exit(1)
+except ImportError:
+    pass  # Skip if textstat not available
+          " < "$FILE"
+        fi
+      success_code: 0
+    metadata:
+      priority: 60
+      tags:
+        - quality
+        - readability
+      docs_url: https://github.com/britt/llpm/wiki/Agent-Rules#readability
+
+  - id: consistent_voice
+    name: Consistent Voice and Tone
+    description: Maintain consistent voice and tone throughout document
+    enforcement: advisory
+    scope: workflow
+    enabled: true
+    metadata:
+      priority: 70
+      tags:
+        - style
+        - consistency
+      docs_url: https://github.com/britt/llpm/wiki/Agent-Rules#consistent-voice
+
+  - id: link_validation
+    name: Validate Links
+    description: Ensure all hyperlinks are valid and accessible
+    enforcement: warn
+    scope: workflow
+    enabled: true
+    validation:
+      type: command
+      command: |
+        # Extract and validate URLs
+        grep -oE 'https?://[^)}\]]+' "$FILE" | while read url; do
+          if ! curl -sf -o /dev/null --max-time 10 "$url"; then
+            echo "Invalid or inaccessible URL: $url"
+            exit 1
+          fi
+        done
+      success_code: 0
+    metadata:
+      priority: 65
+      tags:
+        - quality
+        - validation
+      docs_url: https://github.com/britt/llpm/wiki/Agent-Rules#link-validation
+
+  - id: heading_structure
+    name: Proper Heading Structure
+    description: Use proper heading hierarchy (H1 > H2 > H3, etc.)
+    enforcement: warn
+    scope: workflow
+    enabled: true
+    conditions:
+      file_patterns:
+        - "*.md"
+        - "*.markdown"
+    validation:
+      type: regex
+      pattern: '^#{1,6} '
+    metadata:
+      priority: 55
+      tags:
+        - formatting
+        - structure
+      docs_url: https://github.com/britt/llpm/wiki/Agent-Rules#heading-structure
+
+  - id: include_toc
+    name: Include Table of Contents
+    description: Long documents should include a table of contents
+    enforcement: advisory
+    scope: workflow
+    enabled: true
+    conditions:
+      file_patterns:
+        - "*.md"
+    validation:
+      type: command
+      command: |
+        # Check document length and TOC presence
+        line_count=$(wc -l < "$FILE")
+        if [ $line_count -gt 200 ] && ! grep -qi "table of contents\|## contents" "$FILE"; then
+          echo "Document has $line_count lines but no TOC"
+          exit 1
+        fi
+      success_code: 0
+    metadata:
+      priority: 50
+      tags:
+        - usability
+        - navigation
+      docs_url: https://github.com/britt/llpm/wiki/Agent-Rules#table-of-contents
+
+  - id: code_block_language
+    name: Specify Code Block Language
+    description: All code blocks should specify their language for syntax highlighting
+    enforcement: warn
+    scope: workflow
+    enabled: true
+    conditions:
+      file_patterns:
+        - "*.md"
+        - "*.markdown"
+    validation:
+      type: regex
+      pattern: '```[a-z]+'
+    metadata:
+      priority: 60
+      tags:
+        - formatting
+        - readability
+      docs_url: https://github.com/britt/llpm/wiki/Agent-Rules#code-blocks

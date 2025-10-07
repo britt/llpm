@@ -1,0 +1,204 @@
+id: coding-agent-rules
+name: Coding Agent Rule Set
+description: Standard hygiene rules for AI coding agents (Claude Code, OpenAI Codex, etc.)
+version: "1.0"
+agent_types:
+  - claude-code
+  - openai-codex
+  - coding
+
+rules:
+  - id: always_unit_tests
+    name: Always Add Unit Tests
+    description: Agent must add unit tests for new or modified code where applicable
+    enforcement: enforce
+    scope: commit
+    enabled: true
+    conditions:
+      file_patterns:
+        - "*.ts"
+        - "*.tsx"
+        - "*.js"
+        - "*.jsx"
+        - "*.py"
+        - "*.go"
+        - "*.rs"
+    validation:
+      type: command
+      command: |
+        # Check if test files exist for modified source files
+        git diff --name-only HEAD | grep -E '\.(ts|tsx|js|jsx|py|go|rs)$' | while read file; do
+          base=$(echo $file | sed 's/\.[^.]*$//')
+          if ! ls ${base}.test.* ${base}.spec.* ${base}_test.* 2>/dev/null | grep -q .; then
+            echo "No test file found for $file"
+            exit 1
+          fi
+        done
+      success_code: 0
+    autofix:
+      enabled: true
+      command: "# Generate test template for file: $FILE"
+      requires_approval: true
+      timeout: 60
+    metadata:
+      priority: 90
+      tags:
+        - testing
+        - quality
+      docs_url: https://github.com/britt/llpm/wiki/Agent-Rules#always-unit-tests
+
+  - id: always_branch_and_pr
+    name: Always Branch and PR
+    description: Create a branch for changes, commit there, and open a pull request for review
+    enforcement: enforce
+    scope: workflow
+    enabled: true
+    validation:
+      type: command
+      command: |
+        # Check if we're on a feature branch (not main/master)
+        current_branch=$(git branch --show-current)
+        if [ "$current_branch" = "main" ] || [ "$current_branch" = "master" ]; then
+          echo "Cannot commit directly to main/master branch"
+          exit 1
+        fi
+      success_code: 0
+    metadata:
+      priority: 100
+      tags:
+        - workflow
+        - safety
+      docs_url: https://github.com/britt/llpm/wiki/Agent-Rules#always-branch-and-pr
+
+  - id: always_push
+    name: Always Push Commits
+    description: Always push commits to remote before signaling task completion
+    enforcement: warn
+    scope: push
+    enabled: true
+    validation:
+      type: command
+      command: |
+        # Check if local branch is ahead of remote
+        if git status | grep -q "Your branch is ahead"; then
+          echo "Unpushed commits detected"
+          exit 1
+        fi
+      success_code: 0
+    metadata:
+      priority: 70
+      tags:
+        - workflow
+        - sync
+      docs_url: https://github.com/britt/llpm/wiki/Agent-Rules#always-push
+
+  - id: run_linters
+    name: Run Linters
+    description: Run configured linters/formatters as part of the change
+    enforcement: enforce
+    scope: precommit
+    enabled: true
+    validation:
+      type: command
+      command: |
+        # Run project linters if they exist
+        if [ -f "package.json" ] && grep -q "\"lint\"" package.json; then
+          npm run lint
+        elif [ -f "Makefile" ] && grep -q "^lint:" Makefile; then
+          make lint
+        fi
+      success_code: 0
+    autofix:
+      enabled: true
+      command: |
+        if [ -f "package.json" ] && grep -q "\"lint:fix\"" package.json; then
+          npm run lint:fix
+        fi
+      requires_approval: false
+      timeout: 120
+    metadata:
+      priority: 80
+      tags:
+        - quality
+        - formatting
+      docs_url: https://github.com/britt/llpm/wiki/Agent-Rules#run-linters
+
+  - id: commit_message_convention
+    name: Commit Message Convention
+    description: Use well-formed commit messages (conventional commits format)
+    enforcement: warn
+    scope: commit
+    enabled: true
+    validation:
+      type: regex
+      pattern: '^(feat|fix|docs|style|refactor|test|chore|perf|ci|build|revert)(\(.+\))?: .{1,100}'
+    metadata:
+      priority: 60
+      tags:
+        - documentation
+        - convention
+      docs_url: https://www.conventionalcommits.org/
+
+  - id: tests_pass
+    name: Tests Must Pass
+    description: Run test suite and require passing tests before creating PR
+    enforcement: enforce
+    scope: pr
+    enabled: true
+    validation:
+      type: command
+      command: |
+        # Run tests based on project type
+        if [ -f "package.json" ]; then
+          npm test
+        elif [ -f "Makefile" ] && grep -q "^test:" Makefile; then
+          make test
+        elif [ -f "pyproject.toml" ] || [ -f "pytest.ini" ]; then
+          pytest
+        elif [ -f "go.mod" ]; then
+          go test ./...
+        elif [ -f "Cargo.toml" ]; then
+          cargo test
+        fi
+      success_code: 0
+    metadata:
+      priority: 95
+      tags:
+        - testing
+        - quality
+      docs_url: https://github.com/britt/llpm/wiki/Agent-Rules#tests-pass
+
+  - id: no_secrets_in_code
+    name: No Secrets in Code
+    description: Prevent committing secrets, API keys, or sensitive data
+    enforcement: enforce
+    scope: precommit
+    enabled: true
+    validation:
+      type: command
+      command: |
+        # Check for common secret patterns
+        if git diff --cached | grep -E '(api[_-]?key|secret|password|token|credential).*=.*["\047][A-Za-z0-9+/=]{20,}["\047]'; then
+          echo "Potential secret detected in staged changes"
+          exit 1
+        fi
+      success_code: 0
+    metadata:
+      priority: 100
+      tags:
+        - security
+        - safety
+      docs_url: https://github.com/britt/llpm/wiki/Agent-Rules#no-secrets
+
+  - id: code_review_checklist
+    name: Code Review Checklist
+    description: Ensure code meets review criteria before PR
+    enforcement: advisory
+    scope: pr
+    enabled: true
+    metadata:
+      priority: 50
+      tags:
+        - quality
+        - review
+      docs_url: https://github.com/britt/llpm/wiki/Agent-Rules#review-checklist
