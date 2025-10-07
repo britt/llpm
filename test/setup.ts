@@ -3,27 +3,27 @@ import { beforeAll, afterEach, vi } from 'vitest';
 import { cleanup } from '@testing-library/react';
 
 // Mock bun:sqlite for browser compatibility
-try {
-  vi.mock('bun:sqlite', () => ({
-    Database: vi.fn().mockImplementation(() => ({
-      query: vi.fn().mockReturnValue({
-        all: vi.fn().mockReturnValue([]),
-        run: vi.fn(),
-        get: vi.fn().mockReturnValue(null)
-      }),
-      exec: vi.fn(),
-      close: vi.fn(),
-      prepare: vi.fn().mockReturnValue({
-        all: vi.fn().mockReturnValue([]),
-        run: vi.fn(),
-        get: vi.fn().mockReturnValue(null)
-      })
-    }))
+vi.mock('bun:sqlite', () => {
+  const mockDatabase = vi.fn().mockImplementation(() => ({
+    query: vi.fn().mockReturnValue({
+      all: vi.fn().mockReturnValue([]),
+      run: vi.fn(),
+      get: vi.fn().mockReturnValue(null)
+    }),
+    exec: vi.fn(),
+    close: vi.fn(),
+    prepare: vi.fn().mockReturnValue({
+      all: vi.fn().mockReturnValue([]),
+      run: vi.fn(),
+      get: vi.fn().mockReturnValue(null)
+    })
   }));
-} catch (error) {
-  // Silently ignore mock errors in environments where vi.mock is not available
-  // Note: bun:sqlite warnings are expected in browser/CI environments
-}
+
+  return {
+    default: mockDatabase,
+    Database: mockDatabase
+  };
+});
 
 // Setup DOM environment for React Testing Library
 beforeAll(() => {

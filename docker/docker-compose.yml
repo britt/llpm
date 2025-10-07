@@ -19,9 +19,13 @@ services:
       - HEALTH_CHECK_INTERVAL=30000
       - USE_UNIX_SOCKETS=${USE_UNIX_SOCKETS:-false}
       - LITELLM_PROXY_URL=http://litellm-proxy:4000
+      - LITELLM_BASE_URL=http://litellm-proxy:4000
       - LITELLM_MASTER_KEY=${LITELLM_MASTER_KEY:-sk-1234}
       - AUTH_ENABLED=${AUTH_ENABLED:-false}
       - AUTH_TOKEN=${AUTH_TOKEN}
+      - AGENT_AUTH_TYPE=${AGENT_AUTH_TYPE:-api_key}
+      - CLAUDE_MODEL=${CLAUDE_MODEL:-claude-3-5-sonnet-20241022}
+      - OPENAI_MODEL=${OPENAI_MODEL:-gpt-4-turbo-preview}
     ports:
       - "3010:3010"
     networks:
@@ -88,6 +92,7 @@ services:
       - STORE_MODEL_IN_DB=True
     volumes:
       - ./litellm-proxy/proxy_config.yaml:/app/config.yaml:ro
+      - ./litellm-proxy/custom_auth.py:/app/custom_auth.py:ro
     command: ["--config", "/app/config.yaml", "--port", "4000", "--detailed_debug"]
     ports:
       - "4000:4000"
@@ -124,11 +129,17 @@ services:
       - .env
     environment:
       # Use LiteLLM proxy for Anthropic API
-      - ANTHROPIC_BASE_URL=http://litellm-proxy:4000
-      - ANTHROPIC_API_KEY=${LITELLM_MASTER_KEY:-sk-1234}
+      # When AGENT_AUTH_TYPE=subscription, use real Anthropic key with /claude passthrough
+      # When AGENT_AUTH_TYPE=api_key, use LiteLLM master key without passthrough
+      - ANTHROPIC_BASE_URL=${ANTHROPIC_BASE_URL:-http://litellm-proxy:4000}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
       - LITELLM_MASTER_KEY=${LITELLM_MASTER_KEY:-sk-1234}
       - CLAUDE_MODEL=${CLAUDE_MODEL:-}
       - CLAUDE_CLI_OPTIONS=${CLAUDE_CLI_OPTIONS:-}
+      # Agent registration configuration
+      - AGENT_AUTH_TYPE=${AGENT_AUTH_TYPE:-api_key}
+      - AGENT_PROVIDER=claude
+      - AGENT_MODEL=${CLAUDE_MODEL:-claude-sonnet-4-5}
     volumes:
       - ../workspace:/home/claude/workspace
       - ${HOME}/.ssh:/home/claude/.ssh:ro
@@ -158,12 +169,18 @@ services:
       - .env
     environment:
       # Use LiteLLM proxy for OpenAI API
-      - OPENAI_API_BASE=http://litellm-proxy:4000
-      - OPENAI_API_KEY=${LITELLM_MASTER_KEY:-sk-1234}
+      # When AGENT_AUTH_TYPE=subscription, use real OpenAI key with /codex passthrough
+      # When AGENT_AUTH_TYPE=api_key, use LiteLLM master key without passthrough
+      - OPENAI_API_BASE=${OPENAI_API_BASE:-http://litellm-proxy:4000}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
       - LITELLM_MASTER_KEY=${LITELLM_MASTER_KEY:-sk-1234}
       - OPENAI_MODEL=${OPENAI_MODEL:-gpt-4-turbo-preview}
       - OPENAI_ORG_ID=${OPENAI_ORG_ID}
       - OPENAI_CLI_OPTIONS=${OPENAI_CLI_OPTIONS:-}
+      # Agent registration configuration
+      - AGENT_AUTH_TYPE=${AGENT_AUTH_TYPE:-api_key}
+      - AGENT_PROVIDER=openai
+      - AGENT_MODEL=${OPENAI_MODEL:-gpt-4-turbo-preview}
     volumes:
       - ../workspace:/codex-workspace
       - ${HOME}/.ssh:/root/.ssh:ro

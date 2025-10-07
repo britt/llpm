@@ -45,16 +45,21 @@ show_usage() {
     echo "  status     - Show current agent status"
     echo ""
     echo "Custom scaling options:"
-    echo "  --claude N    - Scale Claude Code to N instances"
-    echo "  --codex N     - Scale OpenAI Codex to N instances"
-    echo "  --aider N     - Scale Aider to N instances"
-    echo "  --opencode N  - Scale OpenCode to N instances"
+    echo "  --claude N      - Scale Claude Code to N instances"
+    echo "  --codex N       - Scale OpenAI Codex to N instances"
+    echo "  --aider N       - Scale Aider to N instances"
+    echo "  --opencode N    - Scale OpenCode to N instances"
+    echo ""
+    echo "Authentication options:"
+    echo "  --auth-type TYPE - Authentication type: api_key (default) or subscription"
     echo ""
     echo "Examples:"
-    echo "  $0 dev                           # Start development setup"
-    echo "  $0 custom --codex 2 --aider 1   # 2 Codex, 1 Aider"
-    echo "  $0 stop                          # Stop all agents"
-    echo "  $0 status                        # Show running agents"
+    echo "  $0 dev                                    # Start development setup (default: api_key auth)"
+    echo "  $0 dev --auth-type subscription          # Development with subscription auth"
+    echo "  $0 custom --codex 2 --aider 1            # 2 Codex, 1 Aider (default: api_key)"
+    echo "  $0 custom --codex 2 --auth-type subscription  # Custom with subscription auth"
+    echo "  $0 stop                                   # Stop all agents"
+    echo "  $0 status                                 # Show running agents"
     echo ""
 }
 
@@ -64,29 +69,34 @@ scale_services() {
     local codex=$2
     local aider=$3
     local opencode=$4
-    
+    local auth_type=${5:-api_key}
+
     print_info "Scaling agents:"
     echo "  Claude Code: $claude instance(s)"
     echo "  OpenAI Codex: $codex instance(s)"
     echo "  Aider: $aider instance(s)"
     echo "  OpenCode: $opencode instance(s)"
+    echo "  Auth Type: $auth_type"
     echo ""
-    
+
+    # Export auth type for docker-compose
+    export AGENT_AUTH_TYPE=$auth_type
+
     # Build the docker-compose scale command
     local scale_cmd="docker-compose up -d"
     scale_cmd="$scale_cmd --scale claude-code=$claude"
     scale_cmd="$scale_cmd --scale openai-codex=$codex"
     scale_cmd="$scale_cmd --scale aider=$aider"
     scale_cmd="$scale_cmd --scale opencode=$opencode"
-    
+
     # Ensure base services are running
     print_info "Starting base services..."
-    docker-compose up -d litellm-proxy base
-    
+    docker-compose up -d litellm-proxy postgres
+
     # Execute scaling
     print_info "Scaling agent services..."
     eval $scale_cmd
-    
+
     print_success "Agent scaling complete!"
     echo ""
     show_status
@@ -120,37 +130,65 @@ show_status() {
     fi
 }
 
+# Parse auth type option from all commands
+auth_type="api_key"
+parse_auth_type() {
+    while [[ $# -gt 0 ]]; do
+        case $1 in
+            --auth-type)
+                auth_type="$2"
+                if [[ "$auth_type" != "api_key" && "$auth_type" != "subscription" ]]; then
+                    print_error "Invalid auth-type: $auth_type (must be 'api_key' or 'subscription')"
+                    exit 1
+                fi
+                shift 2
+                ;;
+            *)
+                shift
+                ;;
+        esac
+    done
+}
+
 # Main script logic
 case "${1:-}" in
     dev)
+        shift
+        parse_auth_type "$@"
         print_info "Starting development setup..."
-        scale_services 1 1 1 1
+        scale_services 1 1 1 1 "$auth_type"
         ;;
-    
+
     team)
+        shift
+        parse_auth_type "$@"
         print_info "Starting team setup..."
-        scale_services 1 2 2 1
+        scale_services 1 2 2 1 "$auth_type"
         ;;
-    
+
     heavy)
+        shift
+        parse_auth_type "$@"
         print_info "Starting heavy workload setup..."
-        scale_services 2 3 3 2
+        scale_services 2 3 3 2 "$auth_type"
         ;;
-    
+
     minimal)
+        shift
+        parse_auth_type "$@"
         print_info "Starting minimal setup..."
-        scale_services 0 0 1 0
+        scale_services 0 0 1 0 "$auth_type"
         ;;
-    
+
     stop)
         print_info "Stopping all agents..."
-        scale_services 0 0 0 0
+        scale_services 0 0 0 0 "api_key"
         ;;
-    
+
     status)
         show_status
         ;;
-    
+
     custom)
         # Parse custom scaling options
         shift
@@ -158,7 +196,8 @@ case "${1:-}" in
         codex=0
         aider=0
         opencode=0
-        
+        auth_type="api_key"
+
         while [[ $# -gt 0 ]]; do
             case $1 in
                 --claude)
@@ -177,6 +216,14 @@ case "${1:-}" in
                     opencode="$2"
                     shift 2
                     ;;
+                --auth-type)
+                    auth_type="$2"
+                    if [[ "$auth_type" != "api_key" && "$auth_type" != "subscription" ]]; then
+                        print_error "Invalid auth-type: $auth_type (must be 'api_key' or 'subscription')"
+                        exit 1
+                    fi
+                    shift 2
+                    ;;
                 *)
                     print_error "Unknown option: $1"
                     show_usage
@@ -184,11 +231,11 @@ case "${1:-}" in
                     ;;
             esac
         done
-        
+
         print_info "Starting custom setup..."
-        scale_services $claude $codex $aider $opencode
+        scale_services $claude $codex $aider $opencode "$auth_type"
         ;;
-    
+
     *)
         show_usage
         exit 0

@@ -12,6 +12,9 @@ RUN useradd -m -s /bin/bash codex && \
 RUN mkdir -p /home/codex/workspace && \
     chown -R codex:codex /home/codex
 
+# Install OpenAI Codex CLI globally as root
+RUN npm install -g @openai/codex
+
 # Copy entrypoint script
 COPY --chmod=755 entrypoint.sh /usr/local/bin/entrypoint.sh
 
@@ -19,8 +22,8 @@ COPY --chmod=755 entrypoint.sh /usr/local/bin/entrypoint.sh
 USER codex
 WORKDIR /home/codex
 
-# Install OpenAI related tools as the codex user
-RUN pip3 install --user openai openai-cli
+# Install OpenAI Python SDK as the codex user
+RUN pip3 install --user openai
 
 # Add user's local bin to PATH
 ENV PATH="/home/codex/.local/bin:$PATH"

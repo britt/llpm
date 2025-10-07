@@ -8,33 +8,56 @@ The LLPM Docker environment provides containerized versions of popular AI coding
 
 ## Available Services
 
-### 1. Claude Code (`claude-code`)
+### 1. REST API Broker (`rest-broker`)
+- **HTTP interface for AI agents** - Central management and job execution service
+- Port: 3010
+- Features:
+  - Agent registration and health monitoring
+  - Job queue and execution management
+  - Web UI dashboard at `http://localhost:3010/ui/agents`
+  - OpenAPI documentation at `http://localhost:3010/docs`
+  - Supports both subscription-based and API key authentication modes
+- Authentication Modes:
+  - **API Key Mode** (default): Agents use LiteLLM master key for authentication
+  - **Subscription Mode**: Agents use provider-specific passthrough paths for subscription authentication
+
+### 2. Claude Code (`claude-code`)
 - Anthropic's Claude-based coding assistant
-- Requires: `ANTHROPIC_API_KEY`
-- Default model: `claude-3-opus-20240229`
+- Requires: `ANTHROPIC_API_KEY` or subscription authentication
+- Default model: `claude-sonnet-4-5`
+- Base URL: `http://litellm-proxy:4000/claude` (subscription mode) or `http://litellm-proxy:4000` (API key mode)
+- Authentication: Run `signal-authenticated` in container after authenticating
 
-### 2. OpenAI Codex (`openai-codex`)
+### 3. OpenAI Codex (`openai-codex`)
 - OpenAI GPT-based coding assistant
-- Requires: `OPENAI_API_KEY`
+- Requires: `OPENAI_API_KEY` or subscription authentication
 - Default model: `gpt-4-turbo-preview`
+- Base URL: `http://litellm-proxy:4000/codex` (subscription mode) or `http://litellm-proxy:4000` (API key mode)
+- Authentication: Run `signal-authenticated` in container after authenticating
 
-### 3. Aider (`aider`)
+### 4. Aider (`aider`)
 - AI pair programming tool supporting multiple models
 - Requires: `OPENAI_API_KEY` or `ANTHROPIC_API_KEY`
 - Features: Git integration, auto-commits, diff editing
 
-### 4. OpenCode (`opencode`)
+### 5. OpenCode (`opencode`)
 - Open-source model support via Ollama, HuggingFace, and LiteLLM
 - Optional: `HUGGINGFACE_TOKEN`
 - Default model: `codellama`
 
-### 5. LiteLLM Proxy (`litellm-proxy`)
+### 6. LiteLLM Proxy (`litellm-proxy`)
 - **Central AI Gateway** for all agents
 - Unified OpenAI-compatible API endpoint
 - Routes requests to 100+ LLM providers
-- Features: model fallbacks, caching, usage tracking
+- Features: model fallbacks, caching, usage tracking, database-backed model management
 - Port: 4000
+- Web UI: `http://localhost:4000/ui`
 - All agents use this proxy instead of direct API connections
+
+### 7. PostgreSQL Database (`postgres`)
+- Database backend for LiteLLM proxy
+- Stores model configurations, usage data, and prompt history
+- Automatic schema management via LiteLLM
 
 ## Prerequisites
 
@@ -57,12 +80,38 @@ The LLPM Docker environment provides containerized versions of popular AI coding
    # Edit .env and add your API keys
    ```
 
-3. **Build the base image and LiteLLM proxy:**
+3. **Build the required services:**
    ```bash
-   docker-compose build base litellm-proxy
+   docker-compose build base litellm-proxy rest-broker
    ```
 
-4. **Start multiple agents with scaling:**
+4. **Start the core services:**
+   ```bash
+   # Start database, proxy, and REST broker
+   docker-compose up -d postgres litellm-proxy rest-broker
+
+   # Access the dashboards
+   # - REST Broker: http://localhost:3010/ui/agents
+   # - LiteLLM Proxy: http://localhost:4000/ui
+   # - API Docs: http://localhost:3010/docs
+   ```
+
+5. **Start AI agents:**
+
+   **Option A: API Key Mode (Default)**
+   ```bash
+   docker-compose up -d claude-code openai-codex aider
+   ```
+
+   **Option B: Subscription Mode**
+   ```bash
+   AGENT_AUTH_TYPE=subscription \
+     ANTHROPIC_BASE_URL=http://litellm-proxy:4000/claude \
+     OPENAI_API_BASE=http://litellm-proxy:4000/codex \
+     docker-compose up -d claude-code openai-codex
+   ```
+
+6. **Start multiple agents with scaling:**
 
    **Option A: Using the scale script (easiest)**
    ```bash
@@ -326,6 +375,78 @@ docker-compose ps aider
 - Each instance shares the same workspace volume
 - All instances connect through the central LiteLLM proxy
 - Instance names include index numbers for identification
+
+## Authentication Modes
+
+The Docker environment supports two authentication modes for AI agents:
+
+### API Key Mode (Default)
+
+In API key mode, agents authenticate using the LiteLLM master key:
+
+```bash
+# Start agents in API key mode (default)
+docker-compose up -d rest-broker claude-code openai-codex
+
+# Or explicitly set the mode
+AGENT_AUTH_TYPE=api_key docker-compose up -d
+```
+
+- Agents use `LITELLM_MASTER_KEY` to authenticate with LiteLLM proxy
+- Simple setup, no additional authentication required
+- Suitable for development and testing
+
+### Subscription Mode
+
+In subscription mode, agents use provider-specific authentication:
+
+```bash
+# Start agents in subscription mode
+AGENT_AUTH_TYPE=subscription \
+  ANTHROPIC_BASE_URL=http://litellm-proxy:4000/claude \
+  OPENAI_API_BASE=http://litellm-proxy:4000/codex \
+  docker-compose up -d rest-broker claude-code openai-codex
+```
+
+#### Subscription Authentication Workflow
+
+1. **Start containers in subscription mode** (as shown above)
+
+2. **Connect to the agent container:**
+   ```bash
+   docker exec -it docker-claude-code-1 bash
+   ```
+
+3. **Authenticate with the provider:**
+   ```bash
+   # For Claude Code
+   claude setup-token
+
+   # For OpenAI Codex
+   codex login
+   ```
+
+4. **Signal authentication to REST broker:**
+   ```bash
+   signal-authenticated
+   ```
+
+5. **Verify in the web UI:**
+   - Visit `http://localhost:3010/ui/agents`
+   - Agent should show ✅ Authenticated status
+
+#### Subscription Mode Benefits
+
+- Uses your personal/team subscription credentials
+- Provider-specific passthrough paths for authentication
+- Detailed authentication status in web UI
+- Automatic base URL configuration
+
+### Monitoring Authentication Status
+
+- **Web UI**: `http://localhost:3010/ui/agents` - View all agents and their authentication status
+- **Agent Detail**: Click any agent card for detailed information including auth mode, provider, model, and base URL
+- **API**: `GET http://localhost:3010/agents/:agentId` - Retrieve agent details via REST API
 
 ## CLI Options Configuration
 

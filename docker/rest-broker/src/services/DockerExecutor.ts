@@ -21,10 +21,10 @@ export interface AgentJobPayload {
 
 export class DockerExecutor {
   private containerPrefix = 'docker-';
-  private litellmKey: string;
-  
-  constructor() {
-    this.litellmKey = process.env.LITELLM_MASTER_KEY || 'sk-1234';
+
+  private escapeForShell(str: string): string {
+    // Use printf %q for safe shell escaping
+    return `'${str.replace(/'/g, "'\\''")}'`;
   }
   
   async executeInContainer(
@@ -40,17 +40,39 @@ export class DockerExecutor {
     logger.info(`Executing job in container ${containerName}`, { agentId, prompt: payload.prompt });
     
     try {
+      // For claude-code and openai-codex, pipe prompt via stdin to avoid sh -c issues
+      if (agentId === 'claude-code' || agentId === 'openai-codex') {
+        const cmdBase = agentId === 'claude-code'
+          ? 'claude --print --dangerously-skip-permissions'
+          : 'codex exec --dangerously-bypass-approvals-and-sandbox';
+
+        const execCommand = `echo ${this.escapeForShell(payload.prompt)} | docker exec -i ${containerName} ${cmdBase}`;
+
+        logger.debug(`Running command: ${execCommand}`);
+
+        const { stdout, stderr } = await execAsync(execCommand, {
+          maxBuffer: 10 * 1024 * 1024, // 10MB buffer
+          timeout: 5 * 60 * 1000, // 5 minute timeout
+        });
+
+        return {
+          stdout: stdout.trim(),
+          stderr: stderr.trim(),
+          exitCode: 0,
+        };
+      }
+
+      // For other agents, use sh -c method
       const command = this.buildAgentCommand(agentId, payload);
-      // Use sh -c to ensure shell commands like cd work properly
       const execCommand = `docker exec -i ${containerName} sh -c "${command.replace(/"/g, '\\"')}"`;
-      
+
       logger.debug(`Running command: ${execCommand}`);
-      
+
       const { stdout, stderr } = await execAsync(execCommand, {
         maxBuffer: 10 * 1024 * 1024, // 10MB buffer
         timeout: 5 * 60 * 1000, // 5 minute timeout
       });
-      
+
       return {
         stdout: stdout.trim(),
         stderr: stderr.trim(),
@@ -89,7 +111,7 @@ export class DockerExecutor {
       return null;
     }
   }
-  
+
   private buildAgentCommand(agentId: string, payload: AgentJobPayload): string {
     const { prompt, context, options } = payload;
     
@@ -98,21 +120,17 @@ export class DockerExecutor {
     
     switch (agentId) {
       case 'claude-code':
-        // Use the actual Claude CLI installed from npm
-        // Always include --dangerously-skip-permissions for non-interactive use
-        let claudeCmd = `echo '${escapedPrompt}' | claude --dangerously-skip-permissions`;
+        // Use --print mode for non-interactive execution
+        let claudeCmd = `claude --print --dangerously-skip-permissions "${escapedPrompt}"`;
 
         // Add model if specified
         if (options?.model) {
-          claudeCmd = `echo '${escapedPrompt}' | CLAUDE_MODEL=${options.model} claude --dangerously-skip-permissions`;
+          claudeCmd = `claude --print --dangerously-skip-permissions --model ${options.model} "${escapedPrompt}"`;
         }
 
-        // Add any additional CLI options (always ensure permissions flag is included)
+        // Add any additional CLI options
         if (options?.cliOptions) {
-          const hasPermissionFlag = options.cliOptions.includes('--dangerously-skip-permissions') ||
-                                     options.cliOptions.includes('--permission-mode');
-          const permissionFlag = hasPermissionFlag ? '' : '--dangerously-skip-permissions ';
-          claudeCmd = `echo '${escapedPrompt}' | claude ${permissionFlag}${options.cliOptions}`;
+          claudeCmd = `claude --print --dangerously-skip-permissions ${options.cliOptions} "${escapedPrompt}"`;
         }
 
         // Add workspace if specified
@@ -123,24 +141,24 @@ export class DockerExecutor {
         return claudeCmd;
         
       case 'openai-codex':
-        // Use the actual OpenAI CLI tool installed in the container
-        // The openai CLI needs the message content as an argument after -g role
-        let openaiCmd = '';
-        
-        // Build the command based on whether we have a model specified
+        // Use Codex exec for non-interactive execution
+        let codexCmd = `codex exec --dangerously-bypass-approvals-and-sandbox "${escapedPrompt}"`;
+
+        // Add model if specified
         if (options?.model) {
-          // Use the specific model requested
-          openaiCmd = `OPENAI_API_BASE=http://litellm-proxy:4000 OPENAI_API_KEY=${this.litellmKey} openai api chat.completions.create -m ${options.model} -g user "${escapedPrompt}"`;
-        } else {
-          // Default to gpt-4o
-          openaiCmd = `OPENAI_API_BASE=http://litellm-proxy:4000 OPENAI_API_KEY=${this.litellmKey} openai api chat.completions.create -m gpt-4o -g user "${escapedPrompt}"`;
+          codexCmd = `codex exec --dangerously-bypass-approvals-and-sandbox --model ${options.model} "${escapedPrompt}"`;
         }
-        
+
+        // Add any additional CLI options
+        if (options?.cliOptions) {
+          codexCmd = `codex exec --dangerously-bypass-approvals-and-sandbox ${options.cliOptions} "${escapedPrompt}"`;
+        }
+
         if (context?.workspace && typeof context.workspace === 'string' && context.workspace !== 'string') {
-          openaiCmd = `cd ${context.workspace} && ${openaiCmd}`;
+          codexCmd = `cd ${context.workspace} && ${codexCmd}`;
         }
-        
-        return openaiCmd;
+
+        return codexCmd;
         
       case 'aider':
         // Aider is real and configured to use LiteLLM proxy already

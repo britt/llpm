@@ -17,11 +17,12 @@ export default defineConfig({
     // Shorter timeouts in CI to prevent hanging
     testTimeout: process.env.CI === 'true' ? 15000 : 30000, // 15s in CI, 30s locally
     hookTimeout: process.env.CI === 'true' ? 10000 : 30000, // 10s in CI, 30s locally
-    // Exclude performance tests and node modules
+    // Exclude performance tests, node modules, and docker subdirectories with their own test setup
     exclude: [
-      '**/node_modules/**', 
+      '**/node_modules/**',
       '**/*.d.ts',
-      '**/*.performance.test.*'
+      '**/*.performance.test.*',
+      'docker/**/*.test.*'
     ],
     // Force tests to run in single thread in CI to avoid resource contention
     // threads: process.env.CI === 'true' ? false : true,

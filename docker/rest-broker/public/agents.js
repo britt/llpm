@@ -56,6 +56,43 @@ function renderStats(agents) {
     `;
 }
 
+function renderAuthBadge(agent) {
+    if (!agent.authType || agent.authType === 'api_key') {
+        return '<span style="background: #bee3f8; color: #2c5282; padding: 4px 10px; border-radius: 12px; font-size: 0.75em; font-weight: 600;">🔑 API Key</span>';
+    }
+
+    if (agent.authType === 'subscription') {
+        const isAuthenticated = agent.health.authenticated === true;
+        if (isAuthenticated) {
+            return '<span style="background: #c6f6d5; color: #22543d; padding: 4px 10px; border-radius: 12px; font-size: 0.75em; font-weight: 600;">✅ Authenticated</span>';
+        } else {
+            return '<span style="background: #feebc8; color: #7c2d12; padding: 4px 10px; border-radius: 12px; font-size: 0.75em; font-weight: 600;">⏳ Awaiting Auth</span>';
+        }
+    }
+
+    return '';
+}
+
+function renderOnboardingMessage(agent) {
+    if (agent.authType === 'subscription' && agent.health.authenticated === false) {
+        return `
+            <div style="background: #fffaf0; border: 2px solid #ed8936; border-radius: 8px; padding: 12px; margin-top: 12px;">
+                <div style="font-weight: 600; color: #7c2d12; margin-bottom: 8px;">🔐 Authentication Required</div>
+                <div style="font-size: 0.85em; color: #744210; margin-bottom: 8px;">
+                    This agent uses subscription-based authentication. Please authenticate to start using it.
+                </div>
+                ${agent.provider ? `
+                <div style="font-size: 0.85em; color: #744210;">
+                    <strong>Provider:</strong> ${agent.provider}
+                    ${agent.model ? `<br><strong>Model:</strong> ${agent.model}` : ''}
+                </div>
+                ` : ''}
+            </div>
+        `;
+    }
+    return '';
+}
+
 function renderAgent(agent) {
     return `
         <div class="agent-card" data-agent-id="${agent.id}" style="cursor: pointer;">
@@ -63,6 +100,7 @@ function renderAgent(agent) {
                 <div>
                     <div class="agent-name">${agent.name}</div>
                     <div class="agent-id">${agent.id}</div>
+                    <div style="margin-top: 8px;">${renderAuthBadge(agent)}</div>
                 </div>
                 <span class="status-badge ${getStatusClass(agent.status)}">${agent.status}</span>
             </div>
@@ -74,11 +112,19 @@ function renderAgent(agent) {
                 </div>
             </div>
 
+            ${renderOnboardingMessage(agent)}
+
             <div class="agent-metadata">
                 <div class="metadata-item">
                     <span class="metadata-label">Type:</span>
                     <span class="metadata-value">${agent.type}</span>
                 </div>
+                ${agent.authType ? `
+                <div class="metadata-item">
+                    <span class="metadata-label">Auth Type:</span>
+                    <span class="metadata-value">${agent.authType}</span>
+                </div>
+                ` : ''}
                 <div class="metadata-item">
                     <span class="metadata-label">Last Check:</span>
                     <span class="metadata-value">${formatTime(agent.health.lastCheck)}</span>

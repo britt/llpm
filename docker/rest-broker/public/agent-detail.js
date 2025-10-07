@@ -40,6 +40,44 @@ function getJobStatusClass(status) {
     return statusMap[status] || 'job-queued';
 }
 
+function getAuthBadge(agent) {
+    if (!agent.authType || agent.authType === 'api_key') {
+        return '<span style="background: #bee3f8; color: #2c5282; padding: 6px 14px; border-radius: 12px; font-size: 0.9em; font-weight: 600;">🔑 API Key</span>';
+    }
+
+    if (agent.authType === 'subscription') {
+        const isAuthenticated = agent.health.authenticated === true;
+        if (isAuthenticated) {
+            return '<span style="background: #c6f6d5; color: #22543d; padding: 6px 14px; border-radius: 12px; font-size: 0.9em; font-weight: 600;">✅ Authenticated</span>';
+        } else {
+            return '<span style="background: #feebc8; color: #7c2d12; padding: 6px 14px; border-radius: 12px; font-size: 0.9em; font-weight: 600;">⏳ Awaiting Auth</span>';
+        }
+    }
+
+    return '';
+}
+
+function renderOnboardingMessage(agent) {
+    if (agent.authType === 'subscription' && agent.health.authenticated === false) {
+        return `
+            <div style="background: #fffaf0; border: 2px solid #ed8936; border-radius: 12px; padding: 20px; margin-top: 16px;">
+                <div style="font-weight: 700; color: #7c2d12; margin-bottom: 12px; font-size: 1.1em;">🔐 Authentication Required</div>
+                <div style="color: #744210; line-height: 1.6;">
+                    <p style="margin-bottom: 12px;">This agent uses subscription-based authentication. To authenticate:</p>
+                    <ol style="margin-left: 20px; margin-bottom: 12px;">
+                        <li style="margin-bottom: 8px;">Connect to the container: <code style="background: #fed7d7; padding: 2px 6px; border-radius: 4px; font-family: monospace;">docker exec -it docker-${agent.id}-1 bash</code></li>
+                        <li style="margin-bottom: 8px;">Run the authentication command for ${agent.provider || 'your provider'}</li>
+                        <li style="margin-bottom: 8px;">After successful authentication, run: <code style="background: #fed7d7; padding: 2px 6px; border-radius: 4px; font-family: monospace;">signal-authenticated</code></li>
+                    </ol>
+                    ${agent.provider ? `<p style="margin-top: 12px;"><strong>Provider:</strong> ${agent.provider}</p>` : ''}
+                    ${agent.model ? `<p><strong>Model:</strong> ${agent.model}</p>` : ''}
+                </div>
+            </div>
+        `;
+    }
+    return '';
+}
+
 function renderAgentDetail(agent, jobs) {
     const metadata = agent.metadata || {};
     const metadataEntries = Object.entries(metadata);
@@ -59,6 +97,42 @@ function renderAgentDetail(agent, jobs) {
                         ${agent.health.message ? `<br><small>${agent.health.message}</small>` : ''}
                     </div>
                 </div>
+            </div>
+
+            <!-- Authentication Card -->
+            <div class="detail-card">
+                <h2>Authentication</h2>
+                <div class="info-table">
+                    <div class="info-row">
+                        <span class="info-label">Auth Mode:</span>
+                        <span class="info-value">${getAuthBadge(agent)}</span>
+                    </div>
+                    ${agent.authType === 'subscription' ? `
+                    <div class="info-row">
+                        <span class="info-label">Auth Status:</span>
+                        <span class="info-value">${agent.health.authenticated ? 'Authenticated ✅' : 'Not Authenticated ❌'}</span>
+                    </div>
+                    ${agent.provider ? `
+                    <div class="info-row">
+                        <span class="info-label">Provider:</span>
+                        <span class="info-value">${agent.provider}</span>
+                    </div>
+                    ` : ''}
+                    ${agent.model ? `
+                    <div class="info-row">
+                        <span class="info-label">Model:</span>
+                        <span class="info-value">${agent.model}</span>
+                    </div>
+                    ` : ''}
+                    ` : ''}
+                    ${agent.baseUrl ? `
+                    <div class="info-row">
+                        <span class="info-label">Base URL:</span>
+                        <span class="info-value" style="font-size: 0.85em; word-break: break-all;">${agent.baseUrl}</span>
+                    </div>
+                    ` : ''}
+                </div>
+                ${renderOnboardingMessage(agent)}
             </div>
 
             <!-- Basic Info Card -->

@@ -12,12 +12,17 @@ export interface Agent {
     status: 'healthy' | 'unhealthy' | 'unknown';
     lastCheck: string;
     message?: string;
+    authenticated?: boolean;
   };
   host?: string;
   port?: number;
   metadata?: Record<string, any>;
   registeredAt?: string;
   lastHeartbeat?: string;
+  authType?: 'subscription' | 'api_key';
+  provider?: string;
+  model?: string;
+  baseUrl?: string;
 }
 
 export class AgentManager extends EventEmitter {
@@ -44,46 +49,72 @@ export class AgentManager extends EventEmitter {
   }
 
   private initializeAgents(): void {
+    // Get auth configuration from environment
+    const authType = (process.env.AGENT_AUTH_TYPE as 'subscription' | 'api_key') || 'api_key';
+    const litellmBaseUrl = process.env.LITELLM_BASE_URL || 'http://litellm-proxy:4000';
+
     // Define available agents - in production, this would come from config
-    const agentConfigs = [
+    const agentConfigs: Array<{
+      id: string;
+      name: string;
+      type: string;
+      provider?: string;
+      model?: string;
+      baseUrl?: string;
+    }> = [
       {
         id: 'claude-code',
         name: 'Claude Code Assistant',
         type: 'claude-code',
+        provider: 'claude',
+        model: process.env.CLAUDE_MODEL || 'claude-sonnet-4-5',
+        baseUrl: authType === 'subscription' ? `${litellmBaseUrl}/claude` : litellmBaseUrl,
       },
       {
         id: 'openai-codex',
         name: 'OpenAI Codex',
         type: 'openai-codex',
+        provider: 'openai',
+        model: process.env.OPENAI_MODEL || 'gpt-4-turbo-preview',
+        baseUrl: authType === 'subscription' ? `${litellmBaseUrl}/codex` : litellmBaseUrl,
       },
       {
         id: 'aider',
         name: 'Aider Assistant',
         type: 'aider',
+        baseUrl: litellmBaseUrl,
       },
       {
         id: 'opencode',
         name: 'Open Code Assistant',
         type: 'opencode',
+        baseUrl: litellmBaseUrl,
       },
     ];
 
     for (const config of agentConfigs) {
       const now = new Date().toISOString();
+      const hasAuthConfig = authType === 'subscription' && config.provider && config.model;
+
       const agent: Agent = {
         ...config,
         status: 'offline',
         health: {
           status: 'unknown',
           lastCheck: now,
+          authenticated: hasAuthConfig ? false : undefined,
+          message: hasAuthConfig ? 'Agent initialized - awaiting authentication' : undefined,
         },
         registeredAt: now,
         lastHeartbeat: now,
+        authType: hasAuthConfig ? 'subscription' : 'api_key',
+        provider: hasAuthConfig ? config.provider : undefined,
+        model: hasAuthConfig ? config.model : undefined,
       };
       this.agents.set(agent.id, agent);
     }
 
-    logger.info(`Initialized ${this.agents.size} agents`);
+    logger.info(`Initialized ${this.agents.size} agents with auth_type=${authType}`);
   }
 
   private startHealthChecks(): void {
@@ -128,13 +159,14 @@ export class AgentManager extends EventEmitter {
   private async checkUnixSocketHealth(agent: Agent, socketPath: string): Promise<void> {
     return new Promise((resolve, reject) => {
       const socket = net.createConnection(socketPath);
-      
+
       socket.on('connect', () => {
         agent.status = 'available';
         agent.health = {
           status: 'healthy',
           lastCheck: new Date().toISOString(),
           message: 'Unix socket connected',
+          authenticated: agent.health.authenticated, // Preserve authentication state
         };
         socket.end();
         resolve();
@@ -146,6 +178,7 @@ export class AgentManager extends EventEmitter {
           status: 'unhealthy',
           lastCheck: new Date().toISOString(),
           message: `Socket error: ${err.message}`,
+          authenticated: agent.health.authenticated, // Preserve authentication state
         };
         reject(err);
       });
@@ -162,13 +195,14 @@ export class AgentManager extends EventEmitter {
     try {
       // Check if the Docker container is actually running
       const isHealthy = await this.dockerExecutor.checkContainerHealth(agent.id);
-      
+
       if (isHealthy) {
         agent.status = 'available';
         agent.health = {
           status: 'healthy',
           lastCheck: new Date().toISOString(),
           message: 'Docker container is running',
+          authenticated: agent.health.authenticated, // Preserve authentication state
         };
       } else {
         agent.status = 'offline';
@@ -176,6 +210,7 @@ export class AgentManager extends EventEmitter {
           status: 'unhealthy',
           lastCheck: new Date().toISOString(),
           message: 'Docker container not found or not running',
+          authenticated: agent.health.authenticated, // Preserve authentication state
         };
       }
     } catch (error) {
@@ -185,6 +220,7 @@ export class AgentManager extends EventEmitter {
         status: 'unknown',
         lastCheck: new Date().toISOString(),
         message: error instanceof Error ? error.message : 'Health check failed',
+        authenticated: agent.health.authenticated, // Preserve authentication state
       };
     }
   }
@@ -223,34 +259,54 @@ export class AgentManager extends EventEmitter {
     host?: string;
     port?: number;
     metadata?: Record<string, any>;
+    authType?: 'subscription' | 'api_key';
+    provider?: string;
+    model?: string;
   }): Promise<boolean> {
     // Check if agent already exists
     if (this.agents.has(agentData.id)) {
       logger.info(`Agent ${agentData.id} is already registered`);
       return false;
     }
-    
+
+    // Default to 'api_key' auth type if not specified
+    const authType = agentData.authType || 'api_key';
+
+    // Validate that subscription agents have provider and model
+    if (authType === 'subscription') {
+      if (!agentData.provider) {
+        throw new Error('provider is required for subscription auth type');
+      }
+      if (!agentData.model) {
+        throw new Error('model is required for subscription auth type');
+      }
+    }
+
     const agent: Agent = {
       id: agentData.id,
       name: agentData.name,
       type: agentData.type,
-      status: 'available',
+      status: authType === 'subscription' ? 'available' : 'available',
       health: {
-        status: 'healthy',
+        status: authType === 'subscription' ? 'healthy' : 'healthy',
         lastCheck: new Date().toISOString(),
-        message: 'Agent registered',
+        message: authType === 'subscription' ? 'Agent registered - awaiting authentication' : 'Agent registered',
+        authenticated: authType === 'subscription' ? false : undefined,
       },
       host: agentData.host,
       port: agentData.port,
       metadata: agentData.metadata || {},
       registeredAt: new Date().toISOString(),
       lastHeartbeat: new Date().toISOString(),
+      authType,
+      provider: agentData.provider,
+      model: agentData.model,
     };
-    
+
     this.agents.set(agent.id, agent);
-    logger.info(`Agent ${agent.id} registered successfully`);
+    logger.info(`Agent ${agent.id} registered successfully with auth_type=${authType}`);
     this.emit('agent:registered', agent);
-    
+
     return true;
   }
   
@@ -283,25 +339,73 @@ export class AgentManager extends EventEmitter {
     if (!agent) {
       return false;
     }
-    
+
     agent.lastHeartbeat = new Date().toISOString();
     agent.health = {
       status: 'healthy',
       lastCheck: new Date().toISOString(),
       message: 'Heartbeat received',
+      authenticated: agent.health.authenticated,
     };
-    
+
     if (status) {
       agent.status = status;
     }
-    
+
     if (metadata) {
       agent.metadata = { ...agent.metadata, ...metadata };
     }
-    
+
     this.emit('agent:heartbeat', agent);
-    
+
     return true;
+  }
+
+  async markAgentAuthenticated(agentId: string): Promise<boolean> {
+    const agent = this.agents.get(agentId);
+    if (!agent) {
+      return false;
+    }
+
+    // Only subscription agents need to be marked as authenticated
+    if (agent.authType !== 'subscription') {
+      throw new Error('Only subscription agents can be marked as authenticated');
+    }
+
+    agent.health = {
+      ...agent.health,
+      authenticated: true,
+      message: 'Agent authenticated successfully',
+    };
+
+    logger.info(`Agent ${agentId} marked as authenticated`);
+    this.emit('agent:authenticated', agent);
+
+    return true;
+  }
+
+  getLiteLLMPassthroughUrl(agent: Agent): string | null {
+    if (agent.authType !== 'subscription' || !agent.provider) {
+      return null;
+    }
+
+    const litellmBaseUrl = process.env.LITELLM_BASE_URL || 'http://localhost:4000';
+
+    // Map provider to passthrough path
+    const providerPathMap: Record<string, string> = {
+      'claude': '/claude',
+      'codex': '/codex',
+      'openai': '/codex',
+      'anthropic': '/claude',
+    };
+
+    const path = providerPathMap[agent.provider.toLowerCase()];
+    if (!path) {
+      logger.warn(`Unknown provider ${agent.provider} for agent ${agent.id}`);
+      return null;
+    }
+
+    return `${litellmBaseUrl}${path}`;
   }
 
   async shutdown(): Promise<void> {
