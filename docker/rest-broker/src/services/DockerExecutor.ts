@@ -21,11 +21,6 @@ export interface AgentJobPayload {
 
 export class DockerExecutor {
   private containerPrefix = 'docker-';
-  private litellmKey: string;
-  
-  constructor() {
-    this.litellmKey = process.env.LITELLM_MASTER_KEY || 'sk-1234';
-  }
   
   async executeInContainer(
     agentId: string, 
