@@ -11,7 +11,7 @@ general_settings:
   store_prompts_in_spend_logs: true
   master_key: os.environ/LITELLM_MASTER_KEY
   database_url: os.environ/DATABASE_URL
-  use_client_credentials_pass_through_routes: true
+  custom_auth: custom_auth.user_api_key_auth
   pass_through_endpoints:
     - path: /claude
       target: https://api.anthropic.com

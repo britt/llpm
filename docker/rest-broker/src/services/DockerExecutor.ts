@@ -21,6 +21,11 @@ export interface AgentJobPayload {
 
 export class DockerExecutor {
   private containerPrefix = 'docker-';
+
+  private escapeForShell(str: string): string {
+    // Use printf %q for safe shell escaping
+    return `'${str.replace(/'/g, "'\\''")}'`;
+  }
   
   async executeInContainer(
     agentId: string, 
@@ -35,17 +40,39 @@ export class DockerExecutor {
     logger.info(`Executing job in container ${containerName}`, { agentId, prompt: payload.prompt });
     
     try {
+      // For claude-code and openai-codex, pipe prompt via stdin to avoid sh -c issues
+      if (agentId === 'claude-code' || agentId === 'openai-codex') {
+        const cmdBase = agentId === 'claude-code'
+          ? 'claude --print --dangerously-skip-permissions'
+          : 'codex exec --dangerously-bypass-approvals-and-sandbox';
+
+        const execCommand = `echo ${this.escapeForShell(payload.prompt)} | docker exec -i ${containerName} ${cmdBase}`;
+
+        logger.debug(`Running command: ${execCommand}`);
+
+        const { stdout, stderr } = await execAsync(execCommand, {
+          maxBuffer: 10 * 1024 * 1024, // 10MB buffer
+          timeout: 5 * 60 * 1000, // 5 minute timeout
+        });
+
+        return {
+          stdout: stdout.trim(),
+          stderr: stderr.trim(),
+          exitCode: 0,
+        };
+      }
+
+      // For other agents, use sh -c method
       const command = this.buildAgentCommand(agentId, payload);
-      // Use sh -c to ensure shell commands like cd work properly
       const execCommand = `docker exec -i ${containerName} sh -c "${command.replace(/"/g, '\\"')}"`;
-      
+
       logger.debug(`Running command: ${execCommand}`);
-      
+
       const { stdout, stderr } = await execAsync(execCommand, {
         maxBuffer: 10 * 1024 * 1024, // 10MB buffer
         timeout: 5 * 60 * 1000, // 5 minute timeout
       });
-      
+
       return {
         stdout: stdout.trim(),
         stderr: stderr.trim(),
@@ -84,7 +111,7 @@ export class DockerExecutor {
       return null;
     }
   }
-  
+
   private buildAgentCommand(agentId: string, payload: AgentJobPayload): string {
     const { prompt, context, options } = payload;
     
