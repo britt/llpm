@@ -575,7 +575,7 @@ This project follows semantic versioning (MAJOR.MINOR.PATCH):
 - Mark todos as completed immediately after finishing tasks
 - **Commit changes regularly**: After completing 2-3 related tasks or making significant progress, commit changes to maintain good version history
 - **Bump version appropriately**: Use semantic versioning rules above to determine version bumps
-- Commit with descriptive messages including Claude Code attribution
+- Commit with descriptive messages
 - Push to GitHub repository after commits to keep remote updated
 
 ### YAML Configuration Rules
