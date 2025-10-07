@@ -29,6 +29,10 @@ This file contains developer hygiene rules and best practices for AI coding assi
 - Review diffs before committing to avoid accidental changes
 - Keep commits small and reviewable
 - Run lint/typecheck commands if available before committing
+- Use semantic versioning (semver) for version numbers:
+  - MAJOR version for incompatible API changes or breaking changes
+  - MINOR version for new features that maintain backward compatibility
+  - PATCH version for bug fixes, documentation updates, and small improvements
 
 ### Security
 - Never commit secrets, API keys, or credentials
