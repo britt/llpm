@@ -18,6 +18,10 @@ RUN npm install -g @openai/codex
 # Copy entrypoint script
 COPY --chmod=755 entrypoint.sh /usr/local/bin/entrypoint.sh
 
+# Copy OpenAI Codex instruction file
+COPY AGENT.md /home/codex/workspace/AGENT.md
+RUN chown codex:codex /home/codex/workspace/AGENT.md
+
 # Switch to codex user
 USER codex
 WORKDIR /home/codex

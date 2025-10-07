@@ -15,6 +15,10 @@ RUN mkdir -p /home/claude/workspace && \
 # Copy entrypoint script
 COPY --chmod=755 entrypoint.sh /usr/local/bin/entrypoint.sh
 
+# Copy Claude Code instruction file
+COPY CLAUDE.md /home/claude/workspace/CLAUDE.md
+RUN chown claude:claude /home/claude/workspace/CLAUDE.md
+
 # Switch to claude user
 USER claude
 WORKDIR /home/claude

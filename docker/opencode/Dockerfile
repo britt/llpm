@@ -15,6 +15,10 @@ RUN mkdir -p /home/opencode/workspace && \
 # Copy entrypoint script
 COPY --chmod=755 entrypoint.sh /usr/local/bin/entrypoint.sh
 
+# Copy OpenCode instruction file
+COPY AGENT.md /home/opencode/workspace/AGENT.md
+RUN chown opencode:opencode /home/opencode/workspace/AGENT.md
+
 # Switch to opencode user
 USER opencode
 WORKDIR /home/opencode
