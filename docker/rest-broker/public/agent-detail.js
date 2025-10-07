@@ -125,6 +125,12 @@ function renderAgentDetail(agent, jobs) {
                     </div>
                     ` : ''}
                     ` : ''}
+                    ${agent.baseUrl ? `
+                    <div class="info-row">
+                        <span class="info-label">Base URL:</span>
+                        <span class="info-value" style="font-size: 0.85em; word-break: break-all;">${agent.baseUrl}</span>
+                    </div>
+                    ` : ''}
                 </div>
                 ${renderOnboardingMessage(agent)}
             </div>

@@ -22,6 +22,7 @@ export interface Agent {
   authType?: 'subscription' | 'api_key';
   provider?: string;
   model?: string;
+  baseUrl?: string;
 }
 
 export class AgentManager extends EventEmitter {
@@ -50,6 +51,7 @@ export class AgentManager extends EventEmitter {
   private initializeAgents(): void {
     // Get auth configuration from environment
     const authType = (process.env.AGENT_AUTH_TYPE as 'subscription' | 'api_key') || 'api_key';
+    const litellmBaseUrl = process.env.LITELLM_BASE_URL || 'http://litellm-proxy:4000';
 
     // Define available agents - in production, this would come from config
     const agentConfigs: Array<{
@@ -58,6 +60,7 @@ export class AgentManager extends EventEmitter {
       type: string;
       provider?: string;
       model?: string;
+      baseUrl?: string;
     }> = [
       {
         id: 'claude-code',
@@ -65,6 +68,7 @@ export class AgentManager extends EventEmitter {
         type: 'claude-code',
         provider: 'claude',
         model: process.env.CLAUDE_MODEL || 'claude-3-5-sonnet-20241022',
+        baseUrl: litellmBaseUrl,
       },
       {
         id: 'openai-codex',
@@ -72,16 +76,19 @@ export class AgentManager extends EventEmitter {
         type: 'openai-codex',
         provider: 'openai',
         model: process.env.OPENAI_MODEL || 'gpt-4-turbo-preview',
+        baseUrl: litellmBaseUrl,
       },
       {
         id: 'aider',
         name: 'Aider Assistant',
         type: 'aider',
+        baseUrl: litellmBaseUrl,
       },
       {
         id: 'opencode',
         name: 'Open Code Assistant',
         type: 'opencode',
+        baseUrl: litellmBaseUrl,
       },
     ];
 
