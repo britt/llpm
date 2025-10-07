@@ -152,13 +152,14 @@ export class AgentManager extends EventEmitter {
   private async checkUnixSocketHealth(agent: Agent, socketPath: string): Promise<void> {
     return new Promise((resolve, reject) => {
       const socket = net.createConnection(socketPath);
-      
+
       socket.on('connect', () => {
         agent.status = 'available';
         agent.health = {
           status: 'healthy',
           lastCheck: new Date().toISOString(),
           message: 'Unix socket connected',
+          authenticated: agent.health.authenticated, // Preserve authentication state
         };
         socket.end();
         resolve();
@@ -170,6 +171,7 @@ export class AgentManager extends EventEmitter {
           status: 'unhealthy',
           lastCheck: new Date().toISOString(),
           message: `Socket error: ${err.message}`,
+          authenticated: agent.health.authenticated, // Preserve authentication state
         };
         reject(err);
       });
@@ -186,13 +188,14 @@ export class AgentManager extends EventEmitter {
     try {
       // Check if the Docker container is actually running
       const isHealthy = await this.dockerExecutor.checkContainerHealth(agent.id);
-      
+
       if (isHealthy) {
         agent.status = 'available';
         agent.health = {
           status: 'healthy',
           lastCheck: new Date().toISOString(),
           message: 'Docker container is running',
+          authenticated: agent.health.authenticated, // Preserve authentication state
         };
       } else {
         agent.status = 'offline';
@@ -200,6 +203,7 @@ export class AgentManager extends EventEmitter {
           status: 'unhealthy',
           lastCheck: new Date().toISOString(),
           message: 'Docker container not found or not running',
+          authenticated: agent.health.authenticated, // Preserve authentication state
         };
       }
     } catch (error) {
@@ -209,6 +213,7 @@ export class AgentManager extends EventEmitter {
         status: 'unknown',
         lastCheck: new Date().toISOString(),
         message: error instanceof Error ? error.message : 'Health check failed',
+        authenticated: agent.health.authenticated, // Preserve authentication state
       };
     }
   }

@@ -93,18 +93,17 @@ export class DockerExecutor {
     
     switch (agentId) {
       case 'claude-code':
-        // Use the actual Claude CLI installed from npm
-        // Use exec mode which doesn't require stdin/tty
-        let claudeCmd = `claude exec --permission-mode auto "${escapedPrompt}"`;
+        // Use --print mode for non-interactive execution
+        let claudeCmd = `claude --print --dangerously-skip-permissions "${escapedPrompt}"`;
 
         // Add model if specified
         if (options?.model) {
-          claudeCmd = `CLAUDE_MODEL=${options.model} claude exec --permission-mode auto "${escapedPrompt}"`;
+          claudeCmd = `claude --print --dangerously-skip-permissions --model ${options.model} "${escapedPrompt}"`;
         }
 
         // Add any additional CLI options
         if (options?.cliOptions) {
-          claudeCmd = `claude exec --permission-mode auto ${options.cliOptions} "${escapedPrompt}"`;
+          claudeCmd = `claude --print --dangerously-skip-permissions ${options.cliOptions} "${escapedPrompt}"`;
         }
 
         // Add workspace if specified
@@ -115,18 +114,17 @@ export class DockerExecutor {
         return claudeCmd;
         
       case 'openai-codex':
-        // Use the OpenAI Codex CLI tool
-        // Codex exec mode doesn't require stdin/tty
-        let codexCmd = `codex exec "${escapedPrompt}"`;
+        // Use Codex exec for non-interactive execution
+        let codexCmd = `codex exec --dangerously-bypass-approvals-and-sandbox "${escapedPrompt}"`;
 
         // Add model if specified
         if (options?.model) {
-          codexCmd = `codex --model ${options.model} exec "${escapedPrompt}"`;
+          codexCmd = `codex exec --dangerously-bypass-approvals-and-sandbox --model ${options.model} "${escapedPrompt}"`;
         }
 
         // Add any additional CLI options
         if (options?.cliOptions) {
-          codexCmd = `codex ${options.cliOptions} exec "${escapedPrompt}"`;
+          codexCmd = `codex exec --dangerously-bypass-approvals-and-sandbox ${options.cliOptions} "${escapedPrompt}"`;
         }
 
         if (context?.workspace && typeof context.workspace === 'string' && context.workspace !== 'string') {
