@@ -1,8 +1,20 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { DEFAULT_SALUTATION } from '../utils/salutation';
+
+// Mock the dependencies
+vi.mock('../utils/projectConfig');
+vi.mock('../services/github');
+vi.mock('../services/githubAssets');
+
+// Import after mocking
 import {
   createGitHubPullRequestTool,
   listGitHubPullRequestsTool
 } from './githubPullRequestTools';
+
+import * as projectConfig from '../utils/projectConfig';
+import * as github from '../services/github';
+import * as githubAssets from '../services/githubAssets';
 
 describe('GitHub Pull Request Tools', () => {
   describe('Schema Validation', () => {
@@ -18,6 +30,147 @@ describe('GitHub Pull Request Tools', () => {
         expect(typeof tool.inputSchema.parse).toBe('function');
         expect(typeof tool.inputSchema.safeParse).toBe('function');
       });
+    });
+  });
+
+  describe('Salutation Integration', () => {
+    beforeEach(() => {
+      vi.mocked(projectConfig.loadProjectConfig).mockReset();
+      vi.mocked(github.createPullRequest).mockReset();
+    });
+
+    it('should prepend salutation to PR body when creating pull request', async () => {
+      vi.mocked(projectConfig.loadProjectConfig).mockResolvedValue({
+        projects: {},
+        currentProject: 'test-project'
+      });
+
+      vi.mocked(github.createPullRequest).mockResolvedValue({
+        number: 1,
+        title: 'Test PR',
+        html_url: 'https://github.com/owner/repo/pull/1',
+        state: 'open',
+        user: { login: 'testuser' },
+        head: { ref: 'feature-branch' },
+        base: { ref: 'main' },
+        draft: false,
+        mergeable: true,
+        created_at: '2024-01-01T00:00:00Z'
+      } as any);
+
+      const result = await createGitHubPullRequestTool.execute({
+        owner: 'owner',
+        repo: 'repo',
+        title: 'Test PR',
+        head: 'feature-branch',
+        base: 'main',
+        body: 'This is a test PR body.'
+      });
+
+      expect(vi.mocked(github.createPullRequest)).toHaveBeenCalledWith(
+        'owner',
+        'repo',
+        'Test PR',
+        'feature-branch',
+        'main',
+        `${DEFAULT_SALUTATION}\n\nThis is a test PR body.`,
+        false
+      );
+      expect(result.success).toBe(true);
+    });
+
+    it('should respect disabled salutation config when creating PR', async () => {
+      vi.mocked(projectConfig.loadProjectConfig).mockResolvedValue({
+        projects: {},
+        currentProject: 'test-project',
+        automation: {
+          salutation: {
+            enabled: false
+          }
+        }
+      });
+
+      vi.mocked(github.createPullRequest).mockResolvedValue({
+        number: 1,
+        title: 'Test PR',
+        html_url: 'https://github.com/owner/repo/pull/1',
+        state: 'open',
+        user: { login: 'testuser' },
+        head: { ref: 'feature-branch' },
+        base: { ref: 'main' },
+        draft: false,
+        mergeable: true,
+        created_at: '2024-01-01T00:00:00Z'
+      } as any);
+
+      const result = await createGitHubPullRequestTool.execute({
+        owner: 'owner',
+        repo: 'repo',
+        title: 'Test PR',
+        head: 'feature-branch',
+        base: 'main',
+        body: 'This is a test PR body.'
+      });
+
+      // Should NOT have salutation when disabled
+      expect(vi.mocked(github.createPullRequest)).toHaveBeenCalledWith(
+        'owner',
+        'repo',
+        'Test PR',
+        'feature-branch',
+        'main',
+        'This is a test PR body.',
+        false
+      );
+      expect(result.success).toBe(true);
+    });
+
+    it('should use custom salutation text from config when creating PR', async () => {
+      const customSalutation = '🎉 Custom Bot';
+
+      vi.mocked(projectConfig.loadProjectConfig).mockResolvedValue({
+        projects: {},
+        currentProject: 'test-project',
+        automation: {
+          salutation: {
+            enabled: true,
+            text: customSalutation
+          }
+        }
+      });
+
+      vi.mocked(github.createPullRequest).mockResolvedValue({
+        number: 1,
+        title: 'Test PR',
+        html_url: 'https://github.com/owner/repo/pull/1',
+        state: 'open',
+        user: { login: 'testuser' },
+        head: { ref: 'feature-branch' },
+        base: { ref: 'main' },
+        draft: false,
+        mergeable: true,
+        created_at: '2024-01-01T00:00:00Z'
+      } as any);
+
+      const result = await createGitHubPullRequestTool.execute({
+        owner: 'owner',
+        repo: 'repo',
+        title: 'Test PR',
+        head: 'feature-branch',
+        base: 'main',
+        body: 'This is a test PR body.'
+      });
+
+      expect(vi.mocked(github.createPullRequest)).toHaveBeenCalledWith(
+        'owner',
+        'repo',
+        'Test PR',
+        'feature-branch',
+        'main',
+        `${customSalutation}\n\nThis is a test PR body.`,
+        false
+      );
+      expect(result.success).toBe(true);
     });
   });
 });

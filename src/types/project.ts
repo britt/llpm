@@ -14,6 +14,15 @@ export interface Project {
 import type { ModelConfig } from './models';
 import type { LoggingConfig } from '../utils/requestLogger';
 
+export interface SalutationConfig {
+  enabled?: boolean;
+  text?: string;
+}
+
+export interface AutomationConfig {
+  salutation?: SalutationConfig;
+}
+
 export interface AppConfig {
   projects: Record<string, Project>;
   currentProject?: string;
@@ -22,6 +31,7 @@ export interface AppConfig {
     lastUpdated?: string;
   };
   logging?: LoggingConfig;
+  automation?: AutomationConfig;
 }
 
 // Keep backwards compatibility

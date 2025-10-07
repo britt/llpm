@@ -388,6 +388,70 @@ User: Update the priority field to "High" for item ABC123 in project XYZ789
 Assistant: I'll update the project item's priority field using the update_github_project_item_field tool.
 ```
 
+#### Automated Content Salutation
+
+- **Auto-Prepend Salutation**: All automated GitHub issues, PRs, and comments created by LLPM automatically prepend a salutation to identify automated content
+- **Default Salutation**: `🤖 LLPM` followed by a blank line
+- **Configurable**: Can be enabled/disabled and customized via application configuration
+- **Idempotent**: Salutation is only added once - repeated operations won't duplicate it
+
+**Configuration Options:**
+
+Configure salutation behavior in application config:
+
+```typescript
+// Config structure
+{
+  automation: {
+    salutation: {
+      enabled: true,  // Default: true
+      text: "🤖 LLPM"  // Default: "🤖 LLPM"
+    }
+  }
+}
+```
+
+**Affected Operations:**
+- Creating GitHub issues (`create_github_issue` tool)
+- Creating GitHub pull requests (`create_github_pull_request` tool)
+- Commenting on GitHub issues (`comment_on_github_issue` tool)
+
+**Example Output:**
+
+When creating an issue with body "Fixed the login bug", the actual GitHub issue body will be:
+```markdown
+🤖 LLPM
+
+Fixed the login bug
+```
+
+**Disabling Salutation:**
+
+To disable salutation for your project, update your application config:
+```typescript
+{
+  automation: {
+    salutation: {
+      enabled: false
+    }
+  }
+}
+```
+
+**Custom Salutation:**
+
+To use a custom salutation text:
+```typescript
+{
+  automation: {
+    salutation: {
+      enabled: true,
+      text: "🎉 My Custom Bot"
+    }
+  }
+}
+```
+
 ### TypeScript Best Practices
 
 - **Always use `import type` for type-only imports**: Use `import type { MyType } from './types'` instead of `import { MyType } from './types'` when importing interfaces, types, or other TypeScript-only constructs

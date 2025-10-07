@@ -3,6 +3,8 @@ import * as z from "zod";
 import { listPullRequests, createPullRequest } from '../services/github';
 import { uploadFilesToGitHub } from '../services/githubAssets';
 import { debug } from '../utils/logger';
+import { loadProjectConfig } from '../utils/projectConfig';
+import { composeWithSalutation, getSalutationConfig } from '../utils/salutation';
 
 export const listGitHubPullRequestsTool = tool({
   description: 'List pull requests for a GitHub repository',
@@ -112,14 +114,14 @@ export const createGitHubPullRequestTool = tool({
       let finalBody = body || '';
       if (attachments && attachments.length > 0) {
         debug(`Uploading ${attachments.length} attachments for PR`);
-        
+
         try {
           const uploadResults = await uploadFilesToGitHub(attachments);
           const attachmentMarkdown = uploadResults
             .filter(result => result.markdown) // Only include successful uploads
             .map(result => result.markdown)
             .join('\n\n');
-          
+
           if (attachmentMarkdown) {
             finalBody += (finalBody ? '\n\n---\n\n' : '') + '**Attachments:**\n\n' + attachmentMarkdown;
           }
@@ -130,13 +132,18 @@ export const createGitHubPullRequestTool = tool({
         }
       }
 
+      // Apply salutation to final body
+      const appConfig = await loadProjectConfig();
+      const salutationConfig = getSalutationConfig(appConfig);
+      finalBody = composeWithSalutation(finalBody, salutationConfig);
+
       const pullRequest = await createPullRequest(
-        owner, 
-        repo, 
-        title, 
-        head, 
-        base, 
-        finalBody, 
+        owner,
+        repo,
+        title,
+        head,
+        base,
+        finalBody,
         draft
       );
 

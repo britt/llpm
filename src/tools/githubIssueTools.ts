@@ -1,6 +1,6 @@
 import { tool } from './instrumentedTool';
 import * as z from "zod";
-import { getCurrentProject } from '../utils/projectConfig';
+import { getCurrentProject, loadProjectConfig } from '../utils/projectConfig';
 import {
   createIssue,
   listIssues,
@@ -11,6 +11,7 @@ import {
 import { autoAddToProjectBoard } from '../services/projectBoardIntegration';
 import { uploadFilesToGitHub } from '../services/githubAssets';
 import { debug } from '../utils/logger';
+import { composeWithSalutation, getSalutationConfig } from '../utils/salutation';
 
 async function getProjectRepoInfo() {
   const project = await getCurrentProject();
@@ -48,14 +49,14 @@ export const createGitHubIssueTool = tool({
       let finalBody = body || '';
       if (attachments && attachments.length > 0) {
         debug(`Uploading ${attachments.length} attachments`);
-        
+
         try {
           const uploadResults = await uploadFilesToGitHub(attachments);
           const attachmentMarkdown = uploadResults
             .filter(result => result.markdown) // Only include successful uploads
             .map(result => result.markdown)
             .join('\n\n');
-          
+
           if (attachmentMarkdown) {
             finalBody += (finalBody ? '\n\n---\n\n' : '') + '**Attachments:**\n\n' + attachmentMarkdown;
           }
@@ -65,6 +66,11 @@ export const createGitHubIssueTool = tool({
           finalBody += (finalBody ? '\n\n' : '') + '⚠️ Some file attachments failed to upload.';
         }
       }
+
+      // Apply salutation to final body
+      const appConfig = await loadProjectConfig();
+      const salutationConfig = getSalutationConfig(appConfig);
+      finalBody = composeWithSalutation(finalBody, salutationConfig);
 
       const issue = await createIssue(owner, repo, title, finalBody, labels);
 
@@ -205,14 +211,14 @@ export const commentOnGitHubIssueTool = tool({
       let finalBody = body;
       if (attachments && attachments.length > 0) {
         debug(`Uploading ${attachments.length} attachments for comment`);
-        
+
         try {
           const uploadResults = await uploadFilesToGitHub(attachments);
           const attachmentMarkdown = uploadResults
             .filter(result => result.markdown) // Only include successful uploads
             .map(result => result.markdown)
             .join('\n\n');
-          
+
           if (attachmentMarkdown) {
             finalBody += '\n\n**Attachments:**\n\n' + attachmentMarkdown;
           }
@@ -222,6 +228,11 @@ export const commentOnGitHubIssueTool = tool({
           finalBody += '\n\n⚠️ Some file attachments failed to upload.';
         }
       }
+
+      // Apply salutation to final body
+      const appConfig = await loadProjectConfig();
+      const salutationConfig = getSalutationConfig(appConfig);
+      finalBody = composeWithSalutation(finalBody, salutationConfig);
 
       const comment = await commentOnIssue(owner, repo, issueNumber, finalBody);
 
