@@ -38,4 +38,5 @@ workspace/*
 !workspace/.gitkeep
 docker/**/*.log
 docker/.env
+docker/.claude/
 ollama-data/
