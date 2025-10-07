@@ -1,4 +1,4 @@
-# Aider Agent Rules
+# {{agent_name}} Agent Rules
 
 This file contains developer hygiene rules and best practices for AI coding assistants running in LLPM Docker containers.
 
@@ -89,11 +89,8 @@ This file contains developer hygiene rules and best practices for AI coding assi
 - Refactor code when you see opportunities for improvement
 - Share knowledge and help team members
 
-## Aider-Specific Guidelines
+{{#if agent_specific_rules}}
+## {{agent_name}}-Specific Guidelines
 
-### Aider Configuration
-
-- Use the `.aider.conf.yml` file in the workspace for persistent settings
-- Leverage the `read:` directive to automatically load CONVENTIONS.md
-- Set `auto-commits: false` to maintain manual control over commits
-- Use `subtree-only: true` to work within git repository subdirectories
+{{{agent_specific_rules}}}
+{{/if}}

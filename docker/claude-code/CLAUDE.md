@@ -88,3 +88,4 @@ This file contains developer hygiene rules and best practices for AI coding assi
 - Stay updated on language/framework best practices
 - Refactor code when you see opportunities for improvement
 - Share knowledge and help team members
+

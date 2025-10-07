@@ -15,7 +15,7 @@ RUN mkdir -p /home/aider/workspace && \
 # Copy entrypoint script
 COPY --chmod=755 entrypoint.sh /usr/local/bin/entrypoint.sh
 
-# Copy Aider configuration and conventions files
+# Copy Aider configuration and generated conventions file
 COPY .aider.conf.yml /home/aider/workspace/.aider.conf.yml
 COPY CONVENTIONS.md /home/aider/workspace/CONVENTIONS.md
 RUN chown aider:aider /home/aider/workspace/.aider.conf.yml /home/aider/workspace/CONVENTIONS.md
