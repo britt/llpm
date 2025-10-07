@@ -12,3 +12,12 @@ general_settings:
   master_key: os.environ/LITELLM_MASTER_KEY
   database_url: os.environ/DATABASE_URL
   use_client_credentials_pass_through_routes: true
+  pass_through_endpoints:
+    - path: /claude
+      target: https://api.anthropic.com
+      auth: false
+      forward_headers: true
+    - path: /codex
+      target: https://api.openai.com/v1
+      auth: false
+      forward_headers: true
