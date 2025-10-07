@@ -68,7 +68,7 @@ export class AgentManager extends EventEmitter {
         type: 'claude-code',
         provider: 'claude',
         model: process.env.CLAUDE_MODEL || 'claude-3-5-sonnet-20241022',
-        baseUrl: litellmBaseUrl,
+        baseUrl: authType === 'subscription' ? `${litellmBaseUrl}/claude` : litellmBaseUrl,
       },
       {
         id: 'openai-codex',
@@ -76,7 +76,7 @@ export class AgentManager extends EventEmitter {
         type: 'openai-codex',
         provider: 'openai',
         model: process.env.OPENAI_MODEL || 'gpt-4-turbo-preview',
-        baseUrl: litellmBaseUrl,
+        baseUrl: authType === 'subscription' ? `${litellmBaseUrl}/codex` : litellmBaseUrl,
       },
       {
         id: 'aider',

@@ -128,7 +128,8 @@ services:
       - .env
     environment:
       # Use LiteLLM proxy for Anthropic API
-      - ANTHROPIC_BASE_URL=http://litellm-proxy:4000
+      # When AGENT_AUTH_TYPE=subscription, Claude Code uses the /claude passthrough path
+      - ANTHROPIC_BASE_URL=${ANTHROPIC_BASE_URL:-http://litellm-proxy:4000}
       - ANTHROPIC_API_KEY=${LITELLM_MASTER_KEY:-sk-1234}
       - LITELLM_MASTER_KEY=${LITELLM_MASTER_KEY:-sk-1234}
       - CLAUDE_MODEL=${CLAUDE_MODEL:-}
@@ -166,7 +167,8 @@ services:
       - .env
     environment:
       # Use LiteLLM proxy for OpenAI API
-      - OPENAI_API_BASE=http://litellm-proxy:4000
+      # When AGENT_AUTH_TYPE=subscription, Codex uses the /codex passthrough path
+      - OPENAI_API_BASE=${OPENAI_API_BASE:-http://litellm-proxy:4000}
       - OPENAI_API_KEY=${LITELLM_MASTER_KEY:-sk-1234}
       - LITELLM_MASTER_KEY=${LITELLM_MASTER_KEY:-sk-1234}
       - OPENAI_MODEL=${OPENAI_MODEL:-gpt-4-turbo-preview}
