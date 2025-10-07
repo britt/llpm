@@ -99,20 +99,17 @@ export class DockerExecutor {
     switch (agentId) {
       case 'claude-code':
         // Use the actual Claude CLI installed from npm
-        // Always include --dangerously-skip-permissions for non-interactive use
-        let claudeCmd = `echo '${escapedPrompt}' | claude --dangerously-skip-permissions`;
+        // Use exec mode which doesn't require stdin/tty
+        let claudeCmd = `claude exec --permission-mode auto "${escapedPrompt}"`;
 
         // Add model if specified
         if (options?.model) {
-          claudeCmd = `echo '${escapedPrompt}' | CLAUDE_MODEL=${options.model} claude --dangerously-skip-permissions`;
+          claudeCmd = `CLAUDE_MODEL=${options.model} claude exec --permission-mode auto "${escapedPrompt}"`;
         }
 
-        // Add any additional CLI options (always ensure permissions flag is included)
+        // Add any additional CLI options
         if (options?.cliOptions) {
-          const hasPermissionFlag = options.cliOptions.includes('--dangerously-skip-permissions') ||
-                                     options.cliOptions.includes('--permission-mode');
-          const permissionFlag = hasPermissionFlag ? '' : '--dangerously-skip-permissions ';
-          claudeCmd = `echo '${escapedPrompt}' | claude ${permissionFlag}${options.cliOptions}`;
+          claudeCmd = `claude exec --permission-mode auto ${options.cliOptions} "${escapedPrompt}"`;
         }
 
         // Add workspace if specified
@@ -123,24 +120,25 @@ export class DockerExecutor {
         return claudeCmd;
         
       case 'openai-codex':
-        // Use the actual OpenAI CLI tool installed in the container
-        // The openai CLI needs the message content as an argument after -g role
-        let openaiCmd = '';
-        
-        // Build the command based on whether we have a model specified
+        // Use the OpenAI Codex CLI tool
+        // Codex exec mode doesn't require stdin/tty
+        let codexCmd = `codex exec "${escapedPrompt}"`;
+
+        // Add model if specified
         if (options?.model) {
-          // Use the specific model requested
-          openaiCmd = `OPENAI_API_BASE=http://litellm-proxy:4000 OPENAI_API_KEY=${this.litellmKey} openai api chat.completions.create -m ${options.model} -g user "${escapedPrompt}"`;
-        } else {
-          // Default to gpt-4o
-          openaiCmd = `OPENAI_API_BASE=http://litellm-proxy:4000 OPENAI_API_KEY=${this.litellmKey} openai api chat.completions.create -m gpt-4o -g user "${escapedPrompt}"`;
+          codexCmd = `codex --model ${options.model} exec "${escapedPrompt}"`;
         }
-        
+
+        // Add any additional CLI options
+        if (options?.cliOptions) {
+          codexCmd = `codex ${options.cliOptions} exec "${escapedPrompt}"`;
+        }
+
         if (context?.workspace && typeof context.workspace === 'string' && context.workspace !== 'string') {
-          openaiCmd = `cd ${context.workspace} && ${openaiCmd}`;
+          codexCmd = `cd ${context.workspace} && ${codexCmd}`;
         }
-        
-        return openaiCmd;
+
+        return codexCmd;
         
       case 'aider':
         // Aider is real and configured to use LiteLLM proxy already
