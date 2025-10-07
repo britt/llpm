@@ -13,6 +13,7 @@ This file contains developer hygiene rules and best practices for AI coding assi
 - **YAGNI (You Aren't Gonna Need It)**: Only implement what is actually needed now, not what might be needed in the future
 - **Clean up after yourself**: Delete unused code, imports, functions, and files when making changes that render them obsolete
 - **No fake implementations**: Never hard code values or create fake/stub implementations unless explicitly asked to do so - always implement real, functional code
+- **Prefer official SDKs**: Always use official SDKs and client libraries instead of making direct HTTP requests to REST APIs - SDKs provide better type safety, error handling, and maintenance
 - Add appropriate error handling and validation
 
 ### Testing
@@ -40,6 +41,7 @@ This file contains developer hygiene rules and best practices for AI coding assi
 - Make atomic commits focused on single changes
 - Review diffs before committing to avoid accidental changes
 - Keep commits small and reviewable
+- Run lint/typecheck commands if available before committing
 - Use semantic versioning (semver) for version numbers:
   - MAJOR version for incompatible API changes or breaking changes
   - MINOR version for new features that maintain backward compatibility
@@ -65,6 +67,7 @@ This file contains developer hygiene rules and best practices for AI coding assi
 - Use async/await over callbacks
 - Handle promises properly with try/catch
 - Use optional chaining and nullish coalescing operators
+- Always use `import type` for type-only imports
 
 ### Python
 - Follow PEP 8 style guidelines

@@ -9,6 +9,7 @@
 - **YAGNI (You Aren't Gonna Need It)**: Only implement what is actually needed now, not what might be needed in the future
 - **Clean up after yourself**: Delete unused code, imports, functions, and files when making changes that render them obsolete
 - **No fake implementations**: Never hard code values or create fake/stub implementations unless explicitly asked to do so - always implement real, functional code
+- **Prefer official SDKs**: Always use official SDKs and client libraries instead of making direct HTTP requests to REST APIs - SDKs provide better type safety, error handling, and maintenance
 - Add appropriate error handling and validation
 
 ## Testing
