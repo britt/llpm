@@ -18,11 +18,10 @@ RUN chmod +x /usr/local/bin/entrypoint.sh
 
 # Generate agent rules file from template
 COPY ./rules /tmp/rules
-COPY ./claude-code /tmp/claude-code
 WORKDIR /tmp/rules
 RUN npm install --production --silent && \
     node generate-rules.js claude-code && \
-    cp ../claude-code/CLAUDE.md /home/claude/workspace/CLAUDE.md && \
+    cp claude-code/CLAUDE.md /home/claude/workspace/CLAUDE.md && \
     chown claude:claude /home/claude/workspace/CLAUDE.md
 
 # Switch to claude user

@@ -18,11 +18,10 @@ RUN chmod +x /usr/local/bin/entrypoint.sh
 
 # Generate agent rules file from template
 COPY ./rules /tmp/rules
-COPY ./opencode /tmp/opencode
 WORKDIR /tmp/rules
 RUN npm install --production --silent && \
     node generate-rules.js opencode && \
-    cp ../opencode/AGENT.md /home/opencode/workspace/AGENT.md && \
+    cp opencode/AGENT.md /home/opencode/workspace/AGENT.md && \
     chown opencode:opencode /home/opencode/workspace/AGENT.md
 
 # Switch to opencode user

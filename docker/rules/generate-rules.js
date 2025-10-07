@@ -54,11 +54,18 @@ for (const [agentId, config] of Object.entries(agentsToProcess)) {
   // Generate the rules file
   const output = template(config);
 
-  // Write to agent directory
+  // Write to agent directory (with warning comment for git tracking)
   const outputPath = path.join(__dirname, '..', agentId, config.output_filename);
   fs.writeFileSync(outputPath, output, 'utf8');
 
+  // Also write a version without the warning comment for container use
+  // Remove the HTML comment block that starts with "<!--" and ends with "-->"
+  const outputWithoutWarning = output.replace(/<!--[\s\S]*?-->\s*/m, '');
+  const containerOutputPath = path.join(__dirname, agentId, config.output_filename);
+  fs.writeFileSync(containerOutputPath, outputWithoutWarning, 'utf8');
+
   console.log(`Generated ${outputPath}`);
+  console.log(`Generated ${containerOutputPath} (without warning for container)`);
 }
 
 console.log(requestedAgent ? `Generated rules for ${requestedAgent}` : 'All agent rules files generated successfully!');

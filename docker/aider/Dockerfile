@@ -18,11 +18,10 @@ RUN chmod +x /usr/local/bin/entrypoint.sh
 
 # Generate agent rules file from template
 COPY ./rules /tmp/rules
-COPY ./aider /tmp/aider
 WORKDIR /tmp/rules
 RUN npm install --production --silent && \
     node generate-rules.js aider && \
-    cp ../aider/CONVENTIONS.md /home/aider/workspace/CONVENTIONS.md && \
+    cp aider/CONVENTIONS.md /home/aider/workspace/CONVENTIONS.md && \
     chown aider:aider /home/aider/workspace/CONVENTIONS.md
 
 # Copy Aider configuration

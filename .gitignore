@@ -39,4 +39,7 @@ workspace/*
 docker/**/*.log
 docker/.env
 docker/.claude/
+docker/rules/*/CLAUDE.md
+docker/rules/*/CONVENTIONS.md
+docker/rules/*/AGENT.md
 ollama-data/
