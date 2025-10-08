@@ -16,7 +16,16 @@ RUN mkdir -p /home/codex/workspace && \
 RUN npm install -g @openai/codex
 
 # Copy entrypoint script
-COPY --chmod=755 entrypoint.sh /usr/local/bin/entrypoint.sh
+COPY ./openai-codex/entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
+
+# Generate agent rules file from template
+COPY ./rules /tmp/rules
+WORKDIR /tmp/rules
+RUN npm install --production --silent && \
+    node generate-rules.js openai-codex && \
+    cp openai-codex/AGENT.md /home/codex/workspace/AGENT.md && \
+    chown codex:codex /home/codex/workspace/AGENT.md
 
 # Switch to codex user
 USER codex

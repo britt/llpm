@@ -179,7 +179,9 @@ docker logs rest-broker --tail 20
 
 ### Testing
 
-- Use `bun run test` to run Vitest tests (installed in this project)
+- **CRITICAL: Use `bun run test` to run Vitest tests, NOT `bun test`**
+- `bun test` runs Bun's native test runner which doesn't support Vitest features
+- `bun run test` executes the npm script which runs Vitest properly
 - Tests use React Testing Library with jsdom environment
 - Test files should use `.test.tsx` or `.spec.tsx` extensions
 - **Always add unit tests for new behaviors**: When implementing new features, validation logic, or significant changes, write corresponding unit tests

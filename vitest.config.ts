@@ -6,9 +6,9 @@ export default defineConfig({
     'process.env.NODE_ENV': JSON.stringify('test')
   },
   resolve: {
-    alias: process.env.CI === 'true' ? {
+    alias: {
       'bun:sqlite': new URL('./test/mocks/bun-sqlite.js', import.meta.url).pathname
-    } : {}
+    }
   },
   test: {
     globals: true,

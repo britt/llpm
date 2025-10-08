@@ -1,29 +1,9 @@
 import '@testing-library/jest-dom';
-import { beforeAll, afterEach, vi } from 'vitest';
+import { beforeAll, afterEach } from 'vitest';
 import { cleanup } from '@testing-library/react';
 
-// Mock bun:sqlite for browser compatibility
-vi.mock('bun:sqlite', () => {
-  const mockDatabase = vi.fn().mockImplementation(() => ({
-    query: vi.fn().mockReturnValue({
-      all: vi.fn().mockReturnValue([]),
-      run: vi.fn(),
-      get: vi.fn().mockReturnValue(null)
-    }),
-    exec: vi.fn(),
-    close: vi.fn(),
-    prepare: vi.fn().mockReturnValue({
-      all: vi.fn().mockReturnValue([]),
-      run: vi.fn(),
-      get: vi.fn().mockReturnValue(null)
-    })
-  }));
-
-  return {
-    default: mockDatabase,
-    Database: mockDatabase
-  };
-});
+// Note: bun:sqlite is mocked via vitest.config.ts alias to test/mocks/bun-sqlite.js
+// This provides browser/testing compatibility for the native Bun SQLite module
 
 // Setup DOM environment for React Testing Library
 beforeAll(() => {

@@ -1,0 +1,9 @@
+read: CONVENTIONS.md
+
+auto-commits: false
+dirty-commits: false
+subtree-only: true
+
+cache-prompts: false
+stream: true
+yes-always: false

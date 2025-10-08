@@ -1,0 +1,12 @@
+{
+  "name": "llpm-agent-rules-generator",
+  "version": "1.0.0",
+  "description": "Template processor for generating agent-specific rules files",
+  "private": true,
+  "scripts": {
+    "generate": "node generate-rules.js"
+  },
+  "dependencies": {
+    "handlebars": "^4.7.8"
+  }
+}

@@ -118,8 +118,8 @@ services:
   # Claude Code Assistant (scalable)
   claude-code:
     build:
-      context: ./claude-code
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: ./claude-code/Dockerfile
     depends_on:
       - base
       - litellm-proxy
@@ -158,8 +158,8 @@ services:
   # OpenAI Codex Assistant (scalable)
   openai-codex:
     build:
-      context: ./openai-codex
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: ./openai-codex/Dockerfile
     depends_on:
       - base
       - litellm-proxy
@@ -200,8 +200,8 @@ services:
   # Aider Assistant (scalable)
   aider:
     build:
-      context: ./aider
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: ./aider/Dockerfile
     depends_on:
       - base
       - litellm-proxy
@@ -240,8 +240,8 @@ services:
   # OpenCode Assistant (scalable)
   opencode:
     build:
-      context: ./opencode
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: ./opencode/Dockerfile
     depends_on:
       - base
     image: llpm-opencode:latest

@@ -13,7 +13,20 @@ RUN mkdir -p /home/aider/workspace && \
     chown -R aider:aider /home/aider
 
 # Copy entrypoint script
-COPY --chmod=755 entrypoint.sh /usr/local/bin/entrypoint.sh
+COPY ./aider/entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
+
+# Generate agent rules file from template
+COPY ./rules /tmp/rules
+WORKDIR /tmp/rules
+RUN npm install --production --silent && \
+    node generate-rules.js aider && \
+    cp aider/CONVENTIONS.md /home/aider/workspace/CONVENTIONS.md && \
+    chown aider:aider /home/aider/workspace/CONVENTIONS.md
+
+# Copy Aider configuration
+COPY ./aider/.aider.conf.yml /home/aider/workspace/.aider.conf.yml
+RUN chown aider:aider /home/aider/workspace/.aider.conf.yml
 
 # Switch to aider user
 USER aider
