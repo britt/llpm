@@ -5,6 +5,11 @@ echo "Starting OpenAI Codex environment as user: $(whoami)"
 echo "Home directory: $HOME"
 echo "Working directory: $(pwd)"
 
+# OAuth authentication note
+# The codex CLI OAuth server binds to 127.0.0.1:1455 (localhost only) which can cause
+# issues with Docker port mapping. If 'codex login' fails, use API key authentication:
+# echo "$OPENAI_API_KEY" | codex login --with-api-key
+
 # Copy agent rules file to workspace if it exists and isn't already there
 if [ -f /tmp/rules/openai-codex/AGENT.md ] && [ ! -f ~/workspace/AGENT.md ]; then
     cp /tmp/rules/openai-codex/AGENT.md ~/workspace/AGENT.md

@@ -422,9 +422,14 @@ AGENT_AUTH_TYPE=subscription \
    # For Claude Code
    claude setup-token
 
-   # For OpenAI Codex
+   # For OpenAI Codex (OAuth - may have port binding issues in containers)
    codex login
+
+   # Alternative: Use API key authentication (recommended for Docker)
+   echo "$OPENAI_API_KEY" | codex login --with-api-key
    ```
+
+   **Note for OpenAI Codex OAuth**: The codex OAuth server binds to `127.0.0.1:1455` inside the container, which can cause connection issues with Docker port mapping. If `codex login` fails with "connection reset", use the API key method instead: `echo "$OPENAI_API_KEY" | codex login --with-api-key`
 
 4. **Signal authentication to REST broker:**
    ```bash
