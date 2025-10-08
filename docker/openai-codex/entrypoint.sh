@@ -5,6 +5,12 @@ echo "Starting OpenAI Codex environment as user: $(whoami)"
 echo "Home directory: $HOME"
 echo "Working directory: $(pwd)"
 
+# Copy agent rules file to workspace if it exists and isn't already there
+if [ -f /tmp/rules/openai-codex/AGENT.md ] && [ ! -f ~/workspace/AGENT.md ]; then
+    cp /tmp/rules/openai-codex/AGENT.md ~/workspace/AGENT.md
+    echo "Copied agent rules to workspace"
+fi
+
 # Check for API key
 if [ -z "$OPENAI_API_KEY" ]; then
     echo "Warning: OPENAI_API_KEY not set. OpenAI features will be limited."

@@ -5,6 +5,12 @@ echo "Starting Claude Code environment as user: $(whoami)"
 echo "Home directory: $HOME"
 echo "Working directory: $(pwd)"
 
+# Copy agent rules file to workspace if it exists and isn't already there
+if [ -f /tmp/rules/claude-code/CLAUDE.md ] && [ ! -f ~/workspace/CLAUDE.md ]; then
+    cp /tmp/rules/claude-code/CLAUDE.md ~/workspace/CLAUDE.md
+    echo "Copied agent rules to workspace"
+fi
+
 # Check for API key
 if [ -z "$ANTHROPIC_API_KEY" ]; then
     echo "Warning: ANTHROPIC_API_KEY not set. Claude Code features will be limited."

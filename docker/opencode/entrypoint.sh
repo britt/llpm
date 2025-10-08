@@ -5,6 +5,12 @@ echo "Starting OpenCode environment as user: $(whoami)"
 echo "Home directory: $HOME"
 echo "Working directory: $(pwd)"
 
+# Copy agent rules file to workspace if it exists and isn't already there
+if [ -f /tmp/rules/opencode/AGENT.md ] && [ ! -f ~/workspace/AGENT.md ]; then
+    cp /tmp/rules/opencode/AGENT.md ~/workspace/AGENT.md
+    echo "Copied agent rules to workspace"
+fi
+
 # Initialize git config for user if not exists
 if [ ! -f ~/.gitconfig ]; then
     git config --global user.email "opencode@llpm.local"
