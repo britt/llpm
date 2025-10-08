@@ -24,8 +24,11 @@ if [ ! -f ~/.gitconfig ]; then
 fi
 
 # Set up OpenAI configuration
-mkdir -p ~/.openai
-cat > ~/.openai/config.json <<EOF
+# Only create config file with API key in api_key mode
+# In subscription mode, the user must authenticate via CLI which creates the config
+if [ "${AGENT_AUTH_TYPE:-api_key}" = "api_key" ]; then
+    mkdir -p ~/.openai
+    cat > ~/.openai/config.json <<EOF
 {
     "api_key": "${OPENAI_API_KEY}",
     "model": "${OPENAI_MODEL:-gpt-4-turbo-preview}",
@@ -33,9 +36,15 @@ cat > ~/.openai/config.json <<EOF
     "workspace": "/home/codex/workspace"
 }
 EOF
+    echo "Created OpenAI config with API key (api_key mode)"
 
-# Export for CLI tools
-export OPENAI_API_KEY="${OPENAI_API_KEY}"
+    # Export for CLI tools
+    export OPENAI_API_KEY="${OPENAI_API_KEY}"
+else
+    echo "Running in subscription mode - authenticate via 'openai login' or similar CLI command"
+    # Don't export OPENAI_API_KEY in subscription mode
+    unset OPENAI_API_KEY
+fi
 
 # Parse CLI options from environment
 OPENAI_CLI_OPTS="${OPENAI_CLI_OPTIONS:-}"

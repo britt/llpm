@@ -11,12 +11,18 @@ if [ -f /tmp/rules/claude-code/CLAUDE.md ] && [ ! -f ~/workspace/CLAUDE.md ]; th
     echo "Copied agent rules to workspace"
 fi
 
-# Check for API key
-if [ -z "$ANTHROPIC_API_KEY" ]; then
-    echo "Warning: ANTHROPIC_API_KEY not set. Claude Code features will be limited."
+# Check for API key and handle based on auth mode
+if [ "${AGENT_AUTH_TYPE:-api_key}" = "api_key" ]; then
+    if [ -z "$ANTHROPIC_API_KEY" ]; then
+        echo "Warning: ANTHROPIC_API_KEY not set. Claude Code features will be limited."
+    fi
+    export ANTHROPIC_API_KEY="${ANTHROPIC_API_KEY}"
+    echo "Running in api_key mode with ANTHROPIC_API_KEY"
+else
+    echo "Running in subscription mode - authenticate via 'claude login'"
+    # Don't export ANTHROPIC_API_KEY in subscription mode
+    unset ANTHROPIC_API_KEY
 fi
-
-export ANTHROPIC_API_KEY="${ANTHROPIC_API_KEY}"
 
 # Initialize git config for user if not exists
 if [ ! -f ~/.gitconfig ]; then
