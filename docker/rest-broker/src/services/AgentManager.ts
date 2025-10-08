@@ -2,6 +2,7 @@ import { EventEmitter } from 'events';
 import { logger } from '../utils/logger';
 import * as net from 'net';
 import { DockerExecutor } from './DockerExecutor';
+import { AuthVerifier } from './AuthVerifier';
 
 export interface Agent {
   id: string;
@@ -13,6 +14,9 @@ export interface Agent {
     lastCheck: string;
     message?: string;
     authenticated?: boolean;
+    authExpiresAt?: number;
+    authLastVerifiedAt?: string;
+    subscriptionType?: string;
   };
   host?: string;
   port?: number;
@@ -29,23 +33,29 @@ export class AgentManager extends EventEmitter {
   private agents: Map<string, Agent>;
   private socketConnections: Map<string, net.Socket>;
   private healthCheckInterval: NodeJS.Timeout | null = null;
+  private authVerificationInterval: NodeJS.Timeout | null = null;
   private dockerExecutor: DockerExecutor;
+  private authVerifier: AuthVerifier;
 
   constructor() {
     super();
     this.agents = new Map();
     this.socketConnections = new Map();
     this.dockerExecutor = new DockerExecutor();
+    this.authVerifier = new AuthVerifier();
   }
 
   async initialize(): Promise<void> {
     logger.info('Initializing Agent Manager');
-    
+
     // Initialize available agents based on configuration
     this.initializeAgents();
-    
+
     // Start health checks
     this.startHealthChecks();
+
+    // Start authentication verification for subscription agents
+    this.startAuthVerification();
   }
 
   private initializeAgents(): void {
@@ -243,6 +253,25 @@ export class AgentManager extends EventEmitter {
       throw new Error(`Agent ${agentId} is offline`);
     }
 
+    // Check authentication for subscription agents
+    if (agent.authType === 'subscription') {
+      if (agent.health.authenticated === false) {
+        throw new Error(
+          `Agent ${agentId} is not authenticated. Please authenticate before submitting jobs.`
+        );
+      }
+
+      // Check if token is expired
+      if (agent.health.authExpiresAt) {
+        const now = Date.now();
+        if (agent.health.authExpiresAt <= now) {
+          throw new Error(
+            `Agent ${agentId} authentication token has expired. Please re-authenticate.`
+          );
+        }
+      }
+    }
+
     // Mark agent as busy
     agent.status = 'busy';
 
@@ -306,6 +335,14 @@ export class AgentManager extends EventEmitter {
     this.agents.set(agent.id, agent);
     logger.info(`Agent ${agent.id} registered successfully with auth_type=${authType}`);
     this.emit('agent:registered', agent);
+
+    // Trigger immediate authentication verification for subscription agents
+    if (authType === 'subscription' && agentData.provider) {
+      // Fire and forget - don't block registration
+      this.verifyAgentAuth(agent).catch(error => {
+        logger.error(`Initial auth verification failed for ${agent.id}:`, error);
+      });
+    }
 
     return true;
   }
@@ -408,12 +445,95 @@ export class AgentManager extends EventEmitter {
     return `${litellmBaseUrl}${path}`;
   }
 
+  private startAuthVerification(): void {
+    // Initial authentication check
+    this.checkAllAgentAuth();
+
+    // Schedule periodic authentication checks
+    // Default to 5 minutes (300000ms) for auth verification TTL
+    const interval = parseInt(process.env.AUTH_VERIFICATION_INTERVAL || '300000');
+    this.authVerificationInterval = setInterval(() => {
+      this.checkAllAgentAuth();
+    }, interval);
+
+    logger.info(`Started authentication verification with interval=${interval}ms`);
+  }
+
+  private async checkAllAgentAuth(): Promise<void> {
+    const subscriptionAgents = Array.from(this.agents.values()).filter(
+      agent => agent.authType === 'subscription' && agent.provider
+    );
+
+    const promises = subscriptionAgents.map(agent => this.verifyAgentAuth(agent));
+    await Promise.allSettled(promises);
+  }
+
+  private async verifyAgentAuth(agent: Agent): Promise<void> {
+    if (!agent.provider) {
+      logger.debug(`Agent ${agent.id} has no provider, skipping auth verification`);
+      return;
+    }
+
+    // Map provider to auth verifier provider type
+    const providerMap: Record<string, 'claude' | 'openai'> = {
+      'claude': 'claude',
+      'anthropic': 'claude',
+      'openai': 'openai',
+      'codex': 'openai',
+    };
+
+    const authProvider = providerMap[agent.provider.toLowerCase()];
+    if (!authProvider) {
+      logger.debug(`Unknown provider ${agent.provider} for agent ${agent.id}, skipping auth verification`);
+      return;
+    }
+
+    try {
+      const authResult = await this.authVerifier.verifyAgentAuth(agent.id, authProvider);
+
+      // Update agent's health with auth information
+      agent.health = {
+        ...agent.health,
+        authenticated: authResult.authenticated,
+        authExpiresAt: authResult.expiresAt,
+        authLastVerifiedAt: authResult.lastVerifiedAt,
+        subscriptionType: authResult.subscriptionType,
+      };
+
+      // Update message based on auth state
+      if (authResult.authenticated) {
+        const expiryInfo = authResult.expiresAt
+          ? ` (expires: ${new Date(authResult.expiresAt).toISOString()})`
+          : '';
+        agent.health.message = `Agent authenticated${expiryInfo}`;
+
+        // Emit authentication event if this is a state change
+        logger.info(`Agent ${agent.id} authentication verified${expiryInfo}`);
+        this.emit('agent:auth-verified', agent);
+      } else {
+        agent.health.message = 'Agent not authenticated';
+        logger.warn(`Agent ${agent.id} is not authenticated`);
+      }
+    } catch (error) {
+      logger.error(`Failed to verify authentication for agent ${agent.id}:`, error);
+      agent.health = {
+        ...agent.health,
+        message: 'Authentication verification failed',
+      };
+    }
+  }
+
   async shutdown(): Promise<void> {
     logger.info('Shutting down Agent Manager');
-    
+
     // Clear health check interval
     if (this.healthCheckInterval) {
       clearInterval(this.healthCheckInterval);
+    }
+
+    // Clear auth verification interval
+    if (this.authVerificationInterval) {
+      clearInterval(this.authVerificationInterval);
     }
 
     // Close all socket connections
@@ -421,7 +541,7 @@ export class AgentManager extends EventEmitter {
       logger.info(`Closing socket connection for ${id}`);
       socket.end();
     }
-    
+
     this.socketConnections.clear();
     this.agents.clear();
   }
