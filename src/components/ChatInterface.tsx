@@ -192,35 +192,12 @@ export const ChatInterface = memo(function ChatInterface({
     async (item: { label: string; value: string }) => {
       try {
         if (item.value === '__create_new__') {
-          // Handle "Create New Project" option
+          // Handle "Create New Project" option - show help command
           setShowProjectSelector(false);
           setActiveInput('main');
 
-          // Add system message with rich formatting and instructions
-          const instructionMessage = `📝 **Creating a New Project**
-
-To add a new project, complete the command with these parameters:
-
-**Command Format:**
-\`/project add <name> <repository> <path> [description]\`
-
-**Parameters:**
-• **name** - A descriptive name for your project (e.g., "My Web App")
-• **repository** - GitHub owner/repo (e.g., "user/repo") or full URL (e.g., "https://github.com/user/repo") 
-• **path** - Local file system path (e.g., "/Users/you/projects/my-app")
-• **description** - Optional description of the project (e.g., "Task management web app")
-
-**Repository Formats:**
-• GitHub shorthand: "user/my-app" (auto-converts to https://github.com/user/my-app)
-• Full URL: "https://github.com/user/my-app"
-
-**Examples:**
-\`/project add "E-commerce Site" "myuser/shop" "/Users/john/projects/shop" "Online store for selling handmade crafts"\`
-\`/project add "Web App" "https://github.com/user/webapp" "/path/to/webapp" "Full stack application"\`
-
-💡 **Tip:** Use quotes around names with spaces`;
-
-          onAddSystemMessage(instructionMessage);
+          // Directly invoke the project help command to show proper usage
+          onSendMessage('/project help');
           return;
         } else {
           await setCurrentProjectConfig(item.value);
@@ -241,7 +218,7 @@ To add a new project, complete the command with these parameters:
         setActiveInput('main');
       }
     },
-    [onAddSystemMessage]
+    [onSendMessage, onProjectSwitch]
   );
 
   // Handle input submission - memoized to prevent re-creation
