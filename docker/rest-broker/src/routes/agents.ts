@@ -3,8 +3,14 @@ import { AgentManager } from '../services/AgentManager';
 
 export const agentsRouter = Router();
 
-agentsRouter.get('/', (req: Request, res: Response) => {
+agentsRouter.get('/', async (req: Request, res: Response) => {
   const agentManager: AgentManager = req.app.locals.agentManager;
+
+  // If verifyAuth=true query parameter is present, trigger auth verification before returning agents
+  if (req.query.verifyAuth === 'true') {
+    await agentManager.verifyAllAgentsAuth();
+  }
+
   const agents = agentManager.getAgents();
 
   res.json({

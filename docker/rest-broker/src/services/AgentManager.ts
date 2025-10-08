@@ -468,6 +468,14 @@ export class AgentManager extends EventEmitter {
     await Promise.allSettled(promises);
   }
 
+  /**
+   * Public method to trigger authentication verification for all agents
+   * Can be called from API endpoints to provide on-demand auth checks
+   */
+  async verifyAllAgentsAuth(): Promise<void> {
+    await this.checkAllAgentAuth();
+  }
+
   private async verifyAgentAuth(agent: Agent): Promise<void> {
     if (!agent.provider) {
       logger.debug(`Agent ${agent.id} has no provider, skipping auth verification`);

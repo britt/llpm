@@ -146,14 +146,16 @@ function renderAgent(agent) {
     `;
 }
 
-async function loadAgents() {
+async function loadAgents(verifyAuth = false) {
     const container = document.getElementById('agentsContainer');
     const statsContainer = document.getElementById('stats');
 
     try {
         container.innerHTML = '<div class="loading">Loading agents...</div>';
 
-        const response = await fetch('/agents');
+        // Add verifyAuth query parameter if requested
+        const url = verifyAuth ? '/agents?verifyAuth=true' : '/agents';
+        const response = await fetch(url);
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
