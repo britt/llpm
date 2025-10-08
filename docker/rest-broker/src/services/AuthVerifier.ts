@@ -46,15 +46,10 @@ export class AuthVerifier {
   private async verifyClaudeAuth(containerName: string): Promise<AuthResult> {
     try {
       // Check for OAuth credentials file and parse it with jq
-      const script = `
-        if [ -f /home/claude/.claude/.credentials.json ]; then
-          jq -c '{authenticated: (.claudeAiOauth != null), expiresAt: .claudeAiOauth.expiresAt, subscriptionType: .claudeAiOauth.subscriptionType}' /home/claude/.claude/.credentials.json 2>/dev/null
-        else
-          echo '{"authenticated":false}'
-        fi
-      `;
+      // Use double quotes for the outer sh -c and escape inner quotes
+      const script = `if [ -f /home/claude/.claude/.credentials.json ]; then jq -c '{authenticated: (.claudeAiOauth != null), expiresAt: .claudeAiOauth.expiresAt, subscriptionType: .claudeAiOauth.subscriptionType}' /home/claude/.claude/.credentials.json 2>/dev/null; else echo '{"authenticated":false}'; fi`;
 
-      const { stdout } = await execAsync(`docker exec ${containerName} sh -c '${script}'`);
+      const { stdout } = await execAsync(`docker exec ${containerName} sh -c "${script}"`);
       const data = JSON.parse(stdout.trim());
 
       // Check if token is expired
@@ -87,15 +82,10 @@ export class AuthVerifier {
   private async verifyOpenAIAuth(containerName: string): Promise<AuthResult> {
     try {
       // Check for OpenAI config file and parse it with jq
-      const script = `
-        if [ -f /home/codex/.openai/config.json ]; then
-          jq -c '{authenticated: (.api_key != null and .api_key != "")}' /home/codex/.openai/config.json 2>/dev/null
-        else
-          echo '{"authenticated":false}'
-        fi
-      `;
+      // Use double quotes for the outer sh -c and escape inner double quotes
+      const script = `if [ -f /home/codex/.openai/config.json ]; then jq -c '{authenticated: (.api_key != null and .api_key != \\\"\\\")}' /home/codex/.openai/config.json 2>/dev/null; else echo '{"authenticated":false}'; fi`;
 
-      const { stdout } = await execAsync(`docker exec ${containerName} sh -c '${script}'`);
+      const { stdout } = await execAsync(`docker exec ${containerName} sh -c "${script}"`);
       const data = JSON.parse(stdout.trim());
 
       return {
