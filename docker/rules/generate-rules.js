@@ -55,7 +55,14 @@ for (const [agentId, config] of Object.entries(agentsToProcess)) {
   const output = template(config);
 
   // Write to agent directory (with warning comment for git tracking)
-  const outputPath = path.join(__dirname, '..', agentId, config.output_filename);
+  const outputDir = path.join(__dirname, '..', agentId);
+  const outputPath = path.join(outputDir, config.output_filename);
+
+  // Ensure the git-tracked output directory exists
+  if (!fs.existsSync(outputDir)) {
+    fs.mkdirSync(outputDir, { recursive: true });
+  }
+
   fs.writeFileSync(outputPath, output, 'utf8');
 
   // Also write a version without the warning comment for container use
@@ -64,7 +71,7 @@ for (const [agentId, config] of Object.entries(agentsToProcess)) {
   const containerOutputDir = path.join(__dirname, agentId);
   const containerOutputPath = path.join(containerOutputDir, config.output_filename);
 
-  // Ensure the directory exists
+  // Ensure the container output directory exists
   if (!fs.existsSync(containerOutputDir)) {
     fs.mkdirSync(containerOutputDir, { recursive: true });
   }
