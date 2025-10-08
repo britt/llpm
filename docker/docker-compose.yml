@@ -181,6 +181,12 @@ services:
       - AGENT_AUTH_TYPE=${AGENT_AUTH_TYPE:-api_key}
       - AGENT_PROVIDER=openai
       - AGENT_MODEL=${OPENAI_MODEL:-gpt-4-turbo-preview}
+    ports:
+      # OAuth callback port for authentication
+      # Container port 1455 is hardcoded by OpenAI CLI
+      # Map to host port via OPENAI_OAUTH_PORT (default: 1455)
+      # For multiple instances, use different ports: OPENAI_OAUTH_PORT=1456, 1457, etc.
+      - "${OPENAI_OAUTH_PORT:-1455}:1455"
     volumes:
       - ../workspace:/codex-workspace
       - ${HOME}/.ssh:/root/.ssh:ro

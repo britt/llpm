@@ -435,12 +435,54 @@ AGENT_AUTH_TYPE=subscription \
    - Visit `http://localhost:3010/ui/agents`
    - Agent should show ✅ Authenticated status
 
+#### OpenAI OAuth Callback Port Configuration
+
+OpenAI Codex authentication uses OAuth with a hardcoded callback port (1455). When running multiple OpenAI Codex containers, you need to map different host ports to avoid conflicts:
+
+**Single Instance (default):**
+```bash
+# Uses default port 1455 on both host and container
+AGENT_AUTH_TYPE=subscription docker-compose up -d openai-codex
+```
+
+**Multiple Instances:**
+```bash
+# First instance uses port 1455
+OPENAI_OAUTH_PORT=1455 docker-compose up -d openai-codex
+
+# Second instance uses port 1456
+OPENAI_OAUTH_PORT=1456 docker-compose up --scale openai-codex=2
+
+# Third instance uses port 1457
+OPENAI_OAUTH_PORT=1457 docker-compose up --scale openai-codex=3
+```
+
+**How it works:**
+- The OpenAI CLI inside the container always uses port 1455 for OAuth callbacks
+- `OPENAI_OAUTH_PORT` maps a different host port to the container's port 1455
+- This allows multiple containers to run simultaneously without port conflicts
+- Each container's OAuth flow will redirect to `localhost:<OPENAI_OAUTH_PORT>`
+
+**Example with scaling:**
+```bash
+# Set different ports for each instance in .env or command line
+AGENT_AUTH_TYPE=subscription \
+  OPENAI_OAUTH_PORT=1455 \
+  docker-compose up -d openai-codex
+
+# Scale to 2 instances, second one needs different port
+AGENT_AUTH_TYPE=subscription \
+  OPENAI_OAUTH_PORT=1456 \
+  docker-compose up --scale openai-codex=2
+```
+
 #### Subscription Mode Benefits
 
 - Uses your personal/team subscription credentials
 - Provider-specific passthrough paths for authentication
 - Detailed authentication status in web UI
 - Automatic base URL configuration
+- Configurable OAuth callback ports for multiple instances
 
 ### Monitoring Authentication Status
 
