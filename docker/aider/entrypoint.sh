@@ -5,6 +5,12 @@ echo "Starting Aider environment as user: $(whoami)"
 echo "Home directory: $HOME"
 echo "Working directory: $(pwd)"
 
+# Copy agent rules file to workspace if it exists and isn't already there
+if [ -f /tmp/rules/aider/CONVENTIONS.md ] && [ ! -f ~/workspace/CONVENTIONS.md ]; then
+    cp /tmp/rules/aider/CONVENTIONS.md ~/workspace/CONVENTIONS.md
+    echo "Copied agent rules to workspace"
+fi
+
 # Check for API keys
 if [ -z "$OPENAI_API_KEY" ] && [ -z "$ANTHROPIC_API_KEY" ]; then
     echo "Warning: Neither OPENAI_API_KEY nor ANTHROPIC_API_KEY is set. Aider will not function properly."
