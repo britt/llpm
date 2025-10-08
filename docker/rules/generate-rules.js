@@ -61,7 +61,14 @@ for (const [agentId, config] of Object.entries(agentsToProcess)) {
   // Also write a version without the warning comment for container use
   // Remove the HTML comment block that starts with "<!--" and ends with "-->"
   const outputWithoutWarning = output.replace(/<!--[\s\S]*?-->\s*/m, '');
-  const containerOutputPath = path.join(__dirname, agentId, config.output_filename);
+  const containerOutputDir = path.join(__dirname, agentId);
+  const containerOutputPath = path.join(containerOutputDir, config.output_filename);
+
+  // Ensure the directory exists
+  if (!fs.existsSync(containerOutputDir)) {
+    fs.mkdirSync(containerOutputDir, { recursive: true });
+  }
+
   fs.writeFileSync(containerOutputPath, outputWithoutWarning, 'utf8');
 
   console.log(`Generated ${outputPath}`);
