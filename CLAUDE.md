@@ -148,6 +148,36 @@ docker-compose up -d <service-name>
 docker logs <service-name> --tail 20
 ```
 
+**CRITICAL: Always Test Docker Container Changes:**
+
+After making changes to Docker containers (Dockerfiles, entrypoint scripts, etc.), you MUST:
+1. **Rebuild and restart** the affected container
+2. **Test the changes** by running commands or exercising the modified code path
+3. **Verify success** before committing
+
+Example testing workflow:
+```bash
+# 1. Rebuild and restart
+docker-compose build <service-name> && docker-compose up -d <service-name>
+
+# 2. Test the change (examples):
+# - If you modified a wrapper script, test it:
+docker exec <container-name> /path/to/wrapper --version
+
+# - If you modified entrypoint behavior, check logs:
+docker logs <container-name> | grep "expected output"
+
+# - If you modified CLI options, verify they're set:
+docker exec <container-name> bash -c 'echo $VARIABLE_NAME'
+
+# 3. Only commit after verifying success
+```
+
+**Why this matters:**
+- Container changes can't be tested without rebuilding
+- Incorrect paths, permissions, or syntax errors won't surface until runtime
+- Failed changes waste time and create broken commits
+
 **Common Services:**
 - `rest-broker` (image: `llpm-rest-broker`)
 - `claude-code` (image: `llpm-claude-code`)
