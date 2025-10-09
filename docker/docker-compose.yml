@@ -129,9 +129,10 @@ services:
       - .env
     environment:
       # Use LiteLLM proxy for Anthropic API
-      # When AGENT_AUTH_TYPE=subscription, use real Anthropic key with /claude passthrough
-      # When AGENT_AUTH_TYPE=api_key, use LiteLLM master key without passthrough
       - ANTHROPIC_BASE_URL=${ANTHROPIC_BASE_URL:-http://litellm-proxy:4000}
+      # In subscription mode, ANTHROPIC_API_KEY should be empty so Claude uses OAuth credentials
+      # In api_key mode, ANTHROPIC_API_KEY is set in the environment
+      # Note: To run in subscription mode, set ANTHROPIC_API_KEY="" in your shell before docker-compose up
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
       - LITELLM_MASTER_KEY=${LITELLM_MASTER_KEY:-sk-1234}
       - CLAUDE_MODEL=${CLAUDE_MODEL:-}
@@ -169,8 +170,9 @@ services:
       - .env
     environment:
       # Use LiteLLM proxy for OpenAI API
-      # When AGENT_AUTH_TYPE=subscription, use real OpenAI key with /codex passthrough
-      # When AGENT_AUTH_TYPE=api_key, use LiteLLM master key without passthrough
+      # In subscription mode, OPENAI_API_BASE should be http://litellm-proxy:4000/codex for passthrough
+      # In api_key mode, use http://litellm-proxy:4000 without passthrough
+      # Note: To run in subscription mode, set OPENAI_API_KEY="" and OPENAI_API_BASE="http://litellm-proxy:4000/codex" in your shell
       - OPENAI_API_BASE=${OPENAI_API_BASE:-http://litellm-proxy:4000}
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - LITELLM_MASTER_KEY=${LITELLM_MASTER_KEY:-sk-1234}

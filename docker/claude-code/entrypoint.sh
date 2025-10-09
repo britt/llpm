@@ -5,6 +5,13 @@ echo "Starting Claude Code environment as user: $(whoami)"
 echo "Home directory: $HOME"
 echo "Working directory: $(pwd)"
 
+# In subscription mode, remove ANTHROPIC_API_KEY from environment immediately
+# This must be done FIRST before any other commands that might use it
+if [ "${AGENT_AUTH_TYPE:-api_key}" = "subscription" ]; then
+    unset ANTHROPIC_API_KEY
+    echo "Running in subscription mode - using OAuth credentials"
+fi
+
 # Copy agent rules file to workspace if it exists and isn't already there
 if [ -f /tmp/rules/claude-code/CLAUDE.md ] && [ ! -f ~/workspace/CLAUDE.md ]; then
     cp /tmp/rules/claude-code/CLAUDE.md ~/workspace/CLAUDE.md
@@ -29,11 +36,12 @@ else
         sudo mv /home/claude/.npm-global/bin/claude /home/claude/.npm-global/bin/claude-real
 
         # Create wrapper that replaces the original claude command
+        # Use env -u to explicitly remove ANTHROPIC_API_KEY from the environment before exec
         sudo tee /home/claude/.npm-global/bin/claude > /dev/null << 'CLAUDE_WRAPPER_EOF'
 #!/bin/bash
 # Wrapper to run claude without API key in subscription mode
-unset ANTHROPIC_API_KEY
-exec /home/claude/.npm-global/bin/claude-real "$@"
+# Use env -u to remove ANTHROPIC_API_KEY from environment before executing
+exec env -u ANTHROPIC_API_KEY /home/claude/.npm-global/bin/claude-real "$@"
 CLAUDE_WRAPPER_EOF
         sudo chmod +x /home/claude/.npm-global/bin/claude
         echo "Created claude wrapper to prevent API key usage"
