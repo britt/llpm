@@ -21,7 +21,22 @@ if [ "${AGENT_AUTH_TYPE:-api_key}" = "api_key" ]; then
 else
     echo "Running in subscription mode - authenticate via 'claude login'"
     # Don't export ANTHROPIC_API_KEY in subscription mode
+    # Create a wrapper script for claude that unsets the API key
     unset ANTHROPIC_API_KEY
+
+    # Create wrapper for claude command to ensure API key is not used
+    sudo tee /usr/local/bin/claude-wrapper > /dev/null << 'CLAUDE_WRAPPER_EOF'
+#!/bin/bash
+# Wrapper to run claude without API key in subscription mode
+unset ANTHROPIC_API_KEY
+exec /usr/bin/claude "$@"
+CLAUDE_WRAPPER_EOF
+    sudo chmod +x /usr/local/bin/claude-wrapper
+
+    # Create alias in bashrc to use wrapper
+    if ! grep -q "alias claude=" ~/.bashrc 2>/dev/null; then
+        echo "alias claude='/usr/local/bin/claude-wrapper'" >> ~/.bashrc
+    fi
 fi
 
 # Initialize git config for user if not exists
