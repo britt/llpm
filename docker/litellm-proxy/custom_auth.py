@@ -39,13 +39,23 @@ async def user_api_key_auth(request: Request, api_key: str) -> UserAPIKeyAuth:
     if is_passthrough:
         # For passthrough endpoints, accept any API key format
         # The key will be forwarded to the upstream provider
+        print(f"[AUTH DEBUG] Passthrough endpoint - accepting key")
         return UserAPIKeyAuth(
             api_key=api_key,
             user_id="passthrough-user",
             user_role="internal_user"
         )
     else:
-        # For non-passthrough endpoints, we need to return None to let LiteLLM's
-        # default authentication handle it (which supports both master key and virtual keys)
-        print(f"[AUTH DEBUG] Returning None to use default LiteLLM auth for path: {path}")
-        return None
+        # For non-passthrough endpoints, check if it's the master key
+        # If not, return None to let LiteLLM handle virtual keys for UI
+        if api_key == master_key:
+            print(f"[AUTH DEBUG] Master key match - granting admin access")
+            return UserAPIKeyAuth(
+                api_key=api_key,
+                user_id="admin",
+                user_role="proxy_admin"
+            )
+        else:
+            # Not the master key - let LiteLLM's default auth handle virtual keys
+            print(f"[AUTH DEBUG] Not master key - delegating to default auth")
+            return None
