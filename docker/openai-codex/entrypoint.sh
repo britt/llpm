@@ -5,10 +5,28 @@ echo "Starting OpenAI Codex environment as user: $(whoami)"
 echo "Home directory: $HOME"
 echo "Working directory: $(pwd)"
 
-# OAuth authentication note
-# The codex CLI OAuth server binds to 127.0.0.1:1455 (localhost only) which can cause
-# issues with Docker port mapping. If 'codex login' fails, use API key authentication:
-# echo "$OPENAI_API_KEY" | codex login --with-api-key
+# Set up OAuth port forwarding for codex login
+# The codex CLI OAuth server binds to 127.0.0.1:1455 (localhost only)
+# Docker port mapping can't forward to localhost-bound services, so we use socat
+# to proxy traffic from the container's external interface to localhost:1455
+
+if command -v socat &> /dev/null; then
+    # Get the container's IP address (not localhost)
+    CONTAINER_IP=$(hostname -i | awk '{print $1}')
+
+    # Kill any existing socat processes on this port
+    sudo pkill -f "socat.*:1455" 2>/dev/null || true
+
+    # Start socat in background to forward container_ip:1455 -> 127.0.0.1:1455
+    # We bind to the container's actual IP, not 0.0.0.0, to avoid port conflict
+    sudo socat TCP4-LISTEN:1455,bind=$CONTAINER_IP,fork,reuseaddr TCP4:127.0.0.1:1455 </dev/null >/dev/null 2>&1 &
+
+    echo ""
+    echo "OAuth port forwarding enabled: $CONTAINER_IP:1455 -> 127.0.0.1:1455"
+    echo "You can now use 'codex login' with OAuth authentication"
+    echo "Or use API key (recommended): echo \"\$OPENAI_API_KEY\" | codex login --with-api-key"
+    echo ""
+fi
 
 # Copy agent rules file to workspace if it exists and isn't already there
 if [ -f /tmp/rules/openai-codex/AGENT.md ] && [ ! -f ~/workspace/AGENT.md ]; then
