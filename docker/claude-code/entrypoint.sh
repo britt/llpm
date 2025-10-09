@@ -24,18 +24,19 @@ else
     # Create a wrapper script for claude that unsets the API key
     unset ANTHROPIC_API_KEY
 
-    # Create wrapper for claude command to ensure API key is not used
-    sudo tee /usr/local/bin/claude-wrapper > /dev/null << 'CLAUDE_WRAPPER_EOF'
+    # Move the real claude binary and replace it with a wrapper
+    if [ -f /home/claude/.npm-global/bin/claude ] && [ ! -f /home/claude/.npm-global/bin/claude-real ]; then
+        sudo mv /home/claude/.npm-global/bin/claude /home/claude/.npm-global/bin/claude-real
+
+        # Create wrapper that replaces the original claude command
+        sudo tee /home/claude/.npm-global/bin/claude > /dev/null << 'CLAUDE_WRAPPER_EOF'
 #!/bin/bash
 # Wrapper to run claude without API key in subscription mode
 unset ANTHROPIC_API_KEY
-exec /home/claude/.npm-global/bin/claude "$@"
+exec /home/claude/.npm-global/bin/claude-real "$@"
 CLAUDE_WRAPPER_EOF
-    sudo chmod +x /usr/local/bin/claude-wrapper
-
-    # Create alias in bashrc to use wrapper
-    if ! grep -q "alias claude=" ~/.bashrc 2>/dev/null; then
-        echo "alias claude='/usr/local/bin/claude-wrapper'" >> ~/.bashrc
+        sudo chmod +x /home/claude/.npm-global/bin/claude
+        echo "Created claude wrapper to prevent API key usage"
     fi
 fi
 
@@ -69,8 +70,18 @@ fi
 # If the command is specifically 'claude', add default options
 if [ "$1" = "claude" ]; then
     shift
-    exec claude $CLAUDE_CLI_OPTS "$@"
+    # In subscription mode, explicitly remove ANTHROPIC_API_KEY from environment
+    if [ "${AGENT_AUTH_TYPE:-api_key}" = "subscription" ]; then
+        exec env -u ANTHROPIC_API_KEY claude $CLAUDE_CLI_OPTS "$@"
+    else
+        exec claude $CLAUDE_CLI_OPTS "$@"
+    fi
 else
     # Run the command passed to docker run
-    exec "$@"
+    # In subscription mode, explicitly remove ANTHROPIC_API_KEY from environment
+    if [ "${AGENT_AUTH_TYPE:-api_key}" = "subscription" ]; then
+        exec env -u ANTHROPIC_API_KEY "$@"
+    else
+        exec "$@"
+    fi
 fi
