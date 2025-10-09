@@ -37,8 +37,23 @@ const jobQueue = new JobQueue();
 app.locals.agentManager = agentManager;
 app.locals.jobQueue = jobQueue;
 
-// Security middleware
-app.use(helmet());
+// Security middleware with relaxed CSP for UI
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'"],
+      scriptSrcAttr: ["'self'"], // Allow event listeners from same origin
+      styleSrc: ["'self'", "'unsafe-inline'"], // Allow inline styles
+      imgSrc: ["'self'", 'data:', 'https:'],
+      connectSrc: ["'self'"],
+      fontSrc: ["'self'"],
+      objectSrc: ["'none'"],
+      mediaSrc: ["'self'"],
+      frameSrc: ["'none'"],
+    },
+  },
+}));
 
 // CORS configuration
 app.use(cors({

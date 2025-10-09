@@ -194,6 +194,13 @@ async function loadAgents(verifyAuth = false) {
 // Load agents on page load
 document.addEventListener('DOMContentLoaded', () => {
     loadAgents();
-    // Auto-refresh every 10 seconds
-    autoRefresh = setInterval(loadAgents, 10000);
+
+    // Attach refresh button event listener
+    const refreshButton = document.getElementById('refreshButton');
+    if (refreshButton) {
+        refreshButton.addEventListener('click', () => loadAgents(true));
+    }
+
+    // Auto-refresh every 30 seconds WITH auth verification
+    autoRefresh = setInterval(() => loadAgents(true), 30000);
 });

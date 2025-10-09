@@ -128,11 +128,8 @@ services:
     env_file:
       - .env
     environment:
-      # Use LiteLLM proxy for Anthropic API
-      - ANTHROPIC_BASE_URL=${ANTHROPIC_BASE_URL:-http://litellm-proxy:4000}
-      # In subscription mode, ANTHROPIC_API_KEY should be empty so Claude uses OAuth credentials
-      # In api_key mode, ANTHROPIC_API_KEY is set in the environment
-      # Note: To run in subscription mode, set ANTHROPIC_API_KEY="" in your shell before docker-compose up
+      # Base URL and API key are set by entrypoint.sh based on AGENT_AUTH_TYPE
+      # Do not set ANTHROPIC_BASE_URL here - let entrypoint handle it
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
       - LITELLM_MASTER_KEY=${LITELLM_MASTER_KEY:-sk-1234}
       - CLAUDE_MODEL=${CLAUDE_MODEL:-}
@@ -169,11 +166,8 @@ services:
     env_file:
       - .env
     environment:
-      # Use LiteLLM proxy for OpenAI API
-      # In subscription mode, OPENAI_API_BASE should be http://litellm-proxy:4000/codex for passthrough
-      # In api_key mode, use http://litellm-proxy:4000 without passthrough
-      # Note: To run in subscription mode, set OPENAI_API_KEY="" and OPENAI_API_BASE="http://litellm-proxy:4000/codex" in your shell
-      - OPENAI_API_BASE=${OPENAI_API_BASE:-http://litellm-proxy:4000}
+      # Base URL and API key are set by entrypoint.sh based on AGENT_AUTH_TYPE
+      # Do not set OPENAI_API_BASE here - let entrypoint handle it
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - LITELLM_MASTER_KEY=${LITELLM_MASTER_KEY:-sk-1234}
       - OPENAI_MODEL=${OPENAI_MODEL:-gpt-4-turbo-preview}

@@ -68,6 +68,8 @@ else
     # Don't export OPENAI_API_KEY in subscription mode and set base URL to /codex endpoint
     unset OPENAI_API_KEY
     export OPENAI_API_BASE="http://litellm-proxy:4000/codex"
+    # Write to /etc/environment so it persists for all shells
+    echo "OPENAI_API_BASE=http://litellm-proxy:4000/codex" | sudo tee -a /etc/environment > /dev/null
     echo "Set OPENAI_API_BASE to ${OPENAI_API_BASE} for subscription mode"
 fi
 

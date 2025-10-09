@@ -45,11 +45,20 @@ export class AuthVerifier {
    */
   private async verifyClaudeAuth(containerName: string): Promise<AuthResult> {
     try {
-      // Check for OAuth credentials file and parse it with jq
-      // Use 'has' function to avoid shell escaping issues with != operator
-      const script = `if [ -f /home/claude/.claude/.credentials.json ]; then jq -c '{authenticated: has("claudeAiOauth"), expiresAt: .claudeAiOauth.expiresAt, subscriptionType: .claudeAiOauth.subscriptionType}' /home/claude/.claude/.credentials.json 2>/dev/null; else echo '{"authenticated":false}'; fi`;
+      // Check if credentials file exists first
+      const checkFile = `docker exec ${containerName} test -f /home/claude/.claude/.credentials.json`;
+      try {
+        await execAsync(checkFile);
+      } catch {
+        // File doesn't exist
+        return {
+          authenticated: false,
+          lastVerifiedAt: new Date().toISOString(),
+        };
+      }
 
-      const { stdout } = await execAsync(`docker exec ${containerName} sh -c "${script}"`);
+      // File exists, read and parse it with jq inside the container
+      const { stdout } = await execAsync(`docker exec ${containerName} jq -c '{authenticated: has("claudeAiOauth"), expiresAt: .claudeAiOauth.expiresAt, subscriptionType: .claudeAiOauth.subscriptionType}' /home/claude/.claude/.credentials.json`);
       const data = JSON.parse(stdout.trim());
 
       // Check if token is expired

@@ -344,6 +344,12 @@ document.addEventListener('DOMContentLoaded', () => {
     // Auto-refresh every 10 seconds
     autoRefresh = setInterval(loadAgentDetail, 10000);
 
+    // Add refresh button event listener
+    const refreshButton = document.getElementById('refreshButton');
+    if (refreshButton) {
+        refreshButton.addEventListener('click', loadAgentDetail);
+    }
+
     // Add connect button event listener
     const connectButton = document.getElementById('connectButton');
     if (connectButton) {

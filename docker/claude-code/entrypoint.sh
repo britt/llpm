@@ -10,6 +10,8 @@ echo "Working directory: $(pwd)"
 if [ "${AGENT_AUTH_TYPE:-api_key}" = "subscription" ]; then
     unset ANTHROPIC_API_KEY
     export ANTHROPIC_BASE_URL="http://litellm-proxy:4000/claude"
+    # Write to /etc/environment so it persists for all shells
+    echo "ANTHROPIC_BASE_URL=http://litellm-proxy:4000/claude" | sudo tee -a /etc/environment > /dev/null
     echo "Running in subscription mode - using OAuth credentials with ${ANTHROPIC_BASE_URL}"
 fi
 
