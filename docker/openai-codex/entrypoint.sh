@@ -70,8 +70,13 @@ else
 fi
 
 # Parse CLI options from environment
-# Default to --skip-git-repo-check to avoid trusted directory errors
-OPENAI_CLI_OPTS="${OPENAI_CLI_OPTIONS:---skip-git-repo-check}"
+# Always include --skip-git-repo-check to avoid trusted directory errors
+# If OPENAI_CLI_OPTIONS is set, append it; otherwise just use the default
+if [ -n "$OPENAI_CLI_OPTIONS" ]; then
+    OPENAI_CLI_OPTS="--skip-git-repo-check $OPENAI_CLI_OPTIONS"
+else
+    OPENAI_CLI_OPTS="--skip-git-repo-check"
+fi
 
 # Add authentication helper alias to .bashrc
 if [ ! -f ~/.bashrc ] || ! grep -q "signal-authenticated" ~/.bashrc; then
