@@ -29,7 +29,7 @@ else
 #!/bin/bash
 # Wrapper to run claude without API key in subscription mode
 unset ANTHROPIC_API_KEY
-exec /usr/bin/claude "$@"
+exec /home/claude/.npm-global/bin/claude "$@"
 CLAUDE_WRAPPER_EOF
     sudo chmod +x /usr/local/bin/claude-wrapper
 
