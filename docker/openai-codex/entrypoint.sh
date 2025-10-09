@@ -65,8 +65,10 @@ EOF
     export OPENAI_API_KEY="${OPENAI_API_KEY}"
 else
     echo "Running in subscription mode - authenticate via 'openai login' or similar CLI command"
-    # Don't export OPENAI_API_KEY in subscription mode
+    # Don't export OPENAI_API_KEY in subscription mode and set base URL to /codex endpoint
     unset OPENAI_API_KEY
+    export OPENAI_API_BASE="http://litellm-proxy:4000/codex"
+    echo "Set OPENAI_API_BASE to ${OPENAI_API_BASE} for subscription mode"
 fi
 
 # Parse CLI options from environment

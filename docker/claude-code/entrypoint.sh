@@ -5,11 +5,12 @@ echo "Starting Claude Code environment as user: $(whoami)"
 echo "Home directory: $HOME"
 echo "Working directory: $(pwd)"
 
-# In subscription mode, remove ANTHROPIC_API_KEY from environment immediately
+# In subscription mode, remove ANTHROPIC_API_KEY and set base URL to /claude endpoint
 # This must be done FIRST before any other commands that might use it
 if [ "${AGENT_AUTH_TYPE:-api_key}" = "subscription" ]; then
     unset ANTHROPIC_API_KEY
-    echo "Running in subscription mode - using OAuth credentials"
+    export ANTHROPIC_BASE_URL="http://litellm-proxy:4000/claude"
+    echo "Running in subscription mode - using OAuth credentials with ${ANTHROPIC_BASE_URL}"
 fi
 
 # Copy agent rules file to workspace if it exists and isn't already there
