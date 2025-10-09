@@ -77,13 +77,14 @@ export class AuthVerifier {
   }
 
   /**
-   * Verify OpenAI Codex authentication by checking config file
+   * Verify OpenAI Codex authentication by checking auth file
    */
   private async verifyOpenAIAuth(containerName: string): Promise<AuthResult> {
     try {
-      // Check for OpenAI config file and parse it with jq
+      // Check for codex auth file (newer codex CLI uses ~/.codex/auth.json)
+      // Also check legacy ~/.openai/config.json for backwards compatibility
       // Use double quotes for the outer sh -c and escape inner double quotes
-      const script = `if [ -f /home/codex/.openai/config.json ]; then jq -c '{authenticated: (.api_key != null and .api_key != \\\"\\\")}' /home/codex/.openai/config.json 2>/dev/null; else echo '{"authenticated":false}'; fi`;
+      const script = `if [ -f /home/codex/.codex/auth.json ]; then jq -c '{authenticated: true, user: .user.email}' /home/codex/.codex/auth.json 2>/dev/null; elif [ -f /home/codex/.openai/config.json ]; then jq -c '{authenticated: (.api_key != null and .api_key != \\\"\\\")}' /home/codex/.openai/config.json 2>/dev/null; else echo '{"authenticated":false}'; fi`;
 
       const { stdout } = await execAsync(`docker exec ${containerName} sh -c "${script}"`);
       const data = JSON.parse(stdout.trim());
