@@ -507,8 +507,9 @@ Add CLI options to your `docker/.env` file:
 # Claude Code CLI options
 CLAUDE_CLI_OPTIONS=--max-tokens 4096 --temperature 0.8
 
-# OpenAI CLI options
-OPENAI_CLI_OPTIONS=--temperature 0.7 --top-p 0.9
+# OpenAI Codex CLI options
+# Note: --skip-git-repo-check is set by default to avoid trusted directory errors
+OPENAI_CLI_OPTIONS=--skip-git-repo-check --temperature 0.7
 
 # Aider CLI options
 AIDER_CLI_OPTIONS=--no-auto-commits --dark-mode --model gpt-4

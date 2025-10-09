@@ -70,7 +70,8 @@ else
 fi
 
 # Parse CLI options from environment
-OPENAI_CLI_OPTS="${OPENAI_CLI_OPTIONS:-}"
+# Default to --skip-git-repo-check to avoid trusted directory errors
+OPENAI_CLI_OPTS="${OPENAI_CLI_OPTIONS:---skip-git-repo-check}"
 
 # Add authentication helper alias to .bashrc
 if [ ! -f ~/.bashrc ] || ! grep -q "signal-authenticated" ~/.bashrc; then
@@ -89,8 +90,12 @@ if [ "$1" = "/bin/bash" ] && command -v codex &> /dev/null; then
     echo "After authenticating with OpenAI Codex, run: signal-authenticated"
 fi
 
+# If the command is specifically 'codex', add default options
+if [ "$1" = "codex" ]; then
+    shift
+    exec codex $OPENAI_CLI_OPTS "$@"
 # If the command is specifically 'openai', add default options
-if [ "$1" = "openai" ]; then
+elif [ "$1" = "openai" ]; then
     shift
     exec openai $OPENAI_CLI_OPTS "$@"
 else
