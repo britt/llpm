@@ -39,7 +39,7 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock  # Docker socket for container management
       - /var/run/llpm:/var/run/llpm  # Unix socket directory (if used)
-      - ./workspace:/workspace:rw
+      - ${WORKSPACE_PATH:-./workspace}:/workspace:rw
     healthcheck:
       test: ["CMD", "node", "-e", "require('http').get('http://localhost:3010/health', (r) => r.statusCode === 200 ? process.exit(0) : process.exit(1))"]
       interval: 30s
@@ -142,7 +142,7 @@ services:
       - AGENT_PROVIDER=claude
       - AGENT_MODEL=${CLAUDE_MODEL:-claude-sonnet-4-5}
     volumes:
-      - ../workspace:/home/claude/workspace
+      - ${WORKSPACE_PATH:-../workspace}:/home/claude/workspace
       - ${HOME}/.ssh:/home/claude/.ssh:ro
       - ${HOME}/.gitconfig:/home/claude/.gitconfig:ro
     stdin_open: true
@@ -190,7 +190,7 @@ services:
       # For multiple instances, use different ports: OPENAI_OAUTH_PORT=1456, 1457, etc.
       - "${OPENAI_OAUTH_PORT:-1455}:1455"
     volumes:
-      - ../workspace:/codex-workspace
+      - ${WORKSPACE_PATH:-../workspace}:/codex-workspace
       - ${HOME}/.ssh:/root/.ssh:ro
       - ${HOME}/.gitconfig:/root/.gitconfig:ro
     working_dir: /codex-workspace
@@ -230,7 +230,7 @@ services:
       - AIDER_DARK_MODE=${AIDER_DARK_MODE:-true}
       - AIDER_CLI_OPTIONS=${AIDER_CLI_OPTIONS:-}
     volumes:
-      - ../workspace:/aider-workspace
+      - ${WORKSPACE_PATH:-../workspace}:/aider-workspace
       - ${HOME}/.ssh:/root/.ssh:ro
       - ${HOME}/.gitconfig:/root/.gitconfig:ro
     working_dir: /aider-workspace
@@ -267,7 +267,7 @@ services:
       - OLLAMA_CLI_OPTIONS=${OLLAMA_CLI_OPTIONS:-}
       - LITELLM_CLI_OPTIONS=${LITELLM_CLI_OPTIONS:-}
     volumes:
-      - ../workspace:/opencode-workspace
+      - ${WORKSPACE_PATH:-../workspace}:/opencode-workspace
       - ${HOME}/.ssh:/root/.ssh:ro
       - ${HOME}/.gitconfig:/root/.gitconfig:ro
       - ollama-data:/root/.ollama
