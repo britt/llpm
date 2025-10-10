@@ -117,8 +117,6 @@ function renderOnboardingMessage(agent) {
 }
 
 function renderAgentDetail(agent, jobs) {
-    const metadata = agent.metadata || {};
-    const metadataEntries = Object.entries(metadata);
     const status = getUnifiedStatus(agent);
 
     return `
@@ -136,9 +134,9 @@ function renderAgentDetail(agent, jobs) {
                 </div>
             </div>
 
-            <!-- Authentication Card -->
+            <!-- Configuration Card -->
             <div class="detail-card">
-                <h2>Authentication</h2>
+                <h2>Configuration</h2>
                 <div class="info-table">
                     <div class="info-row">
                         <span class="info-label">Auth Type:</span>
@@ -166,6 +164,12 @@ function renderAgentDetail(agent, jobs) {
                     <div class="info-row">
                         <span class="info-label">Base URL:</span>
                         <span class="info-value" style="font-size: 0.85em; word-break: break-all;">${agent.baseUrl}</span>
+                    </div>
+                    ` : ''}
+                    ${agent.metadata?.workspacePath ? `
+                    <div class="info-row">
+                        <span class="info-label">Workspace Path:</span>
+                        <span class="info-value" style="font-size: 0.85em; word-break: break-all;">${agent.metadata.workspacePath}</span>
                     </div>
                     ` : ''}
                 </div>
@@ -217,21 +221,6 @@ function renderAgentDetail(agent, jobs) {
                     </div>
                 </div>
             </div>
-
-            <!-- Metadata Card -->
-            ${metadataEntries.length > 0 ? `
-            <div class="detail-card">
-                <h2>Metadata</h2>
-                <div class="metadata-section">
-                    ${metadataEntries.map(([key, value]) => `
-                        <div class="metadata-item">
-                            <span class="info-label">${key}:</span>
-                            <span class="info-value">${JSON.stringify(value)}</span>
-                        </div>
-                    `).join('')}
-                </div>
-            </div>
-            ` : ''}
 
             <!-- Recent Jobs Card -->
             <div class="detail-card jobs-section">

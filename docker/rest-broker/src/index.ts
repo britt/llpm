@@ -31,7 +31,7 @@ const swaggerDocument = YAML.load(openApiPath);
 
 // Initialize services
 const agentManager = new AgentManager();
-const jobQueue = new JobQueue();
+const jobQueue = new JobQueue(agentManager);
 
 // Make services available to routes via app.locals
 app.locals.agentManager = agentManager;

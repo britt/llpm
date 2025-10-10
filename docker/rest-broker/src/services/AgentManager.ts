@@ -63,6 +63,47 @@ export class AgentManager extends EventEmitter {
     await this.discoverAgentContainers();
   }
 
+  private async getContainerWorkspacePath(containerName: string): Promise<string | null> {
+    try {
+      const { exec } = await import('child_process');
+      const { promisify } = await import('util');
+      const execAsync = promisify(exec);
+
+      logger.info(`Getting workspace path for container: ${containerName}`);
+
+      // Get container mounts using docker inspect
+      const { stdout } = await execAsync(
+        `docker inspect ${containerName} --format='{{json .Mounts}}'`
+      );
+
+      const mounts = JSON.parse(stdout.trim());
+      logger.info(`Found ${mounts.length} mounts for ${containerName}`);
+
+      // Find the workspace mount (look for common workspace paths in the container)
+      const workspaceMount = mounts.find((mount: any) => {
+        const dest = mount.Destination;
+        return dest && (
+          dest.includes('workspace') ||
+          dest === '/home/claude/workspace' ||
+          dest === '/codex-workspace' ||
+          dest === '/aider-workspace' ||
+          dest === '/opencode-workspace'
+        );
+      });
+
+      if (workspaceMount && workspaceMount.Source) {
+        logger.info(`Found workspace path for ${containerName}: ${workspaceMount.Source}`);
+        return workspaceMount.Source;
+      }
+
+      logger.info(`No workspace mount found for ${containerName}`);
+      return null;
+    } catch (error) {
+      logger.error(`Failed to get workspace path for ${containerName}:`, error);
+      return null;
+    }
+  }
+
   private async discoverAgentContainers(): Promise<void> {
     try {
       const { exec } = await import('child_process');
@@ -122,6 +163,9 @@ export class AgentManager extends EventEmitter {
         const agentId = `${agentType}-${instanceNum}`;
         const hasAuthConfig = authType === 'subscription' && agentMetadata.provider && agentMetadata.model;
 
+        // Get workspace path from Docker inspect
+        const workspacePath = await this.getContainerWorkspacePath(containerName);
+
         const agent: Agent = {
           id: agentId,
           name: `${agentMetadata.name} #${instanceNum}`,
@@ -139,6 +183,9 @@ export class AgentManager extends EventEmitter {
           provider: hasAuthConfig ? agentMetadata.provider : undefined,
           model: hasAuthConfig ? agentMetadata.model : undefined,
           baseUrl: agentMetadata.baseUrl,
+          metadata: {
+            workspacePath: workspacePath,
+          },
         };
 
         this.agents.set(agent.id, agent);
@@ -296,10 +343,8 @@ export class AgentManager extends EventEmitter {
       }
     }
 
-    // Mark agent as busy
-    agent.status = 'busy';
-
     // Job execution is handled by JobQueue, which uses DockerExecutor
+    // JobQueue will manage agent status based on active jobs
     const jobId = `job-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
     return jobId;
