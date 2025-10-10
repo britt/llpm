@@ -49,7 +49,7 @@ export class AgentManager extends EventEmitter {
     logger.info('Initializing Agent Manager');
 
     // Initialize available agents based on configuration
-    this.initializeAgents();
+    await this.initializeAgents();
 
     // Start health checks
     this.startHealthChecks();
@@ -58,73 +58,97 @@ export class AgentManager extends EventEmitter {
     this.startAuthVerification();
   }
 
-  private initializeAgents(): void {
-    // Get auth configuration from environment
-    const authType = (process.env.AGENT_AUTH_TYPE as 'subscription' | 'api_key') || 'api_key';
-    const litellmBaseUrl = process.env.LITELLM_BASE_URL || 'http://litellm-proxy:4000';
+  private async initializeAgents(): Promise<void> {
+    // Discover running agent containers dynamically
+    await this.discoverAgentContainers();
+  }
 
-    // Define available agents - in production, this would come from config
-    const agentConfigs: Array<{
-      id: string;
-      name: string;
-      type: string;
-      provider?: string;
-      model?: string;
-      baseUrl?: string;
-    }> = [
-      {
-        id: 'claude-code',
-        name: 'Claude Code Assistant',
-        type: 'claude-code',
-        provider: 'claude',
-        model: process.env.CLAUDE_MODEL || 'claude-sonnet-4-5',
-        baseUrl: authType === 'subscription' ? `${litellmBaseUrl}/claude` : litellmBaseUrl,
-      },
-      {
-        id: 'openai-codex',
-        name: 'OpenAI Codex',
-        type: 'openai-codex',
-        provider: 'openai',
-        model: process.env.OPENAI_MODEL || 'gpt-4-turbo-preview',
-        baseUrl: authType === 'subscription' ? `${litellmBaseUrl}/codex` : litellmBaseUrl,
-      },
-      {
-        id: 'aider',
-        name: 'Aider Assistant',
-        type: 'aider',
-        baseUrl: litellmBaseUrl,
-      },
-      {
-        id: 'opencode',
-        name: 'Open Code Assistant',
-        type: 'opencode',
-        baseUrl: litellmBaseUrl,
-      },
-    ];
+  private async discoverAgentContainers(): Promise<void> {
+    try {
+      const { exec } = await import('child_process');
+      const { promisify } = await import('util');
+      const execAsync = promisify(exec);
 
-    for (const config of agentConfigs) {
-      const now = new Date().toISOString();
-      const hasAuthConfig = authType === 'subscription' && config.provider && config.model;
+      // Get auth configuration from environment
+      const authType = (process.env.AGENT_AUTH_TYPE as 'subscription' | 'api_key') || 'api_key';
+      const litellmBaseUrl = process.env.LITELLM_BASE_URL || 'http://litellm-proxy:4000';
 
-      const agent: Agent = {
-        ...config,
-        status: 'offline',
-        health: {
-          status: 'unknown',
-          lastCheck: now,
-          authenticated: hasAuthConfig ? false : undefined,
-          message: hasAuthConfig ? 'Agent initialized - awaiting authentication' : undefined,
+      // Find all running containers matching agent patterns
+      const { stdout } = await execAsync('docker ps --format "{{.Names}}"');
+      const containers = stdout.trim().split('\n').filter(Boolean);
+
+      // Agent type definitions with metadata
+      const agentTypes: Record<string, {
+        name: string;
+        provider?: string;
+        model?: string;
+        baseUrl?: string;
+      }> = {
+        'claude-code': {
+          name: 'Claude Code Assistant',
+          provider: 'claude',
+          model: process.env.CLAUDE_MODEL || 'claude-sonnet-4-5',
+          baseUrl: authType === 'subscription' ? `${litellmBaseUrl}/claude` : litellmBaseUrl,
         },
-        registeredAt: now,
-        lastHeartbeat: now,
-        authType: hasAuthConfig ? 'subscription' : 'api_key',
-        provider: hasAuthConfig ? config.provider : undefined,
-        model: hasAuthConfig ? config.model : undefined,
+        'openai-codex': {
+          name: 'OpenAI Codex',
+          provider: 'openai',
+          model: process.env.OPENAI_MODEL || 'gpt-4-turbo-preview',
+          baseUrl: authType === 'subscription' ? `${litellmBaseUrl}/codex` : litellmBaseUrl,
+        },
+        'aider': {
+          name: 'Aider Assistant',
+          baseUrl: litellmBaseUrl,
+        },
+        'opencode': {
+          name: 'Open Code Assistant',
+          baseUrl: litellmBaseUrl,
+        },
       };
-      this.agents.set(agent.id, agent);
-    }
 
-    logger.info(`Initialized ${this.agents.size} agents with auth_type=${authType}`);
+      const now = new Date().toISOString();
+
+      // Discover agents from running containers
+      for (const containerName of containers) {
+        // Match pattern: docker-{agent-type}-{number} or {agent-type}-{number}
+        const match = containerName.match(/^(?:docker-)?([a-z-]+)-(\d+)$/);
+        if (!match) continue;
+
+        const [, agentType, instanceNum] = match;
+        const agentMetadata = agentTypes[agentType];
+        if (!agentMetadata) continue;
+
+        // Create unique agent ID with instance number
+        const agentId = `${agentType}-${instanceNum}`;
+        const hasAuthConfig = authType === 'subscription' && agentMetadata.provider && agentMetadata.model;
+
+        const agent: Agent = {
+          id: agentId,
+          name: `${agentMetadata.name} #${instanceNum}`,
+          type: agentType,
+          status: 'offline',
+          health: {
+            status: 'unknown',
+            lastCheck: now,
+            authenticated: hasAuthConfig ? false : undefined,
+            message: hasAuthConfig ? 'Agent initialized - awaiting authentication' : undefined,
+          },
+          registeredAt: now,
+          lastHeartbeat: now,
+          authType: hasAuthConfig ? 'subscription' : 'api_key',
+          provider: hasAuthConfig ? agentMetadata.provider : undefined,
+          model: hasAuthConfig ? agentMetadata.model : undefined,
+          baseUrl: agentMetadata.baseUrl,
+        };
+
+        this.agents.set(agent.id, agent);
+        logger.info(`Discovered agent: ${agentId} (${containerName})`);
+      }
+
+      logger.info(`Discovered ${this.agents.size} running agent containers with auth_type=${authType}`);
+    } catch (error) {
+      logger.error('Failed to discover agent containers:', error);
+    }
   }
 
   private startHealthChecks(): void {
