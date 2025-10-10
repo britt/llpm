@@ -117,11 +117,11 @@ function renderOnboardingMessage(agent) {
 function renderAgent(agent) {
     const status = getUnifiedStatus(agent);
     return `
-        <div class="agent-card" data-agent-id="${agent.id}" style="cursor: pointer;">
+        <div class="agent-card" data-agent-id="${agent.id}">
             <div class="agent-header">
                 <div style="width: 100%;">
                     <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 16px; width: 100%;">
-                        <div class="agent-id">${agent.id}</div>
+                        <div class="agent-id">${agent.id}<span class="connect-icon" data-connect-agent="${agent.id}" title="Connect to container">🔌</span></div>
                         <span class="status-badge ${status.class}" style="flex-shrink: 0; margin-left: 12px;">${status.label}</span>
                     </div>
                     <div class="agent-name" style="width: 100%;">${getAgentEmoji(agent.type)} ${agent.name}</div>
@@ -202,18 +202,91 @@ async function loadAgents(verifyAuth = false) {
             </div>
         `;
 
-        // Add click handlers to agent cards
+        // Add event listeners for agent cards and connect icons
         document.querySelectorAll('.agent-card').forEach(card => {
-            card.addEventListener('click', () => {
-                const agentId = card.getAttribute('data-agent-id');
-                window.location.href = `/ui/agent-detail?id=${agentId}`;
+            const agentId = card.getAttribute('data-agent-id');
+
+            // Click on card goes to detail page
+            card.addEventListener('click', (e) => {
+                // Don't navigate if clicking on connect icon
+                if (!e.target.classList.contains('connect-icon')) {
+                    window.location.href = `/ui/agent-detail?id=${agentId}`;
+                }
             });
+
+            // Click on connect icon opens modal
+            const connectIcon = card.querySelector('.connect-icon');
+            if (connectIcon) {
+                connectIcon.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const connectAgentId = connectIcon.getAttribute('data-connect-agent');
+                    connectToAgent(connectAgentId);
+                });
+            }
         });
 
         document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString();
     } catch (error) {
         container.innerHTML = `<div class="error">Error loading agents: ${error.message}</div>`;
         statsContainer.innerHTML = '';
+    }
+}
+
+function connectToAgent(agentId) {
+    if (!agentId) {
+        alert('No agent ID available');
+        return;
+    }
+
+    const containerName = `docker-${agentId}`;
+    const command = `docker exec -it ${containerName} /bin/bash`;
+    showConnectModal(command);
+}
+
+function showConnectModal(command) {
+    const modal = document.getElementById('connectModal');
+    const commandBox = document.getElementById('connectCommand');
+
+    commandBox.textContent = command;
+    modal.classList.add('show');
+    modal.dataset.command = command;
+}
+
+function closeConnectModal() {
+    const modal = document.getElementById('connectModal');
+    modal.classList.remove('show');
+
+    const copyButton = document.getElementById('copyButton');
+    copyButton.textContent = '📋 Copy to Clipboard';
+    copyButton.classList.remove('copied');
+}
+
+function copyCommand() {
+    const modal = document.getElementById('connectModal');
+    const command = modal.dataset.command;
+    const copyButton = document.getElementById('copyButton');
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(command).then(() => {
+            copyButton.textContent = '✅ Copied!';
+            copyButton.classList.add('copied');
+
+            setTimeout(() => {
+                copyButton.textContent = '📋 Copy to Clipboard';
+                copyButton.classList.remove('copied');
+            }, 2000);
+        }).catch(() => {
+            copyButton.textContent = '❌ Failed to copy';
+        });
+    } else {
+        const commandBox = document.getElementById('connectCommand');
+        const range = document.createRange();
+        range.selectNodeContents(commandBox);
+        const selection = window.getSelection();
+        selection.removeAllRanges();
+        selection.addRange(range);
+
+        copyButton.textContent = 'Text selected - press Ctrl+C';
     }
 }
 
@@ -229,4 +302,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Auto-refresh every 30 seconds WITH auth verification
     autoRefresh = setInterval(() => loadAgents(true), 30000);
+
+    // Modal event listeners
+    const modal = document.getElementById('connectModal');
+    if (modal) {
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                closeConnectModal();
+            }
+        });
+    }
+
+    const closeButton = document.getElementById('modalCloseButton');
+    if (closeButton) {
+        closeButton.addEventListener('click', closeConnectModal);
+    }
+
+    const copyButton = document.getElementById('copyButton');
+    if (copyButton) {
+        copyButton.addEventListener('click', copyCommand);
+    }
 });

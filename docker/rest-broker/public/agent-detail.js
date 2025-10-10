@@ -103,7 +103,7 @@ function renderOnboardingMessage(agent) {
                 <div style="color: #744210; line-height: 1.6;">
                     <p style="margin-bottom: 12px;">This agent uses subscription-based authentication. To authenticate:</p>
                     <ol style="margin-left: 20px; margin-bottom: 12px;">
-                        <li style="margin-bottom: 8px;">Connect to the container: <code style="background: #fed7d7; padding: 2px 6px; border-radius: 4px; font-family: monospace;">docker exec -it docker-${agent.id}-1 bash</code></li>
+                        <li style="margin-bottom: 8px;">Connect to the container: <code style="background: #fed7d7; padding: 2px 6px; border-radius: 4px; font-family: monospace;">docker exec -it docker-${agent.id} bash</code></li>
                         <li style="margin-bottom: 8px;">Run the authentication command for ${agent.provider || 'your provider'}</li>
                         <li style="margin-bottom: 8px;">After successful authentication, run: <code style="background: #fed7d7; padding: 2px 6px; border-radius: 4px; font-family: monospace;">signal-authenticated</code></li>
                     </ol>
@@ -310,7 +310,8 @@ function connectToAgent() {
     }
 
     // Execute docker exec command to connect to the agent container
-    const containerName = `docker-${agentId}-1`;
+    // agentId already includes the instance number (e.g., claude-code-1)
+    const containerName = `docker-${agentId}`;
 
     // Create a command that opens a new terminal connected to the container
     const command = `docker exec -it ${containerName} /bin/bash`;
