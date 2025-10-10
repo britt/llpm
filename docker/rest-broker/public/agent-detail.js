@@ -131,6 +131,14 @@ function renderAgentDetail(agent, jobs) {
                     <div style="font-weight: 600; color: #4a5568; font-size: 1.1em;">
                         ${agent.status === 'busy' ? '⚡ Active' : '💤 Idle'}
                     </div>
+                    ${agent.status === 'busy' && agent.activeJob ? `
+                    <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #e2e8f0;">
+                        <div style="font-weight: 500; color: #4a5568; margin-bottom: 6px; font-size: 0.9em;">Current task:</div>
+                        <div style="font-size: 0.85em; color: #718096; line-height: 1.5; font-style: italic;">
+                            "${agent.activeJob.prompt.length > 200 ? agent.activeJob.prompt.substring(0, 200) + '...' : agent.activeJob.prompt}"
+                        </div>
+                    </div>
+                    ` : ''}
                 </div>
             </div>
 
@@ -271,6 +279,18 @@ async function loadAgentDetail() {
         document.getElementById('agentId').textContent = agent.id;
         document.title = `${getAgentEmoji(agent.type)} ${agent.name} - LLPM REST API Broker`;
 
+        // Fetch active job
+        let activeJob = null;
+        try {
+            const activeJobResponse = await fetch(`/agents/${agentId}/jobs?status=running&limit=1`);
+            if (activeJobResponse.ok) {
+                const activeJobData = await activeJobResponse.json();
+                activeJob = activeJobData.jobs && activeJobData.jobs.length > 0 ? activeJobData.jobs[0] : null;
+            }
+        } catch (error) {
+            console.warn('Could not load active job:', error);
+        }
+
         // Fetch recent jobs (limit 10)
         let jobs = [];
         try {
@@ -282,6 +302,9 @@ async function loadAgentDetail() {
         } catch (error) {
             console.warn('Could not load jobs:', error);
         }
+
+        // Attach active job to agent
+        agent.activeJob = activeJob;
 
         // Render the detail view
         container.innerHTML = renderAgentDetail(agent, jobs);
