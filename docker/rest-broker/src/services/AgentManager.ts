@@ -2,6 +2,7 @@ import { EventEmitter } from 'events';
 import { logger } from '../utils/logger';
 import * as net from 'net';
 import { DockerExecutor } from './DockerExecutor';
+import { AuthVerifier } from './AuthVerifier';
 
 export interface Agent {
   id: string;
@@ -13,6 +14,9 @@ export interface Agent {
     lastCheck: string;
     message?: string;
     authenticated?: boolean;
+    authExpiresAt?: number;
+    authLastVerifiedAt?: string;
+    subscriptionType?: string;
   };
   host?: string;
   port?: number;
@@ -29,92 +33,122 @@ export class AgentManager extends EventEmitter {
   private agents: Map<string, Agent>;
   private socketConnections: Map<string, net.Socket>;
   private healthCheckInterval: NodeJS.Timeout | null = null;
+  private authVerificationInterval: NodeJS.Timeout | null = null;
   private dockerExecutor: DockerExecutor;
+  private authVerifier: AuthVerifier;
 
   constructor() {
     super();
     this.agents = new Map();
     this.socketConnections = new Map();
     this.dockerExecutor = new DockerExecutor();
+    this.authVerifier = new AuthVerifier();
   }
 
   async initialize(): Promise<void> {
     logger.info('Initializing Agent Manager');
-    
+
     // Initialize available agents based on configuration
-    this.initializeAgents();
-    
+    await this.initializeAgents();
+
     // Start health checks
     this.startHealthChecks();
+
+    // Start authentication verification for subscription agents
+    this.startAuthVerification();
   }
 
-  private initializeAgents(): void {
-    // Get auth configuration from environment
-    const authType = (process.env.AGENT_AUTH_TYPE as 'subscription' | 'api_key') || 'api_key';
-    const litellmBaseUrl = process.env.LITELLM_BASE_URL || 'http://litellm-proxy:4000';
+  private async initializeAgents(): Promise<void> {
+    // Discover running agent containers dynamically
+    await this.discoverAgentContainers();
+  }
 
-    // Define available agents - in production, this would come from config
-    const agentConfigs: Array<{
-      id: string;
-      name: string;
-      type: string;
-      provider?: string;
-      model?: string;
-      baseUrl?: string;
-    }> = [
-      {
-        id: 'claude-code',
-        name: 'Claude Code Assistant',
-        type: 'claude-code',
-        provider: 'claude',
-        model: process.env.CLAUDE_MODEL || 'claude-sonnet-4-5',
-        baseUrl: authType === 'subscription' ? `${litellmBaseUrl}/claude` : litellmBaseUrl,
-      },
-      {
-        id: 'openai-codex',
-        name: 'OpenAI Codex',
-        type: 'openai-codex',
-        provider: 'openai',
-        model: process.env.OPENAI_MODEL || 'gpt-4-turbo-preview',
-        baseUrl: authType === 'subscription' ? `${litellmBaseUrl}/codex` : litellmBaseUrl,
-      },
-      {
-        id: 'aider',
-        name: 'Aider Assistant',
-        type: 'aider',
-        baseUrl: litellmBaseUrl,
-      },
-      {
-        id: 'opencode',
-        name: 'Open Code Assistant',
-        type: 'opencode',
-        baseUrl: litellmBaseUrl,
-      },
-    ];
+  private async discoverAgentContainers(): Promise<void> {
+    try {
+      const { exec } = await import('child_process');
+      const { promisify } = await import('util');
+      const execAsync = promisify(exec);
 
-    for (const config of agentConfigs) {
-      const now = new Date().toISOString();
-      const hasAuthConfig = authType === 'subscription' && config.provider && config.model;
+      // Get auth configuration from environment
+      const authType = (process.env.AGENT_AUTH_TYPE as 'subscription' | 'api_key') || 'api_key';
+      const litellmBaseUrl = process.env.LITELLM_BASE_URL || 'http://litellm-proxy:4000';
 
-      const agent: Agent = {
-        ...config,
-        status: 'offline',
-        health: {
-          status: 'unknown',
-          lastCheck: now,
-          authenticated: hasAuthConfig ? false : undefined,
-          message: hasAuthConfig ? 'Agent initialized - awaiting authentication' : undefined,
+      // Find all running containers matching agent patterns
+      const { stdout } = await execAsync('docker ps --format "{{.Names}}"');
+      const containers = stdout.trim().split('\n').filter(Boolean);
+
+      // Agent type definitions with metadata
+      const agentTypes: Record<string, {
+        name: string;
+        provider?: string;
+        model?: string;
+        baseUrl?: string;
+      }> = {
+        'claude-code': {
+          name: 'Claude Code Assistant',
+          provider: 'claude',
+          model: process.env.CLAUDE_MODEL || 'claude-sonnet-4-5',
+          baseUrl: authType === 'subscription' ? `${litellmBaseUrl}/claude` : litellmBaseUrl,
         },
-        registeredAt: now,
-        lastHeartbeat: now,
-        authType: hasAuthConfig ? 'subscription' : 'api_key',
-        provider: hasAuthConfig ? config.provider : undefined,
-        model: hasAuthConfig ? config.model : undefined,
+        'openai-codex': {
+          name: 'OpenAI Codex',
+          provider: 'openai',
+          model: process.env.OPENAI_MODEL || 'gpt-4-turbo-preview',
+          baseUrl: authType === 'subscription' ? `${litellmBaseUrl}/codex` : litellmBaseUrl,
+        },
+        'aider': {
+          name: 'Aider Assistant',
+          baseUrl: litellmBaseUrl,
+        },
+        'opencode': {
+          name: 'Open Code Assistant',
+          baseUrl: litellmBaseUrl,
+        },
       };
-      this.agents.set(agent.id, agent);
-    }
 
-    logger.info(`Initialized ${this.agents.size} agents with auth_type=${authType}`);
+      const now = new Date().toISOString();
+
+      // Discover agents from running containers
+      for (const containerName of containers) {
+        // Match pattern: docker-{agent-type}-{number} or {agent-type}-{number}
+        const match = containerName.match(/^(?:docker-)?([a-z-]+)-(\d+)$/);
+        if (!match) continue;
+
+        const [, agentType, instanceNum] = match;
+        const agentMetadata = agentTypes[agentType];
+        if (!agentMetadata) continue;
+
+        // Create unique agent ID with instance number
+        const agentId = `${agentType}-${instanceNum}`;
+        const hasAuthConfig = authType === 'subscription' && agentMetadata.provider && agentMetadata.model;
+
+        const agent: Agent = {
+          id: agentId,
+          name: `${agentMetadata.name} #${instanceNum}`,
+          type: agentType,
+          status: 'offline',
+          health: {
+            status: 'unknown',
+            lastCheck: now,
+            authenticated: hasAuthConfig ? false : undefined,
+            message: hasAuthConfig ? 'Agent initialized - awaiting authentication' : undefined,
+          },
+          registeredAt: now,
+          lastHeartbeat: now,
+          authType: hasAuthConfig ? 'subscription' : 'api_key',
+          provider: hasAuthConfig ? agentMetadata.provider : undefined,
+          model: hasAuthConfig ? agentMetadata.model : undefined,
+          baseUrl: agentMetadata.baseUrl,
+        };
+
+        this.agents.set(agent.id, agent);
+        logger.info(`Discovered agent: ${agentId} (${containerName})`);
+      }
+
+      logger.info(`Discovered ${this.agents.size} running agent containers with auth_type=${authType}`);
+    } catch (error) {
+      logger.error('Failed to discover agent containers:', error);
+    }
   }
 
   private startHealthChecks(): void {
@@ -243,6 +277,25 @@ export class AgentManager extends EventEmitter {
       throw new Error(`Agent ${agentId} is offline`);
     }
 
+    // Check authentication for subscription agents
+    if (agent.authType === 'subscription') {
+      if (agent.health.authenticated === false) {
+        throw new Error(
+          `Agent ${agentId} is not authenticated. Please authenticate before submitting jobs.`
+        );
+      }
+
+      // Check if token is expired
+      if (agent.health.authExpiresAt) {
+        const now = Date.now();
+        if (agent.health.authExpiresAt <= now) {
+          throw new Error(
+            `Agent ${agentId} authentication token has expired. Please re-authenticate.`
+          );
+        }
+      }
+    }
+
     // Mark agent as busy
     agent.status = 'busy';
 
@@ -306,6 +359,14 @@ export class AgentManager extends EventEmitter {
     this.agents.set(agent.id, agent);
     logger.info(`Agent ${agent.id} registered successfully with auth_type=${authType}`);
     this.emit('agent:registered', agent);
+
+    // Trigger immediate authentication verification for subscription agents
+    if (authType === 'subscription' && agentData.provider) {
+      // Fire and forget - don't block registration
+      this.verifyAgentAuth(agent).catch(error => {
+        logger.error(`Initial auth verification failed for ${agent.id}:`, error);
+      });
+    }
 
     return true;
   }
@@ -408,12 +469,103 @@ export class AgentManager extends EventEmitter {
     return `${litellmBaseUrl}${path}`;
   }
 
+  private startAuthVerification(): void {
+    // Initial authentication check
+    this.checkAllAgentAuth();
+
+    // Schedule periodic authentication checks
+    // Default to 5 minutes (300000ms) for auth verification TTL
+    const interval = parseInt(process.env.AUTH_VERIFICATION_INTERVAL || '300000');
+    this.authVerificationInterval = setInterval(() => {
+      this.checkAllAgentAuth();
+    }, interval);
+
+    logger.info(`Started authentication verification with interval=${interval}ms`);
+  }
+
+  private async checkAllAgentAuth(): Promise<void> {
+    const subscriptionAgents = Array.from(this.agents.values()).filter(
+      agent => agent.authType === 'subscription' && agent.provider
+    );
+
+    const promises = subscriptionAgents.map(agent => this.verifyAgentAuth(agent));
+    await Promise.allSettled(promises);
+  }
+
+  /**
+   * Public method to trigger authentication verification for all agents
+   * Can be called from API endpoints to provide on-demand auth checks
+   */
+  async verifyAllAgentsAuth(): Promise<void> {
+    await this.checkAllAgentAuth();
+  }
+
+  private async verifyAgentAuth(agent: Agent): Promise<void> {
+    if (!agent.provider) {
+      logger.debug(`Agent ${agent.id} has no provider, skipping auth verification`);
+      return;
+    }
+
+    // Map provider to auth verifier provider type
+    const providerMap: Record<string, 'claude' | 'openai'> = {
+      'claude': 'claude',
+      'anthropic': 'claude',
+      'openai': 'openai',
+      'codex': 'openai',
+    };
+
+    const authProvider = providerMap[agent.provider.toLowerCase()];
+    if (!authProvider) {
+      logger.debug(`Unknown provider ${agent.provider} for agent ${agent.id}, skipping auth verification`);
+      return;
+    }
+
+    try {
+      const authResult = await this.authVerifier.verifyAgentAuth(agent.id, authProvider);
+
+      // Update agent's health with auth information
+      agent.health = {
+        ...agent.health,
+        authenticated: authResult.authenticated,
+        authExpiresAt: authResult.expiresAt,
+        authLastVerifiedAt: authResult.lastVerifiedAt,
+        subscriptionType: authResult.subscriptionType,
+      };
+
+      // Update message based on auth state
+      if (authResult.authenticated) {
+        const expiryInfo = authResult.expiresAt
+          ? ` (expires: ${new Date(authResult.expiresAt).toISOString()})`
+          : '';
+        agent.health.message = `Agent authenticated${expiryInfo}`;
+
+        // Emit authentication event if this is a state change
+        logger.info(`Agent ${agent.id} authentication verified${expiryInfo}`);
+        this.emit('agent:auth-verified', agent);
+      } else {
+        agent.health.message = 'Agent not authenticated';
+        logger.warn(`Agent ${agent.id} is not authenticated`);
+      }
+    } catch (error) {
+      logger.error(`Failed to verify authentication for agent ${agent.id}:`, error);
+      agent.health = {
+        ...agent.health,
+        message: 'Authentication verification failed',
+      };
+    }
+  }
+
   async shutdown(): Promise<void> {
     logger.info('Shutting down Agent Manager');
-    
+
     // Clear health check interval
     if (this.healthCheckInterval) {
       clearInterval(this.healthCheckInterval);
+    }
+
+    // Clear auth verification interval
+    if (this.authVerificationInterval) {
+      clearInterval(this.authVerificationInterval);
     }
 
     // Close all socket connections
@@ -421,7 +573,7 @@ export class AgentManager extends EventEmitter {
       logger.info(`Closing socket connection for ${id}`);
       socket.end();
     }
-    
+
     this.socketConnections.clear();
     this.agents.clear();
   }

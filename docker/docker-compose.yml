@@ -39,7 +39,7 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock  # Docker socket for container management
       - /var/run/llpm:/var/run/llpm  # Unix socket directory (if used)
-      - ./workspace:/workspace:rw
+      - ${WORKSPACE_PATH:-./workspace}:/workspace:rw
     healthcheck:
       test: ["CMD", "node", "-e", "require('http').get('http://localhost:3010/health', (r) => r.statusCode === 200 ? process.exit(0) : process.exit(1))"]
       interval: 30s
@@ -128,10 +128,8 @@ services:
     env_file:
       - .env
     environment:
-      # Use LiteLLM proxy for Anthropic API
-      # When AGENT_AUTH_TYPE=subscription, use real Anthropic key with /claude passthrough
-      # When AGENT_AUTH_TYPE=api_key, use LiteLLM master key without passthrough
-      - ANTHROPIC_BASE_URL=${ANTHROPIC_BASE_URL:-http://litellm-proxy:4000}
+      # Base URL and API key are set by entrypoint.sh based on AGENT_AUTH_TYPE
+      # Do not set ANTHROPIC_BASE_URL here - let entrypoint handle it
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
       - LITELLM_MASTER_KEY=${LITELLM_MASTER_KEY:-sk-1234}
       - CLAUDE_MODEL=${CLAUDE_MODEL:-}
@@ -141,7 +139,7 @@ services:
       - AGENT_PROVIDER=claude
       - AGENT_MODEL=${CLAUDE_MODEL:-claude-sonnet-4-5}
     volumes:
-      - ../workspace:/home/claude/workspace
+      - ${WORKSPACE_PATH:-../workspace}:/home/claude/workspace
       - ${HOME}/.ssh:/home/claude/.ssh:ro
       - ${HOME}/.gitconfig:/home/claude/.gitconfig:ro
     stdin_open: true
@@ -168,10 +166,8 @@ services:
     env_file:
       - .env
     environment:
-      # Use LiteLLM proxy for OpenAI API
-      # When AGENT_AUTH_TYPE=subscription, use real OpenAI key with /codex passthrough
-      # When AGENT_AUTH_TYPE=api_key, use LiteLLM master key without passthrough
-      - OPENAI_API_BASE=${OPENAI_API_BASE:-http://litellm-proxy:4000}
+      # Base URL and API key are set by entrypoint.sh based on AGENT_AUTH_TYPE
+      # Do not set OPENAI_API_BASE here - let entrypoint handle it
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - LITELLM_MASTER_KEY=${LITELLM_MASTER_KEY:-sk-1234}
       - OPENAI_MODEL=${OPENAI_MODEL:-gpt-4-turbo-preview}
@@ -181,8 +177,14 @@ services:
       - AGENT_AUTH_TYPE=${AGENT_AUTH_TYPE:-api_key}
       - AGENT_PROVIDER=openai
       - AGENT_MODEL=${OPENAI_MODEL:-gpt-4-turbo-preview}
+    ports:
+      # OAuth callback port for authentication
+      # Container port 1455 is hardcoded by OpenAI CLI
+      # Map to host port via OPENAI_OAUTH_PORT (default: 1455)
+      # For multiple instances, use different ports: OPENAI_OAUTH_PORT=1456, 1457, etc.
+      - "${OPENAI_OAUTH_PORT:-1455}:1455"
     volumes:
-      - ../workspace:/codex-workspace
+      - ${WORKSPACE_PATH:-../workspace}:/codex-workspace
       - ${HOME}/.ssh:/root/.ssh:ro
       - ${HOME}/.gitconfig:/root/.gitconfig:ro
     working_dir: /codex-workspace
@@ -222,7 +224,7 @@ services:
       - AIDER_DARK_MODE=${AIDER_DARK_MODE:-true}
       - AIDER_CLI_OPTIONS=${AIDER_CLI_OPTIONS:-}
     volumes:
-      - ../workspace:/aider-workspace
+      - ${WORKSPACE_PATH:-../workspace}:/aider-workspace
       - ${HOME}/.ssh:/root/.ssh:ro
       - ${HOME}/.gitconfig:/root/.gitconfig:ro
     working_dir: /aider-workspace
@@ -259,7 +261,7 @@ services:
       - OLLAMA_CLI_OPTIONS=${OLLAMA_CLI_OPTIONS:-}
       - LITELLM_CLI_OPTIONS=${LITELLM_CLI_OPTIONS:-}
     volumes:
-      - ../workspace:/opencode-workspace
+      - ${WORKSPACE_PATH:-../workspace}:/opencode-workspace
       - ${HOME}/.ssh:/root/.ssh:ro
       - ${HOME}/.gitconfig:/root/.gitconfig:ro
       - ollama-data:/root/.ollama

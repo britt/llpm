@@ -23,6 +23,16 @@ function getHealthClass(status) {
     return healthMap[status] || 'health-unknown';
 }
 
+function getAgentEmoji(agentType) {
+    const emojiMap = {
+        'claude-code': '🤖',
+        'openai-codex': '🧠',
+        'aider': '🛠️',
+        'opencode': '💻'
+    };
+    return emojiMap[agentType] || '🔧';
+}
+
 function renderStats(agents) {
     const stats = {
         total: agents.length,
@@ -56,21 +66,32 @@ function renderStats(agents) {
     `;
 }
 
-function renderAuthBadge(agent) {
-    if (!agent.authType || agent.authType === 'api_key') {
-        return '<span style="background: #bee3f8; color: #2c5282; padding: 4px 10px; border-radius: 12px; font-size: 0.75em; font-weight: 600;">🔑 API Key</span>';
+function getUnifiedStatus(agent) {
+    // For subscription-based agents, check authentication first
+    if (agent.authType === 'subscription' && agent.health.authenticated === false) {
+        return {
+            label: '⏳ Awaiting Auth',
+            class: 'status-awaiting-auth'
+        };
     }
 
-    if (agent.authType === 'subscription') {
-        const isAuthenticated = agent.health.authenticated === true;
-        if (isAuthenticated) {
-            return '<span style="background: #c6f6d5; color: #22543d; padding: 4px 10px; border-radius: 12px; font-size: 0.75em; font-weight: 600;">✅ Authenticated</span>';
-        } else {
-            return '<span style="background: #feebc8; color: #7c2d12; padding: 4px 10px; border-radius: 12px; font-size: 0.75em; font-weight: 600;">⏳ Awaiting Auth</span>';
-        }
+    // For API key agents or authenticated subscription agents, use availability status
+    if (agent.status === 'available') {
+        return {
+            label: 'Available',
+            class: 'status-available'
+        };
+    } else if (agent.status === 'busy') {
+        return {
+            label: 'Busy',
+            class: 'status-busy'
+        };
+    } else {
+        return {
+            label: 'Unavailable',
+            class: 'status-offline'
+        };
     }
-
-    return '';
 }
 
 function renderOnboardingMessage(agent) {
@@ -94,21 +115,22 @@ function renderOnboardingMessage(agent) {
 }
 
 function renderAgent(agent) {
+    const status = getUnifiedStatus(agent);
     return `
-        <div class="agent-card" data-agent-id="${agent.id}" style="cursor: pointer;">
+        <div class="agent-card" data-agent-id="${agent.id}">
             <div class="agent-header">
-                <div>
-                    <div class="agent-name">${agent.name}</div>
-                    <div class="agent-id">${agent.id}</div>
-                    <div style="margin-top: 8px;">${renderAuthBadge(agent)}</div>
+                <div style="width: 100%;">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 16px; width: 100%;">
+                        <div class="agent-id">${agent.id}<span class="connect-icon" data-connect-agent="${agent.id}" title="Connect to container">🔌</span></div>
+                        <span class="status-badge ${status.class}" style="flex-shrink: 0; margin-left: 12px;">${status.label}</span>
+                    </div>
+                    <div class="agent-name" style="width: 100%;">${getAgentEmoji(agent.type)} ${agent.name}</div>
                 </div>
-                <span class="status-badge ${getStatusClass(agent.status)}">${agent.status}</span>
             </div>
 
             <div class="health-indicator">
-                <div class="health-dot ${getHealthClass(agent.health.status)}"></div>
-                <div class="health-text">
-                    ${agent.health.status} ${agent.health.message ? `- ${agent.health.message}` : ''}
+                <div style="font-weight: 600; color: #4a5568;">
+                    ${agent.status === 'busy' ? '⚡ Active' : '💤 Idle'}
                 </div>
             </div>
 
@@ -135,25 +157,21 @@ function renderAgent(agent) {
                     <span class="metadata-value">${formatTime(agent.registeredAt)}</span>
                 </div>
                 ` : ''}
-                ${agent.lastHeartbeat ? `
-                <div class="metadata-item">
-                    <span class="metadata-label">Last Heartbeat:</span>
-                    <span class="metadata-value">${formatTime(agent.lastHeartbeat)}</span>
-                </div>
-                ` : ''}
             </div>
         </div>
     `;
 }
 
-async function loadAgents() {
+async function loadAgents(verifyAuth = false) {
     const container = document.getElementById('agentsContainer');
     const statsContainer = document.getElementById('stats');
 
     try {
         container.innerHTML = '<div class="loading">Loading agents...</div>';
 
-        const response = await fetch('/agents');
+        // Add verifyAuth query parameter if requested
+        const url = verifyAuth ? '/agents?verifyAuth=true' : '/agents';
+        const response = await fetch(url);
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
@@ -167,19 +185,44 @@ async function loadAgents() {
             return;
         }
 
-        statsContainer.innerHTML = renderStats(agents);
+        // Sort agents by type first, then by name
+        const sortedAgents = agents.sort((a, b) => {
+            // First sort by type
+            if (a.type !== b.type) {
+                return a.type.localeCompare(b.type);
+            }
+            // Then sort by name (which includes instance number)
+            return a.name.localeCompare(b.name);
+        });
+
+        statsContainer.innerHTML = renderStats(sortedAgents);
         container.innerHTML = `
             <div class="agents-grid">
-                ${agents.map(renderAgent).join('')}
+                ${sortedAgents.map(renderAgent).join('')}
             </div>
         `;
 
-        // Add click handlers to agent cards
+        // Add event listeners for agent cards and connect icons
         document.querySelectorAll('.agent-card').forEach(card => {
-            card.addEventListener('click', () => {
-                const agentId = card.getAttribute('data-agent-id');
-                window.location.href = `/ui/agent-detail?id=${agentId}`;
+            const agentId = card.getAttribute('data-agent-id');
+
+            // Click on card goes to detail page
+            card.addEventListener('click', (e) => {
+                // Don't navigate if clicking on connect icon
+                if (!e.target.classList.contains('connect-icon')) {
+                    window.location.href = `/ui/agent-detail?id=${agentId}`;
+                }
             });
+
+            // Click on connect icon opens modal
+            const connectIcon = card.querySelector('.connect-icon');
+            if (connectIcon) {
+                connectIcon.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const connectAgentId = connectIcon.getAttribute('data-connect-agent');
+                    connectToAgent(connectAgentId);
+                });
+            }
         });
 
         document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString();
@@ -189,9 +232,94 @@ async function loadAgents() {
     }
 }
 
+function connectToAgent(agentId) {
+    if (!agentId) {
+        alert('No agent ID available');
+        return;
+    }
+
+    const containerName = `docker-${agentId}`;
+    const command = `docker exec -it ${containerName} /bin/bash`;
+    showConnectModal(command);
+}
+
+function showConnectModal(command) {
+    const modal = document.getElementById('connectModal');
+    const commandBox = document.getElementById('connectCommand');
+
+    commandBox.textContent = command;
+    modal.classList.add('show');
+    modal.dataset.command = command;
+}
+
+function closeConnectModal() {
+    const modal = document.getElementById('connectModal');
+    modal.classList.remove('show');
+
+    const copyButton = document.getElementById('copyButton');
+    copyButton.textContent = '📋 Copy to Clipboard';
+    copyButton.classList.remove('copied');
+}
+
+function copyCommand() {
+    const modal = document.getElementById('connectModal');
+    const command = modal.dataset.command;
+    const copyButton = document.getElementById('copyButton');
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(command).then(() => {
+            copyButton.textContent = '✅ Copied!';
+            copyButton.classList.add('copied');
+
+            setTimeout(() => {
+                copyButton.textContent = '📋 Copy to Clipboard';
+                copyButton.classList.remove('copied');
+            }, 2000);
+        }).catch(() => {
+            copyButton.textContent = '❌ Failed to copy';
+        });
+    } else {
+        const commandBox = document.getElementById('connectCommand');
+        const range = document.createRange();
+        range.selectNodeContents(commandBox);
+        const selection = window.getSelection();
+        selection.removeAllRanges();
+        selection.addRange(range);
+
+        copyButton.textContent = 'Text selected - press Ctrl+C';
+    }
+}
+
 // Load agents on page load
 document.addEventListener('DOMContentLoaded', () => {
     loadAgents();
-    // Auto-refresh every 10 seconds
-    autoRefresh = setInterval(loadAgents, 10000);
+
+    // Attach refresh button event listener
+    const refreshButton = document.getElementById('refreshButton');
+    if (refreshButton) {
+        refreshButton.addEventListener('click', () => loadAgents(true));
+    }
+
+    // Auto-refresh every 30 seconds WITH auth verification
+    autoRefresh = setInterval(() => loadAgents(true), 30000);
+
+    // Modal event listeners
+    const modal = document.getElementById('connectModal');
+    if (modal) {
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                closeConnectModal();
+            }
+        });
+    }
+
+    const closeButton = document.getElementById('modalCloseButton');
+    if (closeButton) {
+        closeButton.addEventListener('click', closeConnectModal);
+    }
+
+    const copyButton = document.getElementById('copyButton');
+    if (copyButton) {
+        copyButton.addEventListener('click', copyCommand);
+    }
 });

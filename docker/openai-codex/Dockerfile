@@ -1,8 +1,9 @@
 # OpenAI Codex Assistant Container
 FROM llpm-base:latest
 
-# Install sudo
-RUN apt-get update && apt-get install -y sudo && rm -rf /var/lib/apt/lists/*
+# Install sudo and socat for OAuth port forwarding
+# socat is needed because codex OAuth server binds to 127.0.0.1 instead of 0.0.0.0
+RUN apt-get update && apt-get install -y sudo socat && rm -rf /var/lib/apt/lists/*
 
 # Create codex user with sudo access
 RUN useradd -m -s /bin/bash codex && \

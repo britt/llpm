@@ -91,22 +91,23 @@ export class DockerExecutor {
   
   private async findContainer(agentId: string): Promise<string | null> {
     try {
-      // Look for any container with the agent name (e.g., docker-claude-code-1, docker-openai-codex-2)
-      // Also handle case where container might be named just 'claude-code-1' without 'docker-' prefix
+      // agentId now includes instance number (e.g., claude-code-1)
+      // Construct exact container name: docker-{agentId}
+      const containerName = `${this.containerPrefix}${agentId}`;
+
       const { stdout } = await execAsync(
-        `docker ps --format "{{.Names}}" | grep -E "(^${this.containerPrefix})?${agentId}-[0-9]+$" | head -1`
+        `docker ps --format "{{.Names}}" --filter "name=${containerName}"`
       );
-      
-      const containerName = stdout.trim();
-      if (containerName) {
-        logger.debug(`Found container ${containerName} for agent ${agentId}`);
-        return containerName;
+
+      const found = stdout.trim();
+      if (found) {
+        logger.debug(`Found container ${found} for agent ${agentId}`);
+        return found;
       }
-      
+
       logger.debug(`No container found for agent ${agentId}`);
       return null;
     } catch (error) {
-      // grep returns exit code 1 when no matches found, which is not an error
       logger.debug(`No container found for agent ${agentId}`);
       return null;
     }

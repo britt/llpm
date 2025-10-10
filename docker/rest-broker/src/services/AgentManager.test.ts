@@ -196,4 +196,85 @@ describe('AgentManager', () => {
       expect(url).toBeNull();
     });
   });
+
+  describe('submitJob with authentication checks', () => {
+    it('should allow job submission for authenticated subscription agent', async () => {
+      await agentManager.registerAgent({
+        id: 'test-agent-12',
+        name: 'Test Agent 12',
+        type: 'claude-code',
+        authType: 'subscription',
+        provider: 'claude',
+        model: 'claude-3-opus-20240229',
+      });
+
+      // Mark as authenticated
+      await agentManager.markAgentAuthenticated('test-agent-12');
+
+      // Should not throw
+      const jobId = await agentManager.submitJob('test-agent-12', {
+        prompt: 'test prompt',
+      });
+
+      expect(jobId).toBeDefined();
+      expect(jobId).toMatch(/^job-/);
+    });
+
+    it('should reject job submission for unauthenticated subscription agent', async () => {
+      await agentManager.registerAgent({
+        id: 'test-agent-13',
+        name: 'Test Agent 13',
+        type: 'claude-code',
+        authType: 'subscription',
+        provider: 'claude',
+        model: 'claude-3-opus-20240229',
+      });
+
+      // Don't mark as authenticated
+      await expect(
+        agentManager.submitJob('test-agent-13', { prompt: 'test prompt' })
+      ).rejects.toThrow('is not authenticated. Please authenticate before submitting jobs');
+    });
+
+    it('should reject job submission for subscription agent with expired token', async () => {
+      await agentManager.registerAgent({
+        id: 'test-agent-14',
+        name: 'Test Agent 14',
+        type: 'claude-code',
+        authType: 'subscription',
+        provider: 'claude',
+        model: 'claude-3-opus-20240229',
+      });
+
+      // Manually set expired auth
+      const agent = agentManager.getAgent('test-agent-14');
+      if (agent) {
+        agent.health = {
+          ...agent.health,
+          authenticated: true,
+          authExpiresAt: Date.now() - 1000, // Expired 1 second ago
+        };
+      }
+
+      await expect(
+        agentManager.submitJob('test-agent-14', { prompt: 'test prompt' })
+      ).rejects.toThrow('authentication token has expired. Please re-authenticate');
+    });
+
+    it('should allow job submission for api_key agents without auth check', async () => {
+      await agentManager.registerAgent({
+        id: 'test-agent-15',
+        name: 'Test Agent 15',
+        type: 'claude-code',
+        authType: 'api_key',
+      });
+
+      // Should not throw - api_key agents don't need authentication check
+      const jobId = await agentManager.submitJob('test-agent-15', {
+        prompt: 'test prompt',
+      });
+
+      expect(jobId).toBeDefined();
+    });
+  });
 });

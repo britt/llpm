@@ -422,9 +422,14 @@ AGENT_AUTH_TYPE=subscription \
    # For Claude Code
    claude setup-token
 
-   # For OpenAI Codex
+   # For OpenAI Codex (OAuth - may have port binding issues in containers)
    codex login
+
+   # Alternative: Use API key authentication (recommended for Docker)
+   echo "$OPENAI_API_KEY" | codex login --with-api-key
    ```
+
+   **Note for OpenAI Codex OAuth**: The codex OAuth server binds to `127.0.0.1:1455` inside the container, which can cause connection issues with Docker port mapping. If `codex login` fails with "connection reset", use the API key method instead: `echo "$OPENAI_API_KEY" | codex login --with-api-key`
 
 4. **Signal authentication to REST broker:**
    ```bash
@@ -435,12 +440,54 @@ AGENT_AUTH_TYPE=subscription \
    - Visit `http://localhost:3010/ui/agents`
    - Agent should show ✅ Authenticated status
 
+#### OpenAI OAuth Callback Port Configuration
+
+OpenAI Codex authentication uses OAuth with a hardcoded callback port (1455). When running multiple OpenAI Codex containers, you need to map different host ports to avoid conflicts:
+
+**Single Instance (default):**
+```bash
+# Uses default port 1455 on both host and container
+AGENT_AUTH_TYPE=subscription docker-compose up -d openai-codex
+```
+
+**Multiple Instances:**
+```bash
+# First instance uses port 1455
+OPENAI_OAUTH_PORT=1455 docker-compose up -d openai-codex
+
+# Second instance uses port 1456
+OPENAI_OAUTH_PORT=1456 docker-compose up --scale openai-codex=2
+
+# Third instance uses port 1457
+OPENAI_OAUTH_PORT=1457 docker-compose up --scale openai-codex=3
+```
+
+**How it works:**
+- The OpenAI CLI inside the container always uses port 1455 for OAuth callbacks
+- `OPENAI_OAUTH_PORT` maps a different host port to the container's port 1455
+- This allows multiple containers to run simultaneously without port conflicts
+- Each container's OAuth flow will redirect to `localhost:<OPENAI_OAUTH_PORT>`
+
+**Example with scaling:**
+```bash
+# Set different ports for each instance in .env or command line
+AGENT_AUTH_TYPE=subscription \
+  OPENAI_OAUTH_PORT=1455 \
+  docker-compose up -d openai-codex
+
+# Scale to 2 instances, second one needs different port
+AGENT_AUTH_TYPE=subscription \
+  OPENAI_OAUTH_PORT=1456 \
+  docker-compose up --scale openai-codex=2
+```
+
 #### Subscription Mode Benefits
 
 - Uses your personal/team subscription credentials
 - Provider-specific passthrough paths for authentication
 - Detailed authentication status in web UI
 - Automatic base URL configuration
+- Configurable OAuth callback ports for multiple instances
 
 ### Monitoring Authentication Status
 
@@ -460,8 +507,9 @@ Add CLI options to your `docker/.env` file:
 # Claude Code CLI options
 CLAUDE_CLI_OPTIONS=--max-tokens 4096 --temperature 0.8
 
-# OpenAI CLI options
-OPENAI_CLI_OPTIONS=--temperature 0.7 --top-p 0.9
+# OpenAI Codex CLI options
+# Note: --skip-git-repo-check is set by default to avoid trusted directory errors
+OPENAI_CLI_OPTIONS=--skip-git-repo-check --temperature 0.7
 
 # Aider CLI options
 AIDER_CLI_OPTIONS=--no-auto-commits --dark-mode --model gpt-4

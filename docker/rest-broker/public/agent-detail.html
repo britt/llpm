@@ -151,9 +151,9 @@
         }
 
         .status-badge {
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 0.9em;
+            padding: 6px 12px;
+            border-radius: 18px;
+            font-size: 0.8em;
             font-weight: 600;
             text-transform: uppercase;
         }
@@ -171,6 +171,11 @@
         .status-offline {
             background: #fed7d7;
             color: #742a2a;
+        }
+
+        .status-awaiting-auth {
+            background: #fef3c7;
+            color: #78350f;
         }
 
         .health-indicator {
@@ -414,7 +419,7 @@
         <div class="refresh-bar">
             <div class="last-update">Last updated: <span id="lastUpdate">Never</span></div>
             <div class="button-group">
-                <button onclick="loadAgentDetail()">🔄 Refresh</button>
+                <button id="refreshButton">🔄 Refresh</button>
                 <button id="connectButton" class="connect-button">🔌 Connect</button>
             </div>
         </div>
