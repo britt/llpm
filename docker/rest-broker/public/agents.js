@@ -23,6 +23,16 @@ function getHealthClass(status) {
     return healthMap[status] || 'health-unknown';
 }
 
+function getAgentEmoji(agentType) {
+    const emojiMap = {
+        'claude-code': '🤖',
+        'openai-codex': '🧠',
+        'aider': '🛠️',
+        'opencode': '💻'
+    };
+    return emojiMap[agentType] || '🔧';
+}
+
 function renderStats(agents) {
     const stats = {
         total: agents.length,
@@ -56,21 +66,32 @@ function renderStats(agents) {
     `;
 }
 
-function renderAuthBadge(agent) {
-    if (!agent.authType || agent.authType === 'api_key') {
-        return '<span style="background: #bee3f8; color: #2c5282; padding: 4px 10px; border-radius: 12px; font-size: 0.75em; font-weight: 600;">🔑 API Key</span>';
+function getUnifiedStatus(agent) {
+    // For subscription-based agents, check authentication first
+    if (agent.authType === 'subscription' && agent.health.authenticated === false) {
+        return {
+            label: '⏳ Awaiting Auth',
+            class: 'status-awaiting-auth'
+        };
     }
 
-    if (agent.authType === 'subscription') {
-        const isAuthenticated = agent.health.authenticated === true;
-        if (isAuthenticated) {
-            return '<span style="background: #c6f6d5; color: #22543d; padding: 4px 10px; border-radius: 12px; font-size: 0.75em; font-weight: 600;">✅ Authenticated</span>';
-        } else {
-            return '<span style="background: #feebc8; color: #7c2d12; padding: 4px 10px; border-radius: 12px; font-size: 0.75em; font-weight: 600;">⏳ Awaiting Auth</span>';
-        }
+    // For API key agents or authenticated subscription agents, use availability status
+    if (agent.status === 'available') {
+        return {
+            label: 'Available',
+            class: 'status-available'
+        };
+    } else if (agent.status === 'busy') {
+        return {
+            label: 'Busy',
+            class: 'status-busy'
+        };
+    } else {
+        return {
+            label: 'Unavailable',
+            class: 'status-offline'
+        };
     }
-
-    return '';
 }
 
 function renderOnboardingMessage(agent) {
@@ -94,21 +115,22 @@ function renderOnboardingMessage(agent) {
 }
 
 function renderAgent(agent) {
+    const status = getUnifiedStatus(agent);
     return `
         <div class="agent-card" data-agent-id="${agent.id}" style="cursor: pointer;">
             <div class="agent-header">
-                <div>
-                    <div class="agent-name">${agent.name}</div>
-                    <div class="agent-id">${agent.id}</div>
-                    <div style="margin-top: 8px;">${renderAuthBadge(agent)}</div>
+                <div style="width: 100%;">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 16px; width: 100%;">
+                        <div class="agent-id">${agent.id}</div>
+                        <span class="status-badge ${status.class}" style="flex-shrink: 0; margin-left: 12px;">${status.label}</span>
+                    </div>
+                    <div class="agent-name" style="width: 100%;">${getAgentEmoji(agent.type)} ${agent.name}</div>
                 </div>
-                <span class="status-badge ${getStatusClass(agent.status)}">${agent.status}</span>
             </div>
 
             <div class="health-indicator">
-                <div class="health-dot ${getHealthClass(agent.health.status)}"></div>
-                <div class="health-text">
-                    ${agent.health.status} ${agent.health.message ? `- ${agent.health.message}` : ''}
+                <div style="font-weight: 600; color: #4a5568;">
+                    ${agent.status === 'busy' ? '⚡ Active' : '💤 Idle'}
                 </div>
             </div>
 
@@ -133,12 +155,6 @@ function renderAgent(agent) {
                 <div class="metadata-item">
                     <span class="metadata-label">Registered:</span>
                     <span class="metadata-value">${formatTime(agent.registeredAt)}</span>
-                </div>
-                ` : ''}
-                ${agent.lastHeartbeat ? `
-                <div class="metadata-item">
-                    <span class="metadata-label">Last Heartbeat:</span>
-                    <span class="metadata-value">${formatTime(agent.lastHeartbeat)}</span>
                 </div>
                 ` : ''}
             </div>
@@ -169,10 +185,20 @@ async function loadAgents(verifyAuth = false) {
             return;
         }
 
-        statsContainer.innerHTML = renderStats(agents);
+        // Sort agents by type first, then by name
+        const sortedAgents = agents.sort((a, b) => {
+            // First sort by type
+            if (a.type !== b.type) {
+                return a.type.localeCompare(b.type);
+            }
+            // Then sort by name (which includes instance number)
+            return a.name.localeCompare(b.name);
+        });
+
+        statsContainer.innerHTML = renderStats(sortedAgents);
         container.innerHTML = `
             <div class="agents-grid">
-                ${agents.map(renderAgent).join('')}
+                ${sortedAgents.map(renderAgent).join('')}
             </div>
         `;
 

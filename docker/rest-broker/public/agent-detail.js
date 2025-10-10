@@ -40,6 +40,44 @@ function getJobStatusClass(status) {
     return statusMap[status] || 'job-queued';
 }
 
+function getAgentEmoji(agentType) {
+    const emojiMap = {
+        'claude-code': '🤖',
+        'openai-codex': '🧠',
+        'aider': '🛠️',
+        'opencode': '💻'
+    };
+    return emojiMap[agentType] || '🔧';
+}
+
+function getUnifiedStatus(agent) {
+    // For subscription-based agents, check authentication first
+    if (agent.authType === 'subscription' && agent.health.authenticated === false) {
+        return {
+            label: '⏳ Awaiting Auth',
+            class: 'status-awaiting-auth'
+        };
+    }
+
+    // For API key agents or authenticated subscription agents, use availability status
+    if (agent.status === 'available') {
+        return {
+            label: 'Available',
+            class: 'status-available'
+        };
+    } else if (agent.status === 'busy') {
+        return {
+            label: 'Busy',
+            class: 'status-busy'
+        };
+    } else {
+        return {
+            label: 'Unavailable',
+            class: 'status-offline'
+        };
+    }
+}
+
 function getAuthBadge(agent) {
     if (!agent.authType || agent.authType === 'api_key') {
         return '<span style="background: #bee3f8; color: #2c5282; padding: 6px 14px; border-radius: 12px; font-size: 0.9em; font-weight: 600;">🔑 API Key</span>';
@@ -81,20 +119,19 @@ function renderOnboardingMessage(agent) {
 function renderAgentDetail(agent, jobs) {
     const metadata = agent.metadata || {};
     const metadataEntries = Object.entries(metadata);
+    const status = getUnifiedStatus(agent);
 
     return `
         <div class="detail-grid">
             <!-- Status Card -->
             <div class="detail-card">
-                <h2>Status & Health</h2>
+                <h2>Status</h2>
                 <div class="status-section">
-                    <span class="status-badge ${getStatusClass(agent.status)}">${agent.status}</span>
+                    <span class="status-badge ${status.class}">${status.label}</span>
                 </div>
-                <div class="health-indicator">
-                    <div class="health-dot ${getHealthClass(agent.health.status)}"></div>
-                    <div>
-                        <strong>${agent.health.status}</strong>
-                        ${agent.health.message ? `<br><small>${agent.health.message}</small>` : ''}
+                <div style="margin-top: 16px; padding: 12px; background: #f7fafc; border-radius: 8px;">
+                    <div style="font-weight: 600; color: #4a5568; font-size: 1.1em;">
+                        ${agent.status === 'busy' ? '⚡ Active' : '💤 Idle'}
                     </div>
                 </div>
             </div>
@@ -104,13 +141,13 @@ function renderAgentDetail(agent, jobs) {
                 <h2>Authentication</h2>
                 <div class="info-table">
                     <div class="info-row">
-                        <span class="info-label">Auth Mode:</span>
-                        <span class="info-value">${getAuthBadge(agent)}</span>
+                        <span class="info-label">Auth Type:</span>
+                        <span class="info-value">${agent.authType === 'subscription' ? 'Subscription' : 'API Key'}</span>
                     </div>
                     ${agent.authType === 'subscription' ? `
                     <div class="info-row">
-                        <span class="info-label">Auth Status:</span>
-                        <span class="info-value">${agent.health.authenticated ? 'Authenticated ✅' : 'Not Authenticated ❌'}</span>
+                        <span class="info-label">Authenticated:</span>
+                        <span class="info-value">${agent.health.authenticated ? '✅ Yes' : '❌ No'}</span>
                     </div>
                     ${agent.provider ? `
                     <div class="info-row">
@@ -145,11 +182,11 @@ function renderAgentDetail(agent, jobs) {
                     </div>
                     <div class="info-row">
                         <span class="info-label">Type:</span>
-                        <span class="info-value">${agent.type}</span>
+                        <span class="info-value">${getAgentEmoji(agent.type)} ${agent.type}</span>
                     </div>
                     <div class="info-row">
                         <span class="info-label">Name:</span>
-                        <span class="info-value">${agent.name}</span>
+                        <span class="info-value">${getAgentEmoji(agent.type)} ${agent.name}</span>
                     </div>
                     ${agent.host ? `
                     <div class="info-row">
@@ -173,10 +210,6 @@ function renderAgentDetail(agent, jobs) {
                     <div class="info-row">
                         <span class="info-label">Registered At:</span>
                         <span class="info-value">${formatTime(agent.registeredAt)}</span>
-                    </div>
-                    <div class="info-row">
-                        <span class="info-label">Last Heartbeat:</span>
-                        <span class="info-value">${formatTime(agent.lastHeartbeat)}</span>
                     </div>
                     <div class="info-row">
                         <span class="info-label">Last Health Check:</span>
@@ -245,9 +278,9 @@ async function loadAgentDetail() {
         }
 
         // Update header
-        document.getElementById('agentName').textContent = agent.name;
+        document.getElementById('agentName').textContent = `${getAgentEmoji(agent.type)} ${agent.name}`;
         document.getElementById('agentId').textContent = agent.id;
-        document.title = `${agent.name} - LLPM REST API Broker`;
+        document.title = `${getAgentEmoji(agent.type)} ${agent.name} - LLPM REST API Broker`;
 
         // Fetch recent jobs (limit 10)
         let jobs = [];
