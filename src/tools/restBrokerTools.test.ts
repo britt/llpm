@@ -7,7 +7,8 @@ import {
   getJobTool,
   createJobTool,
   cancelJobTool,
-  markAgentAuthenticatedTool
+  markAgentAuthenticatedTool,
+  scaleAgentClusterTool
 } from './restBrokerTools';
 
 describe('REST Broker Tools', () => {
@@ -21,7 +22,8 @@ describe('REST Broker Tools', () => {
         getJobTool,
         createJobTool,
         cancelJobTool,
-        markAgentAuthenticatedTool
+        markAgentAuthenticatedTool,
+        scaleAgentClusterTool
       ];
 
       tools.forEach((tool) => {
@@ -197,7 +199,8 @@ describe('REST Broker Tools', () => {
         { tool: getJobTool, name: 'get_job' },
         { tool: createJobTool, name: 'create_job' },
         { tool: cancelJobTool, name: 'cancel_job' },
-        { tool: markAgentAuthenticatedTool, name: 'mark_agent_authenticated' }
+        { tool: markAgentAuthenticatedTool, name: 'mark_agent_authenticated' },
+        { tool: scaleAgentClusterTool, name: 'scale_agent_cluster' }
       ];
 
       tools.forEach(({ tool, name }) => {
@@ -291,6 +294,121 @@ describe('REST Broker Tools', () => {
         expect(tool.execute).toBeDefined();
         expect(typeof tool.execute).toBe('function');
       });
+    });
+  });
+
+  describe('scaleAgentClusterTool', () => {
+    it('should accept preset parameter', () => {
+      const validPresets = ['dev', 'team', 'heavy', 'minimal', 'custom'];
+
+      validPresets.forEach(preset => {
+        const parseResult = scaleAgentClusterTool.inputSchema.safeParse({ preset });
+        expect(parseResult.success).toBe(true);
+      });
+    });
+
+    it('should reject invalid preset', () => {
+      const parseResult = scaleAgentClusterTool.inputSchema.safeParse({ preset: 'invalid' });
+      expect(parseResult.success).toBe(false);
+    });
+
+    it('should accept custom instance counts', () => {
+      const parseResult = scaleAgentClusterTool.inputSchema.safeParse({
+        preset: 'custom',
+        claudeCode: 2,
+        openaiCodex: 3,
+        aider: 1,
+        opencode: 0
+      });
+      expect(parseResult.success).toBe(true);
+    });
+
+    it('should validate instance count ranges (0-10)', () => {
+      // Valid range
+      const parseResult1 = scaleAgentClusterTool.inputSchema.safeParse({
+        preset: 'custom',
+        claudeCode: 0
+      });
+      expect(parseResult1.success).toBe(true);
+
+      const parseResult2 = scaleAgentClusterTool.inputSchema.safeParse({
+        preset: 'custom',
+        claudeCode: 10
+      });
+      expect(parseResult2.success).toBe(true);
+
+      // Invalid range
+      const parseResult3 = scaleAgentClusterTool.inputSchema.safeParse({
+        preset: 'custom',
+        claudeCode: 11
+      });
+      expect(parseResult3.success).toBe(false);
+
+      const parseResult4 = scaleAgentClusterTool.inputSchema.safeParse({
+        preset: 'custom',
+        claudeCode: -1
+      });
+      expect(parseResult4.success).toBe(false);
+    });
+
+    it('should accept authType parameter', () => {
+      const parseResult1 = scaleAgentClusterTool.inputSchema.safeParse({
+        preset: 'dev',
+        authType: 'api_key'
+      });
+      expect(parseResult1.success).toBe(true);
+
+      const parseResult2 = scaleAgentClusterTool.inputSchema.safeParse({
+        preset: 'dev',
+        authType: 'subscription'
+      });
+      expect(parseResult2.success).toBe(true);
+    });
+
+    it('should default authType to subscription', () => {
+      const parseResult = scaleAgentClusterTool.inputSchema.parse({
+        preset: 'dev'
+      });
+      expect(parseResult.authType).toBe('subscription');
+    });
+
+    it('should reject invalid authType', () => {
+      const parseResult = scaleAgentClusterTool.inputSchema.safeParse({
+        preset: 'dev',
+        authType: 'invalid'
+      });
+      expect(parseResult.success).toBe(false);
+    });
+
+    it('should allow optional parameters', () => {
+      // Preset only
+      const parseResult1 = scaleAgentClusterTool.inputSchema.safeParse({
+        preset: 'dev'
+      });
+      expect(parseResult1.success).toBe(true);
+
+      // Custom with partial counts
+      const parseResult2 = scaleAgentClusterTool.inputSchema.safeParse({
+        preset: 'custom',
+        claudeCode: 2
+      });
+      expect(parseResult2.success).toBe(true);
+    });
+
+    it('should have proper parameter descriptions', () => {
+      const schema = scaleAgentClusterTool.inputSchema;
+      const shape = (schema as any).shape;
+
+      expect(shape.preset).toBeDefined();
+      expect(shape.claudeCode).toBeDefined();
+      expect(shape.openaiCodex).toBeDefined();
+      expect(shape.aider).toBeDefined();
+      expect(shape.opencode).toBeDefined();
+      expect(shape.authType).toBeDefined();
+
+      // Check that descriptions exist
+      expect(shape.preset.description).toBeDefined();
+      expect(shape.claudeCode.description).toBeDefined();
     });
   });
 });

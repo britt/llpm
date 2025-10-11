@@ -479,3 +479,93 @@ ${connectCommand}
     }
   }
 });
+
+/**
+ * Scale the agent cluster
+ */
+export const scaleAgentClusterTool = tool({
+  description: 'Scale the Docker agent cluster by adjusting the number of running instances for each agent type. Use presets (dev, team, heavy, minimal) or specify custom instance counts.',
+  inputSchema: z.object({
+    preset: z.enum(['dev', 'team', 'heavy', 'minimal', 'custom']).optional().describe('Scaling preset: dev (1 each), team (1 claude, 2 codex, 2 aider, 1 opencode), heavy (2 claude, 3 codex, 3 aider, 2 opencode), minimal (1 aider only)'),
+    claudeCode: z.number().min(0).max(10).optional().describe('Number of Claude Code instances (0-10). Only used with preset=custom'),
+    openaiCodex: z.number().min(0).max(10).optional().describe('Number of OpenAI Codex instances (0-10). Only used with preset=custom'),
+    aider: z.number().min(0).max(10).optional().describe('Number of Aider instances (0-10). Only used with preset=custom'),
+    opencode: z.number().min(0).max(10).optional().describe('Number of OpenCode instances (0-10). Only used with preset=custom'),
+    authType: z.enum(['api_key', 'subscription']).default('subscription').describe('Authentication type for agents')
+  }),
+  execute: async ({ preset, claudeCode, openaiCodex, aider, opencode, authType = 'subscription' }) => {
+    const startTime = Date.now();
+
+    try {
+      // Determine scaling configuration
+      let config: { claude: number; codex: number; aider: number; opencode: number };
+
+      if (preset === 'custom') {
+        if (claudeCode === undefined && openaiCodex === undefined && aider === undefined && opencode === undefined) {
+          return `❌ Custom preset requires at least one agent count specified (claudeCode, openaiCodex, aider, or opencode)`;
+        }
+        config = {
+          claude: claudeCode ?? 0,
+          codex: openaiCodex ?? 0,
+          aider: aider ?? 0,
+          opencode: opencode ?? 0
+        };
+      } else {
+        // Use preset configuration
+        const presets = {
+          dev: { claude: 1, codex: 1, aider: 1, opencode: 1 },
+          team: { claude: 1, codex: 2, aider: 2, opencode: 1 },
+          heavy: { claude: 2, codex: 3, aider: 3, opencode: 2 },
+          minimal: { claude: 0, codex: 0, aider: 1, opencode: 0 }
+        };
+        config = presets[preset || 'dev'];
+      }
+
+      // Execute scaling via scale.sh script
+      const { $ } = await import('bun');
+
+      const scaleCommand = `docker/scale.sh custom --claude ${config.claude} --codex ${config.codex} --aider ${config.aider} --opencode ${config.opencode} --auth-type ${authType}`;
+
+      const result = await $`bash -c ${scaleCommand}`.text();
+
+      const duration = Date.now() - startTime;
+
+      // Audit the scaling operation
+      await auditToolCall({
+        timestamp: new Date().toISOString(),
+        toolName: 'scale_agent_cluster',
+        parameters: { preset, claudeCode, openaiCodex, aider, opencode, authType },
+        result: { config, output: result },
+        duration
+      });
+
+      return `✅ **Agent Cluster Scaled Successfully**
+
+**Configuration**:
+- Claude Code: ${config.claude} instance(s)
+- OpenAI Codex: ${config.codex} instance(s)
+- Aider: ${config.aider} instance(s)
+- OpenCode: ${config.opencode} instance(s)
+- Auth Type: ${authType}
+
+**Total Agents**: ${config.claude + config.codex + config.aider + config.opencode}
+
+${result}
+
+📝 *This scaling operation has been logged for audit purposes.*`;
+    } catch (error) {
+      const duration = Date.now() - startTime;
+
+      // Audit error
+      await auditToolCall({
+        timestamp: new Date().toISOString(),
+        toolName: 'scale_agent_cluster',
+        parameters: { preset, claudeCode, openaiCodex, aider, opencode, authType },
+        error: error instanceof Error ? error.message : 'Unknown error',
+        duration
+      });
+
+      return `❌ Failed to scale agent cluster: ${error instanceof Error ? error.message : 'Unknown error'}`;
+    }
+  }
+});
