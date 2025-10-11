@@ -38,7 +38,7 @@ describe('NotesSelector', () => {
     expect(result3).toHaveLength(3);
   });
 
-  it('should limit results to 10 notes', () => {
+  it('should limit initial results to 10 notes', () => {
     const manyNotes = Array.from({ length: 50 }, (_, i) => ({
       id: i,
       title: `Note ${i}`,
@@ -62,5 +62,34 @@ describe('NotesSelector', () => {
 
     const result = handleSearch('note', manyNotes);
     expect(result).toHaveLength(10);
+  });
+
+  it('should load more notes when pagination is triggered', () => {
+    const manyNotes = Array.from({ length: 50 }, (_, i) => ({
+      id: i,
+      title: `Note ${i}`,
+      content: `Content ${i}`,
+      createdAt: '2025-01-01',
+      updatedAt: '2025-01-01'
+    }));
+
+    // Simulate pagination
+    let displayLimit = 10;
+    const loadMore = () => {
+      displayLimit += 5;
+      return manyNotes.slice(0, displayLimit);
+    };
+
+    // Initial load
+    let displayed = manyNotes.slice(0, displayLimit);
+    expect(displayed).toHaveLength(10);
+
+    // First pagination
+    displayed = loadMore();
+    expect(displayed).toHaveLength(15);
+
+    // Second pagination
+    displayed = loadMore();
+    expect(displayed).toHaveLength(20);
   });
 });

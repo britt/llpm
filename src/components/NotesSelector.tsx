@@ -24,6 +24,8 @@ export default function NotesSelector({
 }: NotesSelectorProps) {
   const [notes, setNotes] = useState<ProjectNote[]>([]);
   const [allNotes, setAllNotes] = useState<ProjectNote[]>([]);
+  const [filteredNotes, setFilteredNotes] = useState<ProjectNote[]>([]);
+  const [displayLimit, setDisplayLimit] = useState(10);
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
   const searchQueryRef = useRef('');
@@ -47,6 +49,7 @@ export default function NotesSelector({
 
       const notes = db.getNotes();
       setAllNotes(notes);
+      setFilteredNotes(notes);
       setNotes(notes.slice(0, 10));
       db.close();
     } catch (err) {
@@ -59,6 +62,8 @@ export default function NotesSelector({
     const query = searchQueryRef.current;
 
     if (!query.trim()) {
+      setFilteredNotes(allNotes);
+      setDisplayLimit(10);
       setNotes(allNotes.slice(0, 10));
       return;
     }
@@ -69,7 +74,16 @@ export default function NotesSelector({
       note.content.toLowerCase().includes(lowerQuery) ||
       note.tags?.toLowerCase().includes(lowerQuery)
     );
+    setFilteredNotes(filtered);
+    setDisplayLimit(10);
     setNotes(filtered.slice(0, 10));
+  };
+
+  // Load more notes when scrolling reaches the bottom
+  const loadMoreNotes = () => {
+    const newLimit = displayLimit + 5;
+    setDisplayLimit(newLimit);
+    setNotes(filteredNotes.slice(0, newLimit));
   };
 
 
@@ -124,8 +138,14 @@ export default function NotesSelector({
     } else if (viewMode === 'list' && !isSearchFocused) {
       if (key.upArrow && selectedIndex > 0) {
         setSelectedIndex(selectedIndex - 1);
-      } else if (key.downArrow && selectedIndex < notes.length - 1) {
-        setSelectedIndex(selectedIndex + 1);
+      } else if (key.downArrow) {
+        if (selectedIndex < notes.length - 1) {
+          setSelectedIndex(selectedIndex + 1);
+        }
+        // Load more notes when scrolling near the bottom
+        if (selectedIndex >= notes.length - 3 && notes.length < filteredNotes.length) {
+          loadMoreNotes();
+        }
       } else if (key.return) {
         handleSelectNote();
       } else if (key.escape) {
@@ -200,7 +220,7 @@ export default function NotesSelector({
     <Box paddingX={1} borderStyle="single" borderLeft={false} borderRight={false}>
       <Box flexDirection="column">
         <Text color="cyan" bold>
-          📝 Notes ({notes.length} {searchQuery ? 'matching' : 'total'})
+          📝 Notes ({notes.length}{filteredNotes.length > notes.length ? `/${filteredNotes.length}` : ''} {searchQuery ? 'matching' : 'total'})
         </Text>
         <Box marginTop={1}>
           <Text>
