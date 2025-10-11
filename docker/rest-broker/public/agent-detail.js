@@ -135,7 +135,7 @@ function renderAgentDetail(agent, jobs) {
                     <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #e2e8f0;">
                         <div style="font-weight: 500; color: #4a5568; margin-bottom: 6px; font-size: 0.9em;">Current task:</div>
                         <div style="font-size: 0.85em; color: #718096; line-height: 1.5; font-style: italic;">
-                            "${agent.activeJob.prompt.length > 200 ? agent.activeJob.prompt.substring(0, 200) + '...' : agent.activeJob.prompt}"
+                            "${agent.activeJob.prompt.length > 500 ? agent.activeJob.prompt.substring(0, 500) + '...' : agent.activeJob.prompt}"
                         </div>
                     </div>
                     ` : ''}
@@ -236,10 +236,14 @@ function renderAgentDetail(agent, jobs) {
                 ${jobs && jobs.length > 0 ? `
                     ${jobs.map(job => `
                         <div class="job-item">
-                            <div>
-                                <strong>${job.id}</strong>
-                                <br>
-                                <small>${formatTime(job.createdAt)}</small>
+                            <div style="flex: 1; min-width: 0;">
+                                <div style="font-weight: 600; color: #2d3748; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-bottom: 4px;">
+                                    ${job.prompt || 'No prompt provided'}
+                                </div>
+                                <div style="font-size: 0.75em; color: #a0aec0;">
+                                    ${job.id}
+                                </div>
+                                <small style="color: #718096;">${formatTime(job.createdAt)}</small>
                             </div>
                             <span class="job-status ${getJobStatusClass(job.status)}">${job.status}</span>
                         </div>
