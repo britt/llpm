@@ -11,6 +11,7 @@ interface HybridInputProps {
   disabled?: boolean;
   onShowModelSelector?: () => void;
   onShowProjectSelector?: () => void;
+  onShowNotesSelector?: () => void;
 }
 
 interface InputState {
@@ -25,7 +26,8 @@ export default function HybridInput({
   focus = true,
   disabled = false,
   onShowModelSelector,
-  onShowProjectSelector
+  onShowProjectSelector,
+  onShowNotesSelector
 }: HybridInputProps) {
   const [inputState, setInputState] = useState<InputState>({
     input: value,
@@ -102,6 +104,11 @@ export default function HybridInput({
 
     if (key.meta && inputChar === 'm') {
       onShowModelSelector?.();
+      return;
+    }
+
+    if (key.meta && inputChar === 'n') {
+      onShowNotesSelector?.();
       return;
     }
 
