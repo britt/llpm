@@ -11,6 +11,7 @@ import { loadCurrentModel } from '../utils/modelStorage';
 import HybridInput from './HybridInput';
 import ProjectSelector from './ProjectSelector';
 import ModelSelector from './ModelSelector';
+import NotesSelector from './NotesSelector';
 import type { QueuedMessage } from '../hooks/useChat';
 import { RequestLogDisplay } from './RequestLogDisplay';
 import type { LogEntry } from './RequestLogDisplay';
@@ -89,7 +90,7 @@ const ProjectStatus = memo(
           ) : (
             <Text color="gray">none</Text>
           )}{' '}
-          <Text color="blackBright">(shift+tab: switch project, option+m: switch model)</Text>
+          <Text color="blackBright">(shift+tab: switch project, option+m: switch model, option+n: notes)</Text>
         </Text>
       </Box>
     );
@@ -157,7 +158,8 @@ export const ChatInterface = memo(function ChatInterface({
   const [currentProject, setCurrentProject] = useState<Project | null>(null);
   const [currentModel, setCurrentModel] = useState<ModelConfig | null>(null);
   const [showProjectSelector, setShowProjectSelector] = useState(false);
-  const [activeInput, setActiveInput] = useState<'main' | 'project' | 'model'>('main');
+  const [showNotesSelector, setShowNotesSelector] = useState(false);
+  const [activeInput, setActiveInput] = useState<'main' | 'project' | 'model' | 'notes'>('main');
 
   // Load current project on mount
   useEffect(() => {
@@ -231,10 +233,11 @@ export const ChatInterface = memo(function ChatInterface({
 
   // Global hotkey handling for input focus management
   useInput((inputChar, key) => {
-    // Cancel model selection and project selector
+    // Cancel model selection, project selector, and notes selector
     if (key.escape) {
       onCancelModelSelection?.();
       setShowProjectSelector(false);
+      setShowNotesSelector(false);
       setActiveInput('main');
     }
   }, { isActive: activeInput !== 'main' });
@@ -244,12 +247,24 @@ export const ChatInterface = memo(function ChatInterface({
   useEffect(() => {
     if (showProjectSelector) {
       setActiveInput('project');
+    } else if (showNotesSelector) {
+      setActiveInput('notes');
     } else if (interactiveCommand?.type === 'model-select') {
       setActiveInput('model');
     } else {
       setActiveInput('main');
     }
-  }, [showProjectSelector, interactiveCommand]);
+  }, [showProjectSelector, showNotesSelector, interactiveCommand]);
+
+  // Handle note insertion
+  const handleInsertNote = useCallback(
+    (noteContent: string, noteId: number) => {
+      onSendMessage(noteContent);
+      setShowNotesSelector(false);
+      setActiveInput('main');
+    },
+    [onSendMessage]
+  );
 
   let inputComponent = (
     <HybridInput
@@ -258,22 +273,32 @@ export const ChatInterface = memo(function ChatInterface({
       onSubmit={handleInputSubmit}
       onShowModelSelector={() => {onTriggerModelSelector?.(); setActiveInput('model')}}
       onShowProjectSelector={() => {setShowProjectSelector(true); setActiveInput('project')}}
+      onShowNotesSelector={() => {setShowNotesSelector(true); setActiveInput('notes')}}
     />
   );
-  
+
   if (showProjectSelector) {
     inputComponent = (
-      <ProjectSelector 
-        onProjectSelect={handleProjectSelect} 
+      <ProjectSelector
+        onProjectSelect={handleProjectSelect}
       />
     );
   }
-  
+
+  if (showNotesSelector) {
+    inputComponent = (
+      <NotesSelector
+        onClose={() => {setShowNotesSelector(false); setActiveInput('main')}}
+        onInsertNote={handleInsertNote}
+      />
+    );
+  }
+
   if (interactiveCommand?.type === 'model-select') {
     inputComponent = (
-      <ModelSelector 
-        command={interactiveCommand} 
-        onModelSelect={onModelSelect} 
+      <ModelSelector
+        command={interactiveCommand}
+        onModelSelect={onModelSelect}
       />
     );
   }

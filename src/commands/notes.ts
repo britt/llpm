@@ -188,7 +188,7 @@ export const notesCommand: Command = {
             };
           }
           
-          const updatedNote = db.updateNote(id, title, content || undefined);
+          const updatedNote = await db.updateNote(id, title, content || undefined);
           if (!updatedNote) {
             return {
               content: `❌ Note with ID ${id} not found.`,
