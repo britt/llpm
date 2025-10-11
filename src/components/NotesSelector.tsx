@@ -26,6 +26,7 @@ export default function NotesSelector({
   const [notes, setNotes] = useState<ProjectNote[]>([]);
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedQuery, setDebouncedQuery] = useState('');
   const [viewMode, setViewMode] = useState<ViewMode>('list');
   const [selectedNote, setSelectedNote] = useState<ProjectNote | null>(null);
   const [error, setError] = useState<string>('');
@@ -36,10 +37,19 @@ export default function NotesSelector({
     loadNotes();
   }, []);
 
-  // Filter notes based on search query
+  // Debounce search query
   useEffect(() => {
-    loadNotes(searchQuery);
+    const timer = setTimeout(() => {
+      setDebouncedQuery(searchQuery);
+    }, 300);
+
+    return () => clearTimeout(timer);
   }, [searchQuery]);
+
+  // Filter notes based on debounced search query
+  useEffect(() => {
+    loadNotes(debouncedQuery);
+  }, [debouncedQuery]);
 
   const loadNotes = async (query: string = '') => {
     try {
@@ -168,7 +178,7 @@ export default function NotesSelector({
     <Box paddingX={1} borderStyle="single" borderLeft={false} borderRight={false}>
       <Box flexDirection="column">
         <Text color="cyan" bold>
-          📝 Notes ({notes.length} {searchQuery ? 'matching' : 'total'})
+          📝 Notes ({notes.length} {debouncedQuery ? 'matching' : 'total'})
         </Text>
         <Box marginTop={1}>
           <Text>Search: </Text>
@@ -183,7 +193,7 @@ export default function NotesSelector({
         {!isSearchFocused && notes.length === 0 && (
           <Box marginTop={1}>
             <Text color="gray">
-              {searchQuery ? `No notes found matching "${searchQuery}"` : 'No notes found. Use /notes add to create one.'}
+              {debouncedQuery ? `No notes found matching "${debouncedQuery}"` : 'No notes found. Use /notes add to create one.'}
             </Text>
           </Box>
         )}
