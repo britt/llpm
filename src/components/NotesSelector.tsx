@@ -165,8 +165,8 @@ export default function NotesSelector({
   }
 
   return (
-    <Box borderStyle="single" paddingX={1}>
-      <Box flexDirection="column">
+    <Box borderStyle="single" paddingX={1} width={80}>
+      <Box flexDirection="column" width="100%">
         <Text color="cyan" bold>
           📝 Notes ({notes.length} {searchQuery ? 'matching' : 'total'})
         </Text>
@@ -196,6 +196,13 @@ export default function NotesSelector({
                 : note.content;
               const tags = note.tags ? ` [${note.tags}]` : '';
 
+              // Limit title length to prevent overflow
+              const maxTitleLength = 60;
+              const titleText = `${note.id}: ${note.title}${tags}`;
+              const displayTitle = titleText.length > maxTitleLength
+                ? titleText.substring(0, maxTitleLength) + '...'
+                : titleText;
+
               return (
                 <Box key={note.id} flexDirection="column">
                   <Text
@@ -203,7 +210,7 @@ export default function NotesSelector({
                     bold={isSelected}
                   >
                     {isSelected ? '▶ ' : '  '}
-                    {note.id}: {note.title}{tags}
+                    {displayTitle}
                   </Text>
                   <Text color="gray" dimColor>
                     {'  '}{preview}
