@@ -64,7 +64,7 @@ describe('NotesSelector', () => {
     expect(result).toHaveLength(10);
   });
 
-  it('should load more notes when pagination is triggered', () => {
+  it('should implement sliding window for note scrolling', () => {
     const manyNotes = Array.from({ length: 50 }, (_, i) => ({
       id: i,
       title: `Note ${i}`,
@@ -73,23 +73,38 @@ describe('NotesSelector', () => {
       updatedAt: '2025-01-01'
     }));
 
-    // Simulate pagination
-    let displayLimit = 10;
-    const loadMore = () => {
-      displayLimit += 5;
-      return manyNotes.slice(0, displayLimit);
+    const WINDOW_SIZE = 10;
+
+    // Simulate sliding window
+    let windowStart = 0;
+    const updateWindow = (newStart: number) => {
+      const clampedStart = Math.max(0, Math.min(newStart, Math.max(0, manyNotes.length - WINDOW_SIZE)));
+      windowStart = clampedStart;
+      return manyNotes.slice(clampedStart, clampedStart + WINDOW_SIZE);
     };
 
-    // Initial load
-    let displayed = manyNotes.slice(0, displayLimit);
+    // Initial window
+    let displayed = updateWindow(0);
     expect(displayed).toHaveLength(10);
+    expect(displayed[0]?.title).toBe('Note 0');
+    expect(displayed[9]?.title).toBe('Note 9');
 
-    // First pagination
-    displayed = loadMore();
-    expect(displayed).toHaveLength(15);
+    // Scroll down
+    displayed = updateWindow(5);
+    expect(displayed).toHaveLength(10);
+    expect(displayed[0]?.title).toBe('Note 5');
+    expect(displayed[9]?.title).toBe('Note 14');
 
-    // Second pagination
-    displayed = loadMore();
-    expect(displayed).toHaveLength(20);
+    // Scroll to end
+    displayed = updateWindow(100); // Should clamp to max
+    expect(displayed).toHaveLength(10);
+    expect(displayed[0]?.title).toBe('Note 40');
+    expect(displayed[9]?.title).toBe('Note 49');
+
+    // Scroll back up
+    displayed = updateWindow(20);
+    expect(displayed).toHaveLength(10);
+    expect(displayed[0]?.title).toBe('Note 20');
+    expect(displayed[9]?.title).toBe('Note 29');
   });
 });

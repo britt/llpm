@@ -25,7 +25,7 @@ export default function NotesSelector({
   const [notes, setNotes] = useState<ProjectNote[]>([]);
   const [allNotes, setAllNotes] = useState<ProjectNote[]>([]);
   const [filteredNotes, setFilteredNotes] = useState<ProjectNote[]>([]);
-  const [displayLimit, setDisplayLimit] = useState(10);
+  const [windowStart, setWindowStart] = useState(0);
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
   const searchQueryRef = useRef('');
@@ -33,6 +33,8 @@ export default function NotesSelector({
   const [selectedNote, setSelectedNote] = useState<ProjectNote | null>(null);
   const [error, setError] = useState<string>('');
   const [isSearchFocused, setIsSearchFocused] = useState(true);
+
+  const WINDOW_SIZE = 10;
 
   // Load all notes on mount
   useEffect(() => {
@@ -50,7 +52,8 @@ export default function NotesSelector({
       const notes = db.getNotes();
       setAllNotes(notes);
       setFilteredNotes(notes);
-      setNotes(notes.slice(0, 10));
+      setWindowStart(0);
+      setNotes(notes.slice(0, WINDOW_SIZE));
       db.close();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load notes');
@@ -63,8 +66,8 @@ export default function NotesSelector({
 
     if (!query.trim()) {
       setFilteredNotes(allNotes);
-      setDisplayLimit(10);
-      setNotes(allNotes.slice(0, 10));
+      setWindowStart(0);
+      setNotes(allNotes.slice(0, WINDOW_SIZE));
       return;
     }
 
@@ -75,15 +78,15 @@ export default function NotesSelector({
       note.tags?.toLowerCase().includes(lowerQuery)
     );
     setFilteredNotes(filtered);
-    setDisplayLimit(10);
-    setNotes(filtered.slice(0, 10));
+    setWindowStart(0);
+    setNotes(filtered.slice(0, WINDOW_SIZE));
   };
 
-  // Load more notes when scrolling reaches the bottom
-  const loadMoreNotes = () => {
-    const newLimit = displayLimit + 5;
-    setDisplayLimit(newLimit);
-    setNotes(filteredNotes.slice(0, newLimit));
+  // Update visible window of notes
+  const updateWindow = (newStart: number) => {
+    const clampedStart = Math.max(0, Math.min(newStart, Math.max(0, filteredNotes.length - WINDOW_SIZE)));
+    setWindowStart(clampedStart);
+    setNotes(filteredNotes.slice(clampedStart, clampedStart + WINDOW_SIZE));
   };
 
 
@@ -136,15 +139,21 @@ export default function NotesSelector({
         filterNotes();
       }
     } else if (viewMode === 'list' && !isSearchFocused) {
-      if (key.upArrow && selectedIndex > 0) {
-        setSelectedIndex(selectedIndex - 1);
+      if (key.upArrow) {
+        if (selectedIndex > 0) {
+          setSelectedIndex(selectedIndex - 1);
+        } else if (windowStart > 0) {
+          // Scroll window up and keep cursor at top
+          updateWindow(windowStart - 1);
+          setSelectedIndex(0);
+        }
       } else if (key.downArrow) {
         if (selectedIndex < notes.length - 1) {
           setSelectedIndex(selectedIndex + 1);
-        }
-        // Load more notes when scrolling near the bottom
-        if (selectedIndex >= notes.length - 3 && notes.length < filteredNotes.length) {
-          loadMoreNotes();
+        } else if (windowStart + WINDOW_SIZE < filteredNotes.length) {
+          // Scroll window down and keep cursor at bottom
+          updateWindow(windowStart + 1);
+          setSelectedIndex(notes.length - 1);
         }
       } else if (key.return) {
         handleSelectNote();
@@ -220,7 +229,7 @@ export default function NotesSelector({
     <Box paddingX={1} borderStyle="single" borderLeft={false} borderRight={false}>
       <Box flexDirection="column">
         <Text color="cyan" bold>
-          📝 Notes ({notes.length}{filteredNotes.length > notes.length ? `/${filteredNotes.length}` : ''} {searchQuery ? 'matching' : 'total'})
+          📝 Notes ({filteredNotes.length > WINDOW_SIZE ? `${windowStart + 1}-${windowStart + notes.length}/${filteredNotes.length}` : filteredNotes.length} {searchQuery ? 'matching' : 'total'})
         </Text>
         <Box marginTop={1}>
           <Text>
