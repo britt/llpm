@@ -8,6 +8,8 @@
 
 import { tool } from './instrumentedTool';
 import { z } from 'zod';
+import { requiresConfirmation, formatConfirmationPrompt } from '../utils/toolConfirmation';
+import { auditToolCall } from '../utils/toolAudit';
 
 // Default REST broker URL (can be overridden via env)
 const BROKER_URL = process.env.REST_BROKER_URL || 'http://localhost:3010';
@@ -310,27 +312,73 @@ export const createJobTool = tool({
  * Cancel a job
  */
 export const cancelJobTool = tool({
-  description: 'Cancel a running or pending job. This is a destructive operation that should be used with caution.',
+  description: 'Cancel a running or pending job. This is a destructive operation that requires confirmation.',
   inputSchema: z.object({
     agentId: z.string().describe('The ID of the agent'),
-    jobId: z.string().describe('The ID of the job to cancel')
+    jobId: z.string().describe('The ID of the job to cancel'),
+    confirmed: z.boolean().optional().describe('Set to true to bypass confirmation (only after user explicitly confirms)')
   }),
-  execute: async ({ agentId, jobId }) => {
-    const result = await brokerRequest<{ jobId: string; status: string; cancelled: boolean; message: string }>(
-      'POST',
-      `/agents/${agentId}/jobs/${jobId}/cancel`
-    );
+  execute: async ({ agentId, jobId, confirmed }) => {
+    const startTime = Date.now();
 
-    if (!result.success) {
-      return `❌ Failed to cancel job: ${result.error}`;
-    }
+    try {
+      // Check if confirmation is required
+      const confirmCheck = requiresConfirmation('cancel_job', { agentId, jobId });
 
-    const { cancelled, message } = result.data || {};
+      if (confirmCheck.required && !confirmed) {
+        const prompt = formatConfirmationPrompt(confirmCheck);
+        return `${prompt}\n\n💡 Once confirmed, call this tool again with \`confirmed: true\``;
+      }
 
-    if (cancelled) {
-      return `✅ **Job Cancelled**: ${jobId}\n\n${message}`;
-    } else {
-      return `⚠️ **Could not cancel job**: ${jobId}\n\n${message}`;
+      const result = await brokerRequest<{ jobId: string; status: string; cancelled: boolean; message: string }>(
+        'POST',
+        `/agents/${agentId}/jobs/${jobId}/cancel`
+      );
+
+      const duration = Date.now() - startTime;
+
+      if (!result.success) {
+        // Audit failed attempt
+        await auditToolCall({
+          timestamp: new Date().toISOString(),
+          toolName: 'cancel_job',
+          parameters: { agentId, jobId, confirmed },
+          error: result.error,
+          duration
+        });
+
+        return `❌ Failed to cancel job: ${result.error}`;
+      }
+
+      const { cancelled, message } = result.data || {};
+
+      // Audit successful call
+      await auditToolCall({
+        timestamp: new Date().toISOString(),
+        toolName: 'cancel_job',
+        parameters: { agentId, jobId, confirmed },
+        result: { cancelled, message },
+        duration
+      });
+
+      if (cancelled) {
+        return `✅ **Job Cancelled**: ${jobId}\n\n${message}\n\n📝 *This action has been logged for audit purposes.*`;
+      } else {
+        return `⚠️ **Could not cancel job**: ${jobId}\n\n${message}`;
+      }
+    } catch (error) {
+      const duration = Date.now() - startTime;
+
+      // Audit error
+      await auditToolCall({
+        timestamp: new Date().toISOString(),
+        toolName: 'cancel_job',
+        parameters: { agentId, jobId, confirmed },
+        error: error instanceof Error ? error.message : 'Unknown error',
+        duration
+      });
+
+      return `❌ Error cancelling job: ${error instanceof Error ? error.message : 'Unknown error'}`;
     }
   }
 });
@@ -359,5 +407,75 @@ export const markAgentAuthenticatedTool = tool({
 
 **Agent**: ${agent?.name} (${agent?.id})
 **Auth Status**: ${agent?.health?.authenticated ? '🔒 Authenticated' : '🔓 Not Authenticated'}${agent?.health?.authExpiresAt ? `\n**Expires**: ${new Date(agent.health.authExpiresAt).toLocaleString()}` : ''}`;
+  }
+});
+
+/**
+ * Get Docker connect command for an agent
+ */
+export const getAgentConnectCommandTool = tool({
+  description: 'Get the Docker exec command to connect to an agent container. Automatically copies the command to the clipboard for easy use.',
+  inputSchema: z.object({
+    agentId: z.string().describe('The ID of the agent to connect to')
+  }),
+  execute: async ({ agentId }) => {
+    const result = await brokerRequest<{ agent: any }>('GET', `/agents/${agentId}`);
+
+    if (!result.success) {
+      return `❌ Failed to get agent details: ${result.error}`;
+    }
+
+    const agent = result.data?.agent;
+    if (!agent) {
+      return `❌ Agent not found: ${agentId}`;
+    }
+
+    // Try to find matching Docker container
+    let containerName = agentId;
+
+    // Common container naming patterns
+    const possibleNames = [
+      agentId,
+      `docker-${agentId}-1`,
+      `docker_${agentId}_1`,
+      `${agentId}-1`
+    ];
+
+    const connectCommand = `docker exec -it ${containerName} /bin/bash`;
+
+    // Copy to clipboard using pbcopy (macOS) or xclip (Linux)
+    try {
+      const { $ } = await import('bun');
+      await $`echo ${connectCommand} | pbcopy`.quiet();
+
+      return `🔗 **Docker Connect Command** (copied to clipboard)
+
+\`\`\`bash
+${connectCommand}
+\`\`\`
+
+**Agent**: ${agent.name} (${agentId})
+**Container**: ${containerName}
+
+✅ The command has been copied to your clipboard. Just paste and run!
+💡 Common container names to try: ${possibleNames.join(', ')}
+
+**Note**: If the container name doesn't match, run \`docker ps\` to see available containers.`;
+    } catch (error) {
+      return `🔗 **Docker Connect Command**
+
+\`\`\`bash
+${connectCommand}
+\`\`\`
+
+**Agent**: ${agent.name} (${agentId})
+**Container**: ${containerName}
+
+⚠️  Could not copy to clipboard automatically.
+💡 Copy the command above and run it in your terminal.
+💡 Common container names to try: ${possibleNames.join(', ')}
+
+**Note**: If the container name doesn't match, run \`docker ps\` to see available containers.`;
+    }
   }
 });

@@ -85,7 +85,8 @@ import {
   getJobTool,
   createJobTool,
   cancelJobTool,
-  markAgentAuthenticatedTool
+  markAgentAuthenticatedTool,
+  getAgentConnectCommandTool
 } from './restBrokerTools';
 
 const toolRegistry: ToolRegistry = {
@@ -165,7 +166,8 @@ const toolRegistry: ToolRegistry = {
   get_job: getJobTool,
   create_job: createJobTool,
   cancel_job: cancelJobTool,
-  mark_agent_authenticated: markAgentAuthenticatedTool
+  mark_agent_authenticated: markAgentAuthenticatedTool,
+  get_agent_connect_command: getAgentConnectCommandTool
 };
 
 export async function getToolRegistry(): Promise<ToolRegistry> {
