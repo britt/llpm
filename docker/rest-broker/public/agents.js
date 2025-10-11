@@ -129,9 +129,15 @@ function renderAgent(agent) {
             </div>
 
             <div class="health-indicator">
-                <div style="font-weight: 600; color: #4a5568;">
+                <div style="font-weight: 600; color: #4a5568; width: 100%;">
                     ${agent.status === 'busy' ? '⚡ Active' : '💤 Idle'}
                 </div>
+                ${agent.status === 'busy' && agent.activeJob ? `
+                <div style="margin-top: 12px; font-size: 0.85em; color: #718096; line-height: 1.4; width: 100%;">
+                    <div style="font-weight: 500; color: #4a5568; margin-bottom: 4px;">Current task:</div>
+                    <div style="font-style: italic;">"${agent.activeJob.prompt.length > 60 ? agent.activeJob.prompt.substring(0, 60) + '...' : agent.activeJob.prompt}"</div>
+                </div>
+                ` : ''}
             </div>
 
             ${renderOnboardingMessage(agent)}
@@ -185,8 +191,23 @@ async function loadAgents(verifyAuth = false) {
             return;
         }
 
+        // Fetch active jobs for each agent
+        const agentsWithJobs = await Promise.all(agents.map(async (agent) => {
+            try {
+                const jobsResponse = await fetch(`/agents/${agent.id}/jobs?status=running&limit=1`);
+                if (jobsResponse.ok) {
+                    const jobsData = await jobsResponse.json();
+                    agent.activeJob = jobsData.jobs && jobsData.jobs.length > 0 ? jobsData.jobs[0] : null;
+                    console.log(`Agent ${agent.id} active job:`, agent.activeJob);
+                }
+            } catch (error) {
+                console.warn(`Could not load jobs for agent ${agent.id}:`, error);
+            }
+            return agent;
+        }));
+
         // Sort agents by type first, then by name
-        const sortedAgents = agents.sort((a, b) => {
+        const sortedAgents = agentsWithJobs.sort((a, b) => {
             // First sort by type
             if (a.type !== b.type) {
                 return a.type.localeCompare(b.type);

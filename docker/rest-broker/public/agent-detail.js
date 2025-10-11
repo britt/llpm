@@ -117,8 +117,6 @@ function renderOnboardingMessage(agent) {
 }
 
 function renderAgentDetail(agent, jobs) {
-    const metadata = agent.metadata || {};
-    const metadataEntries = Object.entries(metadata);
     const status = getUnifiedStatus(agent);
 
     return `
@@ -133,12 +131,20 @@ function renderAgentDetail(agent, jobs) {
                     <div style="font-weight: 600; color: #4a5568; font-size: 1.1em;">
                         ${agent.status === 'busy' ? '⚡ Active' : '💤 Idle'}
                     </div>
+                    ${agent.status === 'busy' && agent.activeJob ? `
+                    <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #e2e8f0;">
+                        <div style="font-weight: 500; color: #4a5568; margin-bottom: 6px; font-size: 0.9em;">Current task:</div>
+                        <div style="font-size: 0.85em; color: #718096; line-height: 1.5; font-style: italic;">
+                            "${agent.activeJob.prompt.length > 500 ? agent.activeJob.prompt.substring(0, 500) + '...' : agent.activeJob.prompt}"
+                        </div>
+                    </div>
+                    ` : ''}
                 </div>
             </div>
 
-            <!-- Authentication Card -->
+            <!-- Configuration Card -->
             <div class="detail-card">
-                <h2>Authentication</h2>
+                <h2>Configuration</h2>
                 <div class="info-table">
                     <div class="info-row">
                         <span class="info-label">Auth Type:</span>
@@ -166,6 +172,12 @@ function renderAgentDetail(agent, jobs) {
                     <div class="info-row">
                         <span class="info-label">Base URL:</span>
                         <span class="info-value" style="font-size: 0.85em; word-break: break-all;">${agent.baseUrl}</span>
+                    </div>
+                    ` : ''}
+                    ${agent.metadata?.workspacePath ? `
+                    <div class="info-row">
+                        <span class="info-label">Workspace Path:</span>
+                        <span class="info-value" style="font-size: 0.85em; word-break: break-all;">${agent.metadata.workspacePath}</span>
                     </div>
                     ` : ''}
                 </div>
@@ -218,31 +230,20 @@ function renderAgentDetail(agent, jobs) {
                 </div>
             </div>
 
-            <!-- Metadata Card -->
-            ${metadataEntries.length > 0 ? `
-            <div class="detail-card">
-                <h2>Metadata</h2>
-                <div class="metadata-section">
-                    ${metadataEntries.map(([key, value]) => `
-                        <div class="metadata-item">
-                            <span class="info-label">${key}:</span>
-                            <span class="info-value">${JSON.stringify(value)}</span>
-                        </div>
-                    `).join('')}
-                </div>
-            </div>
-            ` : ''}
-
             <!-- Recent Jobs Card -->
             <div class="detail-card jobs-section">
                 <h2>Recent Jobs</h2>
                 ${jobs && jobs.length > 0 ? `
                     ${jobs.map(job => `
                         <div class="job-item">
-                            <div>
-                                <strong>${job.id}</strong>
-                                <br>
-                                <small>${formatTime(job.createdAt)}</small>
+                            <div style="flex: 1; min-width: 0;">
+                                <div style="font-weight: 600; color: #2d3748; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-bottom: 4px;">
+                                    ${job.prompt || 'No prompt provided'}
+                                </div>
+                                <div style="font-size: 0.75em; color: #a0aec0;">
+                                    ${job.id}
+                                </div>
+                                <small style="color: #718096;">${formatTime(job.createdAt)}</small>
                             </div>
                             <span class="job-status ${getJobStatusClass(job.status)}">${job.status}</span>
                         </div>
@@ -282,6 +283,18 @@ async function loadAgentDetail() {
         document.getElementById('agentId').textContent = agent.id;
         document.title = `${getAgentEmoji(agent.type)} ${agent.name} - LLPM REST API Broker`;
 
+        // Fetch active job
+        let activeJob = null;
+        try {
+            const activeJobResponse = await fetch(`/agents/${agentId}/jobs?status=running&limit=1`);
+            if (activeJobResponse.ok) {
+                const activeJobData = await activeJobResponse.json();
+                activeJob = activeJobData.jobs && activeJobData.jobs.length > 0 ? activeJobData.jobs[0] : null;
+            }
+        } catch (error) {
+            console.warn('Could not load active job:', error);
+        }
+
         // Fetch recent jobs (limit 10)
         let jobs = [];
         try {
@@ -293,6 +306,9 @@ async function loadAgentDetail() {
         } catch (error) {
             console.warn('Could not load jobs:', error);
         }
+
+        // Attach active job to agent
+        agent.activeJob = activeJob;
 
         // Render the detail view
         container.innerHTML = renderAgentDetail(agent, jobs);

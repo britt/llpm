@@ -40,9 +40,12 @@ export class DockerExecutor {
     logger.info(`Executing job in container ${containerName}`, { agentId, prompt: payload.prompt });
     
     try {
+      // Extract agent type from agentId (e.g., "claude-code-2" -> "claude-code")
+      const agentType = agentId.match(/^(.+)-\d+$/)?.[1] || agentId;
+
       // For claude-code and openai-codex, pipe prompt via stdin to avoid sh -c issues
-      if (agentId === 'claude-code' || agentId === 'openai-codex') {
-        const cmdBase = agentId === 'claude-code'
+      if (agentType === 'claude-code' || agentType === 'openai-codex') {
+        const cmdBase = agentType === 'claude-code'
           ? 'claude --print --dangerously-skip-permissions'
           : 'codex exec --dangerously-bypass-approvals-and-sandbox';
 
@@ -115,11 +118,14 @@ export class DockerExecutor {
 
   private buildAgentCommand(agentId: string, payload: AgentJobPayload): string {
     const { prompt, context, options } = payload;
-    
+
     // Escape prompt for shell and JSON
     const escapedPrompt = prompt.replace(/'/g, "'\\''").replace(/"/g, '\\"');
-    
-    switch (agentId) {
+
+    // Extract agent type from agentId (e.g., "claude-code-2" -> "claude-code")
+    const agentType = agentId.match(/^(.+)-\d+$/)?.[1] || agentId;
+
+    switch (agentType) {
       case 'claude-code':
         // Use --print mode for non-interactive execution
         let claudeCmd = `claude --print --dangerously-skip-permissions "${escapedPrompt}"`;
@@ -194,7 +200,7 @@ export class DockerExecutor {
         return `echo '${escapedPrompt}' | ${opencodeCmd}`;
         
       default:
-        throw new Error(`Unknown agent type: ${agentId}`);
+        throw new Error(`Unknown agent type: ${agentType} (from agentId: ${agentId})`);
     }
   }
   

@@ -2,6 +2,7 @@ import { EventEmitter } from 'events';
 import { v4 as uuidv4 } from 'uuid';
 import { logger } from '../utils/logger';
 import { DockerExecutor, AgentJobPayload } from './DockerExecutor';
+import type { AgentManager } from './AgentManager';
 
 export type JobStatus = 'queued' | 'running' | 'completed' | 'failed' | 'cancelled';
 
@@ -22,11 +23,13 @@ export interface Job {
 export class JobQueue extends EventEmitter {
   private jobs: Map<string, Job>;
   private dockerExecutor: DockerExecutor;
+  private agentManager?: AgentManager;
 
-  constructor() {
+  constructor(agentManager?: AgentManager) {
     super();
     this.jobs = new Map();
     this.dockerExecutor = new DockerExecutor();
+    this.agentManager = agentManager;
   }
 
   createJob(agentId: string, jobData: any): Job {
@@ -51,6 +54,40 @@ export class JobQueue extends EventEmitter {
     return job;
   }
 
+  private updateAgentStatus(agentId: string): void {
+    logger.info(`[STATUS] updateAgentStatus called for ${agentId}`);
+
+    if (!this.agentManager) {
+      logger.warn(`[STATUS] No agentManager available`);
+      return;
+    }
+
+    const agent = this.agentManager.getAgent(agentId);
+    if (!agent) {
+      logger.warn(`[STATUS] Agent ${agentId} not found`);
+      return;
+    }
+
+    // Check if there are any running or queued jobs for this agent
+    const allJobs = Array.from(this.jobs.values());
+    const agentJobs = allJobs.filter(job => job.agentId === agentId);
+    const activeJobs = agentJobs.filter(job => job.status === 'running' || job.status === 'queued');
+    const hasActiveJobs = activeJobs.length > 0;
+
+    logger.info(`[STATUS] Agent ${agentId}: current status=${agent.status}, total jobs=${allJobs.length}, agent jobs=${agentJobs.length}, active jobs=${activeJobs.length}`);
+
+    // Update agent status based on active jobs
+    if (hasActiveJobs && agent.status !== 'busy') {
+      agent.status = 'busy';
+      logger.info(`[STATUS] Agent ${agentId} status set to busy`);
+    } else if (!hasActiveJobs && agent.status === 'busy') {
+      agent.status = 'available';
+      logger.info(`[STATUS] Agent ${agentId} status set to available`);
+    } else {
+      logger.info(`[STATUS] Agent ${agentId} status unchanged (${agent.status})`);
+    }
+  }
+
   private async processJob(job: Job): Promise<void> {
     try {
       // Update job status to running
@@ -58,19 +95,22 @@ export class JobQueue extends EventEmitter {
       job.progress = 10;
       job.updatedAt = new Date().toISOString();
       this.emit('job:running', job);
-      
+
+      // Update agent status to busy
+      this.updateAgentStatus(job.agentId);
+
       logger.info(`Processing job ${job.id} for agent ${job.agentId}`);
-      
+
       // Prepare payload for Docker execution
       const payload: AgentJobPayload = {
         prompt: job.prompt,
         context: job.context,
         options: job.options,
       };
-      
+
       // Execute in Docker container
       const result = await this.dockerExecutor.executeInContainer(job.agentId, payload);
-      
+
       // Process result
       if (result.exitCode === 0) {
         job.status = 'completed';
@@ -101,6 +141,9 @@ export class JobQueue extends EventEmitter {
     } finally {
       job.updatedAt = new Date().toISOString();
       this.emit(`job:${job.status}`, job);
+
+      // Update agent status based on remaining jobs
+      this.updateAgentStatus(job.agentId);
     }
   }
 
