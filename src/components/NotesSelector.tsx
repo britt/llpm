@@ -165,8 +165,8 @@ export default function NotesSelector({
   }
 
   return (
-    <Box borderStyle="single" paddingX={1} width={80}>
-      <Box flexDirection="column" width="100%">
+    <Box borderStyle="single" paddingX={1}>
+      <Box flexDirection="column">
         <Text color="cyan" bold>
           📝 Notes ({notes.length} {searchQuery ? 'matching' : 'total'})
         </Text>
@@ -204,7 +204,7 @@ export default function NotesSelector({
                 : titleText;
 
               return (
-                <Box key={note.id} flexDirection="column">
+                <React.Fragment key={note.id}>
                   <Text
                     color={isSelected ? 'green' : undefined}
                     bold={isSelected}
@@ -215,7 +215,7 @@ export default function NotesSelector({
                   <Text color="gray" dimColor>
                     {'  '}{preview}
                   </Text>
-                </Box>
+                </React.Fragment>
               );
             })}
           </Box>
