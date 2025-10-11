@@ -24,34 +24,20 @@ export default function NotesSelector({
   onInsertNote
 }: NotesSelectorProps) {
   const [notes, setNotes] = useState<ProjectNote[]>([]);
+  const [allNotes, setAllNotes] = useState<ProjectNote[]>([]);
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
-  const [debouncedQuery, setDebouncedQuery] = useState('');
   const [viewMode, setViewMode] = useState<ViewMode>('list');
   const [selectedNote, setSelectedNote] = useState<ProjectNote | null>(null);
   const [error, setError] = useState<string>('');
   const [isSearchFocused, setIsSearchFocused] = useState(true);
 
-  // Load notes on mount
+  // Load all notes on mount
   useEffect(() => {
-    loadNotes();
+    loadAllNotes();
   }, []);
 
-  // Debounce search query
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedQuery(searchQuery);
-    }, 300);
-
-    return () => clearTimeout(timer);
-  }, [searchQuery]);
-
-  // Filter notes based on debounced search query
-  useEffect(() => {
-    loadNotes(debouncedQuery);
-  }, [debouncedQuery]);
-
-  const loadNotes = async (query: string = '') => {
+  const loadAllNotes = async () => {
     try {
       const db = await getCurrentProjectDatabase();
       if (!db) {
@@ -59,14 +45,33 @@ export default function NotesSelector({
         return;
       }
 
-      const allNotes = query ? db.searchNotes(query) : db.getNotes();
-      // Get last 10 notes by default
-      setNotes(allNotes.slice(0, 10));
+      const notes = db.getNotes();
+      setAllNotes(notes);
+      setNotes(notes.slice(0, 10));
       db.close();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load notes');
     }
   };
+
+  // Filter notes client-side as user types
+  const handleSearchChange = (query: string) => {
+    setSearchQuery(query);
+
+    if (!query.trim()) {
+      setNotes(allNotes.slice(0, 10));
+      return;
+    }
+
+    const lowerQuery = query.toLowerCase();
+    const filtered = allNotes.filter(note =>
+      note.title.toLowerCase().includes(lowerQuery) ||
+      note.content.toLowerCase().includes(lowerQuery) ||
+      note.tags?.toLowerCase().includes(lowerQuery)
+    );
+    setNotes(filtered.slice(0, 10));
+  };
+
 
   const handleSelectNote = () => {
     if (notes[selectedIndex]) {
@@ -178,13 +183,13 @@ export default function NotesSelector({
     <Box paddingX={1} borderStyle="single" borderLeft={false} borderRight={false}>
       <Box flexDirection="column">
         <Text color="cyan" bold>
-          📝 Notes ({notes.length} {debouncedQuery ? 'matching' : 'total'})
+          📝 Notes ({notes.length} {searchQuery ? 'matching' : 'total'})
         </Text>
         <Box marginTop={1}>
           <Text>Search: </Text>
           <TextInput
             value={searchQuery}
-            onChange={setSearchQuery}
+            onChange={handleSearchChange}
             placeholder="Type to search..."
             focus={isSearchFocused}
             onSubmit={() => setIsSearchFocused(false)}
@@ -193,7 +198,7 @@ export default function NotesSelector({
         {!isSearchFocused && notes.length === 0 && (
           <Box marginTop={1}>
             <Text color="gray">
-              {debouncedQuery ? `No notes found matching "${debouncedQuery}"` : 'No notes found. Use /notes add to create one.'}
+              {searchQuery ? `No notes found matching "${searchQuery}"` : 'No notes found. Use /notes add to create one.'}
             </Text>
           </Box>
         )}
