@@ -197,7 +197,7 @@ export default function NotesSelector({
               const tags = note.tags ? ` [${note.tags}]` : '';
 
               return (
-                <Box key={note.id}>
+                <Box key={note.id} flexDirection="column" marginBottom={1}>
                   <Text
                     color={isSelected ? 'green' : undefined}
                     bold={isSelected}
@@ -205,10 +205,11 @@ export default function NotesSelector({
                     {isSelected ? '▶ ' : '  '}
                     {note.id}: {note.title}{tags}
                   </Text>
-                  <Text> </Text>
-                  <Text color="gray" dimColor>
-                    {preview}
-                  </Text>
+                  <Box paddingLeft={2}>
+                    <Text color="gray" dimColor>
+                      {preview}
+                    </Text>
+                  </Box>
                 </Box>
               );
             })}
