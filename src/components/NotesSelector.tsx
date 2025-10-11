@@ -114,7 +114,7 @@ export default function NotesSelector({
 
   if (error) {
     return (
-      <Box borderStyle="single" paddingX={1} borderColor="red">
+      <Box paddingX={1}>
         <Box flexDirection="column">
           <Text color="red" bold>Error loading notes</Text>
           <Text color="red">{error}</Text>
@@ -128,7 +128,7 @@ export default function NotesSelector({
 
   if (viewMode === 'detail' && selectedNote) {
     return (
-      <Box borderStyle="single" paddingX={1}>
+      <Box paddingX={1}>
         <Box flexDirection="column">
           <Text color="cyan" bold>
             📝 Note #{selectedNote.id}: {selectedNote.title}
@@ -165,7 +165,7 @@ export default function NotesSelector({
   }
 
   return (
-    <Box borderStyle="single" paddingX={1}>
+    <Box paddingX={1}>
       <Box flexDirection="column">
         <Text color="cyan" bold>
           📝 Notes ({notes.length} {searchQuery ? 'matching' : 'total'})
