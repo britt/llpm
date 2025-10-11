@@ -232,7 +232,7 @@ export default function HybridInput({
   }, { isActive: focus && !disabled });
 
   return (
-    <Box paddingX={1}>
+    <Box paddingX={1} borderStyle="single" borderLeft={false} borderRight={false}>
       <Text>
         <Text color="cyan" bold>
           &gt;{' '}
