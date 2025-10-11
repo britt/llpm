@@ -1,7 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Box, Text, useInput } from 'ink';
 import { getCurrentProjectDatabase } from '../utils/projectDatabase';
-import TextInput from 'ink-text-input';
 
 interface ProjectNote {
   id: number;
@@ -27,6 +26,7 @@ export default function NotesSelector({
   const [allNotes, setAllNotes] = useState<ProjectNote[]>([]);
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
+  const searchQueryRef = useRef('');
   const [viewMode, setViewMode] = useState<ViewMode>('list');
   const [selectedNote, setSelectedNote] = useState<ProjectNote | null>(null);
   const [error, setError] = useState<string>('');
@@ -55,8 +55,8 @@ export default function NotesSelector({
   };
 
   // Filter notes client-side as user types
-  const handleSearchChange = (query: string) => {
-    setSearchQuery(query);
+  const filterNotes = () => {
+    const query = searchQueryRef.current;
 
     if (!query.trim()) {
       setNotes(allNotes.slice(0, 10));
@@ -102,9 +102,26 @@ export default function NotesSelector({
     setSelectedNote(null);
   };
 
-  // Handle keyboard input
+  // Handle keyboard input for search
   useInput((inputChar, key) => {
-    if (viewMode === 'list' && !isSearchFocused) {
+    if (viewMode === 'list' && isSearchFocused) {
+      if (key.return) {
+        setIsSearchFocused(false);
+      } else if (key.escape) {
+        searchQueryRef.current = '';
+        setSearchQuery('');
+        filterNotes();
+        onClose?.();
+      } else if (key.backspace || key.delete) {
+        searchQueryRef.current = searchQueryRef.current.slice(0, -1);
+        setSearchQuery(searchQueryRef.current);
+        filterNotes();
+      } else if (inputChar && !key.ctrl && !key.meta) {
+        searchQueryRef.current += inputChar;
+        setSearchQuery(searchQueryRef.current);
+        filterNotes();
+      }
+    } else if (viewMode === 'list' && !isSearchFocused) {
       if (key.upArrow && selectedIndex > 0) {
         setSelectedIndex(selectedIndex - 1);
       } else if (key.downArrow && selectedIndex < notes.length - 1) {
@@ -125,7 +142,7 @@ export default function NotesSelector({
         handleCopyNote();
       }
     }
-  }, { isActive: !isSearchFocused });
+  });
 
   if (error) {
     return (
@@ -186,14 +203,11 @@ export default function NotesSelector({
           📝 Notes ({notes.length} {searchQuery ? 'matching' : 'total'})
         </Text>
         <Box marginTop={1}>
-          <Text>Search: </Text>
-          <TextInput
-            value={searchQuery}
-            onChange={handleSearchChange}
-            placeholder="Type to search..."
-            focus={isSearchFocused}
-            onSubmit={() => setIsSearchFocused(false)}
-          />
+          <Text>
+            <Text color="cyan">Search: </Text>
+            {searchQuery || (isSearchFocused ? <Text color="gray" dimColor>Type to search...</Text> : '')}
+            {isSearchFocused && <Text backgroundColor="white" color="black"> </Text>}
+          </Text>
         </Box>
         {!isSearchFocused && notes.length === 0 && (
           <Box marginTop={1}>
