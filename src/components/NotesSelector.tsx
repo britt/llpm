@@ -50,8 +50,8 @@ export default function NotesSelector({
       }
 
       const allNotes = query ? db.searchNotes(query) : db.getNotes();
-      // Get last 50 notes by default
-      setNotes(allNotes.slice(0, 50));
+      // Get last 10 notes by default
+      setNotes(allNotes.slice(0, 10));
       db.close();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load notes');
