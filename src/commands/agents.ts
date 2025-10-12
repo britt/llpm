@@ -1,5 +1,9 @@
 import type { Command, CommandResult } from './types';
 import { debug } from '../utils/logger';
+import { exec } from 'child_process';
+import { promisify } from 'util';
+
+const execAsync = promisify(exec);
 
 // Use fetch instead of axios for consistency
 const BROKER_URL = process.env.REST_BROKER_URL || 'http://localhost:3010';
@@ -207,8 +211,7 @@ export const agentsCommand: Command = {
 
         // Copy to clipboard using pbcopy (macOS) or xclip (Linux)
         try {
-          const { $ } = await import('bun');
-          await $`echo ${connectCommand} | pbcopy`.quiet();
+          await execAsync(`echo "${connectCommand}" | pbcopy`);
 
           return {
             content: `🔗 **Docker Connect Command** (copied to clipboard)

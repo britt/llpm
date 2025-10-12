@@ -10,6 +10,10 @@ import { tool } from './instrumentedTool';
 import { z } from 'zod';
 import { requiresConfirmation, formatConfirmationPrompt } from '../utils/toolConfirmation';
 import { auditToolCall } from '../utils/toolAudit';
+import { exec } from 'child_process';
+import { promisify } from 'util';
+
+const execAsync = promisify(exec);
 
 // Default REST broker URL (can be overridden via env)
 const BROKER_URL = process.env.REST_BROKER_URL || 'http://localhost:3010';
@@ -433,11 +437,9 @@ export const getAgentConnectCommandTool = tool({
     // Try to find the actual container name from docker ps
     let containerName = agentId;
     try {
-      const { $ } = await import('bun');
-
       // Get all running container names
-      const psOutput = await $`docker ps --format "{{.Names}}"`.text();
-      const runningContainers = psOutput.trim().split('\n').filter(Boolean);
+      const { stdout } = await execAsync('docker ps --format "{{.Names}}"');
+      const runningContainers = stdout.trim().split('\n').filter(Boolean);
 
       // Common container naming patterns to search for (in priority order)
       const possibleNames = [
@@ -477,8 +479,7 @@ export const getAgentConnectCommandTool = tool({
 
     // Copy to clipboard using pbcopy (macOS) or xclip (Linux)
     try {
-      const { $ } = await import('bun');
-      await $`echo ${connectCommand} | pbcopy`.quiet();
+      await execAsync(`echo "${connectCommand}" | pbcopy`);
 
       return `🔗 **Docker Connect Command** (copied to clipboard)
 
@@ -599,13 +600,12 @@ export const scaleAgentClusterTool = tool({
       }
 
       // Execute scaling via scale.sh script
-      const { $ } = await import('bun');
-
       // Extract script filename from path
       const scriptName = scaleScriptPath.substring(scaleScriptPath.lastIndexOf('/') + 1);
 
       // Change to compose directory and run scale script
-      const result = await $`cd ${composeDir} && ./${scriptName} custom --claude ${config.claude} --codex ${config.codex} --aider ${config.aider} --opencode ${config.opencode} --auth-type ${authType}`.text();
+      const { stdout } = await execAsync(`cd ${composeDir} && ./${scriptName} custom --claude ${config.claude} --codex ${config.codex} --aider ${config.aider} --opencode ${config.opencode} --auth-type ${authType}`);
+      const result = stdout;
 
       const duration = Date.now() - startTime;
 
