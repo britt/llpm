@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import {
   listAgentsTool,
   getAgentTool,
@@ -8,7 +8,8 @@ import {
   createJobTool,
   cancelJobTool,
   markAgentAuthenticatedTool,
-  scaleAgentClusterTool
+  scaleAgentClusterTool,
+  getAgentConnectCommandTool
 } from './restBrokerTools';
 
 describe('REST Broker Tools', () => {
@@ -409,6 +410,183 @@ describe('REST Broker Tools', () => {
       // Check that descriptions exist
       expect(shape.preset.description).toBeDefined();
       expect(shape.claudeCode.description).toBeDefined();
+    });
+  });
+
+  describe('getAgentConnectCommandTool', () => {
+    // Store original fetch
+    let originalFetch: typeof global.fetch;
+
+    beforeEach(() => {
+      vi.clearAllMocks();
+      originalFetch = global.fetch;
+      global.fetch = vi.fn();
+    });
+
+    afterEach(() => {
+      global.fetch = originalFetch;
+      vi.restoreAllMocks();
+    });
+
+    it('should find container with docker- prefix and matching instance number', async () => {
+      // Mock agent API response
+      (global.fetch as any).mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          agent: {
+            id: 'claude-code-3',
+            name: 'Claude Code Assistant #3'
+          }
+        })
+      });
+
+      // Mock Bun's $ to return docker ps output
+      const originalImport = await import('bun');
+      vi.spyOn(originalImport, '$' as any).mockReturnValue({
+        text: vi.fn().mockResolvedValue('docker-claude-code-3\ndocker-claude-code-4\nother-container'),
+        quiet: vi.fn().mockReturnThis()
+      } as any);
+
+      if (getAgentConnectCommandTool.execute) {
+        const result = await getAgentConnectCommandTool.execute({ agentId: 'claude-code-3' });
+
+        expect(result).toContain('docker exec -it docker-claude-code-3 /bin/bash');
+        expect(result).toContain('**Container**: docker-claude-code-3');
+      }
+    });
+
+    it('should use agentId as fallback when no containers match', async () => {
+      // Mock agent API response
+      (global.fetch as any).mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          agent: {
+            id: 'claude-code-99',
+            name: 'Claude Code Assistant #99'
+          }
+        })
+      });
+
+      // Mock Bun's $ to return docker ps output with no matches
+      const originalImport = await import('bun');
+      vi.spyOn(originalImport, '$' as any).mockReturnValue({
+        text: vi.fn().mockResolvedValue('docker-claude-code-3\nother-container'),
+        quiet: vi.fn().mockReturnThis()
+      } as any);
+
+      if (getAgentConnectCommandTool.execute) {
+        const result = await getAgentConnectCommandTool.execute({ agentId: 'claude-code-99' });
+
+        // Should fall back to using the agentId
+        expect(result).toContain('docker exec -it claude-code-99 /bin/bash');
+        expect(result).toContain('**Container**: claude-code-99');
+      }
+    });
+
+    it('should find container without docker- prefix if exact match exists', async () => {
+      // Mock agent API response
+      (global.fetch as any).mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          agent: {
+            id: 'my-agent-1',
+            name: 'My Agent #1'
+          }
+        })
+      });
+
+      // Mock Bun's $ to return docker ps output where container name matches agent ID
+      const originalImport = await import('bun');
+      vi.spyOn(originalImport, '$' as any).mockReturnValue({
+        text: vi.fn().mockResolvedValue('my-agent-1\nother-container'),
+        quiet: vi.fn().mockReturnThis()
+      } as any);
+
+      if (getAgentConnectCommandTool.execute) {
+        const result = await getAgentConnectCommandTool.execute({ agentId: 'my-agent-1' });
+
+        expect(result).toContain('docker exec -it my-agent-1 /bin/bash');
+        expect(result).toContain('**Container**: my-agent-1');
+      }
+    });
+
+    it('should handle docker ps errors gracefully', async () => {
+      // Mock agent API response
+      (global.fetch as any).mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          agent: {
+            id: 'test-agent',
+            name: 'Test Agent'
+          }
+        })
+      });
+
+      // Mock Bun's $ to throw error (e.g., Docker not running)
+      const originalImport = await import('bun');
+      vi.spyOn(originalImport, '$' as any).mockReturnValue({
+        text: vi.fn().mockRejectedValue(new Error('Docker not running')),
+        quiet: vi.fn().mockReturnThis()
+      } as any);
+
+      if (getAgentConnectCommandTool.execute) {
+        const result = await getAgentConnectCommandTool.execute({ agentId: 'test-agent' });
+
+        // Should fall back to using the agentId
+        expect(result).toContain('docker exec -it test-agent /bin/bash');
+        expect(result).toContain('**Container**: test-agent');
+      }
+    });
+
+    it('should return error when agent API fails', async () => {
+      // Mock agent API response - failure
+      (global.fetch as any).mockResolvedValueOnce({
+        ok: false,
+        json: async () => ({
+          message: 'Agent not found'
+        })
+      });
+
+      if (getAgentConnectCommandTool.execute) {
+        const result = await getAgentConnectCommandTool.execute({ agentId: 'non-existent' });
+
+        expect(result).toContain('❌ Failed to get agent details');
+      }
+    });
+
+    it('should find container with compose naming pattern (-1 suffix)', async () => {
+      // Mock agent API response
+      (global.fetch as any).mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          agent: {
+            id: 'aider-2',
+            name: 'Aider #2'
+          }
+        })
+      });
+
+      // Mock Bun's $ to return docker ps output
+      const originalImport = await import('bun');
+      vi.spyOn(originalImport, '$' as any).mockReturnValue({
+        text: vi.fn().mockResolvedValue('docker-aider-2-1\nother-container'),
+        quiet: vi.fn().mockReturnThis()
+      } as any);
+
+      if (getAgentConnectCommandTool.execute) {
+        const result = await getAgentConnectCommandTool.execute({ agentId: 'aider-2' });
+
+        expect(result).toContain('docker exec -it docker-aider-2-1 /bin/bash');
+        expect(result).toContain('**Container**: docker-aider-2-1');
+      }
+    });
+
+    it('should require agentId parameter', () => {
+      const parseResult = getAgentConnectCommandTool.inputSchema.safeParse({ agentId: 'test' });
+      expect(parseResult.success).toBe(true);
+
+      const parseResult2 = getAgentConnectCommandTool.inputSchema.safeParse({});
+      expect(parseResult2.success).toBe(false);
     });
   });
 });

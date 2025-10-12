@@ -430,16 +430,48 @@ export const getAgentConnectCommandTool = tool({
       return `❌ Agent not found: ${agentId}`;
     }
 
-    // Try to find matching Docker container
+    // Try to find the actual container name from docker ps
     let containerName = agentId;
+    try {
+      const { $ } = await import('bun');
 
-    // Common container naming patterns
-    const possibleNames = [
-      agentId,
-      `docker-${agentId}-1`,
-      `docker_${agentId}_1`,
-      `${agentId}-1`
-    ];
+      // Get all running container names
+      const psOutput = await $`docker ps --format "{{.Names}}"`.text();
+      const runningContainers = psOutput.trim().split('\n').filter(Boolean);
+
+      // Common container naming patterns to search for (in priority order)
+      const possibleNames = [
+        agentId,                          // claude-code-3
+        `docker-${agentId}`,              // docker-claude-code-3
+        `docker-${agentId}-1`,            // docker-claude-code-3-1
+        `docker_${agentId}_1`,            // docker_claude-code-3_1
+        `${agentId}-1`                    // claude-code-3-1
+      ];
+
+      // Try exact matches first
+      for (const name of possibleNames) {
+        if (runningContainers.includes(name)) {
+          containerName = name;
+          break;
+        }
+      }
+
+      // If no exact match found, try to find by agent type and number
+      // For agent ID like "claude-code-3", try to find "docker-claude-code-3"
+      if (containerName === agentId) {
+        const match = agentId.match(/^(.+?)-(\d+)$/);
+        if (match) {
+          const [, baseType, instanceNum] = match;
+          // Look for docker-{baseType}-{instanceNum}
+          const dockerPattern = `docker-${baseType}-${instanceNum}`;
+          if (runningContainers.includes(dockerPattern)) {
+            containerName = dockerPattern;
+          }
+        }
+      }
+    } catch (error) {
+      // If docker command fails, just use the agentId as fallback
+    }
 
     const connectCommand = `docker exec -it ${containerName} /bin/bash`;
 
@@ -458,7 +490,6 @@ ${connectCommand}
 **Container**: ${containerName}
 
 ✅ The command has been copied to your clipboard. Just paste and run!
-💡 Common container names to try: ${possibleNames.join(', ')}
 
 **Note**: If the container name doesn't match, run \`docker ps\` to see available containers.`;
     } catch (error) {
@@ -473,7 +504,6 @@ ${connectCommand}
 
 ⚠️  Could not copy to clipboard automatically.
 💡 Copy the command above and run it in your terminal.
-💡 Common container names to try: ${possibleNames.join(', ')}
 
 **Note**: If the container name doesn't match, run \`docker ps\` to see available containers.`;
     }
@@ -497,14 +527,20 @@ export const scaleAgentClusterTool = tool({
     const startTime = Date.now();
 
     try {
-      // Load config to get Docker paths
-      const { loadProjectConfig } = await import('../utils/projectConfig');
+      // Load config to get Docker paths and project-specific agent config
+      const { loadProjectConfig, loadProjectAgentConfig } = await import('../utils/projectConfig');
       const appConfig = await loadProjectConfig();
 
       const scaleScriptPath = appConfig.docker?.scaleScriptPath || 'docker/scale.sh';
       const composeDir = appConfig.docker?.composeFilePath
         ? appConfig.docker.composeFilePath.substring(0, appConfig.docker.composeFilePath.lastIndexOf('/'))
         : 'docker';
+
+      // Load project-specific agent config
+      let projectAgentConfig = null;
+      if (appConfig.currentProject) {
+        projectAgentConfig = await loadProjectAgentConfig(appConfig.currentProject);
+      }
 
       // Determine scaling configuration
       let config: { claude: number; codex: number; aider: number; opencode: number };
@@ -530,8 +566,35 @@ export const scaleAgentClusterTool = tool({
           minimal: { claude: 0, codex: 0, aider: 1, opencode: 0 }
         };
         config = presets[preset];
+      } else if (projectAgentConfig) {
+        // Use project-specific agent config
+        if (projectAgentConfig.customCounts) {
+          // Use custom counts from project config
+          config = {
+            claude: projectAgentConfig.customCounts.claudeCode ?? 0,
+            codex: projectAgentConfig.customCounts.openaiCodex ?? 0,
+            aider: projectAgentConfig.customCounts.aider ?? 0,
+            opencode: projectAgentConfig.customCounts.opencode ?? 0
+          };
+        } else if (projectAgentConfig.defaultPreset) {
+          // Use default preset from project config
+          const presets = {
+            dev: { claude: 1, codex: 1, aider: 1, opencode: 1 },
+            team: { claude: 1, codex: 2, aider: 2, opencode: 1 },
+            heavy: { claude: 2, codex: 3, aider: 3, opencode: 2 },
+            minimal: { claude: 0, codex: 0, aider: 1, opencode: 0 }
+          };
+          config = presets[projectAgentConfig.defaultPreset];
+        } else {
+          // Project config exists but has no preset or counts, default to dev
+          config = { claude: 1, codex: 1, aider: 1, opencode: 1 };
+        }
+        // Override authType if project has it configured
+        if (projectAgentConfig.authType) {
+          authType = projectAgentConfig.authType;
+        }
       } else {
-        // No preset or custom counts provided, default to dev
+        // No preset, custom counts, or project config - default to dev
         config = { claude: 1, codex: 1, aider: 1, opencode: 1 };
       }
 
@@ -555,9 +618,17 @@ export const scaleAgentClusterTool = tool({
         duration
       });
 
-      return `✅ **Agent Cluster Scaled Successfully**
+      // Build response message
+      let responseMsg = `✅ **Agent Cluster Scaled Successfully**\n\n`;
 
-**Configuration**:
+      // Show source of configuration
+      if (projectAgentConfig && !preset && !hasCustomCounts) {
+        const { getProjectAgentsYamlPath } = await import('../utils/config');
+        const yamlPath = getProjectAgentsYamlPath(appConfig.currentProject!);
+        responseMsg += `📁 **Using project config from**: ${yamlPath}\n\n`;
+      }
+
+      responseMsg += `**Configuration**:
 - Claude Code: ${config.claude} instance(s)
 - OpenAI Codex: ${config.codex} instance(s)
 - Aider: ${config.aider} instance(s)
@@ -569,6 +640,8 @@ export const scaleAgentClusterTool = tool({
 ${result}
 
 📝 *This scaling operation has been logged for audit purposes.*`;
+
+      return responseMsg;
     } catch (error) {
       const duration = Date.now() - startTime;
 

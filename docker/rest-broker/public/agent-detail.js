@@ -147,6 +147,18 @@ function renderAgentDetail(agent, jobs) {
                 <h2>Configuration</h2>
                 <div class="info-table">
                     <div class="info-row">
+                        <span class="info-label">Agent ID:</span>
+                        <span class="info-value">${agent.id}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Type:</span>
+                        <span class="info-value">${getAgentEmoji(agent.type)} ${agent.type}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Name:</span>
+                        <span class="info-value">${getAgentEmoji(agent.type)} ${agent.name}</span>
+                    </div>
+                    <div class="info-row">
                         <span class="info-label">Auth Type:</span>
                         <span class="info-value">${agent.authType === 'subscription' ? 'Subscription' : 'API Key'}</span>
                     </div>
@@ -155,6 +167,7 @@ function renderAgentDetail(agent, jobs) {
                         <span class="info-label">Authenticated:</span>
                         <span class="info-value">${agent.health.authenticated ? '✅ Yes' : '❌ No'}</span>
                     </div>
+                    ` : ''}
                     ${agent.provider ? `
                     <div class="info-row">
                         <span class="info-label">Provider:</span>
@@ -167,39 +180,12 @@ function renderAgentDetail(agent, jobs) {
                         <span class="info-value">${agent.model}</span>
                     </div>
                     ` : ''}
-                    ` : ''}
                     ${agent.baseUrl ? `
                     <div class="info-row">
                         <span class="info-label">Base URL:</span>
                         <span class="info-value" style="font-size: 0.85em; word-break: break-all;">${agent.baseUrl}</span>
                     </div>
                     ` : ''}
-                    ${agent.metadata?.workspacePath ? `
-                    <div class="info-row">
-                        <span class="info-label">Workspace Path:</span>
-                        <span class="info-value" style="font-size: 0.85em; word-break: break-all;">${agent.metadata.workspacePath}</span>
-                    </div>
-                    ` : ''}
-                </div>
-                ${renderOnboardingMessage(agent)}
-            </div>
-
-            <!-- Basic Info Card -->
-            <div class="detail-card">
-                <h2>Basic Information</h2>
-                <div class="info-table">
-                    <div class="info-row">
-                        <span class="info-label">Agent ID:</span>
-                        <span class="info-value">${agent.id}</span>
-                    </div>
-                    <div class="info-row">
-                        <span class="info-label">Type:</span>
-                        <span class="info-value">${getAgentEmoji(agent.type)} ${agent.type}</span>
-                    </div>
-                    <div class="info-row">
-                        <span class="info-label">Name:</span>
-                        <span class="info-value">${getAgentEmoji(agent.type)} ${agent.name}</span>
-                    </div>
                     ${agent.host ? `
                     <div class="info-row">
                         <span class="info-label">Host:</span>
@@ -212,7 +198,14 @@ function renderAgentDetail(agent, jobs) {
                         <span class="info-value">${agent.port}</span>
                     </div>
                     ` : ''}
+                    ${agent.metadata?.workspacePath ? `
+                    <div class="info-row">
+                        <span class="info-label">Workspace Path:</span>
+                        <span class="info-value" style="font-size: 0.85em; word-break: break-all;">${agent.metadata.workspacePath}</span>
+                    </div>
+                    ` : ''}
                 </div>
+                ${renderOnboardingMessage(agent)}
             </div>
 
             <!-- Timestamps Card -->

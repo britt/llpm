@@ -163,6 +163,12 @@ function renderAgent(agent) {
                     <span class="metadata-value">${formatTime(agent.registeredAt)}</span>
                 </div>
                 ` : ''}
+                ${agent.metadata?.workspacePath ? `
+                <div class="metadata-item">
+                    <span class="metadata-label">Workspace:</span>
+                    <span class="metadata-value" style="font-size: 0.85em; text-align: right; word-break: break-all;">${agent.metadata.workspacePath}</span>
+                </div>
+                ` : ''}
             </div>
         </div>
     `;

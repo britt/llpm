@@ -33,8 +33,7 @@ describe('exitCommand', () => {
     const result = await resolveCommandResult(exitCommand.execute([]));
 
     expect(result.success).toBe(true);
-    expect(result.content).toContain('👋 Goodbye!');
-    expect(result.content).toContain('Thanks for using LLPM');
+    expect(result.content).toContain('✌️ Peace out!');
   });
 
   it('should not call process.exit in test environment', () => {
@@ -56,13 +55,13 @@ describe('exitCommand', () => {
     const result = await resolveCommandResult(exitCommand.execute([]));
 
     expect(result.success).toBe(true);
-    expect(result.content).toBe('👋 Goodbye! Thanks for using LLPM.');
+    expect(result.content).toBe('✌️ Peace out!');
   });
 
   it('should ignore command arguments', async () => {
     const result = await resolveCommandResult(exitCommand.execute(['arg1', 'arg2']));
 
     expect(result.success).toBe(true);
-    expect(result.content).toContain('👋 Goodbye!');
+    expect(result.content).toContain('✌️ Peace out!');
   });
 });

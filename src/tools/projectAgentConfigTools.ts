@@ -1,6 +1,6 @@
 import { tool } from './instrumentedTool';
 import { z } from 'zod';
-import { loadProjectConfig, saveProjectConfig } from '../utils/projectConfig';
+import { loadProjectConfig, loadProjectAgentConfig, saveProjectAgentConfig, removeProjectAgentConfig as removeProjectAgentConfigFile } from '../utils/projectConfig';
 
 /**
  * Set project-specific agent configuration
@@ -28,14 +28,17 @@ export const setProjectAgentConfigTool = tool({
         return `❌ Current project not found: ${config.currentProject}`;
       }
 
-      // Initialize agent config if not exists
-      if (!project.agentConfig) {
-        project.agentConfig = {};
+      // Load existing agent config from agents.yaml
+      let agentConfig = await loadProjectAgentConfig(config.currentProject);
+
+      // Initialize if doesn't exist
+      if (!agentConfig) {
+        agentConfig = {};
       }
 
       // Update preset if provided
       if (defaultPreset) {
-        project.agentConfig.defaultPreset = defaultPreset;
+        agentConfig.defaultPreset = defaultPreset;
       }
 
       // Update custom counts if any are provided
@@ -43,50 +46,52 @@ export const setProjectAgentConfigTool = tool({
                               aider !== undefined || opencode !== undefined;
 
       if (hasCustomCounts) {
-        if (!project.agentConfig.customCounts) {
-          project.agentConfig.customCounts = {};
+        if (!agentConfig.customCounts) {
+          agentConfig.customCounts = {};
         }
-        if (claudeCode !== undefined) project.agentConfig.customCounts.claudeCode = claudeCode;
-        if (openaiCodex !== undefined) project.agentConfig.customCounts.openaiCodex = openaiCodex;
-        if (aider !== undefined) project.agentConfig.customCounts.aider = aider;
-        if (opencode !== undefined) project.agentConfig.customCounts.opencode = opencode;
+        if (claudeCode !== undefined) agentConfig.customCounts.claudeCode = claudeCode;
+        if (openaiCodex !== undefined) agentConfig.customCounts.openaiCodex = openaiCodex;
+        if (aider !== undefined) agentConfig.customCounts.aider = aider;
+        if (opencode !== undefined) agentConfig.customCounts.opencode = opencode;
       }
 
       // Update auth type if provided
       if (authType) {
-        project.agentConfig.authType = authType;
+        agentConfig.authType = authType;
       }
 
-      // Update project timestamp
-      project.updatedAt = new Date().toISOString();
+      // Save to agents.yaml
+      await saveProjectAgentConfig(config.currentProject, agentConfig);
 
-      await saveProjectConfig(config);
+      const { getProjectAgentsYamlPath } = await import('../utils/config');
+      const yamlPath = getProjectAgentsYamlPath(config.currentProject);
 
       // Format response
-      let response = `✅ **Agent Configuration Updated for ${project.name}**\n\n`;
+      let response = `✅ **Agent Configuration Updated for ${project.name}**\n`;
+      response += `📁 **Saved to**: ${yamlPath}\n\n`;
 
-      if (project.agentConfig.defaultPreset) {
-        response += `**Default Preset**: ${project.agentConfig.defaultPreset}\n`;
+      if (agentConfig.defaultPreset) {
+        response += `**Default Preset**: ${agentConfig.defaultPreset}\n`;
       }
 
-      if (project.agentConfig.customCounts) {
+      if (agentConfig.customCounts) {
         response += `**Custom Counts**:\n`;
-        if (project.agentConfig.customCounts.claudeCode !== undefined) {
-          response += `- Claude Code: ${project.agentConfig.customCounts.claudeCode}\n`;
+        if (agentConfig.customCounts.claudeCode !== undefined) {
+          response += `- Claude Code: ${agentConfig.customCounts.claudeCode}\n`;
         }
-        if (project.agentConfig.customCounts.openaiCodex !== undefined) {
-          response += `- OpenAI Codex: ${project.agentConfig.customCounts.openaiCodex}\n`;
+        if (agentConfig.customCounts.openaiCodex !== undefined) {
+          response += `- OpenAI Codex: ${agentConfig.customCounts.openaiCodex}\n`;
         }
-        if (project.agentConfig.customCounts.aider !== undefined) {
-          response += `- Aider: ${project.agentConfig.customCounts.aider}\n`;
+        if (agentConfig.customCounts.aider !== undefined) {
+          response += `- Aider: ${agentConfig.customCounts.aider}\n`;
         }
-        if (project.agentConfig.customCounts.opencode !== undefined) {
-          response += `- OpenCode: ${project.agentConfig.customCounts.opencode}\n`;
+        if (agentConfig.customCounts.opencode !== undefined) {
+          response += `- OpenCode: ${agentConfig.customCounts.opencode}\n`;
         }
       }
 
-      if (project.agentConfig.authType) {
-        response += `**Auth Type**: ${project.agentConfig.authType}\n`;
+      if (agentConfig.authType) {
+        response += `**Auth Type**: ${agentConfig.authType}\n`;
       }
 
       return response;
@@ -115,34 +120,41 @@ export const getProjectAgentConfigTool = tool({
         return `❌ Current project not found: ${config.currentProject}`;
       }
 
-      if (!project.agentConfig) {
-        return `📋 **No Agent Configuration Set for ${project.name}**\n\nUse \`set_project_agent_config\` to configure default agent settings for this project.`;
+      // Load agent config from agents.yaml
+      const agentConfig = await loadProjectAgentConfig(config.currentProject);
+
+      const { getProjectAgentsYamlPath } = await import('../utils/config');
+      const yamlPath = getProjectAgentsYamlPath(config.currentProject);
+
+      if (!agentConfig) {
+        return `📋 **No Agent Configuration Set for ${project.name}**\n\nUse \`set_project_agent_config\` to configure default agent settings for this project.\n\n💡 Configuration will be saved to: ${yamlPath}`;
       }
 
-      let response = `📋 **Agent Configuration for ${project.name}**\n\n`;
+      let response = `📋 **Agent Configuration for ${project.name}**\n`;
+      response += `📁 **Loaded from**: ${yamlPath}\n\n`;
 
-      if (project.agentConfig.defaultPreset) {
-        response += `**Default Preset**: ${project.agentConfig.defaultPreset}\n`;
+      if (agentConfig.defaultPreset) {
+        response += `**Default Preset**: ${agentConfig.defaultPreset}\n`;
       }
 
-      if (project.agentConfig.customCounts) {
+      if (agentConfig.customCounts) {
         response += `**Custom Counts**:\n`;
-        if (project.agentConfig.customCounts.claudeCode !== undefined) {
-          response += `- Claude Code: ${project.agentConfig.customCounts.claudeCode}\n`;
+        if (agentConfig.customCounts.claudeCode !== undefined) {
+          response += `- Claude Code: ${agentConfig.customCounts.claudeCode}\n`;
         }
-        if (project.agentConfig.customCounts.openaiCodex !== undefined) {
-          response += `- OpenAI Codex: ${project.agentConfig.customCounts.openaiCodex}\n`;
+        if (agentConfig.customCounts.openaiCodex !== undefined) {
+          response += `- OpenAI Codex: ${agentConfig.customCounts.openaiCodex}\n`;
         }
-        if (project.agentConfig.customCounts.aider !== undefined) {
-          response += `- Aider: ${project.agentConfig.customCounts.aider}\n`;
+        if (agentConfig.customCounts.aider !== undefined) {
+          response += `- Aider: ${agentConfig.customCounts.aider}\n`;
         }
-        if (project.agentConfig.customCounts.opencode !== undefined) {
-          response += `- OpenCode: ${project.agentConfig.customCounts.opencode}\n`;
+        if (agentConfig.customCounts.opencode !== undefined) {
+          response += `- OpenCode: ${agentConfig.customCounts.opencode}\n`;
         }
       }
 
-      if (project.agentConfig.authType) {
-        response += `**Auth Type**: ${project.agentConfig.authType}\n`;
+      if (agentConfig.authType) {
+        response += `**Auth Type**: ${agentConfig.authType}\n`;
       }
 
       return response;
@@ -171,14 +183,14 @@ export const removeProjectAgentConfigTool = tool({
         return `❌ Current project not found: ${config.currentProject}`;
       }
 
-      if (!project.agentConfig) {
+      // Check if agents.yaml exists
+      const agentConfig = await loadProjectAgentConfig(config.currentProject);
+      if (!agentConfig) {
         return `ℹ️  No agent configuration to remove for ${project.name}.`;
       }
 
-      delete project.agentConfig;
-      project.updatedAt = new Date().toISOString();
-
-      await saveProjectConfig(config);
+      // Remove agents.yaml file
+      await removeProjectAgentConfigFile(config.currentProject);
 
       return `✅ Agent configuration removed from ${project.name}. Will use global defaults.`;
     } catch (error) {

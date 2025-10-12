@@ -1,9 +1,10 @@
 import { readFile, writeFile } from 'fs/promises';
 import { existsSync } from 'fs';
-import type { Project, ProjectConfig } from '../types/project';
-import { getConfigFilePath, ensureConfigDir } from './config';
+import type { Project, ProjectConfig, AgentConfig } from '../types/project';
+import { getConfigFilePath, ensureConfigDir, getProjectAgentsYamlPath, ensureProjectDir } from './config';
 import { debug } from './logger';
 import { URL } from 'url';
+import * as yaml from 'js-yaml';
 
 export async function loadProjectConfig(): Promise<ProjectConfig> {
   try {
@@ -244,7 +245,7 @@ export async function removeProjectBoard(projectId: string): Promise<Project> {
 export async function getProjectBoard(projectId: string): Promise<{ projectBoardId?: string; projectBoardNumber?: number } | null> {
   const config = await loadProjectConfig();
   const project = config.projects[projectId];
-  
+
   if (!project) {
     return null;
   }
@@ -257,4 +258,68 @@ export async function getProjectBoard(projectId: string): Promise<{ projectBoard
     projectBoardId: project.projectBoardId,
     projectBoardNumber: project.projectBoardNumber
   };
+}
+
+/**
+ * Load agent configuration from project's agents.yaml file
+ */
+export async function loadProjectAgentConfig(projectId: string): Promise<AgentConfig | null> {
+  try {
+    const yamlPath = getProjectAgentsYamlPath(projectId);
+
+    if (!existsSync(yamlPath)) {
+      debug('No agents.yaml found for project:', projectId);
+      return null;
+    }
+
+    const yamlContent = await readFile(yamlPath, 'utf-8');
+    const agentConfig = yaml.load(yamlContent) as AgentConfig;
+
+    debug('Loaded agent config from agents.yaml for:', projectId);
+    return agentConfig;
+  } catch (error) {
+    debug('Error loading agents.yaml:', error);
+    return null;
+  }
+}
+
+/**
+ * Save agent configuration to project's agents.yaml file
+ */
+export async function saveProjectAgentConfig(projectId: string, agentConfig: AgentConfig): Promise<void> {
+  try {
+    await ensureProjectDir(projectId);
+    const yamlPath = getProjectAgentsYamlPath(projectId);
+
+    const yamlContent = yaml.dump(agentConfig, {
+      indent: 2,
+      lineWidth: -1,
+      noRefs: true,
+      sortKeys: false
+    });
+
+    await writeFile(yamlPath, yamlContent, 'utf-8');
+    debug('Saved agent config to agents.yaml for:', projectId);
+  } catch (error) {
+    debug('Error saving agents.yaml:', error);
+    throw error;
+  }
+}
+
+/**
+ * Remove agent configuration file for a project
+ */
+export async function removeProjectAgentConfig(projectId: string): Promise<void> {
+  try {
+    const yamlPath = getProjectAgentsYamlPath(projectId);
+
+    if (existsSync(yamlPath)) {
+      const { unlink } = await import('fs/promises');
+      await unlink(yamlPath);
+      debug('Removed agents.yaml for:', projectId);
+    }
+  } catch (error) {
+    debug('Error removing agents.yaml:', error);
+    throw error;
+  }
 }
