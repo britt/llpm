@@ -440,22 +440,30 @@ export const getAgentConnectCommandTool = tool({
       // Get all running container names
       const { stdout } = await execAsync('docker ps --format "{{.Names}}"');
       const runningContainers = stdout.trim().split('\n').filter(Boolean);
+      debug(`Container lookup for ${agentId}: found containers:`, runningContainers);
 
       // Common container naming patterns to search for (in priority order)
+      // Prioritize docker-prefixed containers over raw agent IDs
       const possibleNames = [
-        agentId,                          // claude-code-3
         `docker-${agentId}`,              // docker-claude-code-3
         `docker-${agentId}-1`,            // docker-claude-code-3-1
         `docker_${agentId}_1`,            // docker_claude-code-3_1
-        `${agentId}-1`                    // claude-code-3-1
+        `${agentId}-1`,                   // claude-code-3-1
+        agentId                           // claude-code-3 (fallback)
       ];
+      debug(`Checking possible names:`, possibleNames);
 
       // Try exact matches first
       for (const name of possibleNames) {
         if (runningContainers.includes(name)) {
+          debug(`Found matching container: ${name}`);
           containerName = name;
           break;
         }
+      }
+
+      if (containerName === agentId) {
+        debug(`No exact match found, using agentId as fallback: ${agentId}`);
       }
 
       // If no exact match found, try to find by agent type and number
