@@ -500,17 +500,19 @@ export const scaleAgentClusterTool = tool({
       // Determine scaling configuration
       let config: { claude: number; codex: number; aider: number; opencode: number };
 
-      if (preset === 'custom') {
-        if (claudeCode === undefined && openaiCodex === undefined && aider === undefined && opencode === undefined) {
-          return `❌ Custom preset requires at least one agent count specified (claudeCode, openaiCodex, aider, or opencode)`;
-        }
+      // Check if any custom counts were provided (even if preset wasn't set to 'custom')
+      const hasCustomCounts = claudeCode !== undefined || openaiCodex !== undefined ||
+                              aider !== undefined || opencode !== undefined;
+
+      if (preset === 'custom' || hasCustomCounts) {
+        // Use custom configuration
         config = {
           claude: claudeCode ?? 0,
           codex: openaiCodex ?? 0,
           aider: aider ?? 0,
           opencode: opencode ?? 0
         };
-      } else {
+      } else if (preset) {
         // Use preset configuration
         const presets = {
           dev: { claude: 1, codex: 1, aider: 1, opencode: 1 },
@@ -518,7 +520,10 @@ export const scaleAgentClusterTool = tool({
           heavy: { claude: 2, codex: 3, aider: 3, opencode: 2 },
           minimal: { claude: 0, codex: 0, aider: 1, opencode: 0 }
         };
-        config = presets[preset || 'dev'];
+        config = presets[preset];
+      } else {
+        // No preset or custom counts provided, default to dev
+        config = { claude: 1, codex: 1, aider: 1, opencode: 1 };
       }
 
       // Execute scaling via scale.sh script
