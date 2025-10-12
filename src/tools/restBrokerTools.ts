@@ -529,9 +529,8 @@ export const scaleAgentClusterTool = tool({
       // Execute scaling via scale.sh script
       const { $ } = await import('bun');
 
-      const scaleCommand = `docker/scale.sh custom --claude ${config.claude} --codex ${config.codex} --aider ${config.aider} --opencode ${config.opencode} --auth-type ${authType}`;
-
-      const result = await $`bash -c ${scaleCommand}`.text();
+      // Change to docker directory to run scale.sh where docker-compose.yml is located
+      const result = await $`cd docker && ./scale.sh custom --claude ${config.claude} --codex ${config.codex} --aider ${config.aider} --opencode ${config.opencode} --auth-type ${authType}`.text();
 
       const duration = Date.now() - startTime;
 
