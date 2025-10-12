@@ -23,6 +23,11 @@ export interface AutomationConfig {
   salutation?: SalutationConfig;
 }
 
+export interface DockerConfig {
+  scaleScriptPath?: string;
+  composeFilePath?: string;
+}
+
 export interface AppConfig {
   projects: Record<string, Project>;
   currentProject?: string;
@@ -32,6 +37,7 @@ export interface AppConfig {
   };
   logging?: LoggingConfig;
   automation?: AutomationConfig;
+  docker?: DockerConfig;
 }
 
 // Keep backwards compatibility

@@ -13,7 +13,11 @@ export async function loadProjectConfig(): Promise<ProjectConfig> {
     if (!existsSync(configPath)) {
       debug('No project config file found, creating default');
       const defaultConfig: ProjectConfig = {
-        projects: {}
+        projects: {},
+        docker: {
+          scaleScriptPath: 'docker/scale.sh',
+          composeFilePath: 'docker/docker-compose.yml'
+        }
       };
       await saveProjectConfig(defaultConfig);
       return defaultConfig;
@@ -22,10 +26,25 @@ export async function loadProjectConfig(): Promise<ProjectConfig> {
     const data = await readFile(configPath, 'utf-8');
     const config: ProjectConfig = JSON.parse(data);
 
+    // Ensure docker config exists with defaults
+    if (!config.docker) {
+      config.docker = {
+        scaleScriptPath: 'docker/scale.sh',
+        composeFilePath: 'docker/docker-compose.yml'
+      };
+      await saveProjectConfig(config);
+    }
+
     return config;
   } catch (error) {
     debug('Error loading project config:', error);
-    return { projects: {} };
+    return {
+      projects: {},
+      docker: {
+        scaleScriptPath: 'docker/scale.sh',
+        composeFilePath: 'docker/docker-compose.yml'
+      }
+    };
   }
 }
 

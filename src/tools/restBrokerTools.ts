@@ -497,6 +497,15 @@ export const scaleAgentClusterTool = tool({
     const startTime = Date.now();
 
     try {
+      // Load config to get Docker paths
+      const { loadProjectConfig } = await import('../utils/projectConfig');
+      const appConfig = await loadProjectConfig();
+
+      const scaleScriptPath = appConfig.docker?.scaleScriptPath || 'docker/scale.sh';
+      const composeDir = appConfig.docker?.composeFilePath
+        ? appConfig.docker.composeFilePath.substring(0, appConfig.docker.composeFilePath.lastIndexOf('/'))
+        : 'docker';
+
       // Determine scaling configuration
       let config: { claude: number; codex: number; aider: number; opencode: number };
 
@@ -529,8 +538,11 @@ export const scaleAgentClusterTool = tool({
       // Execute scaling via scale.sh script
       const { $ } = await import('bun');
 
-      // Change to docker directory to run scale.sh where docker-compose.yml is located
-      const result = await $`cd docker && ./scale.sh custom --claude ${config.claude} --codex ${config.codex} --aider ${config.aider} --opencode ${config.opencode} --auth-type ${authType}`.text();
+      // Extract script filename from path
+      const scriptName = scaleScriptPath.substring(scaleScriptPath.lastIndexOf('/') + 1);
+
+      // Change to compose directory and run scale script
+      const result = await $`cd ${composeDir} && ./${scriptName} custom --claude ${config.claude} --codex ${config.codex} --aider ${config.aider} --opencode ${config.opencode} --auth-type ${authType}`.text();
 
       const duration = Date.now() - startTime;
 
