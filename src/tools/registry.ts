@@ -89,6 +89,11 @@ import {
   getAgentConnectCommandTool,
   scaleAgentClusterTool
 } from './restBrokerTools';
+import {
+  setProjectAgentConfigTool,
+  getProjectAgentConfigTool,
+  removeProjectAgentConfigTool
+} from './projectAgentConfigTools';
 
 const toolRegistry: ToolRegistry = {
   get_current_project: getCurrentProjectTool,
@@ -169,7 +174,11 @@ const toolRegistry: ToolRegistry = {
   cancel_job: cancelJobTool,
   mark_agent_authenticated: markAgentAuthenticatedTool,
   get_agent_connect_command: getAgentConnectCommandTool,
-  scale_agent_cluster: scaleAgentClusterTool
+  scale_agent_cluster: scaleAgentClusterTool,
+  // Project Agent Configuration
+  set_project_agent_config: setProjectAgentConfigTool,
+  get_project_agent_config: getProjectAgentConfigTool,
+  remove_project_agent_config: removeProjectAgentConfigTool
 };
 
 export async function getToolRegistry(): Promise<ToolRegistry> {

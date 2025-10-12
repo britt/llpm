@@ -1,3 +1,14 @@
+export interface AgentConfig {
+  defaultPreset?: 'dev' | 'team' | 'heavy' | 'minimal';
+  customCounts?: {
+    claudeCode?: number;
+    openaiCodex?: number;
+    aider?: number;
+    opencode?: number;
+  };
+  authType?: 'api_key' | 'subscription';
+}
+
 export interface Project {
   id: string;
   name: string;
@@ -7,6 +18,7 @@ export interface Project {
   github_repo?: string;
   projectBoardId?: string; // GitHub Project v2 ID (e.g., gid://Project/123)
   projectBoardNumber?: number; // GitHub Project v2 number (e.g., 8)
+  agentConfig?: AgentConfig; // Project-specific agent configuration
   createdAt: string;
   updatedAt: string;
 }
