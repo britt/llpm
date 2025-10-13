@@ -103,8 +103,8 @@ const MessageItem = memo(({ message }: { message: Message }) => {
   const [renderedContent, setRenderedContent] = useState<string>(message.content);
   const [isRendering, setIsRendering] = useState(false);
 
-  const messageColor = useMemo(() => {
-    return message.role === 'user' ? 'gray' : message.role === 'system' ? 'white' : 'white';
+  const backgroundColor = useMemo(() => {
+    return message.role === 'user' ? 'blackBright' : undefined;
   }, [message.role]);
 
   // Determine if this message should be rendered with markdown
@@ -117,10 +117,13 @@ const MessageItem = memo(({ message }: { message: Message }) => {
     return shouldEnableRendering();
   }, [message.role]);
 
-  // Prepend cog emoji to system messages
+  // Prepend emoji to system and user messages
   const displayContent = useMemo(() => {
     if (message.role === 'system' || message.role === 'ui-notification') {
       return `⚙️ ${isRendering ? message.content : renderedContent}`;
+    }
+    if (message.role === 'user') {
+      return `👤 ${isRendering ? message.content : renderedContent}`;
     }
     return isRendering ? message.content : renderedContent;
   }, [message.role, isRendering, message.content, renderedContent]);
@@ -151,9 +154,9 @@ const MessageItem = memo(({ message }: { message: Message }) => {
         flexDirection="column"
         flexShrink={1}
         paddingX={1}
-        backgroundColor={message.role === 'user' ? 'gray' : undefined}
+        backgroundColor={backgroundColor}
       >
-        <Text color={messageColor}>
+        <Text color="white">
           {displayContent}
         </Text>
       </Box>
