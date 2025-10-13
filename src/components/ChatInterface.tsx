@@ -131,11 +131,12 @@ const MessageItem = memo(({ message }: { message: Message }) => {
   // Prepend emoji to system and user messages
   const displayContent = useMemo(() => {
     if (message.role === 'system' || message.role === 'ui-notification') {
-      return `⚙️ ${isRendering ? message.content : renderedContent}`;
+      return `⚙️ ${message.content}`;
     }
     if (message.role === 'user') {
-      return `👤 ${isRendering ? message.content : renderedContent}`;
+      return `👤 ${message.content}`;
     }
+    // For PM messages, use rendered content
     return isRendering ? message.content : renderedContent;
   }, [message.role, isRendering, message.content, renderedContent]);
 
