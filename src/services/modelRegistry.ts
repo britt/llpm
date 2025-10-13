@@ -8,6 +8,7 @@ import { DEFAULT_MODELS as DEFAULT_MODEL_CONFIGS } from '../types/models';
 import { debug } from '../utils/logger';
 import { saveCurrentModel, loadCurrentModel } from '../utils/modelStorage';
 import { credentialManager } from '../utils/credentialManager';
+import { normalizeAnthropicModel } from '../utils/modelMapping';
 
 class ModelRegistry {
   private currentModel: ModelConfig;
@@ -122,10 +123,13 @@ class ModelRegistry {
         if (!providerConfig.apiKey) {
           throw new Error('Anthropic API key not configured');
         }
+        // Normalize model ID to canonical snapshot format
+        const normalizedModelId = normalizeAnthropicModel(config.modelId);
+        debug('Normalized Anthropic model ID:', config.modelId, '->', normalizedModelId);
         const anthropicProvider = createAnthropic({
           apiKey: providerConfig.apiKey
         });
-        return anthropicProvider(config.modelId);
+        return anthropicProvider(normalizedModelId);
 
       case 'groq':
         if (!providerConfig.apiKey) {

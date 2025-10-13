@@ -66,14 +66,23 @@ Anthropic provides Claude models, known for safety, helpfulness, and strong anal
 
 #### Available Models
 
-- **Claude 4.1 Opus** (`claude-4.1-opus`) - Most powerful Claude 4.1 for complex tasks
-- **Claude 4.1 Sonnet** (`claude-4.1-sonnet`) - Balanced Claude 4.1 for general use
-- **Claude 4 Opus** (`claude-4-opus`) - Most powerful Claude 4 for complex tasks
-- **Claude 4 Sonnet** (`claude-4-sonnet`) - Balanced Claude 4 for general use
-- **Claude 3.7 Sonnet** (`claude-3-7-sonnet`) - Advanced Claude 3.7 model
-- **Claude 3.7 Haiku** (`claude-3-7-haiku`) - Fast Claude 3.7 model
-- **Claude 3.5 Sonnet** (`claude-3-5-sonnet-20241022`) - Most capable Claude 3.5 model
-- **Claude 3.5 Haiku** (`claude-3-5-haiku-20241022`) - Fast Claude 3.5 model
+- **Claude Sonnet 4.5** (`claude-sonnet-4-5`) - Latest and most capable Claude model
+- **Claude Opus 4.1** (`claude-opus-4-1`) - Most powerful Claude for complex tasks
+- **Claude Sonnet 4** (`claude-sonnet-4`) - Balanced Claude 4 for general use
+- **Claude Opus 4** (`claude-opus-4`) - Powerful Claude 4 for complex tasks
+- **Claude 3.7 Sonnet** (`claude-3-7-sonnet-latest`) - Advanced Claude 3.7 model
+- **Claude 3.5 Haiku** (`claude-3-5-haiku-latest`) - Fast and efficient Claude 3.5 model
+- **Claude 3 Haiku** (`claude-3-haiku`) - Fast Claude 3 model
+
+#### Model Name Formats
+
+LLPM supports multiple naming formats for Anthropic models:
+
+- **Aliases** (recommended): `claude-sonnet-4-5`, `claude-opus-4-1` - Simple, forward-compatible names
+- **Vercel AI SDK format**: `anthropic/claude-sonnet-4.5` - Compatible with Vercel AI Gateway
+- **Snapshot IDs**: `claude-sonnet-4-5-20250929` - Fixed versions for reproducibility
+
+All formats are automatically normalized to the preferred alias form.
 
 #### Model Tiers
 
@@ -101,14 +110,20 @@ Anthropic provides Claude models, known for safety, helpfulness, and strong anal
 #### Usage Examples
 
 ```bash
-# Switch to Claude 4 Opus for complex tasks
-/model switch anthropic/claude-4-opus
+# Switch to Claude Sonnet 4.5 (recommended - using alias)
+/model switch anthropic/claude-sonnet-4-5
 
-# Switch to Claude 3.5 Sonnet for balanced performance
-/model switch anthropic/claude-3-5-sonnet-20241022
+# Switch to Claude Sonnet 4.5 (Vercel AI SDK format)
+/model switch anthropic/claude-sonnet-4.5
+
+# Switch to Claude Opus 4.1 for complex tasks
+/model switch anthropic/claude-opus-4-1
 
 # Switch to Claude 3.5 Haiku for quick tasks
-/model switch anthropic/claude-3-5-haiku-20241022
+/model switch anthropic/claude-3-5-haiku-latest
+
+# Snapshot IDs also work (normalized to alias)
+/model switch anthropic/claude-sonnet-4-5-20250929  # becomes claude-sonnet-4-5
 ```
 
 ---
@@ -251,7 +266,7 @@ Use arrow keys to navigate, Enter to select, ESC to cancel.
 
 # Examples
 /model switch openai/gpt-4o
-/model switch anthropic/claude-4-opus
+/model switch anthropic/claude-sonnet-4-5
 /model switch groq/llama-3.1-70b-versatile
 ```
 
@@ -278,12 +293,12 @@ Use arrow keys to navigate, Enter to select, ESC to cancel.
 
 ### For General Tasks
 - **OpenAI GPT-4.1 Mini** (default) - Improved GPT-4 model with good balance
-- **Anthropic Claude 3.5 Sonnet** - Strong analytical capabilities
+- **Anthropic Claude Sonnet 4.5** - Latest and most capable Claude model
 - **Groq Llama 3.1 8B** - Very fast responses
 
 ### For Complex Reasoning
 - **OpenAI o4 Mini** - Designed for reasoning tasks
-- **Anthropic Claude 4 Opus** - Best for complex analysis
+- **Anthropic Claude Opus 4.1** - Most powerful Claude for complex analysis
 - **DeepSeek R1 Distill** - Specialized reasoning model
 
 ### For Speed
@@ -293,7 +308,7 @@ Use arrow keys to navigate, Enter to select, ESC to cancel.
 
 ### For Latest Capabilities
 - **OpenAI GPT-5** series - Next-generation models
-- **Anthropic Claude 4.1** series - Latest Claude models
+- **Anthropic Claude Sonnet 4.5** - Latest Claude model with enhanced capabilities
 - **Google Gemini 2.5** series - Latest multimodal capabilities
 
 ---
