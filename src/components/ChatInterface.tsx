@@ -14,7 +14,6 @@ import ModelSelector from './ModelSelector';
 import NotesSelector from './NotesSelector';
 import type { QueuedMessage } from '../hooks/useChat';
 import { RequestLogDisplay } from './RequestLogDisplay';
-import type { LogEntry } from './RequestLogDisplay';
 import { renderMarkdown, shouldEnableRendering } from '../utils/markdownRenderer';
 
 interface ChatInterfaceProps {
@@ -105,7 +104,7 @@ const MessageItem = memo(({ message }: { message: Message }) => {
 
   const backgroundColor = useMemo(() => {
     if (message.role === 'user') return 'black';
-    if (message.role === 'system' || message.role === 'ui-notification') return 'blackBright';
+    if (message.role === 'system' || message.role === 'ui-notification') return '#2b1d0e'; // very dark brown
     return undefined;
   }, [message.role]);
 
@@ -121,19 +120,19 @@ const MessageItem = memo(({ message }: { message: Message }) => {
   // Determine if this message should be rendered with markdown
   const shouldRenderMarkdown = useMemo(() => {
     // Only render markdown for assistant messages
-    if (message.role !== 'assistant') {
-      return false;
+    if (message.role === 'assistant') {
+      // Check if rendering is enabled
+      return shouldEnableRendering();
     }
-    // Check if rendering is enabled
-    return shouldEnableRendering();
+    return false;
   }, [message.role]);
 
   // Prepend emoji to system and user messages
   const displayContent = useMemo(() => {
-    if (message.role === 'system' || message.role === 'ui-notification') {
+    if (isSystemMessage) {
       return `⚙️ ${message.content}`;
     }
-    if (message.role === 'user') {
+    if (isUserMessage) {
       return `👤 ${message.content}`;
     }
     // For PM messages, use rendered content
@@ -160,38 +159,20 @@ const MessageItem = memo(({ message }: { message: Message }) => {
       });
   }, [message.content, shouldRenderMarkdown]);
 
-  // For system messages, we need to ensure consistent width
-  if (isSystemMessage) {
-    return (
-      <Box marginBottom={1} width="100%">
-        <Box
-          flexDirection="column"
-          width="100%"
-          paddingX={1}
-          paddingY={1}
-          backgroundColor={backgroundColor}
-        >
-          <Text color={textColor}>
-            {displayContent}
-          </Text>
-        </Box>
-      </Box>
-    );
-  }
+  // Unified rendering for all messages with full width for user and system
+  const shouldBeFullWidth = isSystemMessage || isUserMessage;
 
   return (
-    <Box marginBottom={1}>
-      <Box
-        flexDirection="column"
-        flexShrink={1}
-        paddingX={1}
-        paddingY={shouldAddPadding ? 1 : 0}
-        backgroundColor={backgroundColor}
-      >
-        <Text color={textColor}>
-          {displayContent}
-        </Text>
-      </Box>
+    <Box
+      marginBottom={1}
+      flexDirection="column"
+      paddingX={1}
+      paddingY={shouldAddPadding ? 1 : 0}
+      backgroundColor={backgroundColor}
+    >
+      <Text color={textColor}>
+        {displayContent}
+      </Text>
     </Box>
   );
 });
@@ -210,7 +191,6 @@ function MessageList({ messages }: { messages: Message[] }) {
 export const ChatInterface = memo(function ChatInterface({
   messages,
   onSendMessage,
-  onAddSystemMessage,
   isLoading,
   interactiveCommand,
   onModelSelect,
