@@ -156,6 +156,7 @@ const MessageItem = memo(({ message }: { message: Message }) => {
         flexDirection="column"
         flexShrink={1}
         paddingX={1}
+        paddingY={message.role === 'user' ? 1 : 0}
         backgroundColor={backgroundColor}
       >
         <Text color="white">
