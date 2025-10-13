@@ -17,7 +17,7 @@ export default function ModelSelector({
   }));
 
   return (
-    <Box borderStyle="single" borderColor="cyan" borderLeft={false} borderRight={false} paddingX={1}>
+    <Box borderStyle="single" borderColor="green" borderLeft={false} borderRight={false} paddingX={1}>
       <Box flexDirection="column">
         <Text color="green" bold>
           Select Model (ESC to cancel):

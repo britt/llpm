@@ -32,7 +32,7 @@ export default function ProjectSelector({ onProjectSelect }: ProjectSelectorProp
   });
 
   return (
-    <Box borderStyle="single" borderColor="cyan" borderLeft={false} borderRight={false} paddingX={1}>
+    <Box borderStyle="single" borderColor="yellow" borderLeft={false} borderRight={false} paddingX={1}>
       <Box flexDirection="column">
         <Text color="cyan" bold>
           Select Project (ESC to cancel):
