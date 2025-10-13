@@ -110,7 +110,7 @@ const MessageItem = memo(({ message }: { message: Message }) => {
 
   const textColor = useMemo(() => {
     // All messages use white text for consistency
-    return 'white';
+    return 'brightWhite';
   }, [message.role]);
 
   const isSystemMessage = message.role === 'system' || message.role === 'ui-notification';
@@ -127,30 +127,17 @@ const MessageItem = memo(({ message }: { message: Message }) => {
     return false;
   }, [message.role]);
 
-  // Count wide emojis to calculate padding compensation
-  const wideEmojiCount = useMemo(() => {
-    // Pattern matching most common wide emojis
-    const wideEmojiPattern = /[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu;
-    const matches = message.content.match(wideEmojiPattern);
-    // Add 1 for the prefix emoji (⚙️ or 👤)
-    const prefixCount = (isSystemMessage || isUserMessage) ? 1 : 0;
-    return (matches ? matches.length : 0) + prefixCount;
-  }, [message.content, isSystemMessage, isUserMessage]);
-
   // Prepend emoji to system and user messages
   const displayContent = useMemo(() => {
-    // Add padding spaces: one space per wide emoji to compensate for terminal width
-    const padding = ' '.repeat(wideEmojiCount);
-
     if (isSystemMessage) {
-      return `⚙️ ${message.content}${padding}`;
+      return `⚙️ ${message.content}`;
     }
     if (isUserMessage) {
-      return `👤 ${message.content}${padding}`;
+      return `👤 ${message.content}`;
     }
     // For PM messages, use rendered content
     return isRendering ? message.content : renderedContent;
-  }, [message.role, isRendering, message.content, renderedContent, wideEmojiCount]);
+  }, [message.role, isRendering, message.content, renderedContent]);
 
   // Render markdown for PM messages
   useEffect(() => {
@@ -179,6 +166,7 @@ const MessageItem = memo(({ message }: { message: Message }) => {
       paddingX={1}
       paddingY={shouldAddPadding ? 1 : 0}
       backgroundColor={backgroundColor}
+      minWidth={displayContent.length + 2}
     >
       <Text color={textColor}>
         {displayContent}
