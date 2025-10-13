@@ -127,17 +127,30 @@ const MessageItem = memo(({ message }: { message: Message }) => {
     return false;
   }, [message.role]);
 
+  // Count wide emojis to calculate padding compensation
+  const wideEmojiCount = useMemo(() => {
+    // Pattern matching most common wide emojis
+    const wideEmojiPattern = /[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu;
+    const matches = message.content.match(wideEmojiPattern);
+    // Add 1 for the prefix emoji (⚙️ or 👤)
+    const prefixCount = (isSystemMessage || isUserMessage) ? 1 : 0;
+    return (matches ? matches.length : 0) + prefixCount;
+  }, [message.content, isSystemMessage, isUserMessage]);
+
   // Prepend emoji to system and user messages
   const displayContent = useMemo(() => {
+    // Add padding spaces: one space per wide emoji to compensate for terminal width
+    const padding = ' '.repeat(wideEmojiCount);
+
     if (isSystemMessage) {
-      return `⚙️ ${message.content}`;
+      return `⚙️ ${message.content}${padding}`;
     }
     if (isUserMessage) {
-      return `👤 ${message.content}`;
+      return `👤 ${message.content}${padding}`;
     }
     // For PM messages, use rendered content
     return isRendering ? message.content : renderedContent;
-  }, [message.role, isRendering, message.content, renderedContent]);
+  }, [message.role, isRendering, message.content, renderedContent, wideEmojiCount]);
 
   // Render markdown for PM messages
   useEffect(() => {
