@@ -26,6 +26,7 @@ export function App() {
     isProcessing,
     queuedMessages
   } = useChat();
+  // TODO: this is the place to start for message buffering
 
   return React.createElement(ChatInterface, {
     messages,

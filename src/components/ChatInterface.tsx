@@ -108,6 +108,10 @@ const MessageItem = memo(({ message }: { message: Message }) => {
     setIsRendering(false);
   }, [message.id]);
 
+  const isSystemMessage = message.role === 'system' || message.role === 'ui-notification';
+  const isUserMessage = message.role === 'user';
+  const shouldAddPadding = !isSystemMessage && !isUserMessage;
+
   const backgroundColor = useMemo(() => {
     if (message.role === 'system' || message.role === 'ui-notification') return '#2e1d11';
     if (message.role === 'assistant') return 'black';
@@ -120,16 +124,6 @@ const MessageItem = memo(({ message }: { message: Message }) => {
     // All messages use white text for consistency
     return 'brightWhite';
   }, [message.role]);
-  
-  const prefix = useMemo(() => {
-    if (message.role === 'system' || message.role === 'ui-notification') return 'System:\n';
-    return undefined
-  }, [message.role]);
-
-
-  const isSystemMessage = message.role === 'system' || message.role === 'ui-notification';
-  const isUserMessage = message.role === 'user';
-  const shouldAddPadding = !isSystemMessage && !isUserMessage;
 
   // Determine if this message should be rendered with markdown
   const shouldRenderMarkdown = useMemo(() => {
