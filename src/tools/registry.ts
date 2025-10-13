@@ -77,6 +77,23 @@ import {
   cancelDockerAgentJobTool,
   checkDockerBrokerHealthTool
 } from './dockerAgentTools';
+import {
+  listAgentsTool,
+  getAgentTool,
+  checkAgentHealthTool,
+  listJobsTool,
+  getJobTool,
+  createJobTool,
+  cancelJobTool,
+  markAgentAuthenticatedTool,
+  getAgentConnectCommandTool,
+  scaleAgentClusterTool
+} from './restBrokerTools';
+import {
+  setProjectAgentConfigTool,
+  getProjectAgentConfigTool,
+  removeProjectAgentConfigTool
+} from './projectAgentConfigTools';
 
 const toolRegistry: ToolRegistry = {
   get_current_project: getCurrentProjectTool,
@@ -140,13 +157,28 @@ const toolRegistry: ToolRegistry = {
   // Screenshots
   take_screenshot: takeScreenshotTool,
   check_screenshot_setup: checkScreenshotSetupTool,
-  // Docker Agent Tools
+  // Docker Agent Tools (legacy)
   list_docker_agents: listDockerAgentsTool,
   submit_docker_agent_job: submitDockerAgentJobTool,
   get_docker_agent_job_status: getDockerAgentJobStatusTool,
   list_docker_agent_jobs: listDockerAgentJobsTool,
   cancel_docker_agent_job: cancelDockerAgentJobTool,
-  check_docker_broker_health: checkDockerBrokerHealthTool
+  check_docker_broker_health: checkDockerBrokerHealthTool,
+  // REST Broker Agent Tools (enhanced formatting)
+  list_agents: listAgentsTool,
+  get_agent: getAgentTool,
+  check_agent_health: checkAgentHealthTool,
+  list_jobs: listJobsTool,
+  get_job: getJobTool,
+  create_job: createJobTool,
+  cancel_job: cancelJobTool,
+  mark_agent_authenticated: markAgentAuthenticatedTool,
+  get_agent_connect_command: getAgentConnectCommandTool,
+  scale_agent_cluster: scaleAgentClusterTool,
+  // Project Agent Configuration
+  set_project_agent_config: setProjectAgentConfigTool,
+  get_project_agent_config: getProjectAgentConfigTool,
+  remove_project_agent_config: removeProjectAgentConfigTool
 };
 
 export async function getToolRegistry(): Promise<ToolRegistry> {

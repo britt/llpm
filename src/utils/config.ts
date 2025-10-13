@@ -53,3 +53,22 @@ export function getConfigDir(): string {
 export function getConfigFilePath(): string {
   return CONFIG_FILE;
 }
+
+/**
+ * Get the agents.yaml file path for a specific project
+ */
+export function getProjectAgentsYamlPath(projectId: string): string {
+  return join(CONFIG_DIR, 'projects', projectId, 'agents.yaml');
+}
+
+/**
+ * Ensure a project's directory exists
+ */
+export async function ensureProjectDir(projectId: string): Promise<void> {
+  const projectDir = join(CONFIG_DIR, 'projects', projectId);
+  if (!existsSync(projectDir)) {
+    debug('Creating project directory:', projectDir);
+    await mkdir(projectDir, { recursive: true });
+    debug('Project directory created successfully');
+  }
+}

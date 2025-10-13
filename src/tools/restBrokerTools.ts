@@ -1,0 +1,668 @@
+/**
+ * REST Broker Agent Tools
+ *
+ * Model-accessible tools that surface REST broker operations for agent lifecycle,
+ * job control, health checks, and logs. Enables the assistant to perform agent
+ * operations programmatically while maintaining security and auditability.
+ */
+
+import { tool } from './instrumentedTool';
+import { z } from 'zod';
+import { requiresConfirmation, formatConfirmationPrompt } from '../utils/toolConfirmation';
+import { auditToolCall } from '../utils/toolAudit';
+import { exec } from 'child_process';
+import { promisify } from 'util';
+
+const execAsync = promisify(exec);
+
+// Default REST broker URL (can be overridden via env)
+const BROKER_URL = process.env.REST_BROKER_URL || 'http://localhost:3010';
+
+/**
+ * Helper to make REST broker API calls
+ */
+async function brokerRequest<T>(
+  method: string,
+  path: string,
+  body?: any
+): Promise<{ success: boolean; data?: T; error?: string }> {
+  try {
+    const url = `${BROKER_URL}${path}`;
+    const options: RequestInit = {
+      method,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    };
+
+    if (body) {
+      options.body = JSON.stringify(body);
+    }
+
+    const response = await fetch(url, options);
+    const data = await response.json();
+
+    if (!response.ok) {
+      return {
+        success: false,
+        error: data.message || `Request failed with status ${response.status}`
+      };
+    }
+
+    return {
+      success: true,
+      data: data as T
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error occurred'
+    };
+  }
+}
+
+/**
+ * List all available agents
+ */
+export const listAgentsTool = tool({
+  description: 'List all registered agents in the REST broker. Returns agent details including status, health, and authentication state.',
+  inputSchema: z.object({
+    verifyAuth: z.boolean().optional().describe('Whether to trigger authentication verification before listing agents')
+  }),
+  execute: async ({ verifyAuth }) => {
+    const queryParam = verifyAuth ? '?verifyAuth=true' : '';
+    const result = await brokerRequest<{ agents: any[] }>('GET', `/agents${queryParam}`);
+
+    if (!result.success) {
+      return `❌ Failed to list agents: ${result.error}`;
+    }
+
+    const agents = result.data?.agents || [];
+    if (agents.length === 0) {
+      return '📋 No agents registered.';
+    }
+
+    const agentList = agents.map(agent => {
+      const status = agent.status === 'available' ? '🟢' :
+                    agent.status === 'busy' ? '🟡' : '🔴';
+      const health = agent.health?.status === 'healthy' ? '✅' :
+                    agent.health?.status === 'unhealthy' ? '❌' : '❓';
+      const auth = agent.health?.authenticated ? '🔒' : '🔓';
+
+      return `${status} **${agent.name}** (${agent.id})
+  Type: ${agent.type} | Status: ${agent.status} | Health: ${health} ${agent.health?.status || 'unknown'}
+  Auth: ${auth} ${agent.health?.authenticated ? 'authenticated' : 'not authenticated'}${agent.health?.authExpiresAt ? ` (expires: ${new Date(agent.health.authExpiresAt).toLocaleString()})` : ''}
+  ${agent.provider ? `Provider: ${agent.provider}` : ''}${agent.model ? ` | Model: ${agent.model}` : ''}`;
+    }).join('\n\n');
+
+    return `📋 **Registered Agents** (${agents.length} total):\n\n${agentList}`;
+  }
+});
+
+/**
+ * Get details for a specific agent
+ */
+export const getAgentTool = tool({
+  description: 'Get detailed information about a specific agent including its configuration, status, health, and authentication state.',
+  inputSchema: z.object({
+    agentId: z.string().describe('The ID of the agent to retrieve')
+  }),
+  execute: async ({ agentId }) => {
+    const result = await brokerRequest<{ agent: any }>('GET', `/agents/${agentId}`);
+
+    if (!result.success) {
+      return `❌ Failed to get agent: ${result.error}`;
+    }
+
+    const agent = result.data?.agent;
+    if (!agent) {
+      return `❌ Agent not found: ${agentId}`;
+    }
+
+    const status = agent.status === 'available' ? '🟢 Available' :
+                  agent.status === 'busy' ? '🟡 Busy' : '🔴 Offline';
+    const health = agent.health?.status === 'healthy' ? '✅ Healthy' :
+                  agent.health?.status === 'unhealthy' ? '❌ Unhealthy' : '❓ Unknown';
+    const auth = agent.health?.authenticated ? '🔒 Authenticated' : '🔓 Not Authenticated';
+
+    let details = `📋 **Agent Details: ${agent.name}**
+
+**ID**: ${agent.id}
+**Type**: ${agent.type}
+**Status**: ${status}
+**Health**: ${health}${agent.health?.message ? ` - ${agent.health.message}` : ''}
+**Authentication**: ${auth}${agent.health?.authExpiresAt ? `\n**Auth Expires**: ${new Date(agent.health.authExpiresAt).toLocaleString()}` : ''}${agent.health?.authLastVerifiedAt ? `\n**Last Verified**: ${new Date(agent.health.authLastVerifiedAt).toLocaleString()}` : ''}
+**Auth Type**: ${agent.authType || 'none'}${agent.provider ? `\n**Provider**: ${agent.provider}` : ''}${agent.model ? `\n**Model**: ${agent.model}` : ''}${agent.baseUrl ? `\n**Base URL**: ${agent.baseUrl}` : ''}${agent.host ? `\n**Host**: ${agent.host}:${agent.port}` : ''}`;
+
+    if (agent.registeredAt) {
+      details += `\n**Registered**: ${new Date(agent.registeredAt).toLocaleString()}`;
+    }
+    if (agent.lastHeartbeat) {
+      details += `\n**Last Heartbeat**: ${new Date(agent.lastHeartbeat).toLocaleString()}`;
+    }
+
+    if (agent.metadata && Object.keys(agent.metadata).length > 0) {
+      details += `\n\n**Metadata**:\n${JSON.stringify(agent.metadata, null, 2)}`;
+    }
+
+    return details;
+  }
+});
+
+/**
+ * Check agent health
+ */
+export const checkAgentHealthTool = tool({
+  description: 'Perform a health check on a specific agent to verify it is responding correctly.',
+  inputSchema: z.object({
+    agentId: z.string().describe('The ID of the agent to health check')
+  }),
+  execute: async ({ agentId }) => {
+    // Get current agent to check health
+    const result = await brokerRequest<{ agent: any }>('GET', `/agents/${agentId}`);
+
+    if (!result.success) {
+      return `❌ Failed to check agent health: ${result.error}`;
+    }
+
+    const agent = result.data?.agent;
+    if (!agent) {
+      return `❌ Agent not found: ${agentId}`;
+    }
+
+    const health = agent.health || {};
+    const status = health.status === 'healthy' ? '✅' :
+                  health.status === 'unhealthy' ? '❌' : '❓';
+
+    return `${status} **Health Check: ${agent.name}**
+
+**Status**: ${health.status || 'unknown'}${health.message ? `\n**Message**: ${health.message}` : ''}
+**Last Check**: ${health.lastCheck ? new Date(health.lastCheck).toLocaleString() : 'never'}
+**Agent Status**: ${agent.status}${health.authenticated !== undefined ? `\n**Authenticated**: ${health.authenticated ? 'yes' : 'no'}` : ''}`;
+  }
+});
+
+/**
+ * List jobs for an agent
+ */
+export const listJobsTool = tool({
+  description: 'List jobs for a specific agent with optional filtering by status.',
+  inputSchema: z.object({
+    agentId: z.string().describe('The ID of the agent'),
+    status: z.enum(['pending', 'running', 'completed', 'failed', 'cancelled']).optional().describe('Filter jobs by status'),
+    limit: z.number().optional().default(50).describe('Maximum number of jobs to return (1-100)'),
+    offset: z.number().optional().default(0).describe('Number of jobs to skip for pagination')
+  }),
+  execute: async ({ agentId, status, limit = 50, offset = 0 }) => {
+    const params = new URLSearchParams();
+    if (status) params.append('status', status);
+    params.append('limit', limit.toString());
+    params.append('offset', offset.toString());
+
+    const result = await brokerRequest<{ jobs: any[]; total: number }>('GET', `/agents/${agentId}/jobs?${params}`);
+
+    if (!result.success) {
+      return `❌ Failed to list jobs: ${result.error}`;
+    }
+
+    const { jobs = [], total = 0 } = result.data || {};
+
+    if (jobs.length === 0) {
+      return `📋 No jobs found for agent ${agentId}${status ? ` with status ${status}` : ''}.`;
+    }
+
+    const jobList = jobs.map(job => {
+      const statusIcon = job.status === 'completed' ? '✅' :
+                        job.status === 'failed' ? '❌' :
+                        job.status === 'running' ? '🔄' :
+                        job.status === 'cancelled' ? '🚫' : '⏳';
+
+      return `${statusIcon} **Job ${job.id}**
+  Status: ${job.status} | Created: ${new Date(job.createdAt).toLocaleString()}${job.completedAt ? ` | Completed: ${new Date(job.completedAt).toLocaleString()}` : ''}${job.error ? `\n  Error: ${job.error}` : ''}`;
+    }).join('\n\n');
+
+    return `📋 **Jobs for Agent ${agentId}** (showing ${jobs.length} of ${total} total):\n\n${jobList}${jobs.length < total ? `\n\n💡 Use offset=${offset + limit} to see more jobs.` : ''}`;
+  }
+});
+
+/**
+ * Get job details
+ */
+export const getJobTool = tool({
+  description: 'Get detailed information about a specific job including its status, payload, and results.',
+  inputSchema: z.object({
+    agentId: z.string().describe('The ID of the agent'),
+    jobId: z.string().describe('The ID of the job')
+  }),
+  execute: async ({ agentId, jobId }) => {
+    const result = await brokerRequest<any>('GET', `/agents/${agentId}/jobs/${jobId}`);
+
+    if (!result.success) {
+      return `❌ Failed to get job: ${result.error}`;
+    }
+
+    const job = result.data;
+    if (!job) {
+      return `❌ Job not found: ${jobId}`;
+    }
+
+    const statusIcon = job.status === 'completed' ? '✅' :
+                      job.status === 'failed' ? '❌' :
+                      job.status === 'running' ? '🔄' :
+                      job.status === 'cancelled' ? '🚫' : '⏳';
+
+    let details = `${statusIcon} **Job Details: ${job.id}**
+
+**Status**: ${job.status}
+**Agent**: ${job.agentId}
+**Created**: ${new Date(job.createdAt).toLocaleString()}`;
+
+    if (job.startedAt) {
+      details += `\n**Started**: ${new Date(job.startedAt).toLocaleString()}`;
+    }
+    if (job.completedAt) {
+      details += `\n**Completed**: ${new Date(job.completedAt).toLocaleString()}`;
+    }
+    if (job.error) {
+      details += `\n**Error**: ${job.error}`;
+    }
+
+    if (job.payload) {
+      details += `\n\n**Payload**:\n\`\`\`json\n${JSON.stringify(job.payload, null, 2)}\n\`\`\``;
+    }
+
+    if (job.result) {
+      details += `\n\n**Result**:\n\`\`\`json\n${JSON.stringify(job.result, null, 2)}\n\`\`\``;
+    }
+
+    return details;
+  }
+});
+
+/**
+ * Create a new job
+ */
+export const createJobTool = tool({
+  description: 'Submit a new job to an agent. The job will be queued and executed by the agent. Returns the job ID for tracking.',
+  inputSchema: z.object({
+    agentId: z.string().describe('The ID of the agent to execute the job'),
+    payload: z.any().describe('The job payload containing task details and parameters')
+  }),
+  execute: async ({ agentId, payload }) => {
+    const result = await brokerRequest<{ jobId: string; status: string; createdAt: string }>(
+      'POST',
+      `/agents/${agentId}/jobs`,
+      payload
+    );
+
+    if (!result.success) {
+      return `❌ Failed to create job: ${result.error}`;
+    }
+
+    const { jobId, status, createdAt } = result.data || {};
+
+    return `✅ **Job Created Successfully**
+
+**Job ID**: ${jobId}
+**Agent**: ${agentId}
+**Status**: ${status}
+**Created**: ${new Date(createdAt!).toLocaleString()}
+
+💡 Use \`get_job\` with agentId="${agentId}" and jobId="${jobId}" to check job status.`;
+  }
+});
+
+/**
+ * Cancel a job
+ */
+export const cancelJobTool = tool({
+  description: 'Cancel a running or pending job. This is a destructive operation that requires confirmation.',
+  inputSchema: z.object({
+    agentId: z.string().describe('The ID of the agent'),
+    jobId: z.string().describe('The ID of the job to cancel'),
+    confirmed: z.boolean().optional().describe('Set to true to bypass confirmation (only after user explicitly confirms)')
+  }),
+  execute: async ({ agentId, jobId, confirmed }) => {
+    const startTime = Date.now();
+
+    try {
+      // Check if confirmation is required
+      const confirmCheck = requiresConfirmation('cancel_job', { agentId, jobId });
+
+      if (confirmCheck.required && !confirmed) {
+        const prompt = formatConfirmationPrompt(confirmCheck);
+        return `${prompt}\n\n💡 Once confirmed, call this tool again with \`confirmed: true\``;
+      }
+
+      const result = await brokerRequest<{ jobId: string; status: string; cancelled: boolean; message: string }>(
+        'POST',
+        `/agents/${agentId}/jobs/${jobId}/cancel`
+      );
+
+      const duration = Date.now() - startTime;
+
+      if (!result.success) {
+        // Audit failed attempt
+        await auditToolCall({
+          timestamp: new Date().toISOString(),
+          toolName: 'cancel_job',
+          parameters: { agentId, jobId, confirmed },
+          error: result.error,
+          duration
+        });
+
+        return `❌ Failed to cancel job: ${result.error}`;
+      }
+
+      const { cancelled, message } = result.data || {};
+
+      // Audit successful call
+      await auditToolCall({
+        timestamp: new Date().toISOString(),
+        toolName: 'cancel_job',
+        parameters: { agentId, jobId, confirmed },
+        result: { cancelled, message },
+        duration
+      });
+
+      if (cancelled) {
+        return `✅ **Job Cancelled**: ${jobId}\n\n${message}\n\n📝 *This action has been logged for audit purposes.*`;
+      } else {
+        return `⚠️ **Could not cancel job**: ${jobId}\n\n${message}`;
+      }
+    } catch (error) {
+      const duration = Date.now() - startTime;
+
+      // Audit error
+      await auditToolCall({
+        timestamp: new Date().toISOString(),
+        toolName: 'cancel_job',
+        parameters: { agentId, jobId, confirmed },
+        error: error instanceof Error ? error.message : 'Unknown error',
+        duration
+      });
+
+      return `❌ Error cancelling job: ${error instanceof Error ? error.message : 'Unknown error'}`;
+    }
+  }
+});
+
+/**
+ * Mark agent as authenticated (for subscription agents)
+ */
+export const markAgentAuthenticatedTool = tool({
+  description: 'Mark a subscription agent as authenticated after the user completes the OAuth flow. This updates the agent health status.',
+  inputSchema: z.object({
+    agentId: z.string().describe('The ID of the subscription agent to mark as authenticated')
+  }),
+  execute: async ({ agentId }) => {
+    const result = await brokerRequest<{ status: number; message: string; agent: any }>(
+      'PATCH',
+      `/agents/${agentId}/auth`
+    );
+
+    if (!result.success) {
+      return `❌ Failed to mark agent as authenticated: ${result.error}`;
+    }
+
+    const { message, agent } = result.data || {};
+
+    return `✅ ${message}
+
+**Agent**: ${agent?.name} (${agent?.id})
+**Auth Status**: ${agent?.health?.authenticated ? '🔒 Authenticated' : '🔓 Not Authenticated'}${agent?.health?.authExpiresAt ? `\n**Expires**: ${new Date(agent.health.authExpiresAt).toLocaleString()}` : ''}`;
+  }
+});
+
+/**
+ * Get Docker connect command for an agent
+ */
+export const getAgentConnectCommandTool = tool({
+  description: 'Get the Docker exec command to connect to an agent container. Automatically copies the command to the clipboard for easy use.',
+  inputSchema: z.object({
+    agentId: z.string().describe('The ID of the agent to connect to')
+  }),
+  execute: async ({ agentId }) => {
+    const result = await brokerRequest<{ agent: any }>('GET', `/agents/${agentId}`);
+
+    if (!result.success) {
+      return `❌ Failed to get agent details: ${result.error}`;
+    }
+
+    const agent = result.data?.agent;
+    if (!agent) {
+      return `❌ Agent not found: ${agentId}`;
+    }
+
+    // Try to find the actual container name from docker ps
+    let containerName = agentId;
+    try {
+      // Get all running container names
+      const { stdout } = await execAsync('docker ps --format "{{.Names}}"');
+      const runningContainers = stdout.trim().split('\n').filter(Boolean);
+      debug(`Container lookup for ${agentId}: found containers:`, runningContainers);
+
+      // Common container naming patterns to search for (in priority order)
+      // Prioritize docker-prefixed containers over raw agent IDs
+      const possibleNames = [
+        `docker-${agentId}`,              // docker-claude-code-3
+        `docker-${agentId}-1`,            // docker-claude-code-3-1
+        `docker_${agentId}_1`,            // docker_claude-code-3_1
+        `${agentId}-1`,                   // claude-code-3-1
+        agentId                           // claude-code-3 (fallback)
+      ];
+      debug(`Checking possible names:`, possibleNames);
+
+      // Try exact matches first
+      for (const name of possibleNames) {
+        if (runningContainers.includes(name)) {
+          debug(`Found matching container: ${name}`);
+          containerName = name;
+          break;
+        }
+      }
+
+      if (containerName === agentId) {
+        debug(`No exact match found, using agentId as fallback: ${agentId}`);
+      }
+
+      // If no exact match found, try to find by agent type and number
+      // For agent ID like "claude-code-3", try to find "docker-claude-code-3"
+      if (containerName === agentId) {
+        const match = agentId.match(/^(.+?)-(\d+)$/);
+        if (match) {
+          const [, baseType, instanceNum] = match;
+          // Look for docker-{baseType}-{instanceNum}
+          const dockerPattern = `docker-${baseType}-${instanceNum}`;
+          if (runningContainers.includes(dockerPattern)) {
+            containerName = dockerPattern;
+          }
+        }
+      }
+    } catch (error) {
+      // If docker command fails, just use the agentId as fallback
+    }
+
+    const connectCommand = `docker exec -it ${containerName} /bin/bash`;
+
+    // Copy to clipboard using pbcopy (macOS) or xclip (Linux)
+    try {
+      await execAsync(`echo "${connectCommand}" | pbcopy`);
+
+      return `🔗 **Docker Connect Command** (copied to clipboard)
+
+\`\`\`bash
+${connectCommand}
+\`\`\`
+
+**Agent**: ${agent.name} (${agentId})
+**Container**: ${containerName}
+
+✅ The command has been copied to your clipboard. Just paste and run!
+
+**Note**: If the container name doesn't match, run \`docker ps\` to see available containers.`;
+    } catch (error) {
+      return `🔗 **Docker Connect Command**
+
+\`\`\`bash
+${connectCommand}
+\`\`\`
+
+**Agent**: ${agent.name} (${agentId})
+**Container**: ${containerName}
+
+⚠️  Could not copy to clipboard automatically.
+💡 Copy the command above and run it in your terminal.
+
+**Note**: If the container name doesn't match, run \`docker ps\` to see available containers.`;
+    }
+  }
+});
+
+/**
+ * Scale the agent cluster
+ */
+export const scaleAgentClusterTool = tool({
+  description: 'Scale the Docker agent cluster by adjusting the number of running instances for each agent type. Use presets (dev, team, heavy, minimal) or specify custom instance counts.',
+  inputSchema: z.object({
+    preset: z.enum(['dev', 'team', 'heavy', 'minimal', 'custom']).optional().describe('Scaling preset: dev (1 each), team (1 claude, 2 codex, 2 aider, 1 opencode), heavy (2 claude, 3 codex, 3 aider, 2 opencode), minimal (1 aider only)'),
+    claudeCode: z.number().min(0).max(10).optional().describe('Number of Claude Code instances (0-10). Only used with preset=custom'),
+    openaiCodex: z.number().min(0).max(10).optional().describe('Number of OpenAI Codex instances (0-10). Only used with preset=custom'),
+    aider: z.number().min(0).max(10).optional().describe('Number of Aider instances (0-10). Only used with preset=custom'),
+    opencode: z.number().min(0).max(10).optional().describe('Number of OpenCode instances (0-10). Only used with preset=custom'),
+    authType: z.enum(['api_key', 'subscription']).default('subscription').describe('Authentication type for agents')
+  }),
+  execute: async ({ preset, claudeCode, openaiCodex, aider, opencode, authType = 'subscription' }) => {
+    const startTime = Date.now();
+
+    try {
+      // Load config to get Docker paths and project-specific agent config
+      const { loadProjectConfig, loadProjectAgentConfig } = await import('../utils/projectConfig');
+      const appConfig = await loadProjectConfig();
+
+      const scaleScriptPath = appConfig.docker?.scaleScriptPath || 'docker/scale.sh';
+      const composeDir = appConfig.docker?.composeFilePath
+        ? appConfig.docker.composeFilePath.substring(0, appConfig.docker.composeFilePath.lastIndexOf('/'))
+        : 'docker';
+
+      // Load project-specific agent config
+      let projectAgentConfig = null;
+      if (appConfig.currentProject) {
+        projectAgentConfig = await loadProjectAgentConfig(appConfig.currentProject);
+      }
+
+      // Determine scaling configuration
+      let config: { claude: number; codex: number; aider: number; opencode: number };
+
+      // Check if any custom counts were provided (even if preset wasn't set to 'custom')
+      const hasCustomCounts = claudeCode !== undefined || openaiCodex !== undefined ||
+                              aider !== undefined || opencode !== undefined;
+
+      if (preset === 'custom' || hasCustomCounts) {
+        // Use custom configuration
+        config = {
+          claude: claudeCode ?? 0,
+          codex: openaiCodex ?? 0,
+          aider: aider ?? 0,
+          opencode: opencode ?? 0
+        };
+      } else if (preset) {
+        // Use preset configuration
+        const presets = {
+          dev: { claude: 1, codex: 1, aider: 1, opencode: 1 },
+          team: { claude: 1, codex: 2, aider: 2, opencode: 1 },
+          heavy: { claude: 2, codex: 3, aider: 3, opencode: 2 },
+          minimal: { claude: 0, codex: 0, aider: 1, opencode: 0 }
+        };
+        config = presets[preset];
+      } else if (projectAgentConfig) {
+        // Use project-specific agent config
+        if (projectAgentConfig.customCounts) {
+          // Use custom counts from project config
+          config = {
+            claude: projectAgentConfig.customCounts.claudeCode ?? 0,
+            codex: projectAgentConfig.customCounts.openaiCodex ?? 0,
+            aider: projectAgentConfig.customCounts.aider ?? 0,
+            opencode: projectAgentConfig.customCounts.opencode ?? 0
+          };
+        } else if (projectAgentConfig.defaultPreset) {
+          // Use default preset from project config
+          const presets = {
+            dev: { claude: 1, codex: 1, aider: 1, opencode: 1 },
+            team: { claude: 1, codex: 2, aider: 2, opencode: 1 },
+            heavy: { claude: 2, codex: 3, aider: 3, opencode: 2 },
+            minimal: { claude: 0, codex: 0, aider: 1, opencode: 0 }
+          };
+          config = presets[projectAgentConfig.defaultPreset];
+        } else {
+          // Project config exists but has no preset or counts, default to dev
+          config = { claude: 1, codex: 1, aider: 1, opencode: 1 };
+        }
+        // Override authType if project has it configured
+        if (projectAgentConfig.authType) {
+          authType = projectAgentConfig.authType;
+        }
+      } else {
+        // No preset, custom counts, or project config - default to dev
+        config = { claude: 1, codex: 1, aider: 1, opencode: 1 };
+      }
+
+      // Execute scaling via scale.sh script
+      // Extract script filename from path
+      const scriptName = scaleScriptPath.substring(scaleScriptPath.lastIndexOf('/') + 1);
+
+      // Change to compose directory and run scale script
+      const { stdout } = await execAsync(`cd ${composeDir} && ./${scriptName} custom --claude ${config.claude} --codex ${config.codex} --aider ${config.aider} --opencode ${config.opencode} --auth-type ${authType}`);
+      const result = stdout;
+
+      const duration = Date.now() - startTime;
+
+      // Audit the scaling operation
+      await auditToolCall({
+        timestamp: new Date().toISOString(),
+        toolName: 'scale_agent_cluster',
+        parameters: { preset, claudeCode, openaiCodex, aider, opencode, authType },
+        result: { config, output: result },
+        duration
+      });
+
+      // Build response message
+      let responseMsg = `✅ **Agent Cluster Scaled Successfully**\n\n`;
+
+      // Show source of configuration
+      if (projectAgentConfig && !preset && !hasCustomCounts) {
+        const { getProjectAgentsYamlPath } = await import('../utils/config');
+        const yamlPath = getProjectAgentsYamlPath(appConfig.currentProject!);
+        responseMsg += `📁 **Using project config from**: ${yamlPath}\n\n`;
+      }
+
+      responseMsg += `**Configuration**:
+- Claude Code: ${config.claude} instance(s)
+- OpenAI Codex: ${config.codex} instance(s)
+- Aider: ${config.aider} instance(s)
+- OpenCode: ${config.opencode} instance(s)
+- Auth Type: ${authType}
+
+**Total Agents**: ${config.claude + config.codex + config.aider + config.opencode}
+
+${result}
+
+📝 *This scaling operation has been logged for audit purposes.*`;
+
+      return responseMsg;
+    } catch (error) {
+      const duration = Date.now() - startTime;
+
+      // Audit error
+      await auditToolCall({
+        timestamp: new Date().toISOString(),
+        toolName: 'scale_agent_cluster',
+        parameters: { preset, claudeCode, openaiCodex, aider, opencode, authType },
+        error: error instanceof Error ? error.message : 'Unknown error',
+        duration
+      });
+
+      return `❌ Failed to scale agent cluster: ${error instanceof Error ? error.message : 'Unknown error'}`;
+    }
+  }
+});

@@ -13,6 +13,8 @@ import { notesCommand } from './notes';
 // import { projectScanCommand } from './project-scan';
 // import { projectBoardCommand } from './project-board';
 import { credentialsCommand } from './credentials';
+import { agentsCommand } from './agents';
+import { jobsCommand } from './jobs';
 import { debug } from '../utils/logger';
 
 const commandRegistry: CommandRegistry = {
@@ -28,7 +30,9 @@ const commandRegistry: CommandRegistry = {
   notes: notesCommand,
   // 'project-scan': projectScanCommand, // Now available as /project scan
   // board: projectBoardCommand, // Now available as /project board
-  credentials: credentialsCommand
+  credentials: credentialsCommand,
+  agents: agentsCommand,
+  jobs: jobsCommand
 };
 
 export function getCommandRegistry(): CommandRegistry {

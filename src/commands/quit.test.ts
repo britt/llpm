@@ -33,8 +33,7 @@ describe('quitCommand', () => {
     const result = await resolveCommandResult(quitCommand.execute([]));
 
     expect(result.success).toBe(true);
-    expect(result.content).toContain('👋 Goodbye!');
-    expect(result.content).toContain('Thanks for using LLPM');
+    expect(result.content).toContain('✌️ Peace out!');
   });
 
   it('should not call process.exit in test environment', () => {
@@ -56,7 +55,7 @@ describe('quitCommand', () => {
     const result = await resolveCommandResult(quitCommand.execute(['arg1', 'arg2']));
 
     expect(result.success).toBe(true);
-    expect(result.content).toContain('👋 Goodbye!');
+    expect(result.content).toContain('✌️ Peace out!');
   });
 
   it('should handle multiple calls without issues', async () => {
@@ -72,6 +71,6 @@ describe('quitCommand', () => {
   it('should use consistent goodbye message format', async () => {
     const result = await resolveCommandResult(quitCommand.execute([]));
 
-    expect(result.content).toBe('👋 Goodbye! Thanks for using LLPM.');
+    expect(result.content).toBe('✌️ Peace out!');
   });
 });

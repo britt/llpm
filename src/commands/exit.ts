@@ -24,7 +24,7 @@ This command is an alias for /quit.
       };
     }
 
-    const message = '👋 Goodbye! Thanks for using LLPM.';
+    const message = '✌️ Peace out!';
 
     // Exit after a short delay to allow the message to be displayed
     // Skip process.exit in test environments or when vitest is running
