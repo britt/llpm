@@ -14,7 +14,7 @@ import ModelSelector from './ModelSelector';
 import NotesSelector from './NotesSelector';
 import type { QueuedMessage } from '../hooks/useChat';
 import { RequestLogDisplay } from './RequestLogDisplay';
-import type { LogEntry } from './RequestLogDisplay';
+import { renderMarkdown, isASCIICapableTerminal } from '../utils/markdownRenderer';
 
 interface ChatInterfaceProps {
   messages: Message[];
@@ -99,34 +99,86 @@ const ProjectStatus = memo(
 
 // Individual message component to prevent full rerenders
 const MessageItem = memo(({ message }: { message: Message }) => {
-  const speakerIndicator = useMemo(() => {
-    return message.role === 'user'
-      ? '👤 You:    '
-      : message.role === 'ui-notification'
-        ? '⚙️ System:  '
-        : '🤖 PM:     ';
+  const [renderedContent, setRenderedContent] = useState<string>(message.content);
+  const [isRendering, setIsRendering] = useState(false);
+
+  // Reset state when message ID changes to prevent showing stale content
+  useEffect(() => {
+    setRenderedContent(message.content);
+    setIsRendering(false);
+  }, [message.id]);
+
+  const isSystemMessage = message.role === 'system' || message.role === 'ui-notification';
+  const isUserMessage = message.role === 'user';
+  const shouldAddPadding = !isSystemMessage && !isUserMessage;
+
+  const backgroundColor = useMemo(() => {
+    if (message.role === 'system' || message.role === 'ui-notification') return '#2e1d11';
+    if (message.role === 'assistant') return 'black';
+    return '#333';
   }, [message.role]);
 
-  const speakerColor = useMemo(() => {
-    return message.role === 'user' ? 'gray' : message.role === 'system' ? 'yellow' : 'white';
+  const textColor = useMemo(() => {
+    if (message.role === 'system' || message.role === 'ui-notification') return '#cb9774';
+    if (message.role === 'user') return 'white';
+    // All messages use white text for consistency
+    return 'brightWhite';
   }, [message.role]);
 
-  const messageColor = useMemo(() => {
-    return message.role === 'user' ? 'gray' : message.role === 'system' ? 'white' : 'white';
+  // Determine if this message should be rendered with markdown
+  const shouldRenderMarkdown = useMemo(() => {
+    // Only render markdown for assistant messages
+    if (message.role === 'assistant') {
+      // Check if rendering is enabled
+      return isASCIICapableTerminal();
+    }
+    return false;
   }, [message.role]);
+
+  // Prepend emoji to system and user messages
+  const displayContent = useMemo(() => {
+    if (isSystemMessage) {
+      return `System: ${message.content}`;
+    }
+    if (isUserMessage) {
+      return `> ${message.content}`;
+    }
+    // For PM messages, use rendered content
+    return isRendering ? message.content : renderedContent;
+  }, [message.role, isRendering, message.content, renderedContent]);
+
+  // Render markdown for PM messages
+  useEffect(() => {
+    if (!shouldRenderMarkdown) {
+      setRenderedContent(message.content);
+      return;
+    }
+
+    setIsRendering(true);
+    renderMarkdown(message.content)
+      .then((rendered) => {
+        setRenderedContent(rendered);
+        setIsRendering(false);
+      })
+      .catch((error) => {
+        console.error('Failed to render markdown:', error);
+        setRenderedContent(message.content);
+        setIsRendering(false);
+      });
+  }, [message.content, shouldRenderMarkdown]);
+
 
   return (
-    <Box marginBottom={1}>
-      <Box flexDirection="row">
-        <Text color={speakerColor} bold>
-          {speakerIndicator}
-        </Text>
-        <Box flexDirection="column" flexShrink={1}>
-          <Text color={messageColor}>
-            {message.content}
-          </Text>
-        </Box>
-      </Box>
+    <Box
+      marginBottom={1}
+      flexDirection="column"
+      paddingX={1}
+      paddingY={shouldAddPadding ? 1 : 0}
+      backgroundColor={backgroundColor}
+    >
+      <Text color={textColor}>
+        {displayContent}
+      </Text>
     </Box>
   );
 });
@@ -145,7 +197,6 @@ function MessageList({ messages }: { messages: Message[] }) {
 export const ChatInterface = memo(function ChatInterface({
   messages,
   onSendMessage,
-  onAddSystemMessage,
   isLoading,
   interactiveCommand,
   onModelSelect,

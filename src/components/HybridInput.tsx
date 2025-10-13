@@ -238,13 +238,13 @@ export default function HybridInput({
           &gt;{' '}
         </Text>
         {inputStateRef.current.input.length > 0 || inputStateRef.current.cursor > 0 ? (
-          <>
+          <Text color="white">
             {inputStateRef.current.input.slice(0, inputStateRef.current.cursor)}
             <Text backgroundColor="white" color="black">
               {inputStateRef.current.input[inputStateRef.current.cursor] || ' '}
             </Text>
             {inputStateRef.current.cursor +1 < inputStateRef.current.input.length && inputStateRef.current.input.slice(inputStateRef.current.cursor + 1)}
-          </>
+          </Text>
         ) : (
           <>
             <Text backgroundColor="white" color="black">

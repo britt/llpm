@@ -68,6 +68,7 @@ generate_agent_service() {
     cat <<EOF
   $agent_id:
     extends:
+      file: docker-compose.yml
       service: $service_name
     container_name: docker-$agent_id
     volumes:
