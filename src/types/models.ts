@@ -75,45 +75,45 @@ export const DEFAULT_MODELS: Record<ModelProvider, ModelConfig[]> = {
   anthropic: [
     {
       provider: 'anthropic',
-      modelId: 'claude-sonnet-4-5-20250929',
+      modelId: 'claude-sonnet-4-5',
       displayName: 'Claude Sonnet 4.5',
-      description: 'Latest and most capable Claude model (snapshot: 2025-09-29)'
+      description: 'Latest and most capable Claude model'
     },
     {
       provider: 'anthropic',
-      modelId: 'claude-opus-4-1-20250805',
+      modelId: 'claude-opus-4-1',
       displayName: 'Claude Opus 4.1',
-      description: 'Most powerful Claude model for complex tasks (snapshot: 2025-08-05)'
+      description: 'Most powerful Claude model for complex tasks'
     },
     {
       provider: 'anthropic',
-      modelId: 'claude-sonnet-4-20250514',
+      modelId: 'claude-sonnet-4',
       displayName: 'Claude Sonnet 4',
-      description: 'Balanced Claude 4 model for general use (snapshot: 2025-05-14)'
+      description: 'Balanced Claude 4 model for general use'
     },
     {
       provider: 'anthropic',
-      modelId: 'claude-opus-4-20250514',
+      modelId: 'claude-opus-4',
       displayName: 'Claude Opus 4',
-      description: 'Powerful Claude 4 model for complex tasks (snapshot: 2025-05-14)'
+      description: 'Powerful Claude 4 model for complex tasks'
     },
     {
       provider: 'anthropic',
-      modelId: 'claude-3-7-sonnet-20250219',
+      modelId: 'claude-3-7-sonnet-latest',
       displayName: 'Claude 3.7 Sonnet',
-      description: 'Advanced Claude 3.7 model (snapshot: 2025-02-19)'
+      description: 'Advanced Claude 3.7 model'
     },
     {
       provider: 'anthropic',
-      modelId: 'claude-3-5-haiku-20241022',
+      modelId: 'claude-3-5-haiku-latest',
       displayName: 'Claude 3.5 Haiku',
-      description: 'Fast and efficient Claude 3.5 model (snapshot: 2024-10-22)'
+      description: 'Fast and efficient Claude 3.5 model'
     },
     {
       provider: 'anthropic',
-      modelId: 'claude-3-haiku-20240307',
+      modelId: 'claude-3-haiku',
       displayName: 'Claude 3 Haiku',
-      description: 'Fast Claude 3 model (snapshot: 2024-03-07)'
+      description: 'Fast Claude 3 model'
     }
   ],
   groq: [

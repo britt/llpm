@@ -66,23 +66,23 @@ Anthropic provides Claude models, known for safety, helpfulness, and strong anal
 
 #### Available Models
 
-- **Claude Sonnet 4.5** (`claude-sonnet-4-5-20250929`) - Latest and most capable Claude model
-- **Claude Opus 4.1** (`claude-opus-4-1-20250805`) - Most powerful Claude for complex tasks
-- **Claude Sonnet 4** (`claude-sonnet-4-20250514`) - Balanced Claude 4 for general use
-- **Claude Opus 4** (`claude-opus-4-20250514`) - Powerful Claude 4 for complex tasks
-- **Claude 3.7 Sonnet** (`claude-3-7-sonnet-20250219`) - Advanced Claude 3.7 model
-- **Claude 3.5 Haiku** (`claude-3-5-haiku-20241022`) - Fast and efficient Claude 3.5 model
-- **Claude 3 Haiku** (`claude-3-haiku-20240307`) - Fast Claude 3 model
+- **Claude Sonnet 4.5** (`claude-sonnet-4-5`) - Latest and most capable Claude model
+- **Claude Opus 4.1** (`claude-opus-4-1`) - Most powerful Claude for complex tasks
+- **Claude Sonnet 4** (`claude-sonnet-4`) - Balanced Claude 4 for general use
+- **Claude Opus 4** (`claude-opus-4`) - Powerful Claude 4 for complex tasks
+- **Claude 3.7 Sonnet** (`claude-3-7-sonnet-latest`) - Advanced Claude 3.7 model
+- **Claude 3.5 Haiku** (`claude-3-5-haiku-latest`) - Fast and efficient Claude 3.5 model
+- **Claude 3 Haiku** (`claude-3-haiku`) - Fast Claude 3 model
 
 #### Model Name Formats
 
 LLPM supports multiple naming formats for Anthropic models:
 
-- **Snapshot IDs** (recommended): `claude-sonnet-4-5-20250929` - Fixed versions for reproducibility
-- **Aliases**: `claude-sonnet-4-5`, `claude-opus-4-1` - Convenient short names
+- **Aliases** (recommended): `claude-sonnet-4-5`, `claude-opus-4-1` - Simple, forward-compatible names
 - **Vercel AI SDK format**: `anthropic/claude-sonnet-4.5` - Compatible with Vercel AI Gateway
+- **Snapshot IDs**: `claude-sonnet-4-5-20250929` - Fixed versions for reproducibility
 
-All formats are automatically normalized to the correct Anthropic API model ID.
+All formats are automatically normalized to the preferred alias form.
 
 #### Model Tiers
 
@@ -110,20 +110,20 @@ All formats are automatically normalized to the correct Anthropic API model ID.
 #### Usage Examples
 
 ```bash
-# Switch to Claude Sonnet 4.5 (latest model, using Vercel format)
-/model switch anthropic/claude-sonnet-4.5
-
-# Switch to Claude Sonnet 4.5 (using alias)
+# Switch to Claude Sonnet 4.5 (recommended - using alias)
 /model switch anthropic/claude-sonnet-4-5
 
-# Switch to Claude Sonnet 4.5 (using snapshot ID)
-/model switch anthropic/claude-sonnet-4-5-20250929
+# Switch to Claude Sonnet 4.5 (Vercel AI SDK format)
+/model switch anthropic/claude-sonnet-4.5
 
 # Switch to Claude Opus 4.1 for complex tasks
 /model switch anthropic/claude-opus-4-1
 
 # Switch to Claude 3.5 Haiku for quick tasks
-/model switch anthropic/claude-3-5-haiku-20241022
+/model switch anthropic/claude-3-5-haiku-latest
+
+# Snapshot IDs also work (normalized to alias)
+/model switch anthropic/claude-sonnet-4-5-20250929  # becomes claude-sonnet-4-5
 ```
 
 ---
