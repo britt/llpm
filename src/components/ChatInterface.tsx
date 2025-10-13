@@ -103,8 +103,13 @@ const MessageItem = memo(({ message }: { message: Message }) => {
   const [isRendering, setIsRendering] = useState(false);
 
   const backgroundColor = useMemo(() => {
-    if (message.role === 'user') return 'black';
-    if (message.role === 'system' || message.role === 'ui-notification') return '#1b110a'; // very dark brown
+    // Don't use backgrounds for messages with emoji prefixes due to terminal width issues
+    return undefined;
+  }, [message.role]);
+
+  const borderColor = useMemo(() => {
+    if (message.role === 'user') return 'gray';
+    if (message.role === 'system' || message.role === 'ui-notification') return 'yellow';
     return undefined;
   }, [message.role]);
 
@@ -127,27 +132,17 @@ const MessageItem = memo(({ message }: { message: Message }) => {
     return false;
   }, [message.role]);
 
-  // Check if content has problematic wide emojis
-  const hasWideEmoji = useMemo(() => {
-    // Emojis that commonly cause width calculation issues
-    const wideEmojiPattern = /[\u{1F44B}-\u{1F64F}\u{1F91A}-\u{1F91F}\u{1F926}-\u{1F937}\u{1F680}-\u{1F6FF}\u{1F600}-\u{1F636}]/u;
-    return wideEmojiPattern.test(message.content);
-  }, [message.content]);
-
   // Prepend emoji to system and user messages
   const displayContent = useMemo(() => {
-    // Add extra spaces when wide emojis are present to compensate for width calculation
-    const padding = hasWideEmoji ? '  ' : '';
-
     if (isSystemMessage) {
-      return `⚙️ ${message.content}${padding}`;
+      return `⚙️ ${message.content}`;
     }
     if (isUserMessage) {
-      return `👤 ${message.content}${padding}`;
+      return `👤 ${message.content}`;
     }
     // For PM messages, use rendered content
     return isRendering ? message.content : renderedContent;
-  }, [message.role, isRendering, message.content, renderedContent, hasWideEmoji]);
+  }, [message.role, isRendering, message.content, renderedContent]);
 
   // Render markdown for PM messages
   useEffect(() => {
@@ -175,7 +170,8 @@ const MessageItem = memo(({ message }: { message: Message }) => {
       flexDirection="column"
       paddingX={1}
       paddingY={shouldAddPadding ? 1 : 0}
-      backgroundColor={backgroundColor}
+      borderStyle={borderColor ? "round" : undefined}
+      borderColor={borderColor}
     >
       <Text color={textColor}>
         {displayContent}
