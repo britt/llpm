@@ -135,19 +135,17 @@ const MessageItem = memo(({ message }: { message: Message }) => {
     return false;
   }, [message.role]);
 
-  // Prepend prefix to system and user messages (check if not already present)
+  // Prepend emoji to system and user messages
   const displayContent = useMemo(() => {
     if (isSystemMessage) {
-      // Only add prefix if not already present
-      return message.content.startsWith('System: ') ? message.content : `System: ${message.content}`;
+      return `System: ${message.content}`;
     }
     if (isUserMessage) {
-      // Only add prefix if not already present
-      return message.content.startsWith('> ') ? message.content : `> ${message.content}`;
+      return `> ${message.content}`;
     }
     // For PM messages, use rendered content
     return isRendering ? message.content : renderedContent;
-  }, [message.role, isRendering, message.content, renderedContent, isSystemMessage, isUserMessage]);
+  }, [message.role, isRendering, message.content, renderedContent]);
 
   // Render markdown for PM messages
   useEffect(() => {
