@@ -14,7 +14,7 @@ import ModelSelector from './ModelSelector';
 import NotesSelector from './NotesSelector';
 import type { QueuedMessage } from '../hooks/useChat';
 import { RequestLogDisplay } from './RequestLogDisplay';
-import { renderMarkdown, shouldEnableRendering } from '../utils/markdownRenderer';
+import { renderMarkdown, isASCIICapableTerminal } from '../utils/markdownRenderer';
 
 interface ChatInterfaceProps {
   messages: Message[];
@@ -103,26 +103,34 @@ const MessageItem = memo(({ message }: { message: Message }) => {
   const [isRendering, setIsRendering] = useState(false);
 
   const backgroundColor = useMemo(() => {
-    if (message.role === 'user') return 'black';
-    if (message.role === 'system' || message.role === 'ui-notification') return '#1b110a'; // very dark brown
-    return undefined;
+    if (message.role === 'system' || message.role === 'ui-notification') return '#2e1d11';
+    if (message.role === 'assistant') return 'black';
+    return '#333';
   }, [message.role]);
 
   const textColor = useMemo(() => {
+    if (message.role === 'system' || message.role === 'ui-notification') return '#cb9774';
+    if (message.role === 'user') return 'white';
     // All messages use white text for consistency
     return 'brightWhite';
   }, [message.role]);
+  
+  const prefix = useMemo(() => {
+    if (message.role === 'system' || message.role === 'ui-notification') return 'System:\n';
+    return undefined
+  }, [message.role]);
+
 
   const isSystemMessage = message.role === 'system' || message.role === 'ui-notification';
   const isUserMessage = message.role === 'user';
-  const shouldAddPadding = isSystemMessage || isUserMessage;
+  const shouldAddPadding = !isSystemMessage && !isUserMessage;
 
   // Determine if this message should be rendered with markdown
   const shouldRenderMarkdown = useMemo(() => {
     // Only render markdown for assistant messages
     if (message.role === 'assistant') {
       // Check if rendering is enabled
-      return shouldEnableRendering();
+      return isASCIICapableTerminal();
     }
     return false;
   }, [message.role]);
@@ -130,10 +138,10 @@ const MessageItem = memo(({ message }: { message: Message }) => {
   // Prepend emoji to system and user messages
   const displayContent = useMemo(() => {
     if (isSystemMessage) {
-      return `⚙️ ${message.content}`;
+      return `System: ${message.content}`;
     }
     if (isUserMessage) {
-      return `👤 ${message.content}`;
+      return `> ${message.content}`;
     }
     // For PM messages, use rendered content
     return isRendering ? message.content : renderedContent;
@@ -158,6 +166,7 @@ const MessageItem = memo(({ message }: { message: Message }) => {
         setIsRendering(false);
       });
   }, [message.content, shouldRenderMarkdown]);
+
 
   return (
     <Box
