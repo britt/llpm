@@ -207,6 +207,44 @@ docker logs rest-broker --tail 20
 - Check TypeScript compilation: Look for "Compilation complete" in logs
 - Test endpoints: Use curl or browser to verify API changes
 
+### Workspace Isolation for Agents
+
+**IMPORTANT:** Each agent instance has its own isolated workspace directory to prevent cross-agent file conflicts.
+
+**How it works:**
+- When using `scale.sh` to start agents, the system auto-generates `docker-compose.override.yml`
+- Each agent gets a unique workspace: `~/.llpm/workspaces/<agent-id>/`
+- Example: `claude-code-1` → `~/.llpm/workspaces/claude-code-1/`
+
+**Rules when working with agents:**
+1. **Always use `scale.sh`** instead of direct `docker-compose up --scale`:
+   - ✅ Correct: `./scale.sh dev`
+   - ❌ Wrong: `docker-compose up -d --scale claude-code=2` (no isolation)
+
+2. **Workspace paths are per-instance**, not shared:
+   - Each `claude-code-N` agent has `/home/claude/workspace` mounted to different host paths
+   - Files created in one agent are NOT visible in other agents
+
+3. **Testing workspace isolation:**
+   ```bash
+   # Verify workspaces exist
+   ls -la ~/.llpm/workspaces/
+
+   # Test isolation
+   docker exec -it docker-claude-code-1 bash -c "echo 'test1' > ~/workspace/test.txt"
+   docker exec -it docker-claude-code-2 bash -c "ls ~/workspace/test.txt"  # Should fail
+   ```
+
+4. **Configuration options:**
+   - Environment: `export LLPM_WORKSPACE_ROOT=/custom/path`
+   - Config file: `~/.llpm/config.yaml` with `workspace_root: /custom/path`
+   - Default: `~/.llpm/workspaces/`
+
+**When modifying workspace behavior:**
+- Changes to `workspace-utils.sh` or `generate-compose-override.sh` affect all agents
+- Test with multiple agents to ensure isolation still works
+- Verify workspace directories are created with correct permissions
+
 ### Testing
 
 - **CRITICAL: Use `bun run test` to run Vitest tests, NOT `bun test`**
