@@ -105,7 +105,7 @@ const MessageItem = memo(({ message }: { message: Message }) => {
 
   const backgroundColor = useMemo(() => {
     if (message.role === 'user') return 'black';
-    if (message.role === 'system' || message.role === 'ui-notification') return 'blue';
+    if (message.role === 'system' || message.role === 'ui-notification') return 'blueBright';
     return undefined;
   }, [message.role]);
 
