@@ -15,6 +15,7 @@ import NotesSelector from './NotesSelector';
 import type { QueuedMessage } from '../hooks/useChat';
 import { RequestLogDisplay } from './RequestLogDisplay';
 import type { LogEntry } from './RequestLogDisplay';
+import { renderMarkdown, shouldEnableRendering } from '../utils/markdownRenderer';
 
 interface ChatInterfaceProps {
   messages: Message[];
@@ -99,6 +100,9 @@ const ProjectStatus = memo(
 
 // Individual message component to prevent full rerenders
 const MessageItem = memo(({ message }: { message: Message }) => {
+  const [renderedContent, setRenderedContent] = useState<string>(message.content);
+  const [isRendering, setIsRendering] = useState(false);
+
   const speakerIndicator = useMemo(() => {
     return message.role === 'user'
       ? '👤 You:    '
@@ -115,6 +119,36 @@ const MessageItem = memo(({ message }: { message: Message }) => {
     return message.role === 'user' ? 'gray' : message.role === 'system' ? 'white' : 'white';
   }, [message.role]);
 
+  // Determine if this message should be rendered with markdown
+  const shouldRenderMarkdown = useMemo(() => {
+    // Only render markdown for assistant messages
+    if (message.role !== 'assistant') {
+      return false;
+    }
+    // Check if rendering is enabled
+    return shouldEnableRendering();
+  }, [message.role]);
+
+  // Render markdown for PM messages
+  useEffect(() => {
+    if (!shouldRenderMarkdown) {
+      setRenderedContent(message.content);
+      return;
+    }
+
+    setIsRendering(true);
+    renderMarkdown(message.content)
+      .then((rendered) => {
+        setRenderedContent(rendered);
+        setIsRendering(false);
+      })
+      .catch((error) => {
+        console.error('Failed to render markdown:', error);
+        setRenderedContent(message.content);
+        setIsRendering(false);
+      });
+  }, [message.content, shouldRenderMarkdown]);
+
   return (
     <Box marginBottom={1}>
       <Box flexDirection="row">
@@ -123,7 +157,7 @@ const MessageItem = memo(({ message }: { message: Message }) => {
         </Text>
         <Box flexDirection="column" flexShrink={1}>
           <Text color={messageColor}>
-            {message.content}
+            {isRendering ? message.content : renderedContent}
           </Text>
         </Box>
       </Box>
