@@ -149,8 +149,10 @@ const MessageItem = memo(({ message }: { message: Message }) => {
 
   // Render markdown for PM messages
   useEffect(() => {
+    // Always reset renderedContent immediately when message changes
+    setRenderedContent(message.content);
+
     if (!shouldRenderMarkdown) {
-      setRenderedContent(message.content);
       return;
     }
 
