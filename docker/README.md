@@ -160,6 +160,90 @@ The LLPM Docker environment provides containerized versions of popular AI coding
    docker-compose ps
    ```
 
+## Workspace Isolation
+
+Each agent instance has its own isolated workspace directory to prevent cross-agent file conflicts. This is critical when running multiple agents of the same type.
+
+### How It Works
+
+When you start agents using `scale.sh`, the system automatically:
+1. Generates unique workspace directories for each agent instance
+2. Creates a `docker-compose.override.yml` file with per-agent volume mappings
+3. Mounts each workspace into the appropriate container path
+
+### Workspace Structure
+
+**Default workspace root:** `~/.llpm/workspaces/`
+
+**Per-agent paths:**
+- `~/.llpm/workspaces/claude-code-1/` → Agent: claude-code-1
+- `~/.llpm/workspaces/claude-code-2/` → Agent: claude-code-2
+- `~/.llpm/workspaces/openai-codex-1/` → Agent: openai-codex-1
+- `~/.llpm/workspaces/aider-1/` → Agent: aider-1
+- etc.
+
+### Configuration
+
+You can customize the workspace root location:
+
+**Option 1: Environment Variable**
+```bash
+export LLPM_WORKSPACE_ROOT=/custom/path
+./scale.sh dev
+```
+
+**Option 2: Global Config File**
+```bash
+# ~/.llpm/config.yaml
+workspace_root: /custom/path
+```
+
+**Option 3: Use Default**
+```bash
+# No configuration needed - uses ~/.llpm/workspaces/
+./scale.sh dev
+```
+
+### Verifying Workspace Isolation
+
+After starting agents, verify each has its own workspace:
+
+```bash
+# Check workspace directories
+ls -la ~/.llpm/workspaces/
+
+# Create a test file in one agent
+docker exec -it docker-claude-code-1 bash -c "echo 'test1' > ~/workspace/test.txt"
+
+# Verify it's NOT visible in another agent
+docker exec -it docker-claude-code-2 bash -c "ls ~/workspace/test.txt"  # Should fail
+```
+
+### Benefits
+
+- **No file conflicts:** Each agent works in isolation
+- **Concurrent operation:** Multiple agents can run simultaneously without interference
+- **Easy debugging:** Human-readable paths make it easy to inspect agent workspaces
+- **Clean separation:** Agent-specific files stay organized by instance
+
+### Troubleshooting
+
+**Problem:** Agent can't write to workspace
+
+**Solution:** Check workspace permissions
+```bash
+ls -ld ~/.llpm/workspaces/claude-code-1/
+# Should be owned by your user with write permissions
+```
+
+**Problem:** Workspaces not created
+
+**Solution:** Ensure you're using `scale.sh` instead of direct `docker-compose up`:
+```bash
+./scale.sh dev  # Correct - generates workspaces
+# docker-compose up -d --scale claude-code=2  # Wrong - no workspace isolation
+```
+
 ## Installed Development Tools
 
 Each container includes a comprehensive development environment based on Ubuntu 22.04 LTS:

@@ -82,20 +82,17 @@ scale_services() {
     # Export auth type for docker-compose
     export AGENT_AUTH_TYPE=$auth_type
 
-    # Build the docker-compose scale command
-    local scale_cmd="docker-compose up -d"
-    scale_cmd="$scale_cmd --scale claude-code=$claude"
-    scale_cmd="$scale_cmd --scale openai-codex=$codex"
-    scale_cmd="$scale_cmd --scale aider=$aider"
-    scale_cmd="$scale_cmd --scale opencode=$opencode"
+    # Generate docker-compose.override.yml with per-agent workspaces
+    print_info "Generating per-agent workspace configuration..."
+    ./generate-compose-override.sh $claude $codex $aider $opencode $auth_type
 
     # Ensure base services are running
     print_info "Starting base services..."
     docker-compose up -d litellm-proxy postgres
 
-    # Execute scaling
-    print_info "Scaling agent services..."
-    eval $scale_cmd
+    # Start agent services using the generated override
+    print_info "Starting agent services with isolated workspaces..."
+    docker-compose up -d
 
     print_success "Agent scaling complete!"
     echo ""
