@@ -103,13 +103,8 @@ const MessageItem = memo(({ message }: { message: Message }) => {
   const [isRendering, setIsRendering] = useState(false);
 
   const backgroundColor = useMemo(() => {
-    // Don't use backgrounds for messages with emoji prefixes due to terminal width issues
-    return undefined;
-  }, [message.role]);
-
-  const borderColor = useMemo(() => {
-    if (message.role === 'user') return 'gray';
-    if (message.role === 'system' || message.role === 'ui-notification') return 'yellow';
+    if (message.role === 'user') return 'black';
+    if (message.role === 'system' || message.role === 'ui-notification') return '#1b110a'; // very dark brown
     return undefined;
   }, [message.role]);
 
@@ -170,8 +165,7 @@ const MessageItem = memo(({ message }: { message: Message }) => {
       flexDirection="column"
       paddingX={1}
       paddingY={shouldAddPadding ? 1 : 0}
-      borderStyle={borderColor ? "round" : undefined}
-      borderColor={borderColor}
+      backgroundColor={backgroundColor}
     >
       <Text color={textColor}>
         {displayContent}
