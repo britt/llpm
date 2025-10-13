@@ -75,51 +75,45 @@ export const DEFAULT_MODELS: Record<ModelProvider, ModelConfig[]> = {
   anthropic: [
     {
       provider: 'anthropic',
-      modelId: 'claude-4-opus',
-      displayName: 'Claude 4 Opus',
-      description: 'Most powerful Claude 4 model for complex tasks'
+      modelId: 'claude-sonnet-4-5-20250929',
+      displayName: 'Claude Sonnet 4.5',
+      description: 'Latest and most capable Claude model (snapshot: 2025-09-29)'
     },
     {
       provider: 'anthropic',
-      modelId: 'claude-4-sonnet',
-      displayName: 'Claude 4 Sonnet',
-      description: 'Balanced Claude 4 model for general use'
+      modelId: 'claude-opus-4-1-20250805',
+      displayName: 'Claude Opus 4.1',
+      description: 'Most powerful Claude model for complex tasks (snapshot: 2025-08-05)'
     },
     {
       provider: 'anthropic',
-      modelId: 'claude-4.1-opus',
-      displayName: 'Claude 4.1 Opus',
-      description: 'Most powerful Claude 4.1 model for complex tasks'
+      modelId: 'claude-sonnet-4-20250514',
+      displayName: 'Claude Sonnet 4',
+      description: 'Balanced Claude 4 model for general use (snapshot: 2025-05-14)'
     },
     {
       provider: 'anthropic',
-      modelId: 'claude-4.1-sonnet',
-      displayName: 'Claude 4.1 Sonnet',
-      description: 'Balanced Claude 4.1 model for general use'
+      modelId: 'claude-opus-4-20250514',
+      displayName: 'Claude Opus 4',
+      description: 'Powerful Claude 4 model for complex tasks (snapshot: 2025-05-14)'
     },
     {
       provider: 'anthropic',
-      modelId: 'claude-3-7-sonnet',
+      modelId: 'claude-3-7-sonnet-20250219',
       displayName: 'Claude 3.7 Sonnet',
-      description: 'Advanced Claude 3.7 model'
-    },
-    {
-      provider: 'anthropic',
-      modelId: 'claude-3-7-haiku',
-      displayName: 'Claude 3.7 Haiku',
-      description: 'Fast Claude 3.7 model'
-    },
-    {
-      provider: 'anthropic',
-      modelId: 'claude-3-5-sonnet-20241022',
-      displayName: 'Claude 3.5 Sonnet',
-      description: 'Most capable Claude 3.5 model'
+      description: 'Advanced Claude 3.7 model (snapshot: 2025-02-19)'
     },
     {
       provider: 'anthropic',
       modelId: 'claude-3-5-haiku-20241022',
       displayName: 'Claude 3.5 Haiku',
-      description: 'Fast Claude 3.5 model'
+      description: 'Fast and efficient Claude 3.5 model (snapshot: 2024-10-22)'
+    },
+    {
+      provider: 'anthropic',
+      modelId: 'claude-3-haiku-20240307',
+      displayName: 'Claude 3 Haiku',
+      description: 'Fast Claude 3 model (snapshot: 2024-03-07)'
     }
   ],
   groq: [
