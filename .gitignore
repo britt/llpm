@@ -43,3 +43,6 @@ docker/rules/*/CLAUDE.md
 docker/rules/*/CONVENTIONS.md
 docker/rules/*/AGENT.md
 ollama-data/
+
+# Docker compose override (auto-generated)
+docker/docker-compose.override.yml
