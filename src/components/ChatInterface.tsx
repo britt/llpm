@@ -105,7 +105,7 @@ const MessageItem = memo(({ message }: { message: Message }) => {
 
   const backgroundColor = useMemo(() => {
     if (message.role === 'user') return 'black';
-    if (message.role === 'system' || message.role === 'ui-notification') return 'blueBright';
+    if (message.role === 'system' || message.role === 'ui-notification') return 'gray';
     return undefined;
   }, [message.role]);
 
@@ -160,12 +160,30 @@ const MessageItem = memo(({ message }: { message: Message }) => {
       });
   }, [message.content, shouldRenderMarkdown]);
 
+  // For system messages, we need to ensure consistent width
+  if (isSystemMessage) {
+    return (
+      <Box marginBottom={1} width="100%">
+        <Box
+          flexDirection="column"
+          width="100%"
+          paddingX={1}
+          paddingY={1}
+          backgroundColor={backgroundColor}
+        >
+          <Text color={textColor}>
+            {displayContent}
+          </Text>
+        </Box>
+      </Box>
+    );
+  }
+
   return (
     <Box marginBottom={1}>
       <Box
         flexDirection="column"
         flexShrink={1}
-        width={isSystemMessage ? '100%' : undefined}
         paddingX={1}
         paddingY={shouldAddPadding ? 1 : 0}
         backgroundColor={backgroundColor}
