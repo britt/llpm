@@ -166,7 +166,6 @@ const MessageItem = memo(({ message }: { message: Message }) => {
       paddingX={1}
       paddingY={shouldAddPadding ? 1 : 0}
       backgroundColor={backgroundColor}
-      minWidth={displayContent.length + 2}
     >
       <Text color={textColor}>
         {displayContent}
