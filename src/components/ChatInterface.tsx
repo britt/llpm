@@ -109,6 +109,16 @@ const MessageItem = memo(({ message }: { message: Message }) => {
     return undefined;
   }, [message.role]);
 
+  const textColor = useMemo(() => {
+    // Use black text on blueBright background for better contrast
+    if (message.role === 'system' || message.role === 'ui-notification') return 'black';
+    return 'white';
+  }, [message.role]);
+
+  const isSystemMessage = message.role === 'system' || message.role === 'ui-notification';
+  const isUserMessage = message.role === 'user';
+  const shouldAddPadding = isSystemMessage || isUserMessage;
+
   // Determine if this message should be rendered with markdown
   const shouldRenderMarkdown = useMemo(() => {
     // Only render markdown for assistant messages
@@ -155,11 +165,12 @@ const MessageItem = memo(({ message }: { message: Message }) => {
       <Box
         flexDirection="column"
         flexShrink={1}
+        width={isSystemMessage ? '100%' : undefined}
         paddingX={1}
-        paddingY={message.role === 'user' ? 1 : 0}
+        paddingY={shouldAddPadding ? 1 : 0}
         backgroundColor={backgroundColor}
       >
-        <Text color="white">
+        <Text color={textColor}>
           {displayContent}
         </Text>
       </Box>
