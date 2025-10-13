@@ -102,6 +102,12 @@ const MessageItem = memo(({ message }: { message: Message }) => {
   const [renderedContent, setRenderedContent] = useState<string>(message.content);
   const [isRendering, setIsRendering] = useState(false);
 
+  // Reset state when message ID changes to prevent showing stale content
+  useEffect(() => {
+    setRenderedContent(message.content);
+    setIsRendering(false);
+  }, [message.id, message.content]);
+
   const backgroundColor = useMemo(() => {
     if (message.role === 'system' || message.role === 'ui-notification') return '#2e1d11';
     if (message.role === 'assistant') return 'black';
