@@ -103,18 +103,6 @@ const MessageItem = memo(({ message }: { message: Message }) => {
   const [renderedContent, setRenderedContent] = useState<string>(message.content);
   const [isRendering, setIsRendering] = useState(false);
 
-  const speakerIndicator = useMemo(() => {
-    return message.role === 'user'
-      ? '👤 You:    '
-      : message.role === 'ui-notification'
-        ? '⚙️ System:  '
-        : '🤖 PM:     ';
-  }, [message.role]);
-
-  const speakerColor = useMemo(() => {
-    return message.role === 'user' ? 'gray' : message.role === 'system' ? 'yellow' : 'white';
-  }, [message.role]);
-
   const messageColor = useMemo(() => {
     return message.role === 'user' ? 'gray' : message.role === 'system' ? 'white' : 'white';
   }, [message.role]);
@@ -128,6 +116,14 @@ const MessageItem = memo(({ message }: { message: Message }) => {
     // Check if rendering is enabled
     return shouldEnableRendering();
   }, [message.role]);
+
+  // Prepend cog emoji to system messages
+  const displayContent = useMemo(() => {
+    if (message.role === 'system' || message.role === 'ui-notification') {
+      return `⚙️ ${isRendering ? message.content : renderedContent}`;
+    }
+    return isRendering ? message.content : renderedContent;
+  }, [message.role, isRendering, message.content, renderedContent]);
 
   // Render markdown for PM messages
   useEffect(() => {
@@ -151,15 +147,15 @@ const MessageItem = memo(({ message }: { message: Message }) => {
 
   return (
     <Box marginBottom={1}>
-      <Box flexDirection="row">
-        <Text color={speakerColor} bold>
-          {speakerIndicator}
+      <Box
+        flexDirection="column"
+        flexShrink={1}
+        paddingX={1}
+        backgroundColor={message.role === 'user' ? 'gray' : undefined}
+      >
+        <Text color={messageColor}>
+          {displayContent}
         </Text>
-        <Box flexDirection="column" flexShrink={1}>
-          <Text color={messageColor}>
-            {isRendering ? message.content : renderedContent}
-          </Text>
-        </Box>
       </Box>
     </Box>
   );
