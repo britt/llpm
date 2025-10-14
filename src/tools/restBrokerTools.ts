@@ -666,3 +666,379 @@ ${result}
     }
   }
 });
+
+/**
+ * Register a new agent
+ */
+export const registerAgentTool = tool({
+  description: 'Register a new agent with the REST broker. Allows creating new agent instances programmatically.',
+  parameters: z.object({
+    agentId: z.string().describe('Unique identifier for the agent'),
+    name: z.string().describe('Human-readable name for the agent'),
+    type: z.string().describe('Agent type (e.g., "claude-code", "openai-codex", "aider")'),
+    authType: z.enum(['subscription', 'api_key']).optional().describe('Authentication type for the agent'),
+    provider: z.string().optional().describe('Provider name (required for subscription auth type)'),
+    model: z.string().optional().describe('Model identifier (required for subscription auth type)'),
+    host: z.string().optional().describe('Agent host address'),
+    port: z.number().optional().describe('Agent port number'),
+    metadata: z.record(z.any(), z.any()).optional().describe('Additional agent metadata')
+  }),
+  execute: async ({ agentId, name, type, authType, provider, model, host, port, metadata }) => {
+    const startTime = Date.now();
+
+    try {
+      const payload: any = {
+        agentId,
+        name,
+        type
+      };
+
+      if (authType) payload.authType = authType;
+      if (provider) payload.provider = provider;
+      if (model) payload.model = model;
+      if (host) payload.host = host;
+      if (port) payload.port = port;
+      if (metadata) payload.metadata = metadata;
+
+      const result = await brokerRequest<{ status: number; message: string; agentId: string; litellmUrl?: string }>(
+        'POST',
+        '/register',
+        payload
+      );
+
+      const duration = Date.now() - startTime;
+
+      if (!result.success) {
+        // Audit failed attempt
+        await auditToolCall({
+          timestamp: new Date().toISOString(),
+          toolName: 'register_agent',
+          parameters: { agentId, name, type, authType },
+          error: result.error,
+          duration
+        });
+
+        return `❌ Failed to register agent: ${result.error}`;
+      }
+
+      // Audit successful registration
+      await auditToolCall({
+        timestamp: new Date().toISOString(),
+        toolName: 'register_agent',
+        parameters: { agentId, name, type, authType },
+        result: result.data,
+        duration
+      });
+
+      const { message, litellmUrl } = result.data || {};
+      let responseMsg = `✅ **Agent Registered Successfully**
+
+**Agent ID**: ${agentId}
+**Name**: ${name}
+**Type**: ${type}
+${authType ? `**Auth Type**: ${authType}` : ''}
+${provider ? `**Provider**: ${provider}` : ''}
+${model ? `**Model**: ${model}` : ''}
+
+${message}`;
+
+      if (litellmUrl) {
+        responseMsg += `\n\n🔗 **LiteLLM Passthrough URL**: ${litellmUrl}\n\n⚠️ **Next Step**: Agent requires authentication. Use \`mark_agent_authenticated\` after authenticating.`;
+      }
+
+      responseMsg += `\n\n📝 *This registration has been logged for audit purposes.*`;
+
+      return responseMsg;
+    } catch (error) {
+      const duration = Date.now() - startTime;
+
+      // Audit error
+      await auditToolCall({
+        timestamp: new Date().toISOString(),
+        toolName: 'register_agent',
+        parameters: { agentId, name, type, authType },
+        error: error instanceof Error ? error.message : 'Unknown error',
+        duration
+      });
+
+      return `❌ Failed to register agent: ${error instanceof Error ? error.message : 'Unknown error'}`;
+    }
+  }
+});
+
+/**
+ * Delete (deregister) an agent
+ */
+export const deleteAgentTool = tool({
+  description: 'Delete (deregister) an agent from the REST broker. This is a destructive operation that requires confirmation.',
+  parameters: z.object({
+    agentId: z.string().describe('The ID of the agent to delete'),
+    confirmed: z.boolean().optional().describe('Set to true to bypass confirmation (only after user explicitly confirms)')
+  }),
+  execute: async ({ agentId, confirmed }) => {
+    const startTime = Date.now();
+
+    try {
+      // Check if confirmation is required
+      const confirmCheck = requiresConfirmation('delete_agent', { agentId });
+
+      if (confirmCheck.required && !confirmed) {
+        const prompt = formatConfirmationPrompt(confirmCheck);
+        return `${prompt}\n\n💡 Once confirmed, call this tool again with \`confirmed: true\``;
+      }
+
+      const result = await brokerRequest<{ status: number; message: string; agentId: string }>(
+        'DELETE',
+        `/register/${agentId}`
+      );
+
+      const duration = Date.now() - startTime;
+
+      if (!result.success) {
+        // Audit failed attempt
+        await auditToolCall({
+          timestamp: new Date().toISOString(),
+          toolName: 'delete_agent',
+          parameters: { agentId, confirmed },
+          error: result.error,
+          duration
+        });
+
+        return `❌ Failed to delete agent: ${result.error}`;
+      }
+
+      // Audit successful deletion
+      await auditToolCall({
+        timestamp: new Date().toISOString(),
+        toolName: 'delete_agent',
+        parameters: { agentId, confirmed },
+        result: result.data,
+        duration
+      });
+
+      return `✅ **Agent Deleted Successfully**
+
+**Agent ID**: ${agentId}
+**Status**: Deregistered
+
+The agent has been removed from the REST broker.
+
+📝 *This deletion has been logged for audit purposes.*`;
+    } catch (error) {
+      const duration = Date.now() - startTime;
+
+      // Audit error
+      await auditToolCall({
+        timestamp: new Date().toISOString(),
+        toolName: 'delete_agent',
+        parameters: { agentId, confirmed },
+        error: error instanceof Error ? error.message : 'Unknown error',
+        duration
+      });
+
+      return `❌ Failed to delete agent: ${error instanceof Error ? error.message : 'Unknown error'}`;
+    }
+  }
+});
+
+/**
+ * Update agent status and metadata
+ */
+export const updateAgentTool = tool({
+  description: 'Update an agent\'s status and metadata via heartbeat. Use this to update agent state programmatically.',
+  parameters: z.object({
+    agentId: z.string().describe('The ID of the agent to update'),
+    status: z.enum(['available', 'busy', 'offline']).optional().describe('New agent status'),
+    metadata: z.record(z.any(), z.any()).optional().describe('Updated metadata for the agent')
+  }),
+  execute: async ({ agentId, status, metadata }) => {
+    const startTime = Date.now();
+
+    try {
+      const payload: any = {};
+      if (status) payload.status = status;
+      if (metadata) payload.metadata = metadata;
+
+      const result = await brokerRequest<{ status: number; message: string; agentId: string }>(
+        'POST',
+        `/heartbeat/${agentId}`,
+        payload
+      );
+
+      const duration = Date.now() - startTime;
+
+      if (!result.success) {
+        // Audit failed attempt
+        await auditToolCall({
+          timestamp: new Date().toISOString(),
+          toolName: 'update_agent',
+          parameters: { agentId, status, metadata },
+          error: result.error,
+          duration
+        });
+
+        return `❌ Failed to update agent: ${result.error}`;
+      }
+
+      // Audit successful update
+      await auditToolCall({
+        timestamp: new Date().toISOString(),
+        toolName: 'update_agent',
+        parameters: { agentId, status, metadata },
+        result: result.data,
+        duration
+      });
+
+      return `✅ **Agent Updated Successfully**
+
+**Agent ID**: ${agentId}
+${status ? `**New Status**: ${status}` : ''}
+${metadata ? `**Metadata Updated**: Yes` : ''}
+
+The agent has been updated via heartbeat.
+
+📝 *This update has been logged for audit purposes.*`;
+    } catch (error) {
+      const duration = Date.now() - startTime;
+
+      // Audit error
+      await auditToolCall({
+        timestamp: new Date().toISOString(),
+        toolName: 'update_agent',
+        parameters: { agentId, status, metadata },
+        error: error instanceof Error ? error.message : 'Unknown error',
+        duration
+      });
+
+      return `❌ Failed to update agent: ${error instanceof Error ? error.message : 'Unknown error'}`;
+    }
+  }
+});
+
+/**
+ * Trigger authentication verification for all agents
+ */
+export const triggerAgentVerifyTool = tool({
+  description: 'Trigger authentication verification for all agents. Useful for checking subscription agent authentication status.',
+  parameters: z.object({
+    agentId: z.string().optional().describe('Optional: verify specific agent only (if not provided, verifies all agents)')
+  }),
+  execute: async ({ agentId }) => {
+    const startTime = Date.now();
+
+    try {
+      if (agentId) {
+        // Get specific agent with verification
+        const result = await brokerRequest<{ agent: any }>(
+          'GET',
+          `/agents/${agentId}`
+        );
+
+        const duration = Date.now() - startTime;
+
+        if (!result.success) {
+          await auditToolCall({
+            timestamp: new Date().toISOString(),
+            toolName: 'trigger_agent_verify',
+            parameters: { agentId },
+            error: result.error,
+            duration
+          });
+
+          return `❌ Failed to verify agent: ${result.error}`;
+        }
+
+        const agent = result.data?.agent;
+        if (!agent) {
+          return `❌ Agent not found: ${agentId}`;
+        }
+
+        await auditToolCall({
+          timestamp: new Date().toISOString(),
+          toolName: 'trigger_agent_verify',
+          parameters: { agentId },
+          result: { verified: 1 },
+          duration
+        });
+
+        const authStatus = agent.health?.authenticated ? '✅ Authenticated' : '❌ Not authenticated';
+        const expiry = agent.health?.authExpiresAt
+          ? `Expires: ${new Date(agent.health.authExpiresAt).toLocaleString()}`
+          : '';
+
+        return `✅ **Agent Verification Complete**
+
+**Agent ID**: ${agentId}
+**Name**: ${agent.name}
+**Auth Status**: ${authStatus}
+${expiry ? `**${expiry}**` : ''}
+
+📝 *Verification has been logged for audit purposes.*`;
+      } else {
+        // Verify all agents
+        const result = await brokerRequest<{ agents: any[] }>(
+          'GET',
+          '/agents?verifyAuth=true'
+        );
+
+        const duration = Date.now() - startTime;
+
+        if (!result.success) {
+          await auditToolCall({
+            timestamp: new Date().toISOString(),
+            toolName: 'trigger_agent_verify',
+            parameters: { verifyAll: true },
+            error: result.error,
+            duration
+          });
+
+          return `❌ Failed to verify agents: ${result.error}`;
+        }
+
+        const agents = result.data?.agents || [];
+        const verified = agents.length;
+        const authenticated = agents.filter(a => a.health?.authenticated).length;
+        const needsAuth = verified - authenticated;
+
+        await auditToolCall({
+          timestamp: new Date().toISOString(),
+          toolName: 'trigger_agent_verify',
+          parameters: { verifyAll: true },
+          result: { verified, authenticated, needsAuth },
+          duration
+        });
+
+        let statusMsg = `✅ **All Agents Verified**
+
+**Total Agents**: ${verified}
+**Authenticated**: ${authenticated} ✅
+**Need Authentication**: ${needsAuth} ⚠️`;
+
+        if (needsAuth > 0) {
+          const needsAuthList = agents
+            .filter(a => !a.health?.authenticated)
+            .map(a => `  - ${a.name} (${a.id})`)
+            .join('\n');
+
+          statusMsg += `\n\n**Agents Needing Authentication**:\n${needsAuthList}`;
+        }
+
+        statusMsg += `\n\n📝 *Verification has been logged for audit purposes.*`;
+
+        return statusMsg;
+      }
+    } catch (error) {
+      const duration = Date.now() - startTime;
+
+      await auditToolCall({
+        timestamp: new Date().toISOString(),
+        toolName: 'trigger_agent_verify',
+        parameters: { agentId },
+        error: error instanceof Error ? error.message : 'Unknown error',
+        duration
+      });
+
+      return `❌ Failed to verify agents: ${error instanceof Error ? error.message : 'Unknown error'}`;
+    }
+  }
+});
