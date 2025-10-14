@@ -1,5 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { Box, Text } from 'ink';
+import { TaskList, Task } from 'ink-task-list';
+import spinners from 'cli-spinners';
 
 export interface LogEntry {
   timestamp: string;
@@ -186,14 +188,18 @@ export function RequestLogDisplay({ isVisible }: RequestLogDisplayProps) {
       marginTop: 1,
       paddingLeft: 2,
     },
-    logs.map((log) => renderProcessedLog(log))
+    React.createElement(
+      TaskList,
+      {},
+      logs.map((log) => renderProcessedLog(log))
+    )
   );
 }
 
 function renderProcessedLog(log: ProcessedLog) {
   const parts = [formatStepName(log.step)];
 
-  // Add metadata that should appear before status
+  // Add metadata that should appear in the label
   if (log.metadata) {
     if (log.metadata.model) {
       parts.push(`[${log.metadata.model}]`);
@@ -209,83 +215,44 @@ function renderProcessedLog(log: ProcessedLog) {
     }
   }
 
-  const mainText = parts.join(' ');
+  const label = parts.join(' ');
 
-  // Render with status indicator
-  if (log.status === 'completed' && log.duration !== undefined) {
-    // Completed: lime arrow, dim text, lime checkmark and timing
+  // Determine state and status based on log data
+  if (log.status === 'running') {
+    return React.createElement(Task, {
+      key: log.key,
+      label: label,
+      state: 'loading',
+      spinner: spinners.dots
+    });
+  } else if (log.status === 'completed' && log.duration !== undefined) {
+    // Render task with custom timing in green
     return React.createElement(
       Box,
       { key: log.key },
+      React.createElement(Task, {
+        label: label,
+        state: 'success'
+      }),
       React.createElement(
         Text,
-        { color: 'lime' },
-        '→ '
-      ),
-      React.createElement(
-        Text,
-        { dimColor: true, wrap: 'truncate' },
-        mainText + ' '
-      ),
-      React.createElement(
-        Text,
-        { color: 'lime' },
-        `✓ (${log.duration}ms)`
-      )
-    );
-  } else if (log.status === 'running') {
-    // Running: lime arrow with spinner
-    return React.createElement(
-      Box,
-      { key: log.key },
-      React.createElement(
-        Text,
-        { color: 'lime' },
-        '→ '
-      ),
-      React.createElement(
-        Text,
-        { dimColor: true, wrap: 'truncate' },
-        mainText + ' ⋯'
+        { color: '#00ff00' },
+        ` ${log.duration}ms`
       )
     );
   } else if (log.metadata?.error) {
-    // Error: lime arrow, red X
-    return React.createElement(
-      Box,
-      { key: log.key },
-      React.createElement(
-        Text,
-        { color: 'lime' },
-        '→ '
-      ),
-      React.createElement(
-        Text,
-        { dimColor: true, wrap: 'truncate' },
-        mainText + ' '
-      ),
-      React.createElement(
-        Text,
-        { color: 'red' },
-        `❌ ${log.metadata.error}`
-      )
-    );
+    return React.createElement(Task, {
+      key: log.key,
+      label: label,
+      state: 'error',
+      status: log.metadata.error
+    });
   } else {
-    // Default: lime arrow, dim text
-    return React.createElement(
-      Box,
-      { key: log.key },
-      React.createElement(
-        Text,
-        { color: 'lime' },
-        '→ '
-      ),
-      React.createElement(
-        Text,
-        { dimColor: true, wrap: 'truncate' },
-        mainText
-      )
-    );
+    return React.createElement(Task, {
+      key: log.key,
+      label: label,
+      state: 'pending'
+    });
   }
 }
 
