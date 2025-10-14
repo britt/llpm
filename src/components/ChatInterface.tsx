@@ -1,5 +1,6 @@
 import { useState, useEffect, memo, useMemo, useCallback } from 'react';
 import { Box, Text, useInput } from 'ink';
+import Spinner from 'ink-spinner';
 import type { Message } from '../types';
 import {
   getCurrentProject,
@@ -33,7 +34,11 @@ interface ChatInterfaceProps {
 const ThinkingIndicator = memo(() => {
   return (
     <Box flexDirection="column">
-      <Text color="red">PM is thinking...</Text>
+      <Box>
+        <Text color="red">
+          <Spinner type="star" /> PM is thinking...
+        </Text>
+      </Box>
       <RequestLogDisplay isVisible={true} />
     </Box>
   );
