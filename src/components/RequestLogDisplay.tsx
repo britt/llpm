@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { Box, Text } from 'ink';
 import { TaskList, Task } from 'ink-task-list';
 import spinners from 'cli-spinners';
@@ -10,10 +10,6 @@ export interface LogEntry {
   phase: 'start' | 'end';
   duration?: number;
   metadata?: Record<string, any>;
-}
-
-interface RequestLogDisplayProps {
-  isVisible: boolean;
 }
 
 // Global singleton to share logger instance
@@ -79,19 +75,12 @@ interface ProcessedLog {
   orderIndex: number; // Track insertion order
 }
 
-export function RequestLogDisplay({ isVisible }: RequestLogDisplayProps) {
+export function RequestLogDisplay() {
   const [processedLogs, setProcessedLogs] = useState<Map<string, ProcessedLog>>(new Map());
   const logMapRef = useRef<Map<string, ProcessedLog>>(new Map());
   const orderCounterRef = useRef(0);
   
-  useEffect(() => {
-    if (!isVisible) {
-      setProcessedLogs(new Map());
-      logMapRef.current = new Map();
-      orderCounterRef.current = 0;
-      return;
-    }
-    
+  useEffect(() => {    
     const handleLog = (log: LogEntry) => {
       // Create a normalized key - use just the step name without request ID
       // since there's typically only one request in flight
@@ -171,28 +160,18 @@ export function RequestLogDisplay({ isVisible }: RequestLogDisplayProps) {
       loggerRegistry.removeLogListener(handleLog);
       loggerRegistry.removeClearListener(handleClear);
     };
-  }, [isVisible]);
+  });
   
-  if (!isVisible || processedLogs.size === 0) {
-    return null;
-  }
-
   // Sort logs by insertion order
   const logs = Array.from(processedLogs.values())
     .sort((a, b) => a.orderIndex - b.orderIndex);
 
-  return React.createElement(
-    Box,
-    {
-      flexDirection: 'column',
-      marginTop: 1,
-      paddingLeft: 2,
-    },
-    React.createElement(
-      TaskList,
-      {},
-      logs.map((log) => renderProcessedLog(log))
-    )
+  return (
+    <Box flexDirection="column" marginTop={1} paddingLeft={2}>
+      <TaskList>
+        {logs.map((log) => renderProcessedLog(log))}
+      </TaskList>
+    </Box>
   );
 }
 
@@ -219,40 +198,44 @@ function renderProcessedLog(log: ProcessedLog) {
 
   // Determine state and status based on log data
   if (log.status === 'running') {
-    return React.createElement(Task, {
-      key: log.key,
-      label: label,
-      state: 'loading',
-      spinner: spinners.dots
-    });
+    return (
+      <Task
+        key={log.key}
+        label={label}
+        state="loading"
+        spinner={spinners.dots}
+      />
+    );
   } else if (log.status === 'completed' && log.duration !== undefined) {
     // Render task with custom timing in green
-    return React.createElement(
-      Box,
-      { key: log.key },
-      React.createElement(Task, {
-        label: label,
-        state: 'success'
-      }),
-      React.createElement(
-        Text,
-        { color: '#00ff00' },
-        ` ${log.duration}ms`
-      )
+    return (
+      <Box key={log.key}>
+        <Task
+          label={label}
+          state="success"
+        />
+        <Text color="#00ff00">
+          {` ${log.duration}ms`}
+        </Text>
+      </Box>
     );
   } else if (log.metadata?.error) {
-    return React.createElement(Task, {
-      key: log.key,
-      label: label,
-      state: 'error',
-      status: log.metadata.error
-    });
+    return (
+      <Task
+        key={log.key}
+        label={label}
+        state="error"
+        status={log.metadata.error}
+      />
+    );
   } else {
-    return React.createElement(Task, {
-      key: log.key,
-      label: label,
-      state: 'pending'
-    });
+    return (
+      <Task
+        key={log.key}
+        label={label}
+        state="pending"
+      />
+    );
   }
 }
 
