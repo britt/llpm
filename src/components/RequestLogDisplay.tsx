@@ -213,13 +213,13 @@ function renderProcessedLog(log: ProcessedLog) {
 
   // Render with status indicator
   if (log.status === 'completed' && log.duration !== undefined) {
-    // Completed: bright green arrow, dim text, bright green checkmark and timing
+    // Completed: lime arrow, dim text, lime checkmark and timing
     return React.createElement(
       Box,
       { key: log.key },
       React.createElement(
         Text,
-        { color: 'greenBright' },
+        { color: 'lime' },
         '→ '
       ),
       React.createElement(
@@ -229,18 +229,18 @@ function renderProcessedLog(log: ProcessedLog) {
       ),
       React.createElement(
         Text,
-        { color: 'greenBright' },
+        { color: 'lime' },
         `✓ (${log.duration}ms)`
       )
     );
   } else if (log.status === 'running') {
-    // Running: bright green arrow with spinner
+    // Running: lime arrow with spinner
     return React.createElement(
       Box,
       { key: log.key },
       React.createElement(
         Text,
-        { color: 'greenBright' },
+        { color: 'lime' },
         '→ '
       ),
       React.createElement(
@@ -250,13 +250,13 @@ function renderProcessedLog(log: ProcessedLog) {
       )
     );
   } else if (log.metadata?.error) {
-    // Error: bright green arrow, red X
+    // Error: lime arrow, red X
     return React.createElement(
       Box,
       { key: log.key },
       React.createElement(
         Text,
-        { color: 'greenBright' },
+        { color: 'lime' },
         '→ '
       ),
       React.createElement(
@@ -271,13 +271,13 @@ function renderProcessedLog(log: ProcessedLog) {
       )
     );
   } else {
-    // Default: bright green arrow, dim text
+    // Default: lime arrow, dim text
     return React.createElement(
       Box,
       { key: log.key },
       React.createElement(
         Text,
-        { color: 'greenBright' },
+        { color: 'lime' },
         '→ '
       ),
       React.createElement(
