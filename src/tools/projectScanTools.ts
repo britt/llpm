@@ -249,7 +249,7 @@ Useful for referencing project structure and metrics from previous scans.`,
 export const listProjectScansTool = tool({
   description: `List all cached project scans in memory.
 Shows which projects have been scanned and when, allowing you to see what analysis data is available.`,
-  parameters: z.object({}),
+  parameters: z.object({}).strict(),
   execute: async () => {
     debug('Listing all cached project scans');
 

@@ -106,7 +106,7 @@ export const setProjectAgentConfigTool = tool({
  */
 export const getProjectAgentConfigTool = tool({
   description: 'Get the agent configuration for the current project.',
-  parameters: z.object({}),
+  parameters: z.object({}).strict(),
   execute: async () => {
     try {
       const config = await loadProjectConfig();
@@ -169,7 +169,7 @@ export const getProjectAgentConfigTool = tool({
  */
 export const removeProjectAgentConfigTool = tool({
   description: 'Remove the agent configuration from the current project, reverting to global defaults.',
-  parameters: z.object({}),
+  parameters: z.object({}).strict(),
   execute: async () => {
     try {
       const config = await loadProjectConfig();

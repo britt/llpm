@@ -5,7 +5,7 @@ import { debug } from '../utils/logger';
 
 export const getSystemPromptTool = tool({
   description: 'Get the currently loaded system prompt text',
-  parameters: z.object({}),
+  parameters: z.object({}).strict(),
   execute: async () => {
     debug('Executing get_system_prompt tool');
 

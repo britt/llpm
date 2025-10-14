@@ -176,7 +176,7 @@ export const takeScreenshotTool = tool({
  */
 export const checkScreenshotSetupTool = tool({
   description: 'Check if shot-scraper is properly installed and configured for taking screenshots',
-  parameters: z.object({}),
+  parameters: z.object({}).strict(),
   execute: async () => {
     try {
       debug('Checking uv and shot-scraper installation');
