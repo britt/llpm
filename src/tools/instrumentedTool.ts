@@ -5,7 +5,7 @@ import { debug } from '../utils/logger';
 /**
  * Instrumented version of the AI SDK's tool function that adds request logging
  */
-export function tool<T extends { description: string; inputSchema: any; execute: (...args: any[]) => any }>(
+export function tool<T extends { description: string; parameters: any; execute: (...args: any[]) => any }>(
   config: T
 ): ReturnType<typeof baseTool> {
   // Extract the tool name from the description (first few words)

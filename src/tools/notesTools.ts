@@ -5,7 +5,7 @@ import { debug } from '../utils/logger';
 
 export const addNoteTool = tool({
   description: 'Add a new note to the current project database',
-  inputSchema: z.object({
+  parameters: z.object({
     title: z.string().describe('The title of the note'),
     content: z.string().describe('The content/body of the note'),
     tags: z.array(z.string()).optional().describe('Optional tags for the note')
@@ -49,7 +49,7 @@ export const addNoteTool = tool({
 
 export const updateNoteTool = tool({
   description: 'Update an existing note in the current project database',
-  inputSchema: z.object({
+  parameters: z.object({
     id: z.number().describe('The ID of the note to update'),
     title: z.string().optional().describe('New title for the note'),
     content: z.string().optional().describe('New content for the note'),
@@ -101,7 +101,7 @@ export const updateNoteTool = tool({
 
 export const searchNotesTool = tool({
   description: 'Search notes in the current project database using vector-based semantic search with cosine similarity',
-  inputSchema: z.object({
+  parameters: z.object({
     query: z.string().describe('The search query to find relevant notes'),
     limit: z.number().optional().default(10).describe('Maximum number of results to return'),
     useSemanticSearch: z.boolean().optional().default(true).describe('Whether to use vector-based semantic search')
@@ -159,7 +159,7 @@ export const searchNotesTool = tool({
 
 export const listNotesTool = tool({
   description: 'List all notes in the current project database',
-  inputSchema: z.object({
+  parameters: z.object({
     limit: z.number().optional().describe('Maximum number of notes to return')
   }),
   execute: async ({ limit }) => {
@@ -204,7 +204,7 @@ export const listNotesTool = tool({
 
 export const getNoteTool = tool({
   description: 'Get a specific note by ID from the current project database',
-  inputSchema: z.object({
+  parameters: z.object({
     id: z.number().describe('The ID of the note to retrieve')
   }),
   execute: async ({ id }) => {
@@ -253,7 +253,7 @@ export const getNoteTool = tool({
 
 export const deleteNoteTool = tool({
   description: 'Delete a note from the current project database',
-  inputSchema: z.object({
+  parameters: z.object({
     id: z.number().describe('The ID of the note to delete')
   }),
   execute: async ({ id }) => {

@@ -5,7 +5,7 @@ import { debug } from '../utils/logger';
 
 export const listGitHubReposTool = tool({
   description: 'List GitHub repositories for the authenticated user',
-  inputSchema: z.object({
+  parameters: z.object({
     type: z
       .string()
       .optional()
@@ -54,7 +54,7 @@ export const listGitHubReposTool = tool({
 
 export const searchGitHubReposTool = tool({
   description: 'Search for GitHub repositories',
-  inputSchema: z.object({
+  parameters: z.object({
     query: z.string().describe('Search query for repositories'),
     sort: z
       .string()
@@ -99,7 +99,7 @@ export const searchGitHubReposTool = tool({
 
 export const getGitHubRepoTool = tool({
   description: 'Get detailed information about a specific GitHub repository',
-  inputSchema: z.object({
+  parameters: z.object({
     owner: z.string().describe('Repository owner/organization name'),
     repo: z.string().describe('Repository name')
   }),
