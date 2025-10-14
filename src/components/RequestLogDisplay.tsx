@@ -186,23 +186,13 @@ export function RequestLogDisplay({ isVisible }: RequestLogDisplayProps) {
       marginTop: 1,
       paddingLeft: 2,
     },
-    logs.map((log) =>
-      React.createElement(
-        Text,
-        {
-          key: log.key,
-          dimColor: true,
-          wrap: 'truncate'
-        },
-        formatProcessedLog(log)
-      )
-    )
+    logs.map((log) => renderProcessedLog(log))
   );
 }
 
-function formatProcessedLog(log: ProcessedLog): string {
+function renderProcessedLog(log: ProcessedLog) {
   const parts = [`→ ${formatStepName(log.step)}`];
-  
+
   // Add metadata that should appear before status
   if (log.metadata) {
     if (log.metadata.model) {
@@ -218,20 +208,57 @@ function formatProcessedLog(log: ProcessedLog): string {
       parts.push(`[${log.metadata.path}]`);
     }
   }
-  
-  // Add status indicator at the end
+
+  const mainText = parts.join(' ');
+
+  // Render with status indicator
   if (log.status === 'completed' && log.duration !== undefined) {
-    parts.push(`✓ (${log.duration}ms)`);
+    // Completed: show main text in dim, checkmark and timing in green
+    return React.createElement(
+      Box,
+      { key: log.key },
+      React.createElement(
+        Text,
+        { dimColor: true, wrap: 'truncate' },
+        mainText + ' '
+      ),
+      React.createElement(
+        Text,
+        { color: 'green' },
+        `✓ (${log.duration}ms)`
+      )
+    );
   } else if (log.status === 'running') {
-    parts.push('⋯');
+    // Running: show with spinner
+    return React.createElement(
+      Text,
+      { key: log.key, dimColor: true, wrap: 'truncate' },
+      mainText + ' ⋯'
+    );
+  } else if (log.metadata?.error) {
+    // Error: show with red X
+    return React.createElement(
+      Box,
+      { key: log.key },
+      React.createElement(
+        Text,
+        { dimColor: true, wrap: 'truncate' },
+        mainText + ' '
+      ),
+      React.createElement(
+        Text,
+        { color: 'red' },
+        `❌ ${log.metadata.error}`
+      )
+    );
+  } else {
+    // Default: just show main text
+    return React.createElement(
+      Text,
+      { key: log.key, dimColor: true, wrap: 'truncate' },
+      mainText
+    );
   }
-  
-  // Add error if present
-  if (log.metadata?.error) {
-    parts.push(`❌ ${log.metadata.error}`);
-  }
-  
-  return parts.join(' ');
 }
 
 function formatStepName(step: string): string {
