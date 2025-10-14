@@ -7,7 +7,7 @@ import { loadProjectConfig, loadProjectAgentConfig, saveProjectAgentConfig, remo
  */
 export const setProjectAgentConfigTool = tool({
   description: 'Set agent configuration for the current project. This allows you to define default agent scaling preferences per project.',
-  parameters: z.object({
+  inputSchema: z.object({
     defaultPreset: z.enum(['dev', 'team', 'heavy', 'minimal']).optional().describe('Default scaling preset for this project'),
     claudeCode: z.number().min(0).max(10).optional().describe('Default number of Claude Code instances (0-10)'),
     openaiCodex: z.number().min(0).max(10).optional().describe('Default number of OpenAI Codex instances (0-10)'),
@@ -106,7 +106,7 @@ export const setProjectAgentConfigTool = tool({
  */
 export const getProjectAgentConfigTool = tool({
   description: 'Get the agent configuration for the current project.',
-  parameters: z.object({}),
+  inputSchema: z.object({}),
   execute: async () => {
     try {
       const config = await loadProjectConfig();
@@ -169,7 +169,7 @@ export const getProjectAgentConfigTool = tool({
  */
 export const removeProjectAgentConfigTool = tool({
   description: 'Remove the agent configuration from the current project, reverting to global defaults.',
-  parameters: z.object({}),
+  inputSchema: z.object({}),
   execute: async () => {
     try {
       const config = await loadProjectConfig();

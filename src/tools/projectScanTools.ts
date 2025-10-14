@@ -39,7 +39,7 @@ export const scanProjectTool = tool({
 
 The scan automatically ignores build artifacts, dependencies, and common ignored files.
 Results are cached in memory and can be referenced in future conversations.`,
-  parameters: z.object({
+  inputSchema: z.object({
     force_rescan: z.boolean().default(false).describe('Force a new scan even if cached results exist for this project')
   }),
   execute: async ({ force_rescan = false }) => {
@@ -194,7 +194,7 @@ export const getProjectScanTool = tool({
   description: `Retrieve previously cached project scan results from memory. 
 This tool returns the stored analysis without re-scanning the project.
 Useful for referencing project structure and metrics from previous scans.`,
-  parameters: z.object({
+  inputSchema: z.object({
     project_id: z.string().optional().describe('Project ID to retrieve scan for. If not provided, uses current project')
   }),
   execute: async ({ project_id }) => {
@@ -249,7 +249,7 @@ Useful for referencing project structure and metrics from previous scans.`,
 export const listProjectScansTool = tool({
   description: `List all cached project scans in memory.
 Shows which projects have been scanned and when, allowing you to see what analysis data is available.`,
-  parameters: z.object({}),
+  inputSchema: z.object({}),
   execute: async () => {
     debug('Listing all cached project scans');
 

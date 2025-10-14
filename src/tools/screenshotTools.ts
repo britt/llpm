@@ -14,7 +14,7 @@ const execAsync = promisify(exec);
  */
 export const takeScreenshotTool = tool({
   description: 'Take a screenshot of a web page using the shot-scraper CLI tool. Returns the path to the saved screenshot file.',
-  parameters: z.object({
+  inputSchema: z.object({
     url: z.string().describe('The URL of the web page to screenshot'),
     width: z.number().optional().describe('Browser width in pixels (default: 1280)'),
     height: z.number().optional().describe('Browser height in pixels (default: 720)'),
@@ -176,7 +176,7 @@ export const takeScreenshotTool = tool({
  */
 export const checkScreenshotSetupTool = tool({
   description: 'Check if shot-scraper is properly installed and configured for taking screenshots',
-  parameters: z.object({}),
+  inputSchema: z.object({}),
   execute: async () => {
     try {
       debug('Checking uv and shot-scraper installation');

@@ -474,47 +474,47 @@ Assistant: I'll update the project item's priority field using the update_github
 
 ### AI Tool Creation Rules
 
-**CRITICAL: Always Use `parameters` for AI Tools**
-- **ALWAYS use `parameters`** when defining tools with our custom `tool()` wrapper
-- **NEVER use `inputSchema`** directly - the wrapper handles this transformation internally
-- The wrapper transforms `parameters` → `inputSchema` for AI SDK v5 compatibility
+**CRITICAL: Always Use `inputSchema` for AI Tools**
+- **ALWAYS use `inputSchema`** when defining tools with our custom `tool()` wrapper
+- **NEVER use `parameters`** - AI SDK v5 expects `inputSchema` directly
 - Check existing tools in the codebase before creating new ones to follow the same pattern
+- Our instrumentedTool wrapper does NOT transform anything - it passes `inputSchema` directly to AI SDK
 
 ```typescript
-// ✅ CORRECT - Use parameters (our wrapper transforms this)
+// ✅ CORRECT - Use inputSchema directly
 export const myTool = tool({
   description: 'Description of the tool',
-  parameters: z.object({
+  inputSchema: z.object({
     param: z.string().describe('Parameter description')
   }),
   execute: async ({ param }) => { ... }
 });
 
-// ❌ WRONG - Never use inputSchema directly
+// ❌ WRONG - Never use parameters
 export const myTool = tool({
   description: 'Description of the tool',
-  inputSchema: z.object({ ... }), // Don't use this!
+  parameters: z.object({ ... }), // Don't use this!
   execute: async ({ param }) => { ... }
 });
 
 // For tools with NO parameters, use empty z.object({})
 export const noParamTool = tool({
   description: 'Tool with no parameters',
-  parameters: z.object({}), // Empty schema
+  inputSchema: z.object({}), // Empty schema
   execute: async () => { ... }
 });
 ```
 
 **How It Works:**
-1. You define tools with `parameters` (cleaner API)
-2. Our wrapper (`src/tools/instrumentedTool.ts`) transforms `parameters` → `inputSchema`
-3. The AI SDK receives `inputSchema` (what it expects)
+1. You define tools with `inputSchema` (what AI SDK expects)
+2. Our wrapper (`src/tools/instrumentedTool.ts`) adds logging but passes config through unchanged
+3. The AI SDK receives `inputSchema` directly
 4. Returned tool objects have `.inputSchema` property (use this in tests)
 
 **Why This Matters:**
-- AI SDK v5 expects `inputSchema`, but `parameters` is more intuitive
-- The wrapper handles the transformation automatically
-- This prevents JSON Schema conversion errors from OpenAI
+- AI SDK v5 expects `inputSchema` - using anything else causes JSON Schema conversion errors
+- OpenAI/Anthropic APIs require valid JSON Schema with `type: "object"`
+- Empty schemas `z.object({})` work correctly when passed as `inputSchema`
 
 **CRITICAL SCREENSHOT RULE:**
 - **ONLY use shot-scraper tools for screenshots** (`take_screenshot`, `check_screenshot_setup`)

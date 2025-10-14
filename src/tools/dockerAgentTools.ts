@@ -7,7 +7,7 @@ const REST_BROKER_URL = process.env.REST_BROKER_URL || 'http://localhost:3010';
 // Tool to list available Docker agents
 export const listDockerAgentsTool = tool({
   description: 'List all available Docker coding agents and their status',
-  parameters: z.object({}),
+  inputSchema: z.object({}),
   execute: async () => {
     try {
       const response = await axios.get(`${REST_BROKER_URL}/agents`);
@@ -27,7 +27,7 @@ export const listDockerAgentsTool = tool({
 // Tool to submit a job to a Docker agent
 export const submitDockerAgentJobTool = tool({
   description: 'Submit a coding job to a specific Docker agent for processing',
-  parameters: z.object({
+  inputSchema: z.object({
     agentId: z.string().describe('The ID of the agent (e.g., claude-code, openai-codex, aider, opencode)'),
     prompt: z.string().describe('The task or prompt for the agent to process'),
     context: z.object({
@@ -64,7 +64,7 @@ export const submitDockerAgentJobTool = tool({
 // Tool to get job status
 export const getDockerAgentJobStatusTool = tool({
   description: 'Get the current status and result of a Docker agent job',
-  parameters: z.object({
+  inputSchema: z.object({
     agentId: z.string().describe('The ID of the agent'),
     jobId: z.string().describe('The ID of the job')
   }),
@@ -89,7 +89,7 @@ export const getDockerAgentJobStatusTool = tool({
 // Tool to list all jobs for an agent
 export const listDockerAgentJobsTool = tool({
   description: 'List all jobs submitted to a specific Docker agent',
-  parameters: z.object({
+  inputSchema: z.object({
     agentId: z.string().describe('The ID of the agent'),
     status: z.enum(['queued', 'running', 'completed', 'failed', 'cancelled'])
       .optional()
@@ -126,7 +126,7 @@ export const listDockerAgentJobsTool = tool({
 // Tool to cancel a job
 export const cancelDockerAgentJobTool = tool({
   description: 'Cancel a queued or running Docker agent job',
-  parameters: z.object({
+  inputSchema: z.object({
     agentId: z.string().describe('The ID of the agent'),
     jobId: z.string().describe('The ID of the job to cancel')
   }),
@@ -154,7 +154,7 @@ export const cancelDockerAgentJobTool = tool({
 // Tool to check REST broker health
 export const checkDockerBrokerHealthTool = tool({
   description: 'Check if the Docker REST broker is operational and can reach required services',
-  parameters: z.object({}),
+  inputSchema: z.object({}),
   execute: async () => {
     try {
       const response = await axios.get(`${REST_BROKER_URL}/health`);
