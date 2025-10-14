@@ -64,7 +64,7 @@ export function parseCommand(input: string): {
   };
 }
 
-export async function executeCommand(command: string, args: string[] = []) {
+export async function executeCommand(command: string, args: string[] = [], context?: import('./types').CommandContext) {
   debug('Executing command:', command, 'with args:', args);
 
   const registry = getCommandRegistry();
@@ -79,7 +79,7 @@ export async function executeCommand(command: string, args: string[] = []) {
   }
 
   try {
-    const result = await cmd.execute(args);
+    const result = await cmd.execute(args, context);
     debug('Command execution result:', result.success ? 'success' : 'failure');
     return result;
   } catch (error) {

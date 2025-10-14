@@ -132,7 +132,11 @@ export function useChat() {
         setIsLoading(true);
 
         try {
-          const result = await executeCommand(parsed.command as string, parsed.args as string[]);
+          const result = await executeCommand(
+            parsed.command as string,
+            parsed.args as string[],
+            { messageCount: messagesRef.current.length }
+          );
 
           // Check for interactive command results
           if (result.interactive && result.interactive.type === 'model-select') {

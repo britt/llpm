@@ -137,5 +137,16 @@ volumes:
 VOLUMES
 fi
 
+# Check if any services were generated
+TOTAL_AGENTS=$((CLAUDE_COUNT + CODEX_COUNT + AIDER_COUNT + OPENCODE_COUNT))
+if [ "$TOTAL_AGENTS" -eq 0 ]; then
+    # Add empty object to make valid YAML when no services are defined
+    cat >> "$OUTPUT_FILE" <<'EMPTY'
+  # No agent services configured
+  # When scaling to zero, all agent containers will be stopped
+  {}
+EMPTY
+fi
+
 print_success "Generated $OUTPUT_FILE"
 print_info "Workspace root: $(get_workspace_root)"

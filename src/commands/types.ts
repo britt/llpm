@@ -11,10 +11,14 @@ export interface CommandResult {
   };
 }
 
+export interface CommandContext {
+  messageCount?: number;
+}
+
 export interface Command {
   name: string;
   description: string;
-  execute: (args: string[]) => Promise<CommandResult> | CommandResult;
+  execute: (args: string[], context?: CommandContext) => Promise<CommandResult> | CommandResult;
 }
 
 export interface CommandRegistry {

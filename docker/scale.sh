@@ -63,6 +63,26 @@ show_usage() {
     echo ""
 }
 
+# Function to cleanup all existing agent containers
+cleanup_all_agent_containers() {
+    print_info "Cleaning up all existing agent containers..."
+
+    # Get all agent containers using regex pattern match
+    local all_agent_containers=$(docker ps -aq | xargs docker inspect --format='{{.Name}} {{.Id}}' 2>/dev/null | grep -E 'docker-(claude-code|openai-codex|aider|opencode)-' | awk '{print $2}' || true)
+
+    if [ -n "$all_agent_containers" ]; then
+        echo "  Found containers to remove:"
+        docker ps -a --filter id="$all_agent_containers" --format "    {{.Names}} ({{.ID}})" 2>/dev/null || true
+        echo "  Forcing removal..."
+        docker rm -f $all_agent_containers 2>&1 | sed 's/^/    /' || true
+        print_success "Removed $(echo "$all_agent_containers" | wc -w | tr -d ' ') container(s)"
+    else
+        echo "  No agent containers found"
+    fi
+
+    echo ""
+}
+
 # Function to scale services
 scale_services() {
     local claude=$1
@@ -82,17 +102,25 @@ scale_services() {
     # Export auth type for docker-compose
     export AGENT_AUTH_TYPE=$auth_type
 
+    # Cleanup existing agent containers BEFORE generating new config
+    cleanup_all_agent_containers
+
     # Generate docker-compose.override.yml with per-agent workspaces
     print_info "Generating per-agent workspace configuration..."
     ./generate-compose-override.sh $claude $codex $aider $opencode $auth_type
+
+    # Cleanup again AFTER generating new config to catch any containers
+    # that were created in a failed previous attempt
+    cleanup_all_agent_containers
 
     # Ensure base services are running
     print_info "Starting base services..."
     docker-compose up -d litellm-proxy postgres
 
     # Start agent services using the generated override
+    # Use --scale to prevent base agent services from starting (only numbered instances should run)
     print_info "Starting agent services with isolated workspaces..."
-    docker-compose up -d
+    docker-compose up -d --scale claude-code=0 --scale openai-codex=0 --scale aider=0 --scale opencode=0
 
     print_success "Agent scaling complete!"
     echo ""
@@ -103,24 +131,26 @@ scale_services() {
 show_status() {
     print_info "Current agent status:"
     echo ""
-    echo "Service        | Instances | Container Names"
-    echo "---------------|-----------|----------------------------------"
-    
-    # Check each service
-    for service in claude-code openai-codex aider opencode; do
-        count=$(docker-compose ps -q $service | wc -l | tr -d ' ')
-        if [ "$count" -gt 0 ]; then
-            containers=$(docker-compose ps $service | grep $service | awk '{print $1}' | tr '\n' ', ' | sed 's/,$//')
-            printf "%-14s | %-9s | %s\n" "$service" "$count" "$containers"
+    echo "Agent Type     | Running | Container Names"
+    echo "---------------|---------|----------------------------------"
+
+    # Check each agent type by looking for running containers
+    for agent_type in "claude-code" "openai-codex" "aider" "opencode"; do
+        containers=$(docker ps --filter "name=docker-${agent_type}-" --format "{{.Names}}" 2>/dev/null | sort)
+
+        if [ -n "$containers" ]; then
+            count=$(echo "$containers" | wc -l | tr -d ' ')
+            container_list=$(echo "$containers" | tr '\n' ', ' | sed 's/,$//')
+            printf "%-14s | %-7s | %s\n" "$agent_type" "$count" "$container_list"
         else
-            printf "%-14s | %-9s | %s\n" "$service" "0" "none"
+            printf "%-14s | %-7s | %s\n" "$agent_type" "0" "none"
         fi
     done
-    
+
     echo ""
-    
+
     # Show LiteLLM proxy status
-    if docker-compose ps litellm-proxy | grep -q "Up"; then
+    if docker ps --filter "name=litellm-proxy" --filter "status=running" | grep -q "litellm-proxy"; then
         print_success "LiteLLM Proxy is running on port 4000"
     else
         print_warning "LiteLLM Proxy is not running"

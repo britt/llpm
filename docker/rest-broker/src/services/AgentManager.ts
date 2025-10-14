@@ -34,6 +34,7 @@ export class AgentManager extends EventEmitter {
   private socketConnections: Map<string, net.Socket>;
   private healthCheckInterval: NodeJS.Timeout | null = null;
   private authVerificationInterval: NodeJS.Timeout | null = null;
+  private cleanupInterval: NodeJS.Timeout | null = null;
   private dockerExecutor: DockerExecutor;
   private authVerifier: AuthVerifier;
 
@@ -48,6 +49,9 @@ export class AgentManager extends EventEmitter {
   async initialize(): Promise<void> {
     logger.info('Initializing Agent Manager');
 
+    // Clean up stale agents from previous runs
+    await this.cleanupStaleAgents();
+
     // Initialize available agents based on configuration
     await this.initializeAgents();
 
@@ -56,6 +60,47 @@ export class AgentManager extends EventEmitter {
 
     // Start authentication verification for subscription agents
     this.startAuthVerification();
+
+    // Start periodic cleanup of stale agents
+    this.startPeriodicCleanup();
+  }
+
+  private async cleanupStaleAgents(): Promise<void> {
+    try {
+      const { exec } = await import('child_process');
+      const { promisify } = await import('util');
+      const execAsync = promisify(exec);
+
+      // Get list of currently running containers
+      const { stdout } = await execAsync('docker ps --format "{{.Names}}"');
+      const runningContainers = new Set(stdout.trim().split('\n').filter(Boolean));
+
+      // Check each registered agent
+      const agentsToRemove: string[] = [];
+      for (const agentId of this.agents.keys()) {
+        const containerName = `docker-${agentId}`;
+        const altContainerName = agentId; // Some containers may not have docker- prefix
+
+        // If the container is not running, mark for removal
+        if (!runningContainers.has(containerName) && !runningContainers.has(altContainerName)) {
+          agentsToRemove.push(agentId);
+        }
+      }
+
+      // Remove stale agents
+      for (const agentId of agentsToRemove) {
+        logger.info(`Removing stale agent: ${agentId}`);
+        await this.deregisterAgent(agentId);
+      }
+
+      if (agentsToRemove.length > 0) {
+        logger.info(`Cleaned up ${agentsToRemove.length} stale agent(s)`);
+      } else {
+        logger.info('No stale agents to clean up');
+      }
+    } catch (error) {
+      logger.error('Failed to cleanup stale agents:', error);
+    }
   }
 
   private async initializeAgents(): Promise<void> {
@@ -528,6 +573,19 @@ export class AgentManager extends EventEmitter {
     logger.info(`Started authentication verification with interval=${interval}ms`);
   }
 
+  private startPeriodicCleanup(): void {
+    // Schedule periodic cleanup of stale agents
+    // Default to 2 minutes (120000ms) to catch agents that go offline during runtime
+    const interval = parseInt(process.env.CLEANUP_INTERVAL || '120000');
+    this.cleanupInterval = setInterval(() => {
+      this.cleanupStaleAgents().catch(error => {
+        logger.error('Periodic cleanup failed:', error);
+      });
+    }, interval);
+
+    logger.info(`Started periodic stale agent cleanup with interval=${interval}ms`);
+  }
+
   private async checkAllAgentAuth(): Promise<void> {
     const subscriptionAgents = Array.from(this.agents.values()).filter(
       agent => agent.authType === 'subscription' && agent.provider
@@ -611,6 +669,11 @@ export class AgentManager extends EventEmitter {
     // Clear auth verification interval
     if (this.authVerificationInterval) {
       clearInterval(this.authVerificationInterval);
+    }
+
+    // Clear cleanup interval
+    if (this.cleanupInterval) {
+      clearInterval(this.cleanupInterval);
     }
 
     // Close all socket connections

@@ -1,5 +1,7 @@
-import React, { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { Box, Text } from 'ink';
+import { TaskList, Task } from 'ink-task-list';
+import spinners from 'cli-spinners';
 
 export interface LogEntry {
   timestamp: string;
@@ -8,10 +10,6 @@ export interface LogEntry {
   phase: 'start' | 'end';
   duration?: number;
   metadata?: Record<string, any>;
-}
-
-interface RequestLogDisplayProps {
-  isVisible: boolean;
 }
 
 // Global singleton to share logger instance
@@ -77,19 +75,12 @@ interface ProcessedLog {
   orderIndex: number; // Track insertion order
 }
 
-export function RequestLogDisplay({ isVisible }: RequestLogDisplayProps) {
+export function RequestLogDisplay() {
   const [processedLogs, setProcessedLogs] = useState<Map<string, ProcessedLog>>(new Map());
   const logMapRef = useRef<Map<string, ProcessedLog>>(new Map());
   const orderCounterRef = useRef(0);
   
-  useEffect(() => {
-    if (!isVisible) {
-      setProcessedLogs(new Map());
-      logMapRef.current = new Map();
-      orderCounterRef.current = 0;
-      return;
-    }
-    
+  useEffect(() => {    
     const handleLog = (log: LogEntry) => {
       // Create a normalized key - use just the step name without request ID
       // since there's typically only one request in flight
@@ -169,41 +160,25 @@ export function RequestLogDisplay({ isVisible }: RequestLogDisplayProps) {
       loggerRegistry.removeLogListener(handleLog);
       loggerRegistry.removeClearListener(handleClear);
     };
-  }, [isVisible]);
+  });
   
-  if (!isVisible || processedLogs.size === 0) {
-    return null;
-  }
-
   // Sort logs by insertion order
   const logs = Array.from(processedLogs.values())
     .sort((a, b) => a.orderIndex - b.orderIndex);
 
-  return React.createElement(
-    Box,
-    {
-      flexDirection: 'column',
-      marginTop: 1,
-      paddingLeft: 2,
-    },
-    logs.map((log) =>
-      React.createElement(
-        Text,
-        {
-          key: log.key,
-          dimColor: true,
-          wrap: 'truncate'
-        },
-        formatProcessedLog(log)
-      )
-    )
+  return (
+    <Box flexDirection="column" marginTop={1} paddingLeft={2}>
+      <TaskList>
+        {logs.map((log) => renderProcessedLog(log))}
+      </TaskList>
+    </Box>
   );
 }
 
-function formatProcessedLog(log: ProcessedLog): string {
-  const parts = [`→ ${formatStepName(log.step)}`];
-  
-  // Add metadata that should appear before status
+function renderProcessedLog(log: ProcessedLog) {
+  const parts = [formatStepName(log.step)];
+
+  // Add metadata that should appear in the label
   if (log.metadata) {
     if (log.metadata.model) {
       parts.push(`[${log.metadata.model}]`);
@@ -218,20 +193,50 @@ function formatProcessedLog(log: ProcessedLog): string {
       parts.push(`[${log.metadata.path}]`);
     }
   }
-  
-  // Add status indicator at the end
-  if (log.status === 'completed' && log.duration !== undefined) {
-    parts.push(`✓ (${log.duration}ms)`);
-  } else if (log.status === 'running') {
-    parts.push('⋯');
+
+  const label = parts.join(' ');
+
+  // Determine state and status based on log data
+  if (log.status === 'running') {
+    return (
+      <Task
+        key={log.key}
+        label={label}
+        state="loading"
+        spinner={spinners.dots}
+      />
+    );
+  } else if (log.status === 'completed' && log.duration !== undefined) {
+    // Render task with custom timing in green
+    return (
+      <Box key={log.key}>
+        <Task
+          label={label}
+          state="success"
+        />
+        <Text color="#00ff00">
+          {` ${log.duration}ms`}
+        </Text>
+      </Box>
+    );
+  } else if (log.metadata?.error) {
+    return (
+      <Task
+        key={log.key}
+        label={label}
+        state="error"
+        status={log.metadata.error}
+      />
+    );
+  } else {
+    return (
+      <Task
+        key={log.key}
+        label={label}
+        state="pending"
+      />
+    );
   }
-  
-  // Add error if present
-  if (log.metadata?.error) {
-    parts.push(`❌ ${log.metadata.error}`);
-  }
-  
-  return parts.join(' ');
 }
 
 function formatStepName(step: string): string {

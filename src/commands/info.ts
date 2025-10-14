@@ -1,20 +1,21 @@
 import type { Command, CommandResult } from './types';
-import { debug } from '../utils/logger';
+import { debug, getVerbose } from '../utils/logger';
 import { getCurrentProject } from '../utils/projectConfig';
 import { modelRegistry } from '../services/modelRegistry';
 import { getSystemPrompt } from '../utils/systemPrompt';
 import { highlightMarkdown } from '../utils/markdownHighlight';
+import { loadChatHistory } from '../utils/chatHistory';
 
 const packageInfo = {
   name: 'LLPM',
-  version: '0.2.2',
+  version: '0.11.0',
   description: 'AI-powered Large Language Model Product Manager'
 };
 
 export const infoCommand: Command = {
   name: 'info',
   description: 'Show information about the application',
-  execute: async (args: string[] = []): Promise<CommandResult> => {
+  execute: async (args: string[] = [], context?: import('./types').CommandContext): Promise<CommandResult> => {
     debug('Executing /info command with args:', args);
 
     // Handle sub-commands
@@ -30,9 +31,38 @@ export const infoCommand: Command = {
 
 📋 Available Subcommands:
 • /info prompt - Display the current system prompt with syntax highlighting
+• /info debug - Show debugging information including session message count
 
 📝 Examples:
-• /info prompt`,
+• /info prompt
+• /info debug`,
+          success: true
+        };
+      }
+
+      if (subCommand === 'debug') {
+        debug('Executing /info debug sub-command');
+
+        const messageCount = context?.messageCount ?? 0;
+
+        // Load chat history to get saved message count
+        const savedMessages = await loadChatHistory();
+        const savedCount = savedMessages.length;
+
+        const debugInfo = [
+          '🐛 Debug Information:',
+          '',
+          `📨 Messages in Current Session: ${messageCount}`,
+          `💾 Messages in Saved History: ${savedCount}`,
+          `🔍 Verbose Mode: ${getVerbose() ? 'Enabled' : 'Disabled'}`,
+          `⚙️ Node Version: ${process.version}`,
+          `🏃 Bun Version: ${process.versions.bun || 'N/A'}`,
+          `💻 Platform: ${process.platform}`,
+          `🏗️ Architecture: ${process.arch}`
+        ];
+
+        return {
+          content: debugInfo.join('\n'),
           success: true
         };
       }
@@ -62,7 +92,7 @@ ${highlightedPrompt}`;
         }
       } else {
         return {
-          content: `❌ Unknown sub-command: ${subCommand}\nAvailable sub-commands: prompt`,
+          content: `❌ Unknown sub-command: ${subCommand}\nAvailable sub-commands: prompt, debug`,
           success: false
         };
       }

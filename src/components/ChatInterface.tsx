@@ -15,6 +15,7 @@ import NotesSelector from './NotesSelector';
 import type { QueuedMessage } from '../hooks/useChat';
 import { RequestLogDisplay } from './RequestLogDisplay';
 import { renderMarkdown, isASCIICapableTerminal } from '../utils/markdownRenderer';
+import Spinner from 'ink-spinner';
 
 interface ChatInterfaceProps {
   messages: Message[];
@@ -30,44 +31,43 @@ interface ChatInterfaceProps {
   queuedMessages?: Array<QueuedMessage>;
 }
 
-const ThinkingIndicator = memo(() => {
+const ThinkingIndicator = memo(({ isVisible }: { isVisible: boolean }) => {
+  if (!isVisible) return null;
+  
   return (
-    <Box flexDirection="column">
-      <Text color="red">PM is thinking...</Text>
-      <RequestLogDisplay isVisible={true} />
+    <Box flexDirection="column" paddingX={1} paddingY={1}>
+      <Box>
+        <Text color="red">
+          {/* 🧠 PM is thinking... */}
+          <Spinner type="star" /> PM is thinking...
+        </Text>
+      </Box>
+      <RequestLogDisplay />
     </Box>
   );
 });
 
-const QueuedMessageItem = memo(
-  ({ message }: {  message: QueuedMessage }) => {
-    return (
-      <Box>
-        <Text color="gray" dimColor>
-          {message.content}
-        </Text>
-      </Box>
-    );
-  }
-);
+const QueuedMessageItem = memo(({ message }: { message: QueuedMessage }) => {
+  return (
+    <Box>
+      <Text color="gray" dimColor>
+        {message.content}
+      </Text>
+    </Box>
+  );
+});
 
-const MessageQueue = memo(
-  ({
-    messages: queuedMessages
-  }: {
-    messages?: Array<QueuedMessage>;
-  }) => {
-    if (!queuedMessages || queuedMessages.length === 0) return null;
+const MessageQueue = memo(({ messages: queuedMessages }: { messages?: Array<QueuedMessage> }) => {
+  if (!queuedMessages || queuedMessages.length === 0) return null;
 
-    return (
-      <Box flexDirection="column">
-        {queuedMessages.map((queuedMsg, i) => (
-          <QueuedMessageItem key={`queued-message-${i}`} message={queuedMsg} />
-        ))}
-      </Box>
-    );
-  }
-);
+  return (
+    <Box flexDirection="column">
+      {queuedMessages.map((queuedMsg, i) => (
+        <QueuedMessageItem key={`queued-message-${i}`} message={queuedMsg} />
+      ))}
+    </Box>
+  );
+});
 
 const ProjectStatus = memo(
   ({ project, model }: { project: Project | null; model: ModelConfig | null }) => {
@@ -90,7 +90,9 @@ const ProjectStatus = memo(
           ) : (
             <Text color="gray">none</Text>
           )}{' '}
-          <Text color="blackBright">(shift+tab: switch project, option+m: switch model, option+n: notes)</Text>
+          <Text color="blackBright">
+            (shift+tab: switch project, option+m: switch model, option+n: notes)
+          </Text>
         </Text>
       </Box>
     );
@@ -156,17 +158,16 @@ const MessageItem = memo(({ message }: { message: Message }) => {
 
     setIsRendering(true);
     renderMarkdown(message.content)
-      .then((rendered) => {
+      .then(rendered => {
         setRenderedContent(rendered);
         setIsRendering(false);
       })
-      .catch((error) => {
+      .catch(error => {
         console.error('Failed to render markdown:', error);
         setRenderedContent(message.content);
         setIsRendering(false);
       });
   }, [message.content, shouldRenderMarkdown]);
-
 
   return (
     <Box
@@ -176,9 +177,7 @@ const MessageItem = memo(({ message }: { message: Message }) => {
       paddingY={shouldAddPadding ? 1 : 0}
       backgroundColor={backgroundColor}
     >
-      <Text color={textColor}>
-        {displayContent}
-      </Text>
+      <Text color={textColor}>{displayContent}</Text>
     </Box>
   );
 });
@@ -260,7 +259,7 @@ export const ChatInterface = memo(function ChatInterface({
         setCurrentProject(updatedProject);
         setShowProjectSelector(false);
         setActiveInput('main');
-        
+
         // Notify the chat system that project has switched and wait for it to complete
         if (onProjectSwitch) {
           await onProjectSwitch();
@@ -283,16 +282,18 @@ export const ChatInterface = memo(function ChatInterface({
   );
 
   // Global hotkey handling for input focus management
-  useInput((inputChar, key) => {
-    // Cancel model selection, project selector, and notes selector
-    if (key.escape) {
-      onCancelModelSelection?.();
-      setShowProjectSelector(false);
-      setShowNotesSelector(false);
-      setActiveInput('main');
-    }
-  }, { isActive: activeInput !== 'main' });
-
+  useInput(
+    (inputChar, key) => {
+      // Cancel model selection, project selector, and notes selector
+      if (key.escape) {
+        onCancelModelSelection?.();
+        setShowProjectSelector(false);
+        setShowNotesSelector(false);
+        setActiveInput('main');
+      }
+    },
+    { isActive: activeInput !== 'main' }
+  );
 
   // Update active input state when selectors show/hide
   useEffect(() => {
@@ -309,7 +310,7 @@ export const ChatInterface = memo(function ChatInterface({
 
   // Handle note insertion
   const handleInsertNote = useCallback(
-    (noteContent: string, noteId: number) => {
+    (noteContent: string) => {
       onSendMessage(noteContent);
       setShowNotesSelector(false);
       setActiveInput('main');
@@ -322,36 +323,39 @@ export const ChatInterface = memo(function ChatInterface({
       focus={activeInput === 'main'}
       placeholder="Type your message..."
       onSubmit={handleInputSubmit}
-      onShowModelSelector={() => {onTriggerModelSelector?.(); setActiveInput('model')}}
-      onShowProjectSelector={() => {setShowProjectSelector(true); setActiveInput('project')}}
-      onShowNotesSelector={() => {setShowNotesSelector(true); setActiveInput('notes')}}
+      onShowModelSelector={() => {
+        onTriggerModelSelector?.();
+        setActiveInput('model');
+      }}
+      onShowProjectSelector={() => {
+        setShowProjectSelector(true);
+        setActiveInput('project');
+      }}
+      onShowNotesSelector={() => {
+        setShowNotesSelector(true);
+        setActiveInput('notes');
+      }}
     />
   );
 
   if (showProjectSelector) {
-    inputComponent = (
-      <ProjectSelector
-        onProjectSelect={handleProjectSelect}
-      />
-    );
+    inputComponent = <ProjectSelector onProjectSelect={handleProjectSelect} />;
   }
 
   if (showNotesSelector) {
     inputComponent = (
       <NotesSelector
-        onClose={() => {setShowNotesSelector(false); setActiveInput('main')}}
+        onClose={() => {
+          setShowNotesSelector(false);
+          setActiveInput('main');
+        }}
         onInsertNote={handleInsertNote}
       />
     );
   }
 
   if (interactiveCommand?.type === 'model-select') {
-    inputComponent = (
-      <ModelSelector
-        command={interactiveCommand}
-        onModelSelect={onModelSelect}
-      />
-    );
+    inputComponent = <ModelSelector command={interactiveCommand} onModelSelect={onModelSelect} />;
   }
 
   return (
@@ -361,12 +365,15 @@ export const ChatInterface = memo(function ChatInterface({
         <MessageList messages={messages} />
         {/* Show queued messages in light text */}
         <MessageQueue messages={queuedMessages} />
-        {(isLoading || isProcessing) && <ThinkingIndicator />}
       </Box>
-      {/* Input */}
-      {inputComponent}
-      {/* Project Status */}
-      <ProjectStatus project={currentProject} model={currentModel} />
+      {/* Thinking indicator outside flex container */}
+      <ThinkingIndicator isVisible={isLoading || isProcessing} />
+      <Box flexDirection="column" flexGrow={1}>
+        {/* Input */}
+        {inputComponent}
+        {/* Project Status */}
+        <ProjectStatus project={currentProject} model={currentModel} />
+      </Box>
     </Box>
   );
 });

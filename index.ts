@@ -26,8 +26,10 @@ export function App() {
     isProcessing,
     queuedMessages
   } = useChat();
-  // TODO: this is the place to start for message buffering
 
+  // TODO: this is the place to start for message buffering
+  // It is because useChat passes messages as props to ChatInterface that it becomes slow
+  // and re-renders the component every time the messages array changes
   return React.createElement(ChatInterface, {
     messages,
     onSendMessage: sendMessage,
