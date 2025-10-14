@@ -32,7 +32,7 @@ function normalizeRepository(repository: string): string {
 
 export const getCurrentProjectTool = tool({
   description: 'Get information about the currently active project. ALWAYS use this tool when determining the current project.',
-  parameters: z.object({}).strict(),
+  parameters: z.object({}),
   execute: async () => {
     debug('Executing get_current_project tool');
 
@@ -63,7 +63,7 @@ export const getCurrentProjectTool = tool({
 
 export const listProjectsTool = tool({
   description: 'List all available projects',
-  parameters: z.object({}).strict(),
+  parameters: z.object({}),
   execute: async () => {
     debug('Executing list_projects tool');
 

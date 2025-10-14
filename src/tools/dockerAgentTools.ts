@@ -7,7 +7,7 @@ const REST_BROKER_URL = process.env.REST_BROKER_URL || 'http://localhost:3010';
 // Tool to list available Docker agents
 export const listDockerAgentsTool = tool({
   description: 'List all available Docker coding agents and their status',
-  parameters: z.object({}).strict(),
+  parameters: z.object({}),
   execute: async () => {
     try {
       const response = await axios.get(`${REST_BROKER_URL}/agents`);
@@ -154,7 +154,7 @@ export const cancelDockerAgentJobTool = tool({
 // Tool to check REST broker health
 export const checkDockerBrokerHealthTool = tool({
   description: 'Check if the Docker REST broker is operational and can reach required services',
-  parameters: z.object({}).strict(),
+  parameters: z.object({}),
   execute: async () => {
     try {
       const response = await axios.get(`${REST_BROKER_URL}/health`);

@@ -12,34 +12,36 @@ export function tool<T extends { description: string; parameters: any; execute: 
   const toolName = config.description.split(' ').slice(0, 3).join('_').toLowerCase().replace(/[^a-z0-9_]/g, '_');
   
   // Wrap the execute function with logging
+  const { parameters, ...restConfig } = config as any;
   const instrumentedConfig = {
-    ...config,
+    ...restConfig,
+    inputSchema: parameters, // Rename parameters to inputSchema for AI SDK
     execute: async (args: any) => {
       // Log tool call start
       RequestContext.logToolCall(toolName, 'start', args);
       debug(`Tool ${toolName} started with args:`, args);
-      
+
       try {
         // Execute the original function
         const result = await config.execute(args);
-        
+
         // Log tool call success
         RequestContext.logToolCall(toolName, 'end', args, result);
         debug(`Tool ${toolName} completed successfully`);
-        
+
         return result;
       } catch (error) {
         // Log tool call error
         const errorMessage = error instanceof Error ? error.message : String(error);
         RequestContext.logToolCall(toolName, 'end', args, undefined, errorMessage);
         debug(`Tool ${toolName} failed:`, error);
-        
+
         // Re-throw the error
         throw error;
       }
     }
   };
-  
+
   // Create and return the instrumented tool
   return baseTool(instrumentedConfig);
 }
