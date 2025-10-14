@@ -259,7 +259,7 @@ describe('commandRegistry', () => {
         const executeResult = await executeCommand(parseResult.command!, parseResult.args);
         
         expect(executeResult.success).toBe(true);
-        expect(executeResult.content).toContain('📱 LLPM v0.2.2');
+        expect(executeResult.content).toContain('📱 LLPM v0.11.0');
         expect(executeResult.content).not.toContain('📋 Current System Prompt:');
       }, 10000); // 10 second timeout
     });

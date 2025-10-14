@@ -30,7 +30,7 @@ describe('infoCommand', () => {
     const result = await infoCommand.execute([]);
 
     expect(result.success).toBe(true);
-    expect(result.content).toContain('📱 LLPM v0.2.2');
+    expect(result.content).toContain('📱 LLPM v0.11.0');
     expect(result.content).toContain('📝 AI-powered Large Language Model Product Manager');
     expect(result.content).toContain('🤖 Model: GPT-4o Mini (openai)');
     expect(result.content).toContain('⚡ Runtime: Bun');
@@ -186,6 +186,6 @@ describe('infoCommand', () => {
     const result = await infoCommand.execute([]);
 
     expect(result.success).toBe(true);
-    expect(result.content).toContain('📱 LLPM v0.2.2');
+    expect(result.content).toContain('📱 LLPM v0.11.0');
   });
 });
