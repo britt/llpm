@@ -191,7 +191,7 @@ export function RequestLogDisplay({ isVisible }: RequestLogDisplayProps) {
 }
 
 function renderProcessedLog(log: ProcessedLog) {
-  const parts = [`→ ${formatStepName(log.step)}`];
+  const parts = [formatStepName(log.step)];
 
   // Add metadata that should appear before status
   if (log.metadata) {
@@ -213,10 +213,15 @@ function renderProcessedLog(log: ProcessedLog) {
 
   // Render with status indicator
   if (log.status === 'completed' && log.duration !== undefined) {
-    // Completed: show main text in dim, checkmark and timing in green
+    // Completed: bright green arrow, dim text, bright green checkmark and timing
     return React.createElement(
       Box,
       { key: log.key },
+      React.createElement(
+        Text,
+        { color: 'greenBright' },
+        '→ '
+      ),
       React.createElement(
         Text,
         { dimColor: true, wrap: 'truncate' },
@@ -224,22 +229,36 @@ function renderProcessedLog(log: ProcessedLog) {
       ),
       React.createElement(
         Text,
-        { color: 'green' },
+        { color: 'greenBright' },
         `✓ (${log.duration}ms)`
       )
     );
   } else if (log.status === 'running') {
-    // Running: show with spinner
-    return React.createElement(
-      Text,
-      { key: log.key, dimColor: true, wrap: 'truncate' },
-      mainText + ' ⋯'
-    );
-  } else if (log.metadata?.error) {
-    // Error: show with red X
+    // Running: bright green arrow with spinner
     return React.createElement(
       Box,
       { key: log.key },
+      React.createElement(
+        Text,
+        { color: 'greenBright' },
+        '→ '
+      ),
+      React.createElement(
+        Text,
+        { dimColor: true, wrap: 'truncate' },
+        mainText + ' ⋯'
+      )
+    );
+  } else if (log.metadata?.error) {
+    // Error: bright green arrow, red X
+    return React.createElement(
+      Box,
+      { key: log.key },
+      React.createElement(
+        Text,
+        { color: 'greenBright' },
+        '→ '
+      ),
       React.createElement(
         Text,
         { dimColor: true, wrap: 'truncate' },
@@ -252,11 +271,20 @@ function renderProcessedLog(log: ProcessedLog) {
       )
     );
   } else {
-    // Default: just show main text
+    // Default: bright green arrow, dim text
     return React.createElement(
-      Text,
-      { key: log.key, dimColor: true, wrap: 'truncate' },
-      mainText
+      Box,
+      { key: log.key },
+      React.createElement(
+        Text,
+        { color: 'greenBright' },
+        '→ '
+      ),
+      React.createElement(
+        Text,
+        { dimColor: true, wrap: 'truncate' },
+        mainText
+      )
     );
   }
 }
