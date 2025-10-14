@@ -4,6 +4,7 @@ import { getCurrentProject } from '../utils/projectConfig';
 import { modelRegistry } from '../services/modelRegistry';
 import { getSystemPrompt } from '../utils/systemPrompt';
 import { highlightMarkdown } from '../utils/markdownHighlight';
+import { loadChatHistory } from '../utils/chatHistory';
 
 const packageInfo = {
   name: 'LLPM',
@@ -43,14 +44,20 @@ export const infoCommand: Command = {
         debug('Executing /info debug sub-command');
 
         const messageCount = context?.messageCount ?? 0;
+
+        // Load chat history to get saved message count
+        const savedMessages = await loadChatHistory();
+        const savedCount = savedMessages.length;
+
         const debugInfo = [
           '🐛 Debug Information:',
           '',
           `📨 Messages in Current Session: ${messageCount}`,
+          `💾 Messages in Saved History: ${savedCount}`,
           `🔍 Verbose Mode: ${getVerbose() ? 'Enabled' : 'Disabled'}`,
           `⚙️ Node Version: ${process.version}`,
           `🏃 Bun Version: ${process.versions.bun || 'N/A'}`,
-          `💾 Platform: ${process.platform}`,
+          `💻 Platform: ${process.platform}`,
           `🏗️ Architecture: ${process.arch}`
         ];
 
