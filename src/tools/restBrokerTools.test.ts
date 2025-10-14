@@ -624,20 +624,20 @@ describe('REST Broker Tools', () => {
   describe('registerAgentTool', () => {
     it('should require agentId, name, and type parameters', async () => {
       const { registerAgentTool } = await import('./restBrokerTools');
-      const validResult = registerAgentTool.inputSchema.safeParse({
+      const validResult = registerAgentTool.parameters.safeParse({
         agentId: 'test-agent',
         name: 'Test Agent',
         type: 'test-type'
       });
       expect(validResult.success).toBe(true);
 
-      const invalidResult = registerAgentTool.inputSchema.safeParse({});
+      const invalidResult = registerAgentTool.parameters.safeParse({});
       expect(invalidResult.success).toBe(false);
     });
 
     it('should accept optional authType, provider, model, host, port, metadata', async () => {
       const { registerAgentTool } = await import('./restBrokerTools');
-      const validResult = registerAgentTool.inputSchema.safeParse({
+      const validResult = registerAgentTool.parameters.safeParse({
         agentId: 'test-agent',
         name: 'Test Agent',
         type: 'test-type',
@@ -653,7 +653,7 @@ describe('REST Broker Tools', () => {
 
     it('should validate authType enum values', async () => {
       const { registerAgentTool } = await import('./restBrokerTools');
-      const validResult = registerAgentTool.inputSchema.safeParse({
+      const validResult = registerAgentTool.parameters.safeParse({
         agentId: 'test-agent',
         name: 'Test Agent',
         type: 'test-type',
@@ -661,7 +661,7 @@ describe('REST Broker Tools', () => {
       });
       expect(validResult.success).toBe(true);
 
-      const invalidResult = registerAgentTool.inputSchema.safeParse({
+      const invalidResult = registerAgentTool.parameters.safeParse({
         agentId: 'test-agent',
         name: 'Test Agent',
         type: 'test-type',
@@ -674,16 +674,16 @@ describe('REST Broker Tools', () => {
   describe('deleteAgentTool', () => {
     it('should require agentId parameter', async () => {
       const { deleteAgentTool } = await import('./restBrokerTools');
-      const validResult = deleteAgentTool.inputSchema.safeParse({ agentId: 'test-agent' });
+      const validResult = deleteAgentTool.parameters.safeParse({ agentId: 'test-agent' });
       expect(validResult.success).toBe(true);
 
-      const invalidResult = deleteAgentTool.inputSchema.safeParse({});
+      const invalidResult = deleteAgentTool.parameters.safeParse({});
       expect(invalidResult.success).toBe(false);
     });
 
     it('should accept optional confirmed parameter', async () => {
       const { deleteAgentTool } = await import('./restBrokerTools');
-      const validResult = deleteAgentTool.inputSchema.safeParse({
+      const validResult = deleteAgentTool.parameters.safeParse({
         agentId: 'test-agent',
         confirmed: true
       });
@@ -694,16 +694,16 @@ describe('REST Broker Tools', () => {
   describe('updateAgentTool', () => {
     it('should require agentId parameter', async () => {
       const { updateAgentTool } = await import('./restBrokerTools');
-      const validResult = updateAgentTool.inputSchema.safeParse({ agentId: 'test-agent' });
+      const validResult = updateAgentTool.parameters.safeParse({ agentId: 'test-agent' });
       expect(validResult.success).toBe(true);
 
-      const invalidResult = updateAgentTool.inputSchema.safeParse({});
+      const invalidResult = updateAgentTool.parameters.safeParse({});
       expect(invalidResult.success).toBe(false);
     });
 
     it('should accept optional status and metadata', async () => {
       const { updateAgentTool } = await import('./restBrokerTools');
-      const validResult = updateAgentTool.inputSchema.safeParse({
+      const validResult = updateAgentTool.parameters.safeParse({
         agentId: 'test-agent',
         status: 'available',
         metadata: { key: 'value' }
@@ -713,13 +713,13 @@ describe('REST Broker Tools', () => {
 
     it('should validate status enum values', async () => {
       const { updateAgentTool } = await import('./restBrokerTools');
-      const validResult = updateAgentTool.inputSchema.safeParse({
+      const validResult = updateAgentTool.parameters.safeParse({
         agentId: 'test-agent',
         status: 'available'
       });
       expect(validResult.success).toBe(true);
 
-      const invalidResult = updateAgentTool.inputSchema.safeParse({
+      const invalidResult = updateAgentTool.parameters.safeParse({
         agentId: 'test-agent',
         status: 'invalid'
       });
@@ -730,13 +730,13 @@ describe('REST Broker Tools', () => {
   describe('triggerAgentVerifyTool', () => {
     it('should accept optional agentId parameter', async () => {
       const { triggerAgentVerifyTool } = await import('./restBrokerTools');
-      const validResult = triggerAgentVerifyTool.inputSchema.safeParse({ agentId: 'test-agent' });
+      const validResult = triggerAgentVerifyTool.parameters.safeParse({ agentId: 'test-agent' });
       expect(validResult.success).toBe(true);
     });
 
     it('should work without any parameters (verify all)', async () => {
       const { triggerAgentVerifyTool } = await import('./restBrokerTools');
-      const validResult = triggerAgentVerifyTool.inputSchema.safeParse({});
+      const validResult = triggerAgentVerifyTool.parameters.safeParse({});
       expect(validResult.success).toBe(true);
     });
   });

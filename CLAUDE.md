@@ -520,6 +520,39 @@ export const noParamTool = tool({
 - **ONLY use shot-scraper tools for screenshots** (`take_screenshot`, `check_screenshot_setup`)
 - **Use built-in web content tools** for web page reading (`read_web_page`, `summarize_web_page`)
 
+**CRITICAL RULE: NEVER MODIFY EXISTING TOOL SCHEMAS ACROSS THE CODEBASE**
+- **ONLY modify the specific tools you are asked to work on**
+- **NEVER change `inputSchema` to `parameters` (or vice versa) across existing tool files**
+- **NEVER make sweeping changes to tool definitions across multiple files**
+- When adding NEW tools to a file (e.g., `restBrokerTools.ts`), ONLY add the new tools
+- Do NOT modify any existing tools in the same file or other tool files
+- If there's a schema conversion bug, fix the WRAPPER (`instrumentedTool.ts`), NOT individual tools
+- When debugging tool issues, isolate the problem to specific tools - don't touch everything
+
+**Why This Matters:**
+- Changing tool schemas across the board breaks existing functionality
+- OpenAI/Anthropic APIs are sensitive to schema format changes
+- You've made this mistake MULTIPLE TIMES - learn from it
+- Most tool issues are in the conversion layer, NOT individual tool definitions
+
+**Examples:**
+```typescript
+// ✅ CORRECT - Adding new tools to existing file
+// In restBrokerTools.ts:
+export const existingTool = tool({ ... }); // DON'T TOUCH THIS
+
+// Add your NEW tools at the end:
+export const newTool1 = tool({ ... });
+export const newTool2 = tool({ ... });
+
+// ❌ WRONG - Modifying existing tools while adding new ones
+export const existingTool = tool({
+  parameters: z.object({}) // Changed inputSchema → parameters WRONG!
+});
+
+export const newTool1 = tool({ ... }); // Your new tool
+```
+
 ### Type System Rules
 
 **Rule 1: Never Create Custom Types When Library Types Exist**

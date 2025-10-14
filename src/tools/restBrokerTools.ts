@@ -66,7 +66,7 @@ async function brokerRequest<T>(
  */
 export const listAgentsTool = tool({
   description: 'List all registered agents in the REST broker. Returns agent details including status, health, and authentication state.',
-  parameters: z.object({
+  inputSchema: z.object({
     verifyAuth: z.boolean().optional().describe('Whether to trigger authentication verification before listing agents')
   }),
   execute: async ({ verifyAuth }) => {
@@ -104,7 +104,7 @@ export const listAgentsTool = tool({
  */
 export const getAgentTool = tool({
   description: 'Get detailed information about a specific agent including its configuration, status, health, and authentication state.',
-  parameters: z.object({
+  inputSchema: z.object({
     agentId: z.string().describe('The ID of the agent to retrieve')
   }),
   execute: async ({ agentId }) => {
@@ -154,7 +154,7 @@ export const getAgentTool = tool({
  */
 export const checkAgentHealthTool = tool({
   description: 'Perform a health check on a specific agent to verify it is responding correctly.',
-  parameters: z.object({
+  inputSchema: z.object({
     agentId: z.string().describe('The ID of the agent to health check')
   }),
   execute: async ({ agentId }) => {
@@ -187,7 +187,7 @@ export const checkAgentHealthTool = tool({
  */
 export const listJobsTool = tool({
   description: 'List jobs for a specific agent with optional filtering by status.',
-  parameters: z.object({
+  inputSchema: z.object({
     agentId: z.string().describe('The ID of the agent'),
     status: z.enum(['pending', 'running', 'completed', 'failed', 'cancelled']).optional().describe('Filter jobs by status'),
     limit: z.number().optional().default(50).describe('Maximum number of jobs to return (1-100)'),
@@ -230,7 +230,7 @@ export const listJobsTool = tool({
  */
 export const getJobTool = tool({
   description: 'Get detailed information about a specific job including its status, payload, and results.',
-  parameters: z.object({
+  inputSchema: z.object({
     agentId: z.string().describe('The ID of the agent'),
     jobId: z.string().describe('The ID of the job')
   }),
@@ -284,7 +284,7 @@ export const getJobTool = tool({
  */
 export const createJobTool = tool({
   description: 'Submit a new job to an agent. The job will be queued and executed by the agent. Returns the job ID for tracking.',
-  parameters: z.object({
+  inputSchema: z.object({
     agentId: z.string().describe('The ID of the agent to execute the job'),
     payload: z.any().describe('The job payload containing task details and parameters')
   }),
@@ -317,7 +317,7 @@ export const createJobTool = tool({
  */
 export const cancelJobTool = tool({
   description: 'Cancel a running or pending job. This is a destructive operation that requires confirmation.',
-  parameters: z.object({
+  inputSchema: z.object({
     agentId: z.string().describe('The ID of the agent'),
     jobId: z.string().describe('The ID of the job to cancel'),
     confirmed: z.boolean().optional().describe('Set to true to bypass confirmation (only after user explicitly confirms)')
@@ -392,7 +392,7 @@ export const cancelJobTool = tool({
  */
 export const markAgentAuthenticatedTool = tool({
   description: 'Mark a subscription agent as authenticated after the user completes the OAuth flow. This updates the agent health status.',
-  parameters: z.object({
+  inputSchema: z.object({
     agentId: z.string().describe('The ID of the subscription agent to mark as authenticated')
   }),
   execute: async ({ agentId }) => {
@@ -419,7 +419,7 @@ export const markAgentAuthenticatedTool = tool({
  */
 export const getAgentConnectCommandTool = tool({
   description: 'Get the Docker exec command to connect to an agent container. Automatically copies the command to the clipboard for easy use.',
-  parameters: z.object({
+  inputSchema: z.object({
     agentId: z.string().describe('The ID of the agent to connect to')
   }),
   execute: async ({ agentId }) => {
@@ -524,7 +524,7 @@ ${connectCommand}
  */
 export const scaleAgentClusterTool = tool({
   description: 'Scale the Docker agent cluster by adjusting the number of running instances for each agent type. Use presets (dev, team, heavy, minimal) or specify custom instance counts.',
-  parameters: z.object({
+  inputSchema: z.object({
     preset: z.enum(['dev', 'team', 'heavy', 'minimal', 'custom']).optional().describe('Scaling preset: dev (1 each), team (1 claude, 2 codex, 2 aider, 1 opencode), heavy (2 claude, 3 codex, 3 aider, 2 opencode), minimal (1 aider only)'),
     claudeCode: z.number().min(0).max(10).optional().describe('Number of Claude Code instances (0-10). Only used with preset=custom'),
     openaiCodex: z.number().min(0).max(10).optional().describe('Number of OpenAI Codex instances (0-10). Only used with preset=custom'),
