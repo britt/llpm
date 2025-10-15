@@ -13,7 +13,8 @@ import {
   listGitHubIssuesTool,
   updateGitHubIssueTool,
   commentOnGitHubIssueTool,
-  searchGitHubIssuesTool
+  searchGitHubIssuesTool,
+  getGitHubIssueWithCommentsTool
 } from './githubIssueTools';
 import {
   listGitHubPullRequestsTool,
@@ -36,20 +37,6 @@ import {
   getProjectFileInfo,
   findProjectFiles
 } from './filesystemTools';
-import {
-  listGitHubProjectsV2Tool,
-  createGitHubProjectV2Tool,
-  getGitHubProjectV2Tool,
-  updateGitHubProjectV2Tool,
-  deleteGitHubProjectV2Tool,
-  listGitHubProjectV2ItemsTool,
-  addGitHubProjectV2ItemTool,
-  removeGitHubProjectV2ItemTool,
-  updateGitHubProjectV2ItemFieldValueTool,
-  listGitHubProjectV2FieldsTool,
-  getGitHubOwnerIdTool,
-  getGitHubIssueNodeIdTool
-} from './githubProjectsTools';
 import {
   setProjectBoardTool,
   getProjectBoardInfoTool,
@@ -114,6 +101,7 @@ const toolRegistry: ToolRegistry = {
   update_github_issue: updateGitHubIssueTool,
   comment_on_github_issue: commentOnGitHubIssueTool,
   search_github_issues: searchGitHubIssuesTool,
+  get_github_issue_with_comments: getGitHubIssueWithCommentsTool,
   list_github_pull_requests: listGitHubPullRequestsTool,
   create_github_pull_request: createGitHubPullRequestTool,
   get_system_prompt: getSystemPromptTool,
@@ -130,19 +118,6 @@ const toolRegistry: ToolRegistry = {
   list_project_directory: listProjectDirectory,
   get_project_file_info: getProjectFileInfo,
   find_project_files: findProjectFiles,
-  // GitHub Projects (new Projects experience)
-  list_github_projects: listGitHubProjectsV2Tool,
-  create_github_project: createGitHubProjectV2Tool,
-  get_github_project: getGitHubProjectV2Tool,
-  update_github_project: updateGitHubProjectV2Tool,
-  delete_github_project: deleteGitHubProjectV2Tool,
-  list_github_project_items: listGitHubProjectV2ItemsTool,
-  add_github_project_item: addGitHubProjectV2ItemTool,
-  remove_github_project_item: removeGitHubProjectV2ItemTool,
-  update_github_project_item_field: updateGitHubProjectV2ItemFieldValueTool,
-  list_github_project_fields: listGitHubProjectV2FieldsTool,
-  get_github_owner_id: getGitHubOwnerIdTool,
-  get_github_issue_node_id: getGitHubIssueNodeIdTool,
   // Project Board Configuration
   set_project_board: setProjectBoardTool,
   get_project_board_info: getProjectBoardInfoTool,

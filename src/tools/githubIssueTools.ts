@@ -6,7 +6,8 @@ import {
   listIssues,
   updateIssue,
   commentOnIssue,
-  searchIssues
+  searchIssues,
+  getIssueWithComments
 } from '../services/github';
 import { autoAddToProjectBoard } from '../services/projectBoardIntegration';
 import { uploadFilesToGitHub } from '../services/githubAssets';
@@ -295,6 +296,65 @@ export const searchGitHubIssuesTool = tool({
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unknown error';
       debug('Error searching GitHub issues:', message);
+      return {
+        success: false,
+        error: message
+      };
+    }
+  }
+});
+
+export const getGitHubIssueWithCommentsTool = tool({
+  description: "Get a GitHub issue with all its comments from the active project's repository. Returns full issue details including metadata, body, and all comments with pagination support.",
+  inputSchema: z.object({
+    issueNumber: z.number().describe('The issue number to fetch'),
+    includeComments: z.boolean().optional().default(true).describe('Whether to include comments (default: true)'),
+    commentsPerPage: z.number().optional().default(100).describe('Number of comments per page (default: 100, max: 100)'),
+    page: z.number().optional().default(1).describe('Page number for comment pagination (default: 1)')
+  }),
+  execute: async ({ issueNumber, includeComments, commentsPerPage, page }) => {
+    try {
+      const { owner, repo, projectName } = await getProjectRepoInfo();
+      debug(`Fetching issue #${issueNumber} with comments from ${owner}/${repo} for project ${projectName}`);
+
+      const result = await getIssueWithComments(owner, repo, issueNumber, {
+        includeComments,
+        commentsPerPage,
+        page
+      });
+
+      return {
+        success: true,
+        message: `Fetched issue #${issueNumber} with ${result.comments.length} comments (page ${result.pagination.page})`,
+        issue: {
+          number: result.issue.number,
+          title: result.issue.title,
+          body: result.issue.body,
+          state: result.issue.state,
+          url: result.issue.html_url,
+          author: result.issue.user.login,
+          labels: result.issue.labels.map(label => label.name),
+          created: result.issue.created_at,
+          updated: result.issue.updated_at
+        },
+        comments: result.comments.map(comment => ({
+          id: comment.id,
+          body: comment.body,
+          author: comment.user.login,
+          url: comment.html_url,
+          created: comment.created_at,
+          updated: comment.updated_at
+        })),
+        pagination: {
+          page: result.pagination.page,
+          per_page: result.pagination.per_page,
+          total_comments: result.pagination.total,
+          has_next_page: result.pagination.has_next_page
+        }
+      };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      debug('Error fetching GitHub issue with comments:', message);
       return {
         success: false,
         error: message

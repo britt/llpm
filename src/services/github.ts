@@ -38,6 +38,19 @@ export interface GitHubIssue {
   updated_at: string;
 }
 
+export interface GitHubIssueComment {
+  id: number;
+  node_id: string;
+  body: string;
+  user: {
+    login: string;
+    html_url: string;
+  };
+  created_at: string;
+  updated_at: string;
+  html_url: string;
+}
+
 export interface GitHubPullRequest {
   id: number;
   number: number;
@@ -659,6 +672,153 @@ export async function commentOnIssue(
       throw new Error(`Failed to comment on GitHub issue: ${error.message}`);
     }
     throw new Error('Failed to comment on GitHub issue: Unknown error');
+  }
+}
+
+export async function getIssueWithComments(
+  owner: string,
+  repo: string,
+  issueNumber: number,
+  options: {
+    includeComments?: boolean;
+    commentsPerPage?: number;
+    page?: number;
+  } = {}
+): Promise<{
+  issue: GitHubIssue;
+  comments: GitHubIssueComment[];
+  pagination: {
+    page: number;
+    per_page: number;
+    total?: number;
+    has_next_page: boolean;
+  };
+}> {
+  debug('Fetching GitHub issue with comments:', owner, repo, issueNumber, options);
+
+  const { includeComments = true, commentsPerPage = 100, page = 1 } = options;
+
+  try {
+    await initializeOctokit();
+    const octokit = getOctokit();
+
+    // Fetch the issue
+    const issueParams = {
+      owner,
+      repo,
+      issue_number: issueNumber
+    };
+
+    if (getVerbose()) {
+      debug('🌐 GitHub API Call: GET /repos/:owner/:repo/issues/:issue_number');
+      debug('📋 Parameters:', JSON.stringify(issueParams, null, 2));
+    }
+
+    const { data: issueData } = await octokit.rest.issues.get(issueParams);
+
+    if (getVerbose()) {
+      debug('✅ GitHub API Response: issue fetched');
+      debug(
+        '📊 Response data:',
+        JSON.stringify(
+          {
+            number: issueData.number,
+            title: issueData.title,
+            state: issueData.state,
+            comments: issueData.comments
+          },
+          null,
+          2
+        )
+      );
+    }
+
+    const issue: GitHubIssue = {
+      id: issueData.id,
+      node_id: issueData.node_id,
+      number: issueData.number,
+      title: issueData.title,
+      body: issueData.body,
+      state: issueData.state as 'open' | 'closed',
+      html_url: issueData.html_url,
+      user: {
+        login: issueData.user?.login || 'unknown',
+        html_url: issueData.user?.html_url || ''
+      },
+      labels: issueData.labels.map((label: any) => ({
+        name: typeof label === 'string' ? label : label.name || '',
+        color: typeof label === 'string' ? '' : label.color || ''
+      })),
+      created_at: issueData.created_at,
+      updated_at: issueData.updated_at
+    };
+
+    let comments: GitHubIssueComment[] = [];
+    let totalComments = issueData.comments || 0;
+    let hasNextPage = false;
+
+    if (includeComments && totalComments > 0) {
+      const commentsParams = {
+        owner,
+        repo,
+        issue_number: issueNumber,
+        per_page: Math.min(commentsPerPage, 100),
+        page
+      };
+
+      if (getVerbose()) {
+        debug('🌐 GitHub API Call: GET /repos/:owner/:repo/issues/:issue_number/comments');
+        debug('📋 Parameters:', JSON.stringify(commentsParams, null, 2));
+      }
+
+      const { data: commentsData, headers } = await octokit.rest.issues.listComments(
+        commentsParams
+      );
+
+      if (getVerbose()) {
+        debug('✅ GitHub API Response: comments fetched');
+        debug('📊 Response data:', JSON.stringify({ count: commentsData.length }, null, 2));
+      }
+
+      comments = commentsData.map((comment) => ({
+        id: comment.id,
+        node_id: comment.node_id,
+        body: comment.body || '',
+        user: {
+          login: comment.user?.login || 'unknown',
+          html_url: comment.user?.html_url || ''
+        },
+        created_at: comment.created_at,
+        updated_at: comment.updated_at,
+        html_url: comment.html_url
+      }));
+
+      // Check if there are more pages
+      const linkHeader = headers.link;
+      if (linkHeader && linkHeader.includes('rel="next"')) {
+        hasNextPage = true;
+      }
+    }
+
+    return {
+      issue,
+      comments,
+      pagination: {
+        page,
+        per_page: commentsPerPage,
+        total: totalComments,
+        has_next_page: hasNextPage
+      }
+    };
+  } catch (error) {
+    debug(
+      'Error fetching GitHub issue with comments:',
+      error instanceof Error ? error.message : 'Unknown error'
+    );
+    if (error instanceof Error) {
+      throw new Error(`Failed to fetch GitHub issue with comments: ${error.message}`);
+    }
+    throw new Error('Failed to fetch GitHub issue with comments: Unknown error');
   }
 }
 

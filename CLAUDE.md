@@ -420,26 +420,10 @@ Assistant: I'll add a comment with the log file attached.
 - Create repositories: `gh repo create` command
 - Environment variable: `GITHUB_TOKEN` for authentication
 
-#### GitHub Projects v2 (Recommended)
-- **New Projects Experience**: Uses GraphQL API exclusively - no REST endpoints available
-- **Authentication**: Requires `GITHUB_TOKEN` with `project` scope (`gh auth login --scopes "project"`)
-- **Commands**: Use `/project-board` command for new Projects v2 management
-- **API Structure**: Projects → Items (issues/PRs/drafts) with custom Fields and Views
-- **Node IDs**: Uses GraphQL Global Node IDs (e.g., `gid://Project/123`) instead of numeric IDs
-- **Features**: More flexible than Classic with custom fields, multiple views, better integration
-
-#### GitHub Projects Classic (Deprecated)
-- **Legacy API**: GitHub is deprecating Projects Classic in favor of Projects v2
-- **REST API**: Due to API deprecation, newer Octokit versions don't include Projects endpoints
-- **Implementation**: We use `octokit.request()` for direct API calls to deprecated endpoints
-- **Commands**: `/project-board` command marked as deprecated
-- **Migration**: Users should migrate to Projects v2 (`/board`)
-
 #### Project Board Integration
 - **Automatic Linking**: Link LLPM projects with GitHub Project Boards for seamless integration
 - **Auto-Assignment**: Newly created issues/PRs are automatically added to the linked project board
 - **AI Tools**: Comprehensive AI tools for setting, viewing, and managing project board configurations
-- **Commands**: Use `/board` command for direct project board management
 - **Configuration**: Project board settings are stored in project metadata and persist across sessions
 
 AI Tools for Project Board Management:
@@ -447,15 +431,11 @@ AI Tools for Project Board Management:
 - `get_project_board_info`: View current project board configuration with optional validation
 - `remove_project_board`: Remove project board link from current project
 - `list_available_project_boards`: List all available project boards for an owner
-- `update_github_project_item_field`: Update field values for items in GitHub Project v2 boards (supports text, number, date, and single select fields)
 
 Example AI Usage:
 ```
 User: Link this project to GitHub project board #8 for user 'myorg'
 Assistant: I'll link your current project to the GitHub project board using the set_project_board tool.
-
-User: Update the priority field to "High" for item ABC123 in project XYZ789
-Assistant: I'll update the project item's priority field using the update_github_project_item_field tool.
 ```
 
 ### TypeScript Best Practices
@@ -669,7 +649,7 @@ This project follows semantic versioning (MAJOR.MINOR.PATCH):
 
 **When to Bump:**
 - **Always bump MINOR** for new features like:
-  - New slash commands (e.g., `/project-board`)
+  - New slash commands (e.g., `/credentials`)
   - New AI tools for LLM integration
   - New service integrations (GitHub, APIs)
   - New CLI functionality
@@ -683,7 +663,7 @@ This project follows semantic versioning (MAJOR.MINOR.PATCH):
   - Removing features/commands
   - Major refactoring that affects user workflows
 
-**Example**: Adding GitHub Projects integration with `/project-board` command and 15 new AI tools = MINOR version bump
+**Example**: Adding new AI tool with slash command interface = MINOR version bump
 
 ### Development Workflow
 
