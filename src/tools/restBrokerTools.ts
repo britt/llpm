@@ -672,7 +672,7 @@ ${result}
  */
 export const registerAgentTool = tool({
   description: 'Register a new agent with the REST broker. Allows creating new agent instances programmatically.',
-  parameters: z.object({
+  inputSchema: z.object({
     agentId: z.string().describe('Unique identifier for the agent'),
     name: z.string().describe('Human-readable name for the agent'),
     type: z.string().describe('Agent type (e.g., "claude-code", "openai-codex", "aider")'),
@@ -771,7 +771,7 @@ ${message}`;
  */
 export const deleteAgentTool = tool({
   description: 'Delete (deregister) an agent from the REST broker. This is a destructive operation that requires confirmation.',
-  parameters: z.object({
+  inputSchema: z.object({
     agentId: z.string().describe('The ID of the agent to delete'),
     confirmed: z.boolean().optional().describe('Set to true to bypass confirmation (only after user explicitly confirms)')
   }),
@@ -846,7 +846,7 @@ The agent has been removed from the REST broker.
  */
 export const updateAgentTool = tool({
   description: 'Update an agent\'s status and metadata via heartbeat. Use this to update agent state programmatically.',
-  parameters: z.object({
+  inputSchema: z.object({
     agentId: z.string().describe('The ID of the agent to update'),
     status: z.enum(['available', 'busy', 'offline']).optional().describe('New agent status'),
     metadata: z.record(z.any(), z.any()).optional().describe('Updated metadata for the agent')
@@ -920,7 +920,7 @@ The agent has been updated via heartbeat.
  */
 export const triggerAgentVerifyTool = tool({
   description: 'Trigger authentication verification for all agents. Useful for checking subscription agent authentication status.',
-  parameters: z.object({
+  inputSchema: z.object({
     agentId: z.string().optional().describe('Optional: verify specific agent only (if not provided, verifies all agents)')
   }),
   execute: async ({ agentId }) => {

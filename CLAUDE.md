@@ -474,37 +474,84 @@ Assistant: I'll update the project item's priority field using the update_github
 
 ### AI Tool Creation Rules
 
-**CRITICAL: Always Use `parameters` for AI Tools**
-- **NEVER use `inputSchema`** when creating tools with the `tool()` function from `ai` SDK
-- **ALWAYS use `parameters`** - this is required for proper Zod schema handling
-- **Check existing tools in the codebase** before creating new ones to follow the same pattern
+**CRITICAL: Always Use `inputSchema` for AI Tools**
+- **ALWAYS use `inputSchema`** when defining tools with our custom `tool()` wrapper
+- **NEVER use `parameters`** - AI SDK v5 expects `inputSchema` directly
+- Check existing tools in the codebase before creating new ones to follow the same pattern
+- Our instrumentedTool wrapper does NOT transform anything - it passes `inputSchema` directly to AI SDK
 
 ```typescript
-// ✅ CORRECT - Use parameters
+// ✅ CORRECT - Use inputSchema directly
 export const myTool = tool({
   description: 'Description of the tool',
-  parameters: z.object({
+  inputSchema: z.object({
     param: z.string().describe('Parameter description')
   }),
   execute: async ({ param }) => { ... }
 });
 
-// ❌ WRONG - Never use inputSchema
+// ❌ WRONG - Never use parameters
 export const myTool = tool({
   description: 'Description of the tool',
-  inputSchema: z.object({ ... }), // This will cause schema._zod errors
+  parameters: z.object({ ... }), // Don't use this!
   execute: async ({ param }) => { ... }
+});
+
+// For tools with NO parameters, use empty z.object({})
+export const noParamTool = tool({
+  description: 'Tool with no parameters',
+  inputSchema: z.object({}), // Empty schema
+  execute: async () => { ... }
 });
 ```
 
+**How It Works:**
+1. You define tools with `inputSchema` (what AI SDK expects)
+2. Our wrapper (`src/tools/instrumentedTool.ts`) adds logging but passes config through unchanged
+3. The AI SDK receives `inputSchema` directly
+4. Returned tool objects have `.inputSchema` property (use this in tests)
+
 **Why This Matters:**
-- Using `inputSchema` causes `"undefined is not an object (evaluating 'schema._zod')"` errors
-- The AI SDK v5 expects `parameters` to properly convert Zod schemas
-- This is a breaking error that prevents the LLM from using tools
+- AI SDK v5 expects `inputSchema` - using anything else causes JSON Schema conversion errors
+- OpenAI/Anthropic APIs require valid JSON Schema with `type: "object"`
+- Empty schemas `z.object({})` work correctly when passed as `inputSchema`
 
 **CRITICAL SCREENSHOT RULE:**
 - **ONLY use shot-scraper tools for screenshots** (`take_screenshot`, `check_screenshot_setup`)
 - **Use built-in web content tools** for web page reading (`read_web_page`, `summarize_web_page`)
+
+**CRITICAL RULE: NEVER MODIFY EXISTING TOOL SCHEMAS ACROSS THE CODEBASE**
+- **ONLY modify the specific tools you are asked to work on**
+- **NEVER change `inputSchema` to `parameters` (or vice versa) across existing tool files**
+- **NEVER make sweeping changes to tool definitions across multiple files**
+- When adding NEW tools to a file (e.g., `restBrokerTools.ts`), ONLY add the new tools
+- Do NOT modify any existing tools in the same file or other tool files
+- If there's a schema conversion bug, fix the WRAPPER (`instrumentedTool.ts`), NOT individual tools
+- When debugging tool issues, isolate the problem to specific tools - don't touch everything
+
+**Why This Matters:**
+- Changing tool schemas across the board breaks existing functionality
+- OpenAI/Anthropic APIs are sensitive to schema format changes
+- You've made this mistake MULTIPLE TIMES - learn from it
+- Most tool issues are in the conversion layer, NOT individual tool definitions
+
+**Examples:**
+```typescript
+// ✅ CORRECT - Adding new tools to existing file
+// In restBrokerTools.ts:
+export const existingTool = tool({ ... }); // DON'T TOUCH THIS
+
+// Add your NEW tools at the end:
+export const newTool1 = tool({ ... });
+export const newTool2 = tool({ ... });
+
+// ❌ WRONG - Modifying existing tools while adding new ones
+export const existingTool = tool({
+  parameters: z.object({}) // Changed inputSchema → parameters WRONG!
+});
+
+export const newTool1 = tool({ ... }); // Your new tool
+```
 
 ### Type System Rules
 
