@@ -11,7 +11,6 @@ import { modelCommand } from './model';
 import { notesCommand } from './notes';
 // Remove old separate commands - now integrated into project command
 // import { projectScanCommand } from './project-scan';
-// import { projectBoardCommand } from './project-board';
 import { credentialsCommand } from './credentials';
 import { agentsCommand } from './agents';
 import { jobsCommand } from './jobs';
@@ -29,7 +28,6 @@ const commandRegistry: CommandRegistry = {
   model: modelCommand,
   notes: notesCommand,
   // 'project-scan': projectScanCommand, // Now available as /project scan
-  // board: projectBoardCommand, // Now available as /project board
   credentials: credentialsCommand,
   agents: agentsCommand,
   jobs: jobsCommand
