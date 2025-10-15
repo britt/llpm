@@ -395,3 +395,6 @@ GITHUB_TOKEN=...                         # GitHub integration
 - **Current model selection** is automatically saved to `~/.llpm/model-config.json`
 - **Model switches persist** across LLPM restarts
 - **Default fallback** is GPT-4.1 Mini if configured, or first available model
+
+_This list is out of date_
+
