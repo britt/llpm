@@ -13,7 +13,8 @@ import {
   listGitHubIssuesTool,
   updateGitHubIssueTool,
   commentOnGitHubIssueTool,
-  searchGitHubIssuesTool
+  searchGitHubIssuesTool,
+  getGitHubIssueWithCommentsTool
 } from './githubIssueTools';
 import {
   listGitHubPullRequestsTool,
@@ -114,6 +115,7 @@ const toolRegistry: ToolRegistry = {
   update_github_issue: updateGitHubIssueTool,
   comment_on_github_issue: commentOnGitHubIssueTool,
   search_github_issues: searchGitHubIssuesTool,
+  get_github_issue_with_comments: getGitHubIssueWithCommentsTool,
   list_github_pull_requests: listGitHubPullRequestsTool,
   create_github_pull_request: createGitHubPullRequestTool,
   get_system_prompt: getSystemPromptTool,
