@@ -306,7 +306,7 @@ export const searchGitHubIssuesTool = tool({
 
 export const getGitHubIssueWithCommentsTool = tool({
   description: "Get a GitHub issue with all its comments from the active project's repository. Returns full issue details including metadata, body, and all comments with pagination support.",
-  parameters: z.object({
+  inputSchema: z.object({
     issueNumber: z.number().describe('The issue number to fetch'),
     includeComments: z.boolean().optional().default(true).describe('Whether to include comments (default: true)'),
     commentsPerPage: z.number().optional().default(100).describe('Number of comments per page (default: 100, max: 100)'),

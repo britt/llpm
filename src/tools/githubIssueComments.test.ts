@@ -19,19 +19,19 @@ describe('getGitHubIssueWithCommentsTool', () => {
   });
 
   it('should have correct schema properties', () => {
-    expect(getGitHubIssueWithCommentsTool.parameters).toBeDefined();
+    expect(getGitHubIssueWithCommentsTool.inputSchema).toBeDefined();
     expect(getGitHubIssueWithCommentsTool.description).toContain('issue with all its comments');
   });
 
   it('should validate required parameters', () => {
-    const validResult = getGitHubIssueWithCommentsTool.parameters.safeParse({
+    const validResult = getGitHubIssueWithCommentsTool.inputSchema.safeParse({
       issueNumber: 123
     });
     expect(validResult.success).toBe(true);
   });
 
   it('should validate optional parameters', () => {
-    const validResult = getGitHubIssueWithCommentsTool.parameters.safeParse({
+    const validResult = getGitHubIssueWithCommentsTool.inputSchema.safeParse({
       issueNumber: 123,
       includeComments: false,
       commentsPerPage: 50,
@@ -41,7 +41,7 @@ describe('getGitHubIssueWithCommentsTool', () => {
   });
 
   it('should reject invalid issue number', () => {
-    const invalidResult = getGitHubIssueWithCommentsTool.parameters.safeParse({
+    const invalidResult = getGitHubIssueWithCommentsTool.inputSchema.safeParse({
       issueNumber: 'not-a-number'
     });
     expect(invalidResult.success).toBe(false);
