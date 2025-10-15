@@ -325,14 +325,6 @@ export const projectCommand: Command = {
 **Project Analysis:**
 • /project scan - Analyze the current project codebase and generate a summary
 
-**GitHub Project Boards:**
-• /project board <subcommand> - Manage GitHub Projects v2 (new Projects experience)
-• /project board list <owner> - List projects for user/organization
-• /project board create <owner> <title> [description] - Create a new project
-• /project board get <owner> <number> - Get project details by number
-• /project board items <project_id> - List items in a project
-• /project board add-item <project_id> <content_id> - Add issue/PR to project
-
 ⌨️ Quick Actions:
 • Shift+Tab - Interactive project selector
 
@@ -345,9 +337,7 @@ export const projectCommand: Command = {
 • /project add "My App" "user/my-app" "/path/to/project" "Task manager"
 • /project add "Web App" "https://github.com/user/webapp" "/path/to/webapp"
 • /project switch my-app-123
-• /project scan
-• /project board list myorg
-• /project board create myorg "My Project"`,
+• /project scan`,
           success: true
         };
       }
