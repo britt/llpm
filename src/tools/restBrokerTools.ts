@@ -10,6 +10,7 @@ import { tool } from './instrumentedTool';
 import { z } from 'zod';
 import { requiresConfirmation, formatConfirmationPrompt } from '../utils/toolConfirmation';
 import { auditToolCall } from '../utils/toolAudit';
+import { debug } from '../utils/logger';
 import { exec } from 'child_process';
 import { promisify } from 'util';
 
@@ -435,51 +436,29 @@ export const getAgentConnectCommandTool = tool({
     }
 
     // Try to find the actual container name from docker ps
+    // Use docker ps --filter to find containers matching the agentId pattern
+    // This works with any compose project name (docker, myproject, etc.)
     let containerName = agentId;
     try {
-      // Get all running container names
-      const { stdout } = await execAsync('docker ps --format "{{.Names}}"');
-      const runningContainers = stdout.trim().split('\n').filter(Boolean);
-      debug(`Container lookup for ${agentId}: found containers:`, runningContainers);
+      // Search for containers with names containing the agentId
+      // This handles docker-compose prefixes like: docker-claude-code-1, myproject-claude-code-1, etc.
+      const { stdout } = await execAsync(`docker ps --filter "name=${agentId}" --format "{{.Names}}"`);
+      const matchingContainers = stdout.trim().split('\n').filter(Boolean);
 
-      // Common container naming patterns to search for (in priority order)
-      // Prioritize docker-prefixed containers over raw agent IDs
-      const possibleNames = [
-        `docker-${agentId}`,              // docker-claude-code-3
-        `docker-${agentId}-1`,            // docker-claude-code-3-1
-        `docker_${agentId}_1`,            // docker_claude-code-3_1
-        `${agentId}-1`,                   // claude-code-3-1
-        agentId                           // claude-code-3 (fallback)
-      ];
-      debug(`Checking possible names:`, possibleNames);
+      if (matchingContainers.length > 0) {
+        // Prefer exact matches or compose-style matches
+        // Priority: exact match > *-agentId-1 > *-agentId > agentId
+        const exactMatch = matchingContainers.find(name => name === agentId);
+        const composeSuffixMatch = matchingContainers.find(name => name.endsWith(`-${agentId}-1`));
+        const composeMatch = matchingContainers.find(name => name.endsWith(`-${agentId}`));
 
-      // Try exact matches first
-      for (const name of possibleNames) {
-        if (runningContainers.includes(name)) {
-          debug(`Found matching container: ${name}`);
-          containerName = name;
-          break;
-        }
-      }
-
-      if (containerName === agentId) {
-        debug(`No exact match found, using agentId as fallback: ${agentId}`);
-      }
-
-      // If no exact match found, try to find by agent type and number
-      // For agent ID like "claude-code-3", try to find "docker-claude-code-3"
-      if (containerName === agentId) {
-        const match = agentId.match(/^(.+?)-(\d+)$/);
-        if (match) {
-          const [, baseType, instanceNum] = match;
-          // Look for docker-{baseType}-{instanceNum}
-          const dockerPattern = `docker-${baseType}-${instanceNum}`;
-          if (runningContainers.includes(dockerPattern)) {
-            containerName = dockerPattern;
-          }
-        }
+        containerName = exactMatch || composeSuffixMatch || composeMatch || matchingContainers[0];
+        debug(`Found container for ${agentId}: ${containerName} (from ${matchingContainers.length} matches)`);
+      } else {
+        debug(`No containers found matching ${agentId}, using agentId as fallback`);
       }
     } catch (error) {
+      debug(`Docker command failed: ${error instanceof Error ? error.message : String(error)}`);
       // If docker command fails, just use the agentId as fallback
     }
 
