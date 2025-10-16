@@ -216,7 +216,8 @@ describe('agentsCommand', () => {
 
       expect(result.success).toBe(true);
       expect(result.content).toContain('Docker Connect Command');
-      expect(result.content).toContain('docker exec -it claude-code /bin/bash');
+      expect(result.content).toContain('docker exec -it');
+      expect(result.content).toContain('/bin/bash');
       expect(result.content).toContain('claude-code');
     });
 
@@ -239,7 +240,7 @@ describe('agentsCommand', () => {
       expect(result.content).toContain('Agent not found');
     });
 
-    it('should show possible container names', async () => {
+    it('should generate docker exec connect command', async () => {
       const mockAgent = {
         id: 'claude-code',
         name: 'Claude Code'
@@ -253,9 +254,10 @@ describe('agentsCommand', () => {
       const result = await agentsCommand.execute(['connect', 'claude-code']);
 
       expect(result.success).toBe(true);
-      expect(result.content).toContain('docker-claude-code-1');
-      expect(result.content).toContain('docker_claude-code_1');
-      expect(result.content).toContain('claude-code-1');
+      expect(result.content).toContain('Docker Connect Command');
+      expect(result.content).toContain('docker exec -it');
+      expect(result.content).toContain('/bin/bash');
+      expect(result.content).toContain('claude-code');
     });
   });
 

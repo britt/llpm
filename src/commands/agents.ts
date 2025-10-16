@@ -196,16 +196,32 @@ export const agentsCommand: Command = {
           };
         }
 
-        // Try to find matching Docker container
+        // Try to find the actual container name from docker ps
+        // Use docker ps --filter to find containers matching the agentId pattern
+        // This works with any compose project name (docker, myproject, etc.)
         let containerName = agentId;
+        try {
+          // Search for containers with names containing the agentId
+          // This handles docker-compose prefixes like: docker-claude-code-1, myproject-claude-code-1, etc.
+          const { stdout } = await execAsync(`docker ps --filter "name=${agentId}" --format "{{.Names}}"`);
+          const matchingContainers = stdout.trim().split('\n').filter(Boolean);
 
-        // Common container naming patterns
-        const possibleNames = [
-          agentId,
-          `docker-${agentId}-1`,
-          `docker_${agentId}_1`,
-          `${agentId}-1`
-        ];
+          if (matchingContainers.length > 0) {
+            // Prefer exact matches or compose-style matches
+            // Priority: exact match > *-agentId-1 > *-agentId > agentId
+            const exactMatch = matchingContainers.find(name => name === agentId);
+            const composeSuffixMatch = matchingContainers.find(name => name.endsWith(`-${agentId}-1`));
+            const composeMatch = matchingContainers.find(name => name.endsWith(`-${agentId}`));
+
+            containerName = exactMatch || composeSuffixMatch || composeMatch || matchingContainers[0];
+            debug(`Found container for ${agentId}: ${containerName} (from ${matchingContainers.length} matches)`);
+          } else {
+            debug(`No containers found matching ${agentId}, using agentId as fallback`);
+          }
+        } catch (error) {
+          debug(`Docker command failed: ${error instanceof Error ? error.message : String(error)}`);
+          // If docker command fails, just use the agentId as fallback
+        }
 
         const connectCommand = `docker exec -it ${containerName} /bin/bash`;
 
@@ -223,8 +239,7 @@ ${connectCommand}
 **Agent**: ${agent.name} (${agentId})
 **Container**: ${containerName}
 
-💡 The command has been copied to your clipboard. Just paste and run!
-💡 Common container names to try: ${possibleNames.join(', ')}
+✅ The command has been copied to your clipboard. Just paste and run!
 
 **Note**: If the container name doesn't match, run \`docker ps\` to see available containers.`,
             success: true
@@ -242,7 +257,6 @@ ${connectCommand}
 
 ⚠️  Could not copy to clipboard automatically.
 💡 Copy the command above and run it in your terminal.
-💡 Common container names to try: ${possibleNames.join(', ')}
 
 **Note**: If the container name doesn't match, run \`docker ps\` to see available containers.`,
             success: true
