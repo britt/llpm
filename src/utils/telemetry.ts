@@ -23,10 +23,11 @@ let isInitialized = false;
  */
 export function initializeTelemetry(config?: Partial<TelemetryConfig>): NodeSDK | null {
   // Check if telemetry is enabled via environment variable or config
-  const enabled = config?.enabled ?? process.env.LLPM_TELEMETRY_ENABLED === '1';
+  // Defaults to enabled unless explicitly disabled
+  const enabled = config?.enabled ?? process.env.LLPM_TELEMETRY_ENABLED !== '0';
 
   if (!enabled) {
-    logDebug('OpenTelemetry disabled - set LLPM_TELEMETRY_ENABLED=1 to enable');
+    logDebug('OpenTelemetry disabled - set LLPM_TELEMETRY_ENABLED=1 to re-enable');
     return null;
   }
 
