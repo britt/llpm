@@ -76,34 +76,43 @@ interface ProcessedLog {
 }
 
 const MAX_VISIBLE_LOGS = 4;
+const MAX_OTHER_LOGS = 3; // Reserve 1 slot for LLM call
 
 // Create placeholder entries
-function createPlaceholder(index: number): ProcessedLog {
+function createPlaceholder(index: number, isLLM: boolean = false): ProcessedLog {
   return {
-    key: `placeholder_${index}`,
-    step: 'placeholder',
+    key: `placeholder_${isLLM ? 'llm' : index}`,
+    step: isLLM ? 'llm_call' : 'placeholder',
     status: 'placeholder',
-    orderIndex: index
+    orderIndex: isLLM ? -1 : index
   };
 }
 
+function isLLMCall(step: string): boolean {
+  return step === 'llm_call';
+}
+
 export function RequestLogDisplay() {
-  // Initialize with 4 placeholder entries
+  // Initialize with 1 LLM placeholder and 3 other placeholders
   const initialLogs = new Map<string, ProcessedLog>();
-  for (let i = 0; i < MAX_VISIBLE_LOGS; i++) {
+  const llmPlaceholder = createPlaceholder(0, true);
+  initialLogs.set(llmPlaceholder.key, llmPlaceholder);
+
+  for (let i = 0; i < MAX_OTHER_LOGS; i++) {
     const placeholder = createPlaceholder(i);
     initialLogs.set(placeholder.key, placeholder);
   }
 
   const [processedLogs, setProcessedLogs] = useState<Map<string, ProcessedLog>>(initialLogs);
   const logMapRef = useRef<Map<string, ProcessedLog>>(initialLogs);
-  const orderCounterRef = useRef(MAX_VISIBLE_LOGS);
+  const orderCounterRef = useRef(MAX_OTHER_LOGS);
 
   useEffect(() => {
     const handleLog = (log: LogEntry) => {
       // Create a normalized key - use just the step name without request ID
       // since there's typically only one request in flight
       const stepKey = log.step;
+      const isLLM = isLLMCall(log.step);
 
       if (log.phase === 'start') {
         // Check if this step already exists and is running
@@ -114,27 +123,39 @@ export function RequestLogDisplay() {
         if (!existing) {
           // Add new running log
           const newLog: ProcessedLog = {
-            key: `${stepKey}_${orderCounterRef.current++}`,
+            key: `${stepKey}_${isLLM ? 'current' : orderCounterRef.current++}`,
             step: log.step,
             status: 'running',
             metadata: log.metadata,
-            orderIndex: orderCounterRef.current
+            orderIndex: isLLM ? -1 : orderCounterRef.current // LLM always at top (order -1)
           };
 
-          // Get current entries sorted by order
-          const entries = Array.from(logMapRef.current.entries())
-            .sort((a, b) => a[1].orderIndex - b[1].orderIndex);
+          if (isLLM) {
+            // Replace LLM placeholder or existing LLM entry
+            const llmEntry = Array.from(logMapRef.current.entries()).find(
+              ([_, l]) => isLLMCall(l.step)
+            );
+            if (llmEntry) {
+              logMapRef.current.delete(llmEntry[0]);
+            }
+            logMapRef.current.set(newLog.key, newLog);
+          } else {
+            // Get current non-LLM entries sorted by order
+            const entries = Array.from(logMapRef.current.entries())
+              .filter(([_, l]) => !isLLMCall(l.step))
+              .sort((a, b) => a[1].orderIndex - b[1].orderIndex);
 
-          // If we have a placeholder, replace it
-          const placeholderEntry = entries.find(([_, log]) => log.status === 'placeholder');
-          if (placeholderEntry) {
-            logMapRef.current.delete(placeholderEntry[0]);
-          } else if (entries.length >= MAX_VISIBLE_LOGS) {
-            // Remove the oldest entry (first in the sorted array)
-            logMapRef.current.delete(entries[0][0]);
+            // If we have a placeholder, replace it
+            const placeholderEntry = entries.find(([_, log]) => log.status === 'placeholder');
+            if (placeholderEntry) {
+              logMapRef.current.delete(placeholderEntry[0]);
+            } else if (entries.length >= MAX_OTHER_LOGS) {
+              // Remove the oldest non-LLM entry (first in the sorted array)
+              logMapRef.current.delete(entries[0][0]);
+            }
+
+            logMapRef.current.set(newLog.key, newLog);
           }
-
-          logMapRef.current.set(newLog.key, newLog);
         }
       } else if (log.phase === 'end') {
         // Find the matching running log for this step
@@ -157,28 +178,40 @@ export function RequestLogDisplay() {
         } else {
           // If no matching start found, create a new completed entry
           const newLog: ProcessedLog = {
-            key: `${stepKey}_${orderCounterRef.current++}`,
+            key: `${stepKey}_${isLLM ? 'current' : orderCounterRef.current++}`,
             step: log.step,
             status: 'completed',
             duration: log.duration,
             metadata: log.metadata,
-            orderIndex: orderCounterRef.current
+            orderIndex: isLLM ? -1 : orderCounterRef.current
           };
 
-          // Get current entries sorted by order
-          const entries = Array.from(logMapRef.current.entries())
-            .sort((a, b) => a[1].orderIndex - b[1].orderIndex);
+          if (isLLM) {
+            // Replace LLM placeholder or existing LLM entry
+            const llmEntry = Array.from(logMapRef.current.entries()).find(
+              ([_, l]) => isLLMCall(l.step)
+            );
+            if (llmEntry) {
+              logMapRef.current.delete(llmEntry[0]);
+            }
+            logMapRef.current.set(newLog.key, newLog);
+          } else {
+            // Get current non-LLM entries sorted by order
+            const entries = Array.from(logMapRef.current.entries())
+              .filter(([_, l]) => !isLLMCall(l.step))
+              .sort((a, b) => a[1].orderIndex - b[1].orderIndex);
 
-          // If we have a placeholder, replace it
-          const placeholderEntry = entries.find(([_, log]) => log.status === 'placeholder');
-          if (placeholderEntry) {
-            logMapRef.current.delete(placeholderEntry[0]);
-          } else if (entries.length >= MAX_VISIBLE_LOGS) {
-            // Remove the oldest entry (first in the sorted array)
-            logMapRef.current.delete(entries[0][0]);
+            // If we have a placeholder, replace it
+            const placeholderEntry = entries.find(([_, log]) => log.status === 'placeholder');
+            if (placeholderEntry) {
+              logMapRef.current.delete(placeholderEntry[0]);
+            } else if (entries.length >= MAX_OTHER_LOGS) {
+              // Remove the oldest non-LLM entry (first in the sorted array)
+              logMapRef.current.delete(entries[0][0]);
+            }
+
+            logMapRef.current.set(newLog.key, newLog);
           }
-
-          logMapRef.current.set(newLog.key, newLog);
         }
       }
 
@@ -187,15 +220,19 @@ export function RequestLogDisplay() {
     };
 
     const handleClear = () => {
-      // Reset to placeholders
+      // Reset to 1 LLM placeholder and 3 other placeholders
       const initialLogs = new Map<string, ProcessedLog>();
-      for (let i = 0; i < MAX_VISIBLE_LOGS; i++) {
+      const llmPlaceholder = createPlaceholder(0, true);
+      initialLogs.set(llmPlaceholder.key, llmPlaceholder);
+
+      for (let i = 0; i < MAX_OTHER_LOGS; i++) {
         const placeholder = createPlaceholder(i);
         initialLogs.set(placeholder.key, placeholder);
       }
+
       logMapRef.current = initialLogs;
       setProcessedLogs(initialLogs);
-      orderCounterRef.current = MAX_VISIBLE_LOGS;
+      orderCounterRef.current = MAX_OTHER_LOGS;
     };
 
     loggerRegistry.addLogListener(handleLog);
@@ -223,10 +260,11 @@ export function RequestLogDisplay() {
 function renderProcessedLog(log: ProcessedLog) {
   // Handle placeholder entries
   if (log.status === 'placeholder') {
+    const label = isLLMCall(log.step) ? 'LLM call' : '...';
     return (
       <Task
         key={log.key}
-        label="..."
+        label={label}
         state="pending"
       />
     );
