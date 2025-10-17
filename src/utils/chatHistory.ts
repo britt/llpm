@@ -48,6 +48,21 @@ async function ensureProjectDir(projectId: string): Promise<void> {
   }
 }
 
+// Track pending save operations to ensure they complete before exit
+let pendingSave: Promise<void> | null = null;
+
+/**
+ * Wait for any pending save operations to complete
+ * Should be called before process exit to ensure chat history is saved
+ */
+export async function flushChatHistory(): Promise<void> {
+  if (pendingSave) {
+    debug('Waiting for pending chat history save to complete');
+    await pendingSave;
+    debug('Pending chat history save completed');
+  }
+}
+
 export async function loadChatHistory(): Promise<Message[]> {
   debug('Loading chat history from disk');
   RequestContext.logStep('chat_history_load', 'start', 'debug');
@@ -129,7 +144,8 @@ export async function saveChatHistory(messages: Message[]): Promise<void> {
     messageCount: messages.length
   });
 
-  return traced('fs.saveChatHistory', {
+  // Track this save operation so it can be awaited before exit
+  const saveOperation = traced('fs.saveChatHistory', {
     attributes: {
       'messages.count': messages.length
     }
@@ -188,6 +204,16 @@ export async function saveChatHistory(messages: Message[]): Promise<void> {
       throw error; // Re-throw for traced() to record
     }
   });
+
+  // Track the pending save operation
+  pendingSave = saveOperation;
+
+  // Clear the pending save when it completes
+  try {
+    await saveOperation;
+  } finally {
+    pendingSave = null;
+  }
 }
 
 export async function clearChatHistory(): Promise<void> {

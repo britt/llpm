@@ -1,10 +1,11 @@
 import type { Command, CommandResult } from './types';
 import { debug } from '../utils/logger';
+import { flushChatHistory } from '../utils/chatHistory';
 
 export const quitCommand: Command = {
   name: 'quit',
   description: 'Exit the application',
-  execute: (args: string[] = []): CommandResult => {
+  execute: async (args: string[] = []): Promise<CommandResult> => {
     debug('Executing /quit command with args:', args);
 
     // Handle help subcommand
@@ -25,13 +26,16 @@ Safely exits LLPM. Your conversation history and project settings are automatica
 
     const message = '✌️ Peace out!';
 
-    // Exit after a short delay to allow the message to be displayed
+    // Exit after ensuring chat history is saved
     // Skip process.exit in test environments or when vitest is running
-    if (process.env.NODE_ENV !== 'test' && 
-        process.env.CI !== 'true' && 
-        typeof global !== 'undefined' && 
+    if (process.env.NODE_ENV !== 'test' &&
+        process.env.CI !== 'true' &&
+        typeof global !== 'undefined' &&
         !('__vitest_worker__' in global)) {
-      setTimeout(() => {
+      // Wait for any pending saves to complete before exiting
+      setTimeout(async () => {
+        debug('Flushing chat history before exit');
+        await flushChatHistory();
         debug('Exiting application');
         process.exit(0);
       }, 100);
