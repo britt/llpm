@@ -45,6 +45,7 @@ This means:
 - ❌ HTTP requests are NOT automatically traced
 - ❌ File system operations are NOT automatically traced
 - ✅ Manual tracing works perfectly
+- ✅ Vercel AI SDK built-in telemetry works perfectly (enabled via `experimental_telemetry`)
 
 ## Instrumented Operations
 
@@ -57,6 +58,8 @@ LLPM has comprehensive tracing built into the following operations:
   - All child operations automatically nest under this span
 
 ### LLM Interactions
+
+**Manual Tracing:**
 - **llm.generateResponse** - Traces AI model calls with:
   - Model provider and name
   - Token usage (prompt, completion, total)
@@ -66,6 +69,30 @@ LLPM has comprehensive tracing built into the following operations:
   - List of unique tools called
   - Response length
   - Error handling
+
+**Vercel AI SDK Built-in Telemetry:**
+
+LLPM enables Vercel AI SDK's experimental OpenTelemetry support for automatic tracing of:
+
+- **ai.generateText** (functionId: `llpm.generateResponse`) - Captures:
+  - Model configuration and settings
+  - Token usage and costs
+  - Individual reasoning steps
+  - Tool call executions and results
+  - Timing for each phase (prompt, execution, completion)
+
+- **ai.streamText** (functionId: `llpm.streamResponse`) - Captures:
+  - Streaming chunks and timing
+  - Model configuration
+  - Message flow
+
+- **ai.embed** (functionId: `llpm.generateEmbedding`) - Captures:
+  - Embedding model details
+  - Input text length
+  - Embedding dimensions
+  - Token usage
+
+All AI SDK spans automatically nest under their parent spans (e.g., `llm.generateResponse`) for complete visibility in Jaeger flame graphs.
 
 ### Tool Executions
 - **tool.[tool_name]** - Every tool execution is traced with:

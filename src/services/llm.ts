@@ -5,7 +5,7 @@ import { getToolRegistry } from '../tools/registry';
 import { getSystemPrompt } from '../utils/systemPrompt';
 import { modelRegistry } from './modelRegistry';
 import { RequestContext } from '../utils/requestContext';
-import { traced } from '../utils/tracing';
+import { traced, getTracer } from '../utils/tracing';
 
 const MAX_STEPS = 10;
 
@@ -62,7 +62,17 @@ export async function generateResponse(messages: Message[]): Promise<string> {
         messages: allMessages,
         tools,
         toolChoice: 'auto',
-        stopWhen: [stepCountIs(MAX_STEPS)]
+        stopWhen: [stepCountIs(MAX_STEPS)],
+        experimental_telemetry: {
+          isEnabled: true,
+          tracer: getTracer(),
+          functionId: 'llpm.generateResponse',
+          metadata: {
+            provider: currentModel.provider,
+            model: currentModel.modelId,
+            toolCount: toolCount
+          }
+        }
       });
 
       // Log LLM call end with token counts if available
@@ -157,13 +167,23 @@ export async function* streamResponse(messages: ModelMessage[]) {
   try {
     const model = await modelRegistry.createLanguageModel();
     const currentModel = modelRegistry.getCurrentModel();
-    
+
     // Log streaming LLM call start
     RequestContext.logLLMCall('start', `${currentModel.provider}/${currentModel.modelId}`);
-    
+
     const { textStream } = await streamText({
       model,
-      messages
+      messages,
+      experimental_telemetry: {
+        isEnabled: true,
+        tracer: getTracer(),
+        functionId: 'llpm.streamResponse',
+        metadata: {
+          provider: currentModel.provider,
+          model: currentModel.modelId,
+          messageCount: messages.length
+        }
+      }
     });
 
     for await (const delta of textStream) {

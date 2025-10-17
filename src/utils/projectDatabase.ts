@@ -7,7 +7,7 @@ import { debug } from './logger';
 import { modelRegistry } from '../services/modelRegistry';
 import type { Project } from '../types/project';
 import { RequestContext } from './requestContext';
-import { traced } from './tracing';
+import { traced, getTracer } from './tracing';
 
 interface ProjectNote {
   id: number;
@@ -147,6 +147,16 @@ export class ProjectDatabase {
             dimensions: 1536
           }),
           value: text,
+          experimental_telemetry: {
+            isEnabled: true,
+            tracer: getTracer(),
+            functionId: 'llpm.generateEmbedding',
+            metadata: {
+              textLength: text.length,
+              dimensions: 1536,
+              model: 'text-embedding-3-small'
+            }
+          }
         });
         
         const embedding = new Float32Array(result.embedding);
