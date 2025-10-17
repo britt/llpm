@@ -44,6 +44,12 @@ export function initializeTelemetry(config?: Partial<TelemetryConfig>): NodeSDK 
 
   logDebug(`Initializing OpenTelemetry SDK for ${serviceName}@${serviceVersion}`);
   logDebug(`OTLP endpoint: ${otlpEndpoint}`);
+  logDebug(`Runtime: ${typeof Bun !== 'undefined' ? 'Bun' : 'Node.js'}`);
+
+  // Warning: Auto-instrumentations only work with Node.js
+  if (typeof Bun !== 'undefined') {
+    logDebug('WARNING: Running in Bun - auto-instrumentations may not work. Use manual tracing with traced() from utils/tracing.ts');
+  }
 
   try {
     // Create resource with service information
@@ -126,4 +132,27 @@ export function getTelemetrySDK(): NodeSDK | null {
  */
 export function isTelemetryInitialized(): boolean {
   return isInitialized;
+}
+
+/**
+ * Send a test trace to verify connectivity
+ */
+export async function sendTestTrace(): Promise<void> {
+  if (!isInitialized) {
+    logDebug('Telemetry not initialized, skipping test trace');
+    return;
+  }
+
+  const { trace, SpanStatusCode } = await import('@opentelemetry/api');
+  const tracer = trace.getTracer('llpm', '0.13.0');
+
+  const span = tracer.startSpan('llpm.startup');
+  span.setAttribute('test', true);
+  span.setAttribute('runtime', typeof Bun !== 'undefined' ? 'bun' : 'node');
+  span.setStatus({ code: SpanStatusCode.OK });
+  span.end();
+
+  // Give the SDK time to export the trace
+  await new Promise(resolve => setTimeout(resolve, 100));
+  logDebug('Test trace sent');
 }
