@@ -120,8 +120,9 @@ if (import.meta.main) {
     debug('Raw mode supported, rendering React app');
 
     // Enter alternate screen buffer for clean isolated screen
-    const enterAltScreen = '\x1b[?1049h';
-    const exitAltScreen = '\x1b[?1049l';
+    // Use ?47h instead of ?1049h - it preserves scrollback better
+    const enterAltScreen = '\x1b[?47h\x1b[?1047h';
+    const exitAltScreen = '\x1b[?1047l\x1b[?47l';
 
     // Disable all mouse reporting modes
     // This ensures mouse scrolling is handled by the terminal, not sent as events
