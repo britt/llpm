@@ -14,8 +14,28 @@ export interface LocalProviderConfig {
   batchSize: number;
 }
 
+// Check for venv Python first, then fall back to system Python
+function getDefaultPythonPath(): string {
+  if (process.env.EMBEDDINGS_PYTHON) {
+    return process.env.EMBEDDINGS_PYTHON;
+  }
+
+  // Try venv Python first
+  const venvPython = join(process.cwd(), 'scripts', 'embeddings', 'venv', 'bin', 'python');
+  try {
+    const fs = require('fs');
+    if (fs.existsSync(venvPython)) {
+      return venvPython;
+    }
+  } catch (e) {
+    // Fall through to system python
+  }
+
+  return 'python3';
+}
+
 const DEFAULT_CONFIG: LocalProviderConfig = {
-  pythonPath: process.env.EMBEDDINGS_PYTHON || 'python3',
+  pythonPath: getDefaultPythonPath(),
   scriptPath: join(process.cwd(), 'scripts', 'embeddings', 'generate.py'),
   timeout: 60000, // 60 seconds (model loading takes time)
   batchSize: 32

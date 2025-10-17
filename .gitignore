@@ -46,3 +46,7 @@ ollama-data/
 
 # Docker compose override (auto-generated)
 docker/docker-compose.override.yml
+
+# Python virtual environment (embeddings)
+scripts/embeddings/venv/
+scripts/embeddings/__pycache__/

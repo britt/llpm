@@ -28,16 +28,29 @@ This provides local embeddings as an alternative to OpenAI's embeddings API, ena
 ./scripts/embeddings/setup.sh
 ```
 
-This installs:
-- `torch` (PyTorch)
-- `transformers` (Hugging Face)
+This will:
+- Create a Python virtual environment at `scripts/embeddings/venv/`
+- Install `torch` (PyTorch) and `transformers` (Hugging Face) in the venv
+- Isolate dependencies from your system Python
 
 The model (~420MB) will be downloaded automatically on first use.
+
+**Why a virtual environment?**
+- Keeps dependencies isolated from system Python
+- Prevents conflicts with other Python projects
+- Easy to remove (just delete the `venv/` directory)
 
 ### 2. Test the Setup
 
 ```bash
-echo '{"input": ["test"]}' | python3 scripts/embeddings/generate.py
+echo '{"input": ["test"]}' | scripts/embeddings/venv/bin/python scripts/embeddings/generate.py
+```
+
+Or if you prefer to activate the venv:
+```bash
+source scripts/embeddings/venv/bin/activate
+echo '{"input": ["test"]}' | python scripts/embeddings/generate.py
+deactivate
 ```
 
 Expected output:
@@ -117,14 +130,20 @@ EMBEDDINGS_PYTHON=/path/to/python3
 
 ## How It Works
 
-1. TypeScript spawns a Python subprocess
-2. Sends JSON input via stdin: `{"input": ["text1", "text2"]}`
-3. Python loads the model (cached after first load)
-4. Generates embeddings with mean pooling + L2 normalization
-5. Returns JSON via stdout: `{"embeddings": [[...]], "model": "...", "dimension": 768}`
-6. TypeScript parses output and converts to `Float32Array`
+1. TypeScript detects Python (checks venv first, then system Python)
+2. Spawns a Python subprocess with the detected Python
+3. Sends JSON input via stdin: `{"input": ["text1", "text2"]}`
+4. Python loads the model (cached after first load)
+5. Generates embeddings with mean pooling + L2 normalization
+6. Returns JSON via stdout: `{"embeddings": [[...]], "model": "...", "dimension": 768}`
+7. TypeScript parses output and converts to `Float32Array`
 
 The Python process exits after each invocation. Model weights are cached by Transformers library.
+
+**Python Detection Order:**
+1. `EMBEDDINGS_PYTHON` environment variable (if set)
+2. `scripts/embeddings/venv/bin/python` (if setup.sh was run)
+3. `python3` (system Python)
 
 ## Performance
 
@@ -161,11 +180,15 @@ python3 --version
 ### Dependencies Not Installed
 
 ```bash
-# Run setup script
+# Run setup script (creates venv and installs deps)
 ./scripts/embeddings/setup.sh
 
-# Or install manually
-pip3 install torch transformers
+# Or reinstall manually
+cd scripts/embeddings
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+deactivate
 ```
 
 ### Model Download Fails
