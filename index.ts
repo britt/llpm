@@ -118,6 +118,25 @@ if (import.meta.main) {
     }
 
     debug('Raw mode supported, rendering React app');
+
+    // Enter alternate screen buffer to prevent scroll issues
+    // This allows the terminal to be scrolled back without forcing auto-scroll on updates
+    const enterAltScreen = '\x1b[?1049h';
+    const exitAltScreen = '\x1b[?1049l';
+
+    process.stdout.write(enterAltScreen);
+    debug('Entered alternate screen buffer');
+
+    // Ensure we exit alternate screen on process exit
+    const exitHandler = () => {
+      process.stdout.write(exitAltScreen);
+      debug('Exited alternate screen buffer');
+    };
+
+    process.on('exit', exitHandler);
+    process.on('SIGINT', exitHandler);
+    process.on('SIGTERM', exitHandler);
+
     render(React.createElement(App));
   })();
 }
