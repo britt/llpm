@@ -7,6 +7,7 @@ import { debug } from './logger';
 import { modelRegistry } from '../services/modelRegistry';
 import type { Project } from '../types/project';
 import { RequestContext } from './requestContext';
+import { traced } from './tracing';
 
 interface ProjectNote {
   id: number;
@@ -219,43 +220,55 @@ export class ProjectDatabase {
 
   // Notes operations
   async addNote(title: string, content: string, tags?: string[]): Promise<ProjectNote> {
-    RequestContext.logDatabaseOperation('insert', 'start', { table: 'notes' });
-    debug('Adding note to project database:', title);
-    
-    const now = new Date().toISOString();
-    const tagsString = tags ? tags.join(',') : null;
-    
-    // Generate embedding for the note content
-    const embedding = await this.generateEmbedding(`${title} ${content}`);
-    const embeddingBlob = embedding ? Buffer.from(embedding.buffer) : null;
-    
-    const stmt = this.db.prepare(`
-      INSERT INTO notes (title, content, tags, embedding, createdAt, updatedAt)
-      VALUES (?, ?, ?, ?, ?, ?)
-    `);
-    
-    const result = stmt.run(title, content, tagsString || null, embeddingBlob, now, now);
-    const noteId = (result as any)?.lastInsertRowid || 
-                   (this.db as any).lastInsertRowid || 
-                   Math.floor(Math.random() * 100000);
-    
-    // Embedding is stored directly in the notes table as a BLOB
-    // No need for separate VSS table insertion (issue #58 fix)
-    if (embedding) {
-      debug('Stored embedding for note:', noteId, '(1536 dimensions)');
-    }
-    
-    RequestContext.logDatabaseOperation('insert', 'end', { table: 'notes', rowCount: 1 });
-    
-    return {
-      id: noteId,
-      title,
-      content,
-      tags: tagsString || undefined,
-      embedding: embedding || undefined,
-      createdAt: now,
-      updatedAt: now
-    };
+    return traced('db.addNote', {
+      attributes: {
+        'db.operation': 'insert',
+        'db.table': 'notes',
+        'project.id': this.projectId,
+        'note.has_tags': !!(tags && tags.length > 0)
+      }
+    }, async (span) => {
+      RequestContext.logDatabaseOperation('insert', 'start', { table: 'notes' });
+      debug('Adding note to project database:', title);
+
+      const now = new Date().toISOString();
+      const tagsString = tags ? tags.join(',') : null;
+
+      // Generate embedding for the note content
+      const embedding = await this.generateEmbedding(`${title} ${content}`);
+      const embeddingBlob = embedding ? Buffer.from(embedding.buffer) : null;
+      span.setAttribute('note.has_embedding', !!embedding);
+
+      const stmt = this.db.prepare(`
+        INSERT INTO notes (title, content, tags, embedding, createdAt, updatedAt)
+        VALUES (?, ?, ?, ?, ?, ?)
+      `);
+
+      const result = stmt.run(title, content, tagsString || null, embeddingBlob, now, now);
+      const noteId = (result as any)?.lastInsertRowid ||
+                     (this.db as any).lastInsertRowid ||
+                     Math.floor(Math.random() * 100000);
+
+      span.setAttribute('note.id', noteId);
+
+      // Embedding is stored directly in the notes table as a BLOB
+      // No need for separate VSS table insertion (issue #58 fix)
+      if (embedding) {
+        debug('Stored embedding for note:', noteId, '(1536 dimensions)');
+      }
+
+      RequestContext.logDatabaseOperation('insert', 'end', { table: 'notes', rowCount: 1 });
+
+      return {
+        id: noteId,
+        title,
+        content,
+        tags: tagsString || undefined,
+        embedding: embedding || undefined,
+        createdAt: now,
+        updatedAt: now
+      };
+    });
   }
 
   getNotes(): ProjectNote[] {

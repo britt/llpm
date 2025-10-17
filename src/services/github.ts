@@ -4,6 +4,7 @@ import { execSync } from 'child_process';
 import { getUserReposViaGhCli, searchReposViaGhCli, getRepoViaGhCli } from './githubCli';
 import { credentialManager } from '../utils/credentialManager';
 import { RequestContext } from '../utils/requestContext';
+import { traced } from '../utils/tracing';
 
 export interface GitHubRepo {
   id: number;
@@ -152,75 +153,88 @@ export async function getUserRepos(
     per_page?: number;
   } = {}
 ): Promise<GitHubRepo[]> {
-  debug('Getting user repositories with options:', options);
-
-  try {
-    await initializeOctokit();
-    const octokit = getOctokit();
-
-    const apiParams = {
-      type: options.type || 'owner',
-      sort: options.sort || 'updated',
-      direction: options.direction || 'desc',
-      per_page: options.per_page || 100
-    };
-
-    if (getVerbose()) {
-      debug('🌐 GitHub API Call: GET /user/repos');
-      debug('📋 Parameters:', JSON.stringify(apiParams, null, 2));
+  return traced('github.getUserRepos', {
+    attributes: {
+      'github.api': 'repos.listForAuthenticatedUser',
+      'github.type': options.type || 'owner',
+      'github.per_page': options.per_page || 100
     }
+  }, async (span) => {
+    debug('Getting user repositories with options:', options);
 
-    const { data } = await octokit.rest.repos.listForAuthenticatedUser(apiParams);
-
-    if (getVerbose()) {
-      debug('✅ GitHub API Response: received', data.length, 'repositories');
-      debug(
-        '📊 Response data preview:',
-        JSON.stringify(
-          data.slice(0, 2).map(repo => ({
-            name: repo.name,
-            full_name: repo.full_name,
-            private: repo.private,
-            language: repo.language
-          })),
-          null,
-          2
-        )
-      );
-    }
-
-    const repos: GitHubRepo[] = data.map(repo => ({
-      id: repo.id,
-      name: repo.name,
-      full_name: repo.full_name,
-      description: repo.description,
-      html_url: repo.html_url,
-      clone_url: repo.clone_url,
-      ssh_url: repo.ssh_url,
-      private: repo.private,
-      language: repo.language,
-      updated_at: repo.updated_at || ''
-    }));
-
-    debug('Retrieved', repos.length, 'repositories');
-    return repos;
-  } catch (error) {
-    debug(
-      'Octokit failed, trying gh CLI fallback:',
-      error instanceof Error ? error.message : 'Unknown error'
-    );
-
-    // Try gh CLI as fallback
     try {
-      return await getUserReposViaGhCli(options);
-    } catch (ghError) {
-      debug('gh CLI fallback also failed:', ghError);
-      if (error instanceof Error) {
-        throw new Error(`Failed to retrieve GitHub repositories: ${error.message}`);
+      await initializeOctokit();
+      const octokit = getOctokit();
+
+      const apiParams = {
+        type: options.type || 'owner',
+        sort: options.sort || 'updated',
+        direction: options.direction || 'desc',
+        per_page: options.per_page || 100
+      };
+
+      if (getVerbose()) {
+        debug('🌐 GitHub API Call: GET /user/repos');
+        debug('📋 Parameters:', JSON.stringify(apiParams, null, 2));
       }
-      throw new Error('Failed to retrieve GitHub repositories: Unknown error');
+
+      const { data } = await octokit.rest.repos.listForAuthenticatedUser(apiParams);
+      span.setAttribute('github.response.count', data.length);
+
+      if (getVerbose()) {
+        debug('✅ GitHub API Response: received', data.length, 'repositories');
+        debug(
+          '📊 Response data preview:',
+          JSON.stringify(
+            data.slice(0, 2).map(repo => ({
+              name: repo.name,
+              full_name: repo.full_name,
+              private: repo.private,
+              language: repo.language
+            })),
+            null,
+            2
+          )
+        );
+      }
+
+      const repos: GitHubRepo[] = data.map(repo => ({
+        id: repo.id,
+        name: repo.name,
+        full_name: repo.full_name,
+        description: repo.description,
+        html_url: repo.html_url,
+        clone_url: repo.clone_url,
+        ssh_url: repo.ssh_url,
+        private: repo.private,
+        language: repo.language,
+        updated_at: repo.updated_at || ''
+      }));
+
+      debug('Retrieved', repos.length, 'repositories');
+      return repos;
+    } catch (error) {
+      span.setAttribute('github.fallback', 'gh_cli');
+      debug(
+        'Octokit failed, trying gh CLI fallback:',
+        error instanceof Error ? error.message : 'Unknown error'
+      );
+
+      // Try gh CLI as fallback
+      try {
+        const repos = await getUserReposViaGhCli(options);
+        span.setAttribute('github.fallback.success', true);
+        return repos;
+      } catch (ghError) {
+        span.setAttribute('github.fallback.success', false);
+        debug('gh CLI fallback also failed:', ghError);
+        if (error instanceof Error) {
+          throw new Error(`Failed to retrieve GitHub repositories: ${error.message}`);
+        }
+        throw new Error('Failed to retrieve GitHub repositories: Unknown error');
+      }
     }
-  }
+  });
 }
 
 export async function getRepo(owner: string, repo: string): Promise<GitHubRepo> {
