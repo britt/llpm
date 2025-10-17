@@ -5,6 +5,7 @@ import { modelRegistry } from '../services/modelRegistry';
 import { getSystemPrompt } from '../utils/systemPrompt';
 import { highlightMarkdown } from '../utils/markdownHighlight';
 import { loadChatHistory } from '../utils/chatHistory';
+import { embeddingsFactory } from '../services/embeddings';
 
 const packageInfo = {
   name: 'LLPM',
@@ -103,6 +104,15 @@ ${highlightedPrompt}`;
     const runtimeInfo = `Bun ${process.versions.bun || 'unknown'}`;
     const nodeInfo = `Node.js ${process.version}`;
 
+    // Get embeddings provider info
+    let embeddingsInfo = 'Not initialized';
+    try {
+      const embeddingsProvider = await embeddingsFactory.getProvider();
+      embeddingsInfo = embeddingsProvider.getName();
+    } catch (error) {
+      embeddingsInfo = 'Not available';
+    }
+
     // Get current project info
     const currentProject = await getCurrentProject();
 
@@ -113,6 +123,7 @@ ${highlightedPrompt}`;
       `🤖 Model: ${modelInfo}`,
       `⚡ Runtime: ${runtimeInfo}`,
       `🟢 Node: ${nodeInfo}`,
+      `🔍 Embeddings: ${embeddingsInfo}`,
       ''
     ];
 
