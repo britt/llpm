@@ -139,6 +139,13 @@ export async function loadChatHistory(): Promise<Message[]> {
 }
 
 export async function saveChatHistory(messages: Message[]): Promise<void> {
+  // Wait for any pending save to complete before starting a new one
+  // This prevents concurrent writes that could corrupt the file
+  if (pendingSave) {
+    debug('Waiting for previous save to complete before starting new save');
+    await pendingSave;
+  }
+
   debug('Saving chat history with', messages.length, 'messages');
   RequestContext.logStep('chat_history_save', 'start', 'debug', {
     messageCount: messages.length

@@ -201,4 +201,27 @@ describe('Chat History Save/Load Integrity', () => {
     await flushChatHistory();
     await flushChatHistory();
   });
+
+  test('concurrent saves are serialized to prevent file corruption', async () => {
+    const messages1: Message[] = [
+      { role: 'user', content: 'First save message' },
+      { role: 'assistant', content: 'First save response' }
+    ];
+
+    const messages2: Message[] = [
+      { role: 'user', content: 'Second save message' },
+      { role: 'assistant', content: 'Second save response' }
+    ];
+
+    // Start two saves concurrently (don't await)
+    const save1 = saveChatHistory(messages1);
+    const save2 = saveChatHistory(messages2);
+
+    // Wait for both to complete
+    await Promise.all([save1, save2]);
+
+    // The last save should win (messages2)
+    const loaded = await loadChatHistory();
+    expect(loaded).toEqual(messages2);
+  });
 });
