@@ -4,6 +4,7 @@
 
 import { debug } from '../../utils/logger';
 import type { EmbeddingsProvider, EmbeddingResult } from './types';
+import { traced } from '../../utils/tracing';
 import { join } from 'path';
 import { spawn } from 'child_process';
 
@@ -85,8 +86,28 @@ export class LocalEmbeddingsProvider implements EmbeddingsProvider {
   }
 
   async generateEmbedding(text: string): Promise<EmbeddingResult | null> {
-    const results = await this.generateEmbeddings([text]);
-    return results && results.length > 0 ? results[0] : null;
+    return traced(
+      'localEmbeddings.generateEmbedding',
+      {
+        attributes: {
+          'embeddings.provider': 'local-bge-base-en-v1.5',
+          'embeddings.textLength': text.length,
+          'embeddings.model': 'BAAI/bge-base-en-v1.5',
+          'embeddings.dimensions': this.dimensions
+        }
+      },
+      async (span) => {
+        const results = await this.generateEmbeddings([text]);
+
+        if (results && results.length > 0) {
+          span.setAttribute('embeddings.success', true);
+          return results[0];
+        }
+
+        span.setAttribute('embeddings.success', false);
+        return null;
+      }
+    );
   }
 
   async generateEmbeddings(texts: string[]): Promise<EmbeddingResult[] | null> {
@@ -94,82 +115,103 @@ export class LocalEmbeddingsProvider implements EmbeddingsProvider {
       return [];
     }
 
-    try {
-      debug(`Generating embeddings for ${texts.length} texts using Python CLI`);
+    return traced(
+      'localEmbeddings.generateEmbeddings',
+      {
+        attributes: {
+          'embeddings.provider': 'local-bge-base-en-v1.5',
+          'embeddings.textCount': texts.length,
+          'embeddings.batchSize': this.config.batchSize,
+          'embeddings.model': 'BAAI/bge-base-en-v1.5',
+          'embeddings.dimensions': this.dimensions,
+          'embeddings.pythonPath': this.config.pythonPath,
+          'embeddings.device': process.env.EMBEDDINGS_DEVICE || 'cpu'
+        }
+      },
+      async (span) => {
+        try {
+          debug(`Generating embeddings for ${texts.length} texts using Python CLI`);
 
-      const input = JSON.stringify({
-        input: texts,
-        batch_size: this.config.batchSize
-      });
+          const input = JSON.stringify({
+            input: texts,
+            batch_size: this.config.batchSize
+          });
 
-      // Spawn Python process
-      const python = spawn(this.config.pythonPath, [this.config.scriptPath], {
-        env: { ...process.env, EMBEDDINGS_DEVICE: process.env.EMBEDDINGS_DEVICE || 'cpu' }
-      });
+          // Spawn Python process
+          const python = spawn(this.config.pythonPath, [this.config.scriptPath], {
+            env: { ...process.env, EMBEDDINGS_DEVICE: process.env.EMBEDDINGS_DEVICE || 'cpu' }
+          });
 
-      let stdout = '';
-      let stderr = '';
+          let stdout = '';
+          let stderr = '';
 
-      python.stdout.on('data', (data) => {
-        stdout += data.toString();
-      });
+          python.stdout.on('data', (data) => {
+            stdout += data.toString();
+          });
 
-      python.stderr.on('data', (data) => {
-        stderr += data.toString();
-      });
+          python.stderr.on('data', (data) => {
+            stderr += data.toString();
+          });
 
-      // Write input to stdin
-      python.stdin.write(input);
-      python.stdin.end();
+          // Write input to stdin
+          python.stdin.write(input);
+          python.stdin.end();
 
-      // Wait for process to complete with timeout
-      const result = await Promise.race([
-        new Promise<EmbeddingResponse>((resolve, reject) => {
-          python.on('close', (code) => {
-            if (code !== 0) {
-              reject(new Error(`Python process exited with code ${code}: ${stderr}`));
-            } else {
-              try {
-                const response: EmbeddingResponse = JSON.parse(stdout);
-                if (response.error) {
-                  reject(new Error(response.error));
+          // Wait for process to complete with timeout
+          const result = await Promise.race([
+            new Promise<EmbeddingResponse>((resolve, reject) => {
+              python.on('close', (code) => {
+                if (code !== 0) {
+                  reject(new Error(`Python process exited with code ${code}: ${stderr}`));
                 } else {
-                  resolve(response);
+                  try {
+                    const response: EmbeddingResponse = JSON.parse(stdout);
+                    if (response.error) {
+                      reject(new Error(response.error));
+                    } else {
+                      resolve(response);
+                    }
+                  } catch (e) {
+                    reject(new Error(`Failed to parse Python output: ${stdout}`));
+                  }
                 }
-              } catch (e) {
-                reject(new Error(`Failed to parse Python output: ${stdout}`));
-              }
-            }
-          });
+              });
 
-          python.on('error', (error) => {
-            reject(error);
-          });
-        }),
-        new Promise<never>((_, reject) => {
-          setTimeout(() => reject(new Error('Python process timeout')), this.config.timeout);
-        })
-      ]);
+              python.on('error', (error) => {
+                reject(error);
+              });
+            }),
+            new Promise<never>((_, reject) => {
+              setTimeout(() => reject(new Error('Python process timeout')), this.config.timeout);
+            })
+          ]);
 
-      // Update dimensions from response
-      if (result.dimension && result.dimension !== this.dimensions) {
-        debug(`Updating dimensions from ${this.dimensions} to ${result.dimension}`);
-        this.dimensions = result.dimension;
+          // Update dimensions from response
+          if (result.dimension && result.dimension !== this.dimensions) {
+            debug(`Updating dimensions from ${this.dimensions} to ${result.dimension}`);
+            this.dimensions = result.dimension;
+            span.setAttribute('embeddings.dimensions', result.dimension);
+          }
+
+          // Convert to EmbeddingResult format
+          const results: EmbeddingResult[] = result.embeddings!.map(emb => ({
+            embedding: new Float32Array(emb),
+            dimensions: result.dimension!,
+            model: result.model!
+          }));
+
+          debug(`Successfully generated ${results.length} embeddings`);
+          span.setAttribute('embeddings.success', true);
+          span.setAttribute('embeddings.resultCount', results.length);
+          return results;
+
+        } catch (error) {
+          debug('Failed to generate embeddings:', error);
+          span.setAttribute('embeddings.success', false);
+          span.setAttribute('embeddings.error', error instanceof Error ? error.message : String(error));
+          return null;
+        }
       }
-
-      // Convert to EmbeddingResult format
-      const results: EmbeddingResult[] = result.embeddings!.map(emb => ({
-        embedding: new Float32Array(emb),
-        dimensions: result.dimension!,
-        model: result.model!
-      }));
-
-      debug(`Successfully generated ${results.length} embeddings`);
-      return results;
-
-    } catch (error) {
-      debug('Failed to generate embeddings:', error);
-      return null;
-    }
+    );
   }
 }
