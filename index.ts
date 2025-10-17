@@ -118,6 +118,29 @@ if (import.meta.main) {
     }
 
     debug('Raw mode supported, rendering React app');
+
+    // Enter alternate screen buffer for clean isolated screen
+    const enterAltScreen = '\x1b[?1049h';
+    const exitAltScreen = '\x1b[?1049l';
+
+    // Disable all mouse reporting modes
+    // This ensures mouse scrolling is handled by the terminal, not sent as events
+    const disableMouseReporting = '\x1b[?9l\x1b[?1000l\x1b[?1001l\x1b[?1002l\x1b[?1003l\x1b[?1004l\x1b[?1005l\x1b[?1006l\x1b[?1007l\x1b[?1015l\x1b[?1016l';
+
+    process.stdout.write(disableMouseReporting);
+    process.stdout.write(enterAltScreen);
+    debug('Entered alternate screen buffer with mouse reporting disabled');
+
+    // Ensure we exit alternate screen on process exit
+    const exitHandler = () => {
+      process.stdout.write(exitAltScreen);
+      debug('Exited alternate screen buffer');
+    };
+
+    process.on('exit', exitHandler);
+    process.on('SIGINT', exitHandler);
+    process.on('SIGTERM', exitHandler);
+
     render(React.createElement(App));
   })();
 }
