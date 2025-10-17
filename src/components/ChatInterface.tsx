@@ -357,16 +357,16 @@ export const ChatInterface = memo(function ChatInterface({
   }
 
   return (
-    <Box flexDirection="column" height="100%">
+    <Box flexDirection="column" minHeight="100%">
       {/* Messages - no border, fills available space */}
-      <Box flexDirection="column" flexGrow={1} paddingX={1}>
+      <Box flexDirection="column" paddingX={1}>
         <MessageList messages={messages} />
         {/* Show queued messages in light text */}
         <MessageQueue messages={queuedMessages} />
       </Box>
       {/* Thinking indicator outside flex container */}
       <ThinkingIndicator isVisible={isLoading || isProcessing} />
-      <Box flexDirection="column" flexGrow={1}>
+      <Box flexDirection="column">
         {/* Input */}
         {inputComponent}
         {/* Project Status */}
