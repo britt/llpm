@@ -15,7 +15,6 @@ import NotesSelector from './NotesSelector';
 import type { QueuedMessage } from '../hooks/useChat';
 import { RequestLogDisplay } from './RequestLogDisplay';
 import { renderMarkdown, isASCIICapableTerminal } from '../utils/markdownRenderer';
-import Spinner from 'ink-spinner';
 
 interface ChatInterfaceProps {
   messages: Message[];
@@ -38,8 +37,7 @@ const ThinkingIndicator = memo(({ isVisible }: { isVisible: boolean }) => {
     <Box flexDirection="column" paddingX={1} paddingY={1} height={8}>
       <Box>
         <Text color="red">
-          {/* 🧠 PM is thinking... */}
-          <Spinner type="star" /> PM is thinking...
+          PM is thinking...
         </Text>
       </Box>
       <RequestLogDisplay />
