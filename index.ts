@@ -8,6 +8,7 @@ import { ensureDefaultSystemPromptFile } from './src/utils/systemPrompt';
 import { validateEnvironment } from './src/utils/validation';
 import { credentialManager } from './src/utils/credentialManager';
 import { modelRegistry } from './src/services/modelRegistry';
+import { initializeTelemetry } from './src/utils/telemetry';
 
 // Re-export validateEnvironment for external use
 export { validateEnvironment } from './src/utils/validation';
@@ -77,6 +78,14 @@ if (import.meta.main) {
 
     debug('Starting LLPM CLI');
     await validateEnvironment();
+
+    // Initialize telemetry if enabled
+    debug('Initializing telemetry');
+    initializeTelemetry({
+      serviceName: 'llpm',
+      serviceVersion: '0.13.0',
+    });
+    debug('Telemetry initialization completed');
 
     // Initialize model registry with credentials
     debug('Initializing model registry');

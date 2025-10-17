@@ -1,9 +1,10 @@
 import { readFile, writeFile } from 'fs/promises';
-import { existsSync } from 'fs';
+import { existsSync, statSync } from 'fs';
 import { ensureConfigDir, SYSTEM_PROMPT_FILE } from './config';
 import { debug } from './logger';
 import { getCurrentProject } from './projectConfig';
 import type { Project } from '../types/project';
+import { traced } from './tracing';
 
 const DEFAULT_SYSTEM_PROMPT = `You are LLPM (Large Language Model Product Manager), an AI-powered project management assistant that operates within an interactive terminal interface. You help users manage multiple projects, interact with GitHub repositories, and coordinate development workflows through natural language conversation.
 
@@ -134,24 +135,45 @@ export function getSystemPromptPath(): string {
 }
 
 export async function getSystemPrompt(): Promise<string> {
-  try {
-    await ensureConfigDir();
-    const promptPath = getSystemPromptPath();
+  return traced('fs.getSystemPrompt', {
+    attributes: {}
+  }, async (span) => {
+    try {
+      await ensureConfigDir();
+      const promptPath = getSystemPromptPath();
+      span.setAttribute('file.path', promptPath);
 
-    let basePrompt: string;
-    if (existsSync(promptPath)) {
-      const customPrompt = await readFile(promptPath, 'utf-8');
-      basePrompt = customPrompt.trim();
-    } else {
-      basePrompt = DEFAULT_SYSTEM_PROMPT;
+      let basePrompt: string;
+      const fileExists = existsSync(promptPath);
+      span.setAttribute('file.exists', fileExists);
+
+      if (fileExists) {
+        try {
+          const stats = statSync(promptPath);
+          span.setAttribute('file.size_kb', Math.round(stats.size / 1024 * 100) / 100);
+        } catch (statsError) {
+          debug('Error getting file stats:', statsError);
+        }
+        const customPrompt = await readFile(promptPath, 'utf-8');
+        basePrompt = customPrompt.trim();
+        span.setAttribute('prompt.source', 'custom');
+      } else {
+        basePrompt = DEFAULT_SYSTEM_PROMPT;
+        span.setAttribute('prompt.source', 'default');
+      }
+
+      // Inject current project context
+      const finalPrompt = await injectProjectContext(basePrompt);
+      span.setAttribute('project.context_injected', finalPrompt !== basePrompt);
+      span.setAttribute('prompt.final_length', finalPrompt.length);
+
+      return finalPrompt;
+    } catch (error) {
+      debug('Error loading system prompt:', error);
+      span.setAttribute('error', true);
+      return DEFAULT_SYSTEM_PROMPT;
     }
-
-    // Inject current project context
-    return await injectProjectContext(basePrompt);
-  } catch (error) {
-    debug('Error loading system prompt:', error);
-    return DEFAULT_SYSTEM_PROMPT;
-  }
+  });
 }
 
 function formatProjectContext(project: Project): string {
@@ -304,16 +326,35 @@ async function injectProjectContext(basePrompt: string): Promise<string> {
 }
 
 export async function saveSystemPrompt(prompt: string): Promise<void> {
-  debug('Saving custom system prompt');
-  try {
-    await ensureConfigDir();
-    const promptPath =  getSystemPromptPath();
-    await writeFile(promptPath, prompt.trim(), 'utf-8');
-    debug('System prompt saved successfully');
-  } catch (error) {
-    debug('Error saving system prompt:', error);
-    throw error;
-  }
+  return traced('fs.saveSystemPrompt', {
+    attributes: {
+      'prompt.length': prompt.length
+    }
+  }, async (span) => {
+    debug('Saving custom system prompt');
+    try {
+      await ensureConfigDir();
+      const promptPath = getSystemPromptPath();
+      span.setAttribute('file.path', promptPath);
+
+      const trimmedPrompt = prompt.trim();
+      await writeFile(promptPath, trimmedPrompt, 'utf-8');
+
+      // Get file size after write
+      try {
+        const stats = statSync(promptPath);
+        span.setAttribute('file.size_kb', Math.round(stats.size / 1024 * 100) / 100);
+      } catch (statsError) {
+        debug('Error getting file stats after write:', statsError);
+      }
+
+      debug('System prompt saved successfully');
+    } catch (error) {
+      debug('Error saving system prompt:', error);
+      span.setAttribute('error', true);
+      throw error;
+    }
+  });
 }
 
 export function getDefaultSystemPrompt(): string {
