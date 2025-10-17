@@ -118,6 +118,30 @@ if (import.meta.main) {
     }
 
     debug('Raw mode supported, rendering React app');
+
+    // Enter alternate screen buffer to prevent scroll issues
+    // This allows the terminal to be scrolled back without forcing auto-scroll on updates
+    const enterAltScreen = '\x1b[?1049h';
+    const exitAltScreen = '\x1b[?1049l';
+
+    // Disable mouse reporting to prevent scroll events from being translated to arrow keys
+    // This ensures mouse scrolling scrolls the terminal, not the input history
+    const disableMouse = '\x1b[?1000l\x1b[?1002l\x1b[?1003l\x1b[?1006l';
+
+    process.stdout.write(enterAltScreen);
+    process.stdout.write(disableMouse);
+    debug('Entered alternate screen buffer with mouse reporting disabled');
+
+    // Ensure we exit alternate screen on process exit
+    const exitHandler = () => {
+      process.stdout.write(exitAltScreen);
+      debug('Exited alternate screen buffer');
+    };
+
+    process.on('exit', exitHandler);
+    process.on('SIGINT', exitHandler);
+    process.on('SIGTERM', exitHandler);
+
     render(React.createElement(App));
   })();
 }
