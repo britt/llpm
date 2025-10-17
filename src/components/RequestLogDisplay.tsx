@@ -69,29 +69,48 @@ export const loggerRegistry = LoggerRegistry.getInstance();
 interface ProcessedLog {
   key: string;
   step: string;
-  status: 'running' | 'completed';
+  status: 'running' | 'completed' | 'placeholder';
   duration?: number;
   metadata?: Record<string, any>;
   orderIndex: number; // Track insertion order
 }
 
+const MAX_VISIBLE_LOGS = 4;
+
+// Create placeholder entries
+function createPlaceholder(index: number): ProcessedLog {
+  return {
+    key: `placeholder_${index}`,
+    step: 'placeholder',
+    status: 'placeholder',
+    orderIndex: index
+  };
+}
+
 export function RequestLogDisplay() {
-  const [processedLogs, setProcessedLogs] = useState<Map<string, ProcessedLog>>(new Map());
-  const logMapRef = useRef<Map<string, ProcessedLog>>(new Map());
-  const orderCounterRef = useRef(0);
-  
-  useEffect(() => {    
+  // Initialize with 4 placeholder entries
+  const initialLogs = new Map<string, ProcessedLog>();
+  for (let i = 0; i < MAX_VISIBLE_LOGS; i++) {
+    const placeholder = createPlaceholder(i);
+    initialLogs.set(placeholder.key, placeholder);
+  }
+
+  const [processedLogs, setProcessedLogs] = useState<Map<string, ProcessedLog>>(initialLogs);
+  const logMapRef = useRef<Map<string, ProcessedLog>>(initialLogs);
+  const orderCounterRef = useRef(MAX_VISIBLE_LOGS);
+
+  useEffect(() => {
     const handleLog = (log: LogEntry) => {
       // Create a normalized key - use just the step name without request ID
       // since there's typically only one request in flight
       const stepKey = log.step;
-      
+
       if (log.phase === 'start') {
         // Check if this step already exists and is running
         const existing = Array.from(logMapRef.current.values()).find(
           l => l.step === log.step && l.status === 'running'
         );
-        
+
         if (!existing) {
           // Add new running log
           const newLog: ProcessedLog = {
@@ -101,6 +120,20 @@ export function RequestLogDisplay() {
             metadata: log.metadata,
             orderIndex: orderCounterRef.current
           };
+
+          // Get current entries sorted by order
+          const entries = Array.from(logMapRef.current.entries())
+            .sort((a, b) => a[1].orderIndex - b[1].orderIndex);
+
+          // If we have a placeholder, replace it
+          const placeholderEntry = entries.find(([_, log]) => log.status === 'placeholder');
+          if (placeholderEntry) {
+            logMapRef.current.delete(placeholderEntry[0]);
+          } else if (entries.length >= MAX_VISIBLE_LOGS) {
+            // Remove the oldest entry (first in the sorted array)
+            logMapRef.current.delete(entries[0][0]);
+          }
+
           logMapRef.current.set(newLog.key, newLog);
         }
       } else if (log.phase === 'end') {
@@ -112,7 +145,7 @@ export function RequestLogDisplay() {
             break;
           }
         }
-        
+
         if (foundKey) {
           // Update existing log with completed status
           const existingLog = logMapRef.current.get(foundKey)!;
@@ -131,43 +164,55 @@ export function RequestLogDisplay() {
             metadata: log.metadata,
             orderIndex: orderCounterRef.current
           };
+
+          // Get current entries sorted by order
+          const entries = Array.from(logMapRef.current.entries())
+            .sort((a, b) => a[1].orderIndex - b[1].orderIndex);
+
+          // If we have a placeholder, replace it
+          const placeholderEntry = entries.find(([_, log]) => log.status === 'placeholder');
+          if (placeholderEntry) {
+            logMapRef.current.delete(placeholderEntry[0]);
+          } else if (entries.length >= MAX_VISIBLE_LOGS) {
+            // Remove the oldest entry (first in the sorted array)
+            logMapRef.current.delete(entries[0][0]);
+          }
+
           logMapRef.current.set(newLog.key, newLog);
         }
       }
-      
-      // Keep only last 5 entries
-      if (logMapRef.current.size > 5) {
-        const entries = Array.from(logMapRef.current.entries())
-          .sort((a, b) => a[1].orderIndex - b[1].orderIndex);
-        const toRemove = entries.slice(0, entries.length - 5);
-        toRemove.forEach(([key]) => logMapRef.current.delete(key));
-      }
-      
+
       // Update state with new map
       setProcessedLogs(new Map(logMapRef.current));
     };
-    
+
     const handleClear = () => {
-      logMapRef.current.clear();
-      setProcessedLogs(new Map());
-      orderCounterRef.current = 0;
+      // Reset to placeholders
+      const initialLogs = new Map<string, ProcessedLog>();
+      for (let i = 0; i < MAX_VISIBLE_LOGS; i++) {
+        const placeholder = createPlaceholder(i);
+        initialLogs.set(placeholder.key, placeholder);
+      }
+      logMapRef.current = initialLogs;
+      setProcessedLogs(initialLogs);
+      orderCounterRef.current = MAX_VISIBLE_LOGS;
     };
-    
+
     loggerRegistry.addLogListener(handleLog);
     loggerRegistry.addClearListener(handleClear);
-    
+
     return () => {
       loggerRegistry.removeLogListener(handleLog);
       loggerRegistry.removeClearListener(handleClear);
     };
   });
-  
+
   // Sort logs by insertion order
   const logs = Array.from(processedLogs.values())
     .sort((a, b) => a.orderIndex - b.orderIndex);
 
   return (
-    <Box flexDirection="column" marginTop={1} paddingLeft={2}>
+    <Box flexDirection="column" marginTop={1} paddingLeft={2} height={MAX_VISIBLE_LOGS}>
       <TaskList>
         {logs.map((log) => renderProcessedLog(log))}
       </TaskList>
@@ -176,6 +221,17 @@ export function RequestLogDisplay() {
 }
 
 function renderProcessedLog(log: ProcessedLog) {
+  // Handle placeholder entries
+  if (log.status === 'placeholder') {
+    return (
+      <Task
+        key={log.key}
+        label="..."
+        state="pending"
+      />
+    );
+  }
+
   const parts = [formatStepName(log.step)];
 
   // Add metadata that should appear in the label

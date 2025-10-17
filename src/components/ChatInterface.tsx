@@ -33,9 +33,9 @@ interface ChatInterfaceProps {
 
 const ThinkingIndicator = memo(({ isVisible }: { isVisible: boolean }) => {
   if (!isVisible) return null;
-  
+
   return (
-    <Box flexDirection="column" paddingX={1} paddingY={1}>
+    <Box flexDirection="column" paddingX={1} paddingY={1} height={8}>
       <Box>
         <Text color="red">
           {/* 🧠 PM is thinking... */}
