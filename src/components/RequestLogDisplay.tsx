@@ -1,12 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { Box, Text } from 'ink';
 import { TaskList, Task } from 'ink-task-list';
-
-// Static spinner that doesn't animate
-const staticSpinner = {
-  interval: 1000,
-  frames: ['⋯']
-};
+import cliSpinners from 'cli-spinners';
 
 export interface LogEntry {
   timestamp: string;
@@ -264,7 +259,7 @@ function renderProcessedLog(log: ProcessedLog) {
         key={log.key}
         label={label}
         state="loading"
-        spinner={staticSpinner}
+        spinner={cliSpinners.dots}
       />
     );
   } else if (log.status === 'completed' && log.duration !== undefined) {
