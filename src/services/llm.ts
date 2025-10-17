@@ -79,28 +79,45 @@ export async function generateResponse(messages: Message[]): Promise<string> {
       RequestContext.logLLMCall('end', `${currentModel.provider}/${currentModel.modelId}`, metadata);
 
       debug('AI SDK result text:', JSON.stringify(result.text));
-      debug('Tool calls present:', result.toolCalls?.length || 0);
-      debug('Tool results present:', result.toolResults?.length || 0);
+      debug('Steps count:', result.steps?.length || 0);
+
+      // Collect all tool calls and results from all steps
+      const allToolCalls: any[] = [];
+      const allToolResults: any[] = [];
+      const toolNames = new Set<string>();
+
+      if (result.steps) {
+        for (const step of result.steps) {
+          if (step.toolCalls) {
+            allToolCalls.push(...step.toolCalls);
+            step.toolCalls.forEach(tc => toolNames.add(tc.toolName));
+          }
+          if (step.toolResults) {
+            allToolResults.push(...step.toolResults);
+          }
+        }
+      }
+
+      debug('Tool calls across all steps:', allToolCalls.length);
+      debug('Tool results across all steps:', allToolResults.length);
+      debug('Unique tools called:', Array.from(toolNames).join(', '));
 
       // Record tool call statistics
-      if (result.toolCalls) {
-        span.setAttribute('llm.tool_calls.count', result.toolCalls.length);
-        span.setAttribute('llm.tool_calls.tools', result.toolCalls.map(tc => tc.toolName).join(','));
-      }
-      if (result.toolResults) {
-        span.setAttribute('llm.tool_results.count', result.toolResults.length);
+      span.setAttribute('llm.steps.count', result.steps?.length || 0);
+      span.setAttribute('llm.tool_calls.count', allToolCalls.length);
+      span.setAttribute('llm.tool_results.count', allToolResults.length);
+      if (toolNames.size > 0) {
+        span.setAttribute('llm.tool_calls.tools', Array.from(toolNames).join(','));
       }
       span.setAttribute('llm.response.length', result.text?.length || 0);
 
       // Check for user messages in tool results that should be displayed directly
       const userMessages: string[] = [];
-      if (result.toolResults) {
-        for (const toolResult of result.toolResults) {
-          if (toolResult.output && typeof toolResult.output === 'object') {
-            const resultObj = toolResult.output as any;
-            if (resultObj.userMessage) {
-              userMessages.push(resultObj.userMessage);
-            }
+      for (const toolResult of allToolResults) {
+        if (toolResult.output && typeof toolResult.output === 'object') {
+          const resultObj = toolResult.output as any;
+          if (resultObj.userMessage) {
+            userMessages.push(resultObj.userMessage);
           }
         }
       }

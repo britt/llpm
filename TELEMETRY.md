@@ -54,9 +54,21 @@ LLPM now has comprehensive tracing built into the following operations:
 - **generateResponse** - Traces AI model calls with:
   - Model provider and name
   - Token usage (prompt, completion, total)
-  - Tool calls and results
+  - Steps count (multi-step reasoning)
+  - Tool calls count across all steps
+  - Tool results count across all steps
+  - List of unique tools called
   - Response length
   - Error handling
+
+### Tool Executions
+- **All tools** - Every tool execution is traced with:
+  - Tool name and description
+  - Input arguments (truncated to 500 chars)
+  - Success/failure status
+  - Result length
+  - Error messages
+  - Execution time
 
 ### File System Operations
 - **loadChatHistory** - Traces chat history loading with:
@@ -154,10 +166,34 @@ const response = await traced('ai.generateText', {
 ### Trace Attributes
 
 Each trace includes rich metadata:
-- **LLM traces**: provider, model, tokens, tool calls
-- **File traces**: paths, sizes, message counts
-- **Database traces**: table names, row counts, project IDs
-- **Network traces**: endpoints, response counts, fallback status
+- **LLM traces**:
+  - `llm.provider` - AI provider (anthropic, openai, etc.)
+  - `llm.model` - Model ID
+  - `llm.steps.count` - Number of reasoning steps
+  - `llm.tool_calls.count` - Total tool calls across all steps
+  - `llm.tool_calls.tools` - Comma-separated list of tools called
+  - `llm.usage.prompt_tokens` - Input tokens
+  - `llm.usage.completion_tokens` - Output tokens
+- **Tool traces**:
+  - `tool.name` - Tool name
+  - `tool.description` - Tool description
+  - `tool.args` - Input arguments (truncated)
+  - `tool.success` - Success boolean
+  - `tool.result.length` - Result size
+- **File traces**:
+  - `file.path` - File path
+  - `file.size_kb` - File size in KB
+  - `messages.total` - Total messages
+  - `project.id` - Project context
+- **Database traces**:
+  - `db.operation` - insert/update/select
+  - `db.table` - Table name
+  - `project.id` - Project ID
+  - `note.has_embedding` - Whether embedding was generated
+- **Network traces**:
+  - `github.api` - API endpoint
+  - `github.response.count` - Number of results
+  - `github.fallback` - Whether fallback was used
 
 ### Test Trace
 
