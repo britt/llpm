@@ -17,7 +17,6 @@ export interface EmbeddingsConfig {
 
 const DEFAULT_CONFIG: EmbeddingsConfig = {
   provider: (process.env.EMBEDDINGS_PROVIDER as ProviderType) || 'auto',
-  localServiceUrl: process.env.EMBEDDINGS_SERVICE_URL || 'http://localhost:8000',
   fallbackToOpenAI: process.env.EMBEDDINGS_FALLBACK_OPENAI !== 'false'
 };
 
@@ -72,18 +71,16 @@ export class EmbeddingsProviderFactory {
   }
 
   private async getLocalProvider(): Promise<EmbeddingsProvider> {
-    const provider = new LocalEmbeddingsProvider({
-      baseUrl: this.config.localServiceUrl
-    });
+    const provider = new LocalEmbeddingsProvider();
 
     const available = await provider.isAvailable();
 
     if (!available) {
       if (this.config.fallbackToOpenAI) {
-        debug('Local provider not available, falling back to OpenAI');
+        debug('Local provider not available (Python not installed), falling back to OpenAI');
         return this.getOpenAIProvider();
       } else {
-        throw new Error('Local embeddings service not available and fallback disabled');
+        throw new Error('Local embeddings not available (Python not installed) and fallback disabled');
       }
     }
 
@@ -104,18 +101,16 @@ export class EmbeddingsProviderFactory {
 
   private async getAutoProvider(): Promise<EmbeddingsProvider> {
     // Try local first, then fall back to OpenAI
-    const localProvider = new LocalEmbeddingsProvider({
-      baseUrl: this.config.localServiceUrl
-    });
+    const localProvider = new LocalEmbeddingsProvider();
 
     const localAvailable = await localProvider.isAvailable();
 
     if (localAvailable) {
-      debug('Auto-selected local embeddings provider');
+      debug('Auto-selected local embeddings provider (Python CLI)');
       return localProvider;
     }
 
-    debug('Local provider not available, trying OpenAI');
+    debug('Local provider not available (Python not installed), trying OpenAI');
     return this.getOpenAIProvider();
   }
 }

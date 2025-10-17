@@ -1,28 +1,31 @@
 /**
- * Local embeddings provider using bge-base-en-v1.5 via FastAPI service
+ * Local embeddings provider using bge-base-en-v1.5 via CLI subprocess
  */
 
 import { debug } from '../../utils/logger';
 import type { EmbeddingsProvider, EmbeddingResult } from './types';
+import { join } from 'path';
+import { spawn } from 'child_process';
 
 export interface LocalProviderConfig {
-  baseUrl: string;
+  pythonPath: string;
+  scriptPath: string;
   timeout: number;
-  retries: number;
   batchSize: number;
 }
 
 const DEFAULT_CONFIG: LocalProviderConfig = {
-  baseUrl: process.env.EMBEDDINGS_SERVICE_URL || 'http://localhost:8000',
-  timeout: 30000, // 30 seconds
-  retries: 3,
+  pythonPath: process.env.EMBEDDINGS_PYTHON || 'python3',
+  scriptPath: join(process.cwd(), 'scripts', 'embeddings', 'generate.py'),
+  timeout: 60000, // 60 seconds (model loading takes time)
   batchSize: 32
 };
 
-interface EmbeddingServiceResponse {
-  embeddings: number[][];
-  model: string;
-  dimension: number;
+interface EmbeddingResponse {
+  embeddings?: number[][];
+  model?: string;
+  dimension?: number;
+  error?: string;
 }
 
 export class LocalEmbeddingsProvider implements EmbeddingsProvider {
@@ -36,12 +39,19 @@ export class LocalEmbeddingsProvider implements EmbeddingsProvider {
 
   async isAvailable(): Promise<boolean> {
     try {
-      const response = await fetch(`${this.config.baseUrl}/health`, {
-        signal: AbortSignal.timeout(5000)
+      // Check if Python is available
+      const pythonCheck = spawn(this.config.pythonPath, ['--version']);
+
+      return new Promise((resolve) => {
+        pythonCheck.on('close', (code) => {
+          resolve(code === 0);
+        });
+        pythonCheck.on('error', () => {
+          resolve(false);
+        });
       });
-      return response.ok;
     } catch (error) {
-      debug('Local embeddings service not available:', error);
+      debug('Python not available:', error);
       return false;
     }
   }
@@ -64,62 +74,82 @@ export class LocalEmbeddingsProvider implements EmbeddingsProvider {
       return [];
     }
 
-    let lastError: Error | null = null;
+    try {
+      debug(`Generating embeddings for ${texts.length} texts using Python CLI`);
 
-    // Retry logic
-    for (let attempt = 1; attempt <= this.config.retries; attempt++) {
-      try {
-        debug(`Generating embeddings for ${texts.length} texts (attempt ${attempt}/${this.config.retries})`);
+      const input = JSON.stringify({
+        input: texts,
+        batch_size: this.config.batchSize
+      });
 
-        const response = await fetch(`${this.config.baseUrl}/embeddings`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            input: texts,
-            batch_size: this.config.batchSize
-          }),
-          signal: AbortSignal.timeout(this.config.timeout)
-        });
+      // Spawn Python process
+      const python = spawn(this.config.pythonPath, [this.config.scriptPath], {
+        env: { ...process.env, EMBEDDINGS_DEVICE: process.env.EMBEDDINGS_DEVICE || 'cpu' }
+      });
 
-        if (!response.ok) {
-          const errorText = await response.text();
-          throw new Error(`Embeddings service returned ${response.status}: ${errorText}`);
-        }
+      let stdout = '';
+      let stderr = '';
 
-        const data: EmbeddingServiceResponse = await response.json();
+      python.stdout.on('data', (data) => {
+        stdout += data.toString();
+      });
 
-        // Update dimensions from response
-        if (data.dimension && data.dimension !== this.dimensions) {
-          debug(`Updating dimensions from ${this.dimensions} to ${data.dimension}`);
-          this.dimensions = data.dimension;
-        }
+      python.stderr.on('data', (data) => {
+        stderr += data.toString();
+      });
 
-        // Convert to EmbeddingResult format
-        const results: EmbeddingResult[] = data.embeddings.map(emb => ({
-          embedding: new Float32Array(emb),
-          dimensions: data.dimension,
-          model: data.model
-        }));
+      // Write input to stdin
+      python.stdin.write(input);
+      python.stdin.end();
 
-        debug(`Successfully generated ${results.length} embeddings`);
-        return results;
+      // Wait for process to complete with timeout
+      const result = await Promise.race([
+        new Promise<EmbeddingResponse>((resolve, reject) => {
+          python.on('close', (code) => {
+            if (code !== 0) {
+              reject(new Error(`Python process exited with code ${code}: ${stderr}`));
+            } else {
+              try {
+                const response: EmbeddingResponse = JSON.parse(stdout);
+                if (response.error) {
+                  reject(new Error(response.error));
+                } else {
+                  resolve(response);
+                }
+              } catch (e) {
+                reject(new Error(`Failed to parse Python output: ${stdout}`));
+              }
+            }
+          });
 
-      } catch (error) {
-        lastError = error instanceof Error ? error : new Error(String(error));
-        debug(`Attempt ${attempt} failed:`, lastError.message);
+          python.on('error', (error) => {
+            reject(error);
+          });
+        }),
+        new Promise<never>((_, reject) => {
+          setTimeout(() => reject(new Error('Python process timeout')), this.config.timeout);
+        })
+      ]);
 
-        if (attempt < this.config.retries) {
-          // Exponential backoff
-          const delay = Math.min(1000 * Math.pow(2, attempt - 1), 10000);
-          debug(`Retrying in ${delay}ms...`);
-          await new Promise(resolve => setTimeout(resolve, delay));
-        }
+      // Update dimensions from response
+      if (result.dimension && result.dimension !== this.dimensions) {
+        debug(`Updating dimensions from ${this.dimensions} to ${result.dimension}`);
+        this.dimensions = result.dimension;
       }
-    }
 
-    debug(`Failed to generate embeddings after ${this.config.retries} attempts:`, lastError);
-    return null;
+      // Convert to EmbeddingResult format
+      const results: EmbeddingResult[] = result.embeddings!.map(emb => ({
+        embedding: new Float32Array(emb),
+        dimensions: result.dimension!,
+        model: result.model!
+      }));
+
+      debug(`Successfully generated ${results.length} embeddings`);
+      return results;
+
+    } catch (error) {
+      debug('Failed to generate embeddings:', error);
+      return null;
+    }
   }
 }
