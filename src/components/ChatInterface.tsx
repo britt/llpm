@@ -6,7 +6,7 @@ import {
   setCurrentProject as setCurrentProjectConfig
 } from '../utils/projectConfig';
 import type { Project } from '../types/project';
-import type { ModelSelectCommand, ModelConfig } from '../types/models';
+import type { Model, ModelConfig } from '../types/models';
 import { loadCurrentModel } from '../utils/modelStorage';
 import HybridInput from './HybridInput';
 import ProjectSelector from './ProjectSelector';
@@ -21,7 +21,7 @@ interface ChatInterfaceProps {
   onSendMessage: (message: string) => void;
   onAddSystemMessage: (message: string) => void;
   isLoading: boolean;
-  interactiveCommand?: ModelSelectCommand | null;
+  modelSelectorModels?: Model[] | null;
   onModelSelect?: (modelValue: string) => void;
   onCancelModelSelection?: () => void;
   onTriggerModelSelector?: () => void;
@@ -191,11 +191,21 @@ function MessageList({ messages }: { messages: Message[] }) {
   );
 }
 
+function ViewMessages({ messages, queuedMessages }: { messages: Message[]; queuedMessages: QueuedMessage[] }) {
+  return (
+    <Box flexDirection="column" paddingX={1}>
+        <MessageList messages={messages} />
+        {/* Show queued messages in light text */}
+        <MessageQueue messages={queuedMessages} />
+      </Box>
+  );
+}
+
 export const ChatInterface = memo(function ChatInterface({
   messages,
   onSendMessage,
   isLoading,
-  interactiveCommand,
+  modelSelectorModels,
   onModelSelect,
   onCancelModelSelection,
   onTriggerModelSelector,
@@ -299,12 +309,12 @@ export const ChatInterface = memo(function ChatInterface({
       setActiveInput('project');
     } else if (showNotesSelector) {
       setActiveInput('notes');
-    } else if (interactiveCommand?.type === 'model-select') {
+    } else if (modelSelectorModels && modelSelectorModels.length > 0) {
       setActiveInput('model');
     } else {
       setActiveInput('main');
     }
-  }, [showProjectSelector, showNotesSelector, interactiveCommand]);
+  }, [showProjectSelector, showNotesSelector, modelSelectorModels]);
 
   // Handle note insertion
   const handleInsertNote = useCallback(
@@ -316,6 +326,7 @@ export const ChatInterface = memo(function ChatInterface({
     [onSendMessage]
   );
 
+  // FIXME: make this its own component
   let inputComponent = (
     <HybridInput
       focus={activeInput === 'main'}
@@ -352,18 +363,14 @@ export const ChatInterface = memo(function ChatInterface({
     );
   }
 
-  if (interactiveCommand?.type === 'model-select') {
-    inputComponent = <ModelSelector command={interactiveCommand} onModelSelect={onModelSelect} />;
+  if (modelSelectorModels && modelSelectorModels.length > 0) {
+    inputComponent = <ModelSelector models={modelSelectorModels} onModelSelect={onModelSelect} />;
   }
 
   return (
     <Box flexDirection="column" minHeight="100%">
       {/* Messages - no border, fills available space */}
-      <Box flexDirection="column" paddingX={1}>
-        <MessageList messages={messages} />
-        {/* Show queued messages in light text */}
-        <MessageQueue messages={queuedMessages} />
-      </Box>
+      <ViewMessages messages={messages} queuedMessages={queuedMessages} />
       {/* Thinking indicator outside flex container */}
       <ThinkingIndicator isVisible={isLoading || isProcessing} />
       <Box flexDirection="column">

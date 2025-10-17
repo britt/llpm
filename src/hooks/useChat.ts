@@ -5,7 +5,7 @@ import { debug, getVerbose } from '../utils/logger';
 import { parseCommand, executeCommand } from '../commands/registry';
 import { loadChatHistory, saveChatHistory } from '../utils/chatHistory';
 import { getCurrentProject } from '../utils/projectConfig';
-import type { ModelSelectCommand } from '../types/models';
+import type { Model } from '../types/models';
 import { DEFAULT_HISTORY_SIZE } from '../constants';
 import { RequestContext } from '../utils/requestContext';
 import { loggerRegistry } from '../components/RequestLogDisplay';
@@ -25,7 +25,7 @@ export function useChat() {
   const [isLoading, setIsLoading] = useState(false);
   const [historyLoaded, setHistoryLoaded] = useState(false);
   const [currentProjectId, setCurrentProjectId] = useState<string | null>(null);
-  const [interactiveCommand, setInteractiveCommand] = useState<ModelSelectCommand | null>(null);
+  const [modelSelectorModels, setModelSelectorModels] = useState<Model[] | null>(null);
   const [projectSwitchTrigger, setProjectSwitchTrigger] = useState(0);
   const [isProjectSwitching, setIsProjectSwitching] = useState(false);
 
@@ -141,10 +141,7 @@ export function useChat() {
 
           // Check for interactive command results
           if (result.interactive && result.interactive.type === 'model-select') {
-            setInteractiveCommand({
-              type: 'model-select',
-              models: result.interactive.models
-            });
+            setModelSelectorModels(result.interactive.models);
             debug('Showing interactive model selector');
             return;
           }
@@ -376,7 +373,7 @@ export function useChat() {
 
   const handleModelSelect = useCallback(async (modelValue: string) => {
     debug('Model selected:', modelValue);
-    setInteractiveCommand(null);
+    setModelSelectorModels(null);
     setIsLoading(true);
 
     try {
@@ -405,7 +402,7 @@ export function useChat() {
 
   const cancelModelSelection = useCallback(() => {
     debug('Model selection cancelled');
-    setInteractiveCommand(null);
+    setModelSelectorModels(null);
   }, []);
 
   const triggerModelSelector = useCallback(async () => {
@@ -417,10 +414,7 @@ export function useChat() {
 
       // Check for interactive command results
       if (result.interactive && result.interactive.type === 'model-select') {
-        setInteractiveCommand({
-          type: 'model-select',
-          models: result.interactive.models
-        });
+        setModelSelectorModels(result.interactive.models);
         debug('Showing interactive model selector');
       } else {
         // If not interactive, show the result as a system message
@@ -460,7 +454,7 @@ export function useChat() {
     sendMessage,
     addSystemMessage: addUINotification,
     isLoading,
-    interactiveCommand,
+    modelSelectorModels,
     handleModelSelect,
     cancelModelSelection,
     triggerModelSelector,

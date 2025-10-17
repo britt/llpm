@@ -200,7 +200,8 @@ export interface ModelState {
   providerConfigs: Record<ModelProvider, ModelProviderConfig>;
 }
 
-export type ModelSelectCommand = {
-  type: 'model-select';
-  models: Array<{ id: string; label: string; value: string }>;
+export type Model = {
+  id: string;
+  label: string;
+  value: string;
 }

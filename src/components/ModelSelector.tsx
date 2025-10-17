@@ -1,17 +1,17 @@
 import { Box, Text } from 'ink';
-import type { ModelSelectCommand } from '../types/models';
+import type { Model } from '../types/models';
 import SelectInput from 'ink-select-input';
 
 export type ModelSelectorProps = {
-  command: ModelSelectCommand;
+  models: Model[];
   onModelSelect?: (modelValue: string) => void;
 }
 
 export default function ModelSelector({
-  command,
+  models,
   onModelSelect
 }: ModelSelectorProps) {
-  const models = command.models.map(model => ({
+  const items = models.map(model => ({
     label: model.label,
     value: model.value
   }));
@@ -23,7 +23,7 @@ export default function ModelSelector({
           Select Model (ESC to cancel):
         </Text>
         <SelectInput
-          items={models}
+          items={items}
           onSelect={item => onModelSelect?.(item.value)}
           onHighlight={() => {}}
         />

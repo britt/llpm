@@ -14,12 +14,12 @@ import { initializeTelemetry } from './src/utils/telemetry';
 export { validateEnvironment } from './src/utils/validation';
 
 export function App() {
-  const { 
-    messages, 
-    sendMessage, 
-    addSystemMessage, 
+  const {
+    messages,
+    sendMessage,
+    addSystemMessage,
     isLoading,
-    interactiveCommand,
+    modelSelectorModels,
     handleModelSelect,
     cancelModelSelection,
     triggerModelSelector,
@@ -36,7 +36,7 @@ export function App() {
     onSendMessage: sendMessage,
     onAddSystemMessage: addSystemMessage,
     isLoading,
-    interactiveCommand,
+    modelSelectorModels,
     onModelSelect: handleModelSelect,
     onCancelModelSelection: cancelModelSelection,
     onTriggerModelSelector: triggerModelSelector,
