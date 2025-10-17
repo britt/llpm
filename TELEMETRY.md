@@ -46,9 +46,46 @@ This means:
 - ❌ File system operations are NOT automatically traced
 - ✅ Manual tracing works perfectly
 
+## Instrumented Operations
+
+LLPM now has comprehensive tracing built into the following operations:
+
+### LLM Interactions
+- **generateResponse** - Traces AI model calls with:
+  - Model provider and name
+  - Token usage (prompt, completion, total)
+  - Tool calls and results
+  - Response length
+  - Error handling
+
+### File System Operations
+- **loadChatHistory** - Traces chat history loading with:
+  - File path and size
+  - Message counts
+  - Project context
+  - File existence checks
+- **saveChatHistory** - Traces chat history saving with:
+  - Messages saved/truncated
+  - File size
+  - Project context
+
+### Database Operations
+- **addNote** - Traces note insertion with:
+  - Project ID
+  - Embedding generation
+  - Note ID
+  - Tags presence
+
+### Network Operations
+- **getUserRepos** - Traces GitHub API calls with:
+  - API endpoint
+  - Request parameters
+  - Response counts
+  - Fallback to gh CLI if needed
+
 ## Manual Tracing
 
-To trace operations in your code, use the `traced()` utility:
+To add tracing to additional operations, use the `traced()` utility:
 
 ```typescript
 import { traced } from './src/utils/tracing';
@@ -107,7 +144,20 @@ const response = await traced('ai.generateText', {
 1. Open http://localhost:16686
 2. Select service: "llpm" from the dropdown
 3. Click "Find Traces"
-4. You should see traces from your operations
+4. You should see traces like:
+   - `llm.generateResponse` - AI model calls
+   - `fs.loadChatHistory` - File operations
+   - `fs.saveChatHistory` - File writes
+   - `db.addNote` - Database inserts
+   - `github.getUserRepos` - API calls
+
+### Trace Attributes
+
+Each trace includes rich metadata:
+- **LLM traces**: provider, model, tokens, tool calls
+- **File traces**: paths, sizes, message counts
+- **Database traces**: table names, row counts, project IDs
+- **Network traces**: endpoints, response counts, fallback status
 
 ### Test Trace
 
