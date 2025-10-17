@@ -1,7 +1,7 @@
 import { Box, Text } from 'ink';
 import type { Project } from '../types/project';
 import SelectInput from 'ink-select-input';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { listProjects } from '../utils/projectConfig';
 
 export type ProjectSelectorProps = {
@@ -10,15 +10,18 @@ export type ProjectSelectorProps = {
 
 export default function ProjectSelector({ onProjectSelect }: ProjectSelectorProps) {
   const [projects, setProjects] = useState([] as Project[]);
-  // Load available projects
-  listProjects()
-    .then(projects => {
-      setProjects(projects);
-    })
-    .catch(error => {
-      console.error('Failed to load projects:', error);
-      setProjects([]);
-    });
+
+  // Load available projects once on mount
+  useEffect(() => {
+    listProjects()
+      .then(projects => {
+        setProjects(projects);
+      })
+      .catch(error => {
+        console.error('Failed to load projects:', error);
+        setProjects([]);
+      });
+  }, []);
 
   const items = projects.map(project => ({
     label: project.name,
