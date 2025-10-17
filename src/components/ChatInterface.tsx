@@ -1,6 +1,5 @@
 import { useState, useEffect, memo, useMemo, useCallback } from 'react';
 import { Box, Text, useInput } from 'ink';
-import Spinner from 'ink-spinner';
 import type { Message } from '../types';
 import {
   getCurrentProject,
@@ -38,7 +37,7 @@ const ThinkingIndicator = memo(({ isVisible }: { isVisible: boolean }) => {
     <Box flexDirection="column" paddingX={1} paddingY={1} height={8}>
       <Box>
         <Text color="red">
-          <Spinner type="dots" /> PM is thinking...
+          PM is thinking...
         </Text>
       </Box>
       <RequestLogDisplay />
