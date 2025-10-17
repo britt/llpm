@@ -222,6 +222,35 @@ Debug logs include:
 - Loading state changes
 - Error details
 
+### Distributed Tracing
+
+LLPM includes OpenTelemetry support for distributed tracing with Jaeger. This enables comprehensive visibility into:
+
+- User request flows with hierarchical flame graphs
+- LLM interactions with token usage and tool calls
+- File system operations (config loading, chat history, system prompts)
+- Database operations (notes insertion, semantic search)
+- Network operations (GitHub API calls)
+- Individual tool executions
+
+**Quick Start:**
+
+```bash
+# Start Jaeger
+cd docker
+docker-compose up -d jaeger
+
+# Enable telemetry (enabled by default)
+export LLPM_TELEMETRY_ENABLED=1
+
+# Run LLPM with verbose logging to see trace initialization
+bun run index.ts --verbose
+
+# View traces at http://localhost:16686
+```
+
+**📖 For detailed telemetry setup and usage, see [TELEMETRY.md](TELEMETRY.md)**
+
 ## Configuration
 
 LLPM stores configuration in `~/.llpm/`:

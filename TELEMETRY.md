@@ -48,10 +48,16 @@ This means:
 
 ## Instrumented Operations
 
-LLPM now has comprehensive tracing built into the following operations:
+LLPM has comprehensive tracing built into the following operations:
+
+### User Request Flow
+- **user.request** (root span) - Traces entire user message processing:
+  - Message length and count
+  - Response length
+  - All child operations automatically nest under this span
 
 ### LLM Interactions
-- **generateResponse** - Traces AI model calls with:
+- **llm.generateResponse** - Traces AI model calls with:
   - Model provider and name
   - Token usage (prompt, completion, total)
   - Steps count (multi-step reasoning)
@@ -62,7 +68,7 @@ LLPM now has comprehensive tracing built into the following operations:
   - Error handling
 
 ### Tool Executions
-- **All tools** - Every tool execution is traced with:
+- **tool.[tool_name]** - Every tool execution is traced with:
   - Tool name and description
   - Input arguments (truncated to 500 chars)
   - Success/failure status
@@ -71,29 +77,74 @@ LLPM now has comprehensive tracing built into the following operations:
   - Execution time
 
 ### File System Operations
-- **loadChatHistory** - Traces chat history loading with:
+
+**Chat History:**
+- **fs.loadChatHistory** - Traces chat history loading with:
   - File path and size
   - Message counts
   - Project context
   - File existence checks
-- **saveChatHistory** - Traces chat history saving with:
+- **fs.saveChatHistory** - Traces chat history saving with:
   - Messages saved/truncated
   - File size
   - Project context
 
+**System Prompt:**
+- **fs.getSystemPrompt** - Traces system prompt loading with:
+  - File path and size
+  - Source (custom/default)
+  - Project context injection status
+  - Final prompt length
+- **fs.saveSystemPrompt** - Traces system prompt saving with:
+  - Prompt length
+  - File path and size
+
+**Project Configuration:**
+- **fs.loadProjectConfig** - Traces config loading with:
+  - File path and size
+  - Project count
+  - Current project status
+  - Source (file/default)
+- **fs.saveProjectConfig** - Traces config saving with:
+  - Project count
+  - Current project status
+  - File size
+- **fs.loadProjectAgentConfig** - Traces agents.yaml loading with:
+  - Project ID
+  - File path and size
+  - Agent count
+- **fs.saveProjectAgentConfig** - Traces agents.yaml saving with:
+  - Project ID
+  - Agent count
+  - File size
+
 ### Database Operations
-- **addNote** - Traces note insertion with:
+- **db.addNote** - Traces note insertion with:
   - Project ID
   - Embedding generation
   - Note ID
   - Tags presence
+- **db.searchNotesSemantica** - Traces semantic search with:
+  - Query and limit
+  - Candidates count
+  - Results count
+  - Embedding generation status
+  - Top similarity score
 
 ### Network Operations
-- **getUserRepos** - Traces GitHub API calls with:
+- **github.getUserRepos** - Traces GitHub repository listing with:
   - API endpoint
   - Request parameters
   - Response counts
   - Fallback to gh CLI if needed
+- **github.createIssue** - Traces issue creation with:
+  - Owner, repo, and title
+  - Body presence and labels count
+  - Issue number, state, and URL
+- **github.commentOnIssue** - Traces issue commenting with:
+  - Owner, repo, and issue number
+  - Comment length
+  - Comment ID and creation timestamp
 
 ## Manual Tracing
 
@@ -166,34 +217,79 @@ const response = await traced('ai.generateText', {
 ### Trace Attributes
 
 Each trace includes rich metadata:
+
+- **User Request traces**:
+  - `message.length` - User message length
+  - `message.count` - Total messages in conversation
+  - `response.length` - Assistant response length
+
 - **LLM traces**:
   - `llm.provider` - AI provider (anthropic, openai, etc.)
   - `llm.model` - Model ID
   - `llm.steps.count` - Number of reasoning steps
   - `llm.tool_calls.count` - Total tool calls across all steps
+  - `llm.tool_results.count` - Total tool results across all steps
   - `llm.tool_calls.tools` - Comma-separated list of tools called
   - `llm.usage.prompt_tokens` - Input tokens
   - `llm.usage.completion_tokens` - Output tokens
+  - `llm.usage.total_tokens` - Total tokens
+
 - **Tool traces**:
   - `tool.name` - Tool name
   - `tool.description` - Tool description
-  - `tool.args` - Input arguments (truncated)
+  - `tool.args` - Input arguments (truncated to 500 chars)
   - `tool.success` - Success boolean
   - `tool.result.length` - Result size
-- **File traces**:
+  - `tool.error` - Error message if failed
+
+- **File System traces**:
   - `file.path` - File path
+  - `file.exists` - Whether file exists
   - `file.size_kb` - File size in KB
-  - `messages.total` - Total messages
+  - `messages.total` - Total messages (chat history)
+  - `messages.loaded` - Messages loaded (chat history)
+  - `messages.saved` - Messages saved (chat history)
+  - `messages.truncated` - Whether history was truncated
   - `project.id` - Project context
+  - `prompt.source` - Source of system prompt (custom/default)
+  - `prompt.length` - Prompt length
+  - `prompt.final_length` - Final prompt length after injection
+  - `project.context_injected` - Whether project context was injected
+  - `config.source` - Config source (file/default)
+  - `projects.count` - Number of projects in config
+  - `has_current_project` - Whether a current project is set
+  - `agents.count` - Number of agents in configuration
+
 - **Database traces**:
-  - `db.operation` - insert/update/select
+  - `db.operation` - Operation type (insert/update/select/search)
   - `db.table` - Table name
   - `project.id` - Project ID
+  - `note.id` - Note ID
   - `note.has_embedding` - Whether embedding was generated
-- **Network traces**:
+  - `note.has_tags` - Whether note has tags
+  - `search.query` - Search query text (truncated to 100 chars)
+  - `search.limit` - Maximum results requested
+  - `search.candidates` - Number of candidates evaluated
+  - `search.results` - Number of results returned
+  - `search.embedding.generated` - Whether query embedding was generated
+  - `search.top_similarity` - Highest similarity score
+  - `search.fallback` - Fallback method if embedding failed
+
+- **Network traces (GitHub)**:
   - `github.api` - API endpoint
+  - `github.owner` - Repository owner
+  - `github.repo` - Repository name
   - `github.response.count` - Number of results
-  - `github.fallback` - Whether fallback was used
+  - `github.fallback` - Whether gh CLI fallback was used
+  - `github.issue.number` - Issue number
+  - `github.issue.title` - Issue title (truncated to 100 chars)
+  - `github.issue.has_body` - Whether issue has a body
+  - `github.issue.labels_count` - Number of labels
+  - `github.issue.state` - Issue state (open/closed)
+  - `github.issue.url` - Issue URL
+  - `github.comment.length` - Comment length
+  - `github.comment.id` - Comment ID
+  - `github.comment.created_at` - Comment creation timestamp
 
 ### Test Trace
 
