@@ -172,15 +172,6 @@ export function useChat() {
             setMessages([welcomeMessage]);
             shouldSaveRef.current = true; // Mark for saving
             debug('Cleared messages and reset to welcome message');
-          } else if (parsed.command === 'exit' || parsed.command === 'quit') {
-            // Special handling for exit/quit - show message but don't save it to history
-            const responseMessage: Message = {
-              role: 'ui-notification',
-              content: result.content,
-            };
-            setMessages(prev => trimMessages([...prev, responseMessage]));
-            shouldSaveRef.current = false; // DON'T mark for saving - exit message shouldn't persist
-            debug('Added exit message to display (not persisting to history)');
           } else {
             const responseMessage: Message = {
               role: 'ui-notification',

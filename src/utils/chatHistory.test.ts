@@ -98,18 +98,18 @@ describe('Chat History Save/Load Integrity', () => {
   });
 
   test('does NOT replace assistant responses with user messages on exit', async () => {
-    // Simulate a conversation before exit
-    // NOTE: Exit messages are NOT added to history in actual usage
+    // Simulate a conversation that ends with /exit
     const conversation: Message[] = [
       { role: 'assistant', content: 'Hello! How can I help you?' },
       { role: 'user', content: 'What is the current project?' },
       { role: 'assistant', content: 'The current project is LLPM.' },
       { role: 'user', content: 'Thanks' },
-      { role: 'assistant', content: 'You\'re welcome! Is there anything else?' }
-      // User types /exit - exit message is NOT persisted to history
+      { role: 'assistant', content: 'You\'re welcome! Is there anything else?' },
+      // User types /exit - this is a command, not added to history as user message
+      { role: 'ui-notification', content: '✌️ Peace out!' } // exit command response
     ];
 
-    // Save the conversation (without exit message)
+    // Save the conversation
     await saveChatHistory(conversation);
 
     // Load it back
@@ -128,9 +128,10 @@ describe('Chat History Save/Load Integrity', () => {
     expect(userMessages[0].content).toBe('What is the current project?');
     expect(userMessages[1].content).toBe('Thanks');
 
-    // Verify NO exit message in history
+    // Verify ui-notification messages are preserved
     const notifications = loadedMessages.filter(m => m.role === 'ui-notification');
-    expect(notifications.length).toBe(0);
+    expect(notifications.length).toBe(1);
+    expect(notifications[0].content).toBe('✌️ Peace out!');
   });
 
   test('handles mixed message types correctly', async () => {
@@ -174,8 +175,8 @@ describe('Chat History Save/Load Integrity', () => {
   test('flushChatHistory waits for pending saves to complete', async () => {
     const messages: Message[] = [
       { role: 'user', content: 'Test message before exit' },
-      { role: 'assistant', content: 'Response before exit' }
-      // NOTE: Exit message is NOT included in saved history
+      { role: 'assistant', content: 'Response before exit' },
+      { role: 'ui-notification', content: '✌️ Peace out!' }
     ];
 
     // Start an async save operation (don't await it yet)
