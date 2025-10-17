@@ -124,8 +124,13 @@ if (import.meta.main) {
     const enterAltScreen = '\x1b[?1049h';
     const exitAltScreen = '\x1b[?1049l';
 
+    // Disable mouse reporting to prevent scroll events from being translated to arrow keys
+    // This ensures mouse scrolling scrolls the terminal, not the input history
+    const disableMouse = '\x1b[?1000l\x1b[?1002l\x1b[?1003l\x1b[?1006l';
+
     process.stdout.write(enterAltScreen);
-    debug('Entered alternate screen buffer');
+    process.stdout.write(disableMouse);
+    debug('Entered alternate screen buffer with mouse reporting disabled');
 
     // Ensure we exit alternate screen on process exit
     const exitHandler = () => {
