@@ -8,6 +8,7 @@ import { modelRegistry } from '../services/modelRegistry';
 import type { Project } from '../types/project';
 import { RequestContext } from './requestContext';
 import { traced, getTracer } from './tracing';
+import { embeddingsFactory } from '../services/embeddings';
 
 interface ProjectNote {
   id: number;
@@ -128,50 +129,39 @@ export class ProjectDatabase {
     debug('Database tables initialized successfully');
   }
 
-  // Generate embedding for text using OpenAI embeddings API
+  // Generate embedding for text using configured embeddings provider
   private async generateEmbedding(text: string): Promise<Float32Array | null> {
     try {
       debug('Generating embedding for text:', text.substring(0, 50) + '...');
-      
-      // Initialize model registry if needed
-      await modelRegistry.init();
-      
-      // Try to get OpenAI embeddings first
-      try {
-        const { openai } = await import('@ai-sdk/openai');
-        const { embed } = await import('ai');
-        
-        // Use OpenAI's text-embedding-3-small model (1536 dimensions)
-        const result = await embed({
-          model: openai.embedding('text-embedding-3-small', {
-            dimensions: 1536
-          }),
-          value: text,
-          experimental_telemetry: {
-            isEnabled: true,
-            tracer: getTracer(),
-            functionId: 'llpm.generateEmbedding',
-            metadata: {
-              textLength: text.length,
-              dimensions: 1536,
-              model: 'text-embedding-3-small'
-            }
-          }
-        });
-        
-        const embedding = new Float32Array(result.embedding);
-        debug('Generated OpenAI embedding with', embedding.length, 'dimensions');
-        return embedding;
-      } catch (openaiError) {
-        debug('OpenAI embedding failed, trying fallback:', openaiError);
-        
-        // Fallback to simple embedding if OpenAI is not available
-        const fallbackEmbedding = await this.createSimpleEmbedding(text);
-        return fallbackEmbedding;
+
+      // Get provider from factory (auto-selects best available)
+      const provider = await embeddingsFactory.getProvider();
+      debug('Using embeddings provider:', provider.getName());
+
+      // Generate embedding
+      const result = await provider.generateEmbedding(text);
+
+      if (result) {
+        debug(`Generated embedding with ${result.dimensions} dimensions using ${result.model}`);
+        return result.embedding;
       }
+
+      // If provider fails, fall back to simple embedding
+      debug('Provider failed, using fallback simple embedding');
+      const fallbackEmbedding = await this.createSimpleEmbedding(text);
+      return fallbackEmbedding;
+
     } catch (error) {
       debug('Error generating embedding:', error);
-      return null;
+
+      // Final fallback to simple embedding
+      try {
+        const fallbackEmbedding = await this.createSimpleEmbedding(text);
+        return fallbackEmbedding;
+      } catch (fallbackError) {
+        debug('Even fallback embedding failed:', fallbackError);
+        return null;
+      }
     }
   }
 
