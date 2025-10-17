@@ -395,74 +395,90 @@ export async function createIssue(
   body?: string,
   labels?: string[]
 ): Promise<GitHubIssue> {
-  debug('Creating GitHub issue:', owner, repo, title);
-
-  try {
-    await initializeOctokit();
-    const octokit = getOctokit();
-
-    const apiParams = {
-      owner,
-      repo,
-      title,
-      ...(body && { body }),
-      ...(labels && labels.length > 0 && { labels })
-    };
-
-    if (getVerbose()) {
-      debug('🌐 GitHub API Call: POST /repos/:owner/:repo/issues');
-      debug('📋 Parameters:', JSON.stringify(apiParams, null, 2));
+  return traced('github.createIssue', {
+    attributes: {
+      'github.api': 'issues.create',
+      'github.owner': owner,
+      'github.repo': repo,
+      'github.issue.title': title.substring(0, 100),
+      'github.issue.has_body': !!body,
+      'github.issue.labels_count': labels?.length || 0
     }
+  }, async (span) => {
+    debug('Creating GitHub issue:', owner, repo, title);
 
-    const { data } = await octokit.rest.issues.create(apiParams);
+    try {
+      await initializeOctokit();
+      const octokit = getOctokit();
 
-    if (getVerbose()) {
-      debug('✅ GitHub API Response: issue created');
-      debug(
-        '📊 Response data:',
-        JSON.stringify(
-          {
-            number: data.number,
-            title: data.title,
-            state: data.state,
-            html_url: data.html_url,
-            user: data.user?.login
-          },
-          null,
-          2
-        )
-      );
+      const apiParams = {
+        owner,
+        repo,
+        title,
+        ...(body && { body }),
+        ...(labels && labels.length > 0 && { labels })
+      };
+
+      if (getVerbose()) {
+        debug('🌐 GitHub API Call: POST /repos/:owner/:repo/issues');
+        debug('📋 Parameters:', JSON.stringify(apiParams, null, 2));
+      }
+
+      const { data } = await octokit.rest.issues.create(apiParams);
+
+      span.setAttribute('github.issue.number', data.number);
+      span.setAttribute('github.issue.state', data.state);
+      span.setAttribute('github.issue.url', data.html_url);
+
+      if (getVerbose()) {
+        debug('✅ GitHub API Response: issue created');
+        debug(
+          '📊 Response data:',
+          JSON.stringify(
+            {
+              number: data.number,
+              title: data.title,
+              state: data.state,
+              html_url: data.html_url,
+              user: data.user?.login
+            },
+            null,
+            2
+          )
+        );
+      }
+
+      const issue: GitHubIssue = {
+        id: data.id,
+        node_id: data.node_id,
+        number: data.number,
+        title: data.title,
+        body: data.body || null,
+        state: data.state as 'open' | 'closed',
+        html_url: data.html_url,
+        user: {
+          login: data.user?.login || 'unknown',
+          html_url: data.user?.html_url || ''
+        },
+        labels:
+          data.labels?.map(label => ({
+            name: typeof label === 'string' ? label : label.name || '',
+            color: typeof label === 'string' ? '' : label.color || ''
+          })) || [],
+        created_at: data.created_at,
+        updated_at: data.updated_at
+      };
+
+      debug('Created issue #' + issue.number + ':', issue.title);
+      return issue;
+    } catch (error) {
+      debug('Error creating GitHub issue:', error instanceof Error ? error.message : 'Unknown error');
+      if (error instanceof Error) {
+        throw new Error(`Failed to create GitHub issue: ${error.message}`);
+      }
+      throw new Error('Failed to create GitHub issue: Unknown error');
     }
-
-    const issue: GitHubIssue = {
-      id: data.id,
-      number: data.number,
-      title: data.title,
-      body: data.body || null,
-      state: data.state as 'open' | 'closed',
-      html_url: data.html_url,
-      user: {
-        login: data.user?.login || 'unknown',
-        html_url: data.user?.html_url || ''
-      },
-      labels:
-        data.labels?.map(label => ({
-          name: typeof label === 'string' ? label : label.name || '',
-          color: typeof label === 'string' ? '' : label.color || ''
-        })) || [],
-      created_at: data.created_at,
-      updated_at: data.updated_at
-    };
-
-    debug('Created issue #' + issue.number + ':', issue.title);
-    return issue;
-  } catch (error) {
-    debug('Error creating GitHub issue:', error instanceof Error ? error.message : 'Unknown error');
-    if (error instanceof Error) {
-      throw new Error(`Failed to create GitHub issue: ${error.message}`);
-    }
-    throw new Error('Failed to create GitHub issue: Unknown error');
-  }
+  });
 }
 
 export async function listIssues(
@@ -633,60 +649,73 @@ export async function commentOnIssue(
   issueNumber: number,
   body: string
 ): Promise<{ id: number; html_url: string; created_at: string }> {
-  debug('Adding comment to GitHub issue:', owner, repo, issueNumber);
-
-  try {
-    await initializeOctokit();
-    const octokit = getOctokit();
-
-    const apiParams = {
-      owner,
-      repo,
-      issue_number: issueNumber,
-      body
-    };
-
-    if (getVerbose()) {
-      debug('🌐 GitHub API Call: POST /repos/:owner/:repo/issues/:issue_number/comments');
-      debug('📋 Parameters:', JSON.stringify(apiParams, null, 2));
+  return traced('github.commentOnIssue', {
+    attributes: {
+      'github.api': 'issues.createComment',
+      'github.owner': owner,
+      'github.repo': repo,
+      'github.issue.number': issueNumber,
+      'github.comment.length': body.length
     }
+  }, async (span) => {
+    debug('Adding comment to GitHub issue:', owner, repo, issueNumber);
 
-    const { data } = await octokit.rest.issues.createComment(apiParams);
+    try {
+      await initializeOctokit();
+      const octokit = getOctokit();
 
-    if (getVerbose()) {
-      debug('✅ GitHub API Response: comment created');
-      debug(
-        '📊 Response data:',
-        JSON.stringify(
-          {
-            id: data.id,
-            html_url: data.html_url,
-            body_preview: data.body?.substring(0, 100) + '...'
-          },
-          null,
-          2
-        )
-      );
-    }
+      const apiParams = {
+        owner,
+        repo,
+        issue_number: issueNumber,
+        body
+      };
 
-    const comment = {
-      id: data.id,
+      if (getVerbose()) {
+        debug('🌐 GitHub API Call: POST /repos/:owner/:repo/issues/:issue_number/comments');
+        debug('📋 Parameters:', JSON.stringify(apiParams, null, 2));
+      }
+
+      const { data } = await octokit.rest.issues.createComment(apiParams);
+
+      span.setAttribute('github.comment.id', data.id);
+      span.setAttribute('github.comment.url', data.html_url);
+
+      if (getVerbose()) {
+        debug('✅ GitHub API Response: comment created');
+        debug(
+          '📊 Response data:',
+          JSON.stringify(
+            {
+              id: data.id,
+              html_url: data.html_url,
+              body_preview: data.body?.substring(0, 100) + '...'
+            },
+            null,
+            2
+          )
+        );
+      }
+
+      const comment = {
+        id: data.id,
       html_url: data.html_url,
       created_at: data.created_at
     };
 
-    debug('Created comment #' + comment.id + ' on issue #' + issueNumber);
-    return comment;
-  } catch (error) {
-    debug(
-      'Error commenting on GitHub issue:',
-      error instanceof Error ? error.message : 'Unknown error'
-    );
-    if (error instanceof Error) {
-      throw new Error(`Failed to comment on GitHub issue: ${error.message}`);
+      debug('Created comment #' + comment.id + ' on issue #' + issueNumber);
+      return comment;
+    } catch (error) {
+      debug(
+        'Error commenting on GitHub issue:',
+        error instanceof Error ? error.message : 'Unknown error'
+      );
+      if (error instanceof Error) {
+        throw new Error(`Failed to comment on GitHub issue: ${error.message}`);
+      }
+      throw new Error('Failed to comment on GitHub issue: Unknown error');
     }
-    throw new Error('Failed to comment on GitHub issue: Unknown error');
-  }
+  });
 }
 
 export async function getIssueWithComments(

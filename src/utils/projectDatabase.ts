@@ -382,42 +382,64 @@ export class ProjectDatabase {
   }
 
   async searchNotesSemantica(query: string, limit: number = 10): Promise<Array<ProjectNote & { similarity: number }>> {
-    debug('Performing semantic search for query:', query);
-    
-    // Generate embedding for the search query
-    const queryEmbedding = await this.generateEmbedding(query);
-    if (!queryEmbedding) {
-      debug('Could not generate query embedding, falling back to text search');
-      return this.searchNotes(query).slice(0, limit).map(note => ({ ...note, similarity: 0 }));
-    }
+    return traced('db.searchNotesSemantica', {
+      attributes: {
+        'db.operation': 'search',
+        'db.table': 'notes',
+        'project.id': this.projectId,
+        'search.query': query.substring(0, 100),
+        'search.limit': limit
+      }
+    }, async (span) => {
+      debug('Performing semantic search for query:', query);
 
-    // Since VSS extension is not available with bun:sqlite, use cosine similarity search
-    // This is the permanent solution for issue #58
-    debug('Using cosine similarity search for notes (VSS not available with bun:sqlite)');
-    
-    // Use manual similarity calculation
-    const stmt = this.db.prepare(`
-      SELECT * FROM notes WHERE embedding IS NOT NULL
-    `);
-    const notes = stmt.all() as ProjectNote[];
-    
-    // Calculate similarities
-    const results: Array<ProjectNote & { similarity: number }> = [];
-    
-    for (const note of notes) {
-      if (!note.embedding) continue;
-      
-      // Convert blob back to Float32Array
-      const embeddingBuffer = Buffer.from(note.embedding as any);
-      const noteEmbedding = new Float32Array(embeddingBuffer.buffer);
-      
-      const similarity = this.cosineSimilarity(queryEmbedding, noteEmbedding);
-      results.push({ ...note, similarity });
-    }
-    
-    // Sort by similarity (highest first) and limit results
-    results.sort((a, b) => b.similarity - a.similarity);
-    return results.slice(0, limit);
+      // Generate embedding for the search query
+      const queryEmbedding = await this.generateEmbedding(query);
+      if (!queryEmbedding) {
+        debug('Could not generate query embedding, falling back to text search');
+        span.setAttribute('search.fallback', 'text');
+        return this.searchNotes(query).slice(0, limit).map(note => ({ ...note, similarity: 0 }));
+      }
+
+      span.setAttribute('search.embedding.generated', true);
+
+      // Since VSS extension is not available with bun:sqlite, use cosine similarity search
+      // This is the permanent solution for issue #58
+      debug('Using cosine similarity search for notes (VSS not available with bun:sqlite)');
+
+      // Use manual similarity calculation
+      const stmt = this.db.prepare(`
+        SELECT * FROM notes WHERE embedding IS NOT NULL
+      `);
+      const notes = stmt.all() as ProjectNote[];
+
+      span.setAttribute('search.candidates', notes.length);
+
+      // Calculate similarities
+      const results: Array<ProjectNote & { similarity: number }> = [];
+
+      for (const note of notes) {
+        if (!note.embedding) continue;
+
+        // Convert blob back to Float32Array
+        const embeddingBuffer = Buffer.from(note.embedding as any);
+        const noteEmbedding = new Float32Array(embeddingBuffer.buffer);
+
+        const similarity = this.cosineSimilarity(queryEmbedding, noteEmbedding);
+        results.push({ ...note, similarity });
+      }
+
+      // Sort by similarity (highest first) and limit results
+      results.sort((a, b) => b.similarity - a.similarity);
+      const limitedResults = results.slice(0, limit);
+
+      span.setAttribute('search.results', limitedResults.length);
+      if (limitedResults.length > 0) {
+        span.setAttribute('search.top_similarity', limitedResults[0].similarity);
+      }
+
+      return limitedResults;
+    });
   }
 
   // File operations
