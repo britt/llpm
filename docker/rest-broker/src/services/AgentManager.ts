@@ -206,7 +206,8 @@ export class AgentManager extends EventEmitter {
 
         // Create unique agent ID with instance number
         const agentId = `${agentType}-${instanceNum}`;
-        const hasAuthConfig = authType === 'subscription' && agentMetadata.provider && agentMetadata.model;
+        const hasAuthConfig = agentMetadata.provider && agentMetadata.model;
+        const needsAuth = authType === 'subscription' && hasAuthConfig;
 
         // Get workspace path from Docker inspect
         const workspacePath = await this.getContainerWorkspacePath(containerName);
@@ -219,12 +220,12 @@ export class AgentManager extends EventEmitter {
           health: {
             status: 'unknown',
             lastCheck: now,
-            authenticated: hasAuthConfig ? false : undefined,
-            message: hasAuthConfig ? 'Agent initialized - awaiting authentication' : undefined,
+            authenticated: needsAuth ? false : undefined,
+            message: needsAuth ? 'Agent initialized - awaiting authentication' : undefined,
           },
           registeredAt: now,
           lastHeartbeat: now,
-          authType: hasAuthConfig ? 'subscription' : 'api_key',
+          authType: authType,
           provider: hasAuthConfig ? agentMetadata.provider : undefined,
           model: hasAuthConfig ? agentMetadata.model : undefined,
           baseUrl: agentMetadata.baseUrl,
@@ -412,8 +413,10 @@ export class AgentManager extends EventEmitter {
       return false;
     }
 
-    // Default to 'api_key' auth type if not specified
-    const authType = agentData.authType || 'api_key';
+    // Use provided authType, fallback to env AGENT_AUTH_TYPE, then default to 'api_key'
+    const authType = agentData.authType ||
+                     (process.env.AGENT_AUTH_TYPE as 'subscription' | 'api_key') ||
+                     'api_key';
 
     // Validate that subscription agents have provider and model
     if (authType === 'subscription') {
@@ -574,16 +577,22 @@ export class AgentManager extends EventEmitter {
   }
 
   private startPeriodicCleanup(): void {
-    // Schedule periodic cleanup of stale agents
-    // Default to 2 minutes (120000ms) to catch agents that go offline during runtime
+    // Schedule periodic cleanup of stale agents AND discovery of new agents
+    // Default to 2 minutes (120000ms) to catch agents that go offline/online during runtime
     const interval = parseInt(process.env.CLEANUP_INTERVAL || '120000');
     this.cleanupInterval = setInterval(() => {
-      this.cleanupStaleAgents().catch(error => {
+      // First rediscover all running containers
+      this.discoverAgentContainers().catch(error => {
+        logger.error('Periodic discovery failed:', error);
+      }).then(() => {
+        // Then cleanup stale agents
+        return this.cleanupStaleAgents();
+      }).catch(error => {
         logger.error('Periodic cleanup failed:', error);
       });
     }, interval);
 
-    logger.info(`Started periodic stale agent cleanup with interval=${interval}ms`);
+    logger.info(`Started periodic agent discovery and cleanup with interval=${interval}ms`);
   }
 
   private async checkAllAgentAuth(): Promise<void> {
@@ -601,6 +610,15 @@ export class AgentManager extends EventEmitter {
    */
   async verifyAllAgentsAuth(): Promise<void> {
     await this.checkAllAgentAuth();
+  }
+
+  /**
+   * Public method to refresh the agent list by rediscovering containers
+   * Can be called from API endpoints to update the agent list on demand
+   */
+  async refreshAgents(): Promise<void> {
+    await this.discoverAgentContainers();
+    await this.cleanupStaleAgents();
   }
 
   private async verifyAgentAuth(agent: Agent): Promise<void> {

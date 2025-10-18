@@ -43,8 +43,16 @@ Perfect for developers who want to organize multiple projects, interact with Git
 
 ## Prerequisites
 
+### Required
 - [Bun](https://bun.com) runtime
 - At least one AI provider API key (see configuration below)
+
+### Optional (for local embeddings)
+- **Python 3.8+** - For local text embeddings using bge-base-en-v1.5
+- **Python packages**: `torch`, `transformers` (install via `./scripts/embeddings/setup.sh`)
+- Without Python, LLPM will use OpenAI embeddings API (requires `OPENAI_API_KEY`)
+
+> **Note**: Local embeddings provide better privacy and cost savings but require ~420MB model download on first use. See [Local Embeddings Guide](scripts/embeddings/README.md) for details.
 
 ## Setup
 
@@ -54,7 +62,17 @@ Perfect for developers who want to organize multiple projects, interact with Git
    bun install
    ```
 
-2. **Configure environment variables:**
+2. **[Optional] Set up local embeddings:**
+
+   If you want to use local embeddings (better privacy, cost savings):
+
+   ```bash
+   ./scripts/embeddings/setup.sh
+   ```
+
+   This installs Python dependencies for local text embeddings. Without this, LLPM will use OpenAI embeddings (requires `OPENAI_API_KEY`).
+
+3. **Configure environment variables:**
 
    ```bash
    cp .env.example .env

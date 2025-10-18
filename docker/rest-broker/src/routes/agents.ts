@@ -6,8 +6,9 @@ export const agentsRouter = Router();
 agentsRouter.get('/', async (req: Request, res: Response) => {
   const agentManager: AgentManager = req.app.locals.agentManager;
 
-  // If verifyAuth=true query parameter is present, trigger auth verification before returning agents
+  // If verifyAuth=true query parameter is present, refresh agent list and verify auth
   if (req.query.verifyAuth === 'true') {
+    await agentManager.refreshAgents();
     await agentManager.verifyAllAgentsAuth();
   }
 
