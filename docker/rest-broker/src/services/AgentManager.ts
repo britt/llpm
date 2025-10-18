@@ -577,16 +577,22 @@ export class AgentManager extends EventEmitter {
   }
 
   private startPeriodicCleanup(): void {
-    // Schedule periodic cleanup of stale agents
-    // Default to 2 minutes (120000ms) to catch agents that go offline during runtime
+    // Schedule periodic cleanup of stale agents AND discovery of new agents
+    // Default to 2 minutes (120000ms) to catch agents that go offline/online during runtime
     const interval = parseInt(process.env.CLEANUP_INTERVAL || '120000');
     this.cleanupInterval = setInterval(() => {
-      this.cleanupStaleAgents().catch(error => {
+      // First rediscover all running containers
+      this.discoverAgentContainers().catch(error => {
+        logger.error('Periodic discovery failed:', error);
+      }).then(() => {
+        // Then cleanup stale agents
+        return this.cleanupStaleAgents();
+      }).catch(error => {
         logger.error('Periodic cleanup failed:', error);
       });
     }, interval);
 
-    logger.info(`Started periodic stale agent cleanup with interval=${interval}ms`);
+    logger.info(`Started periodic agent discovery and cleanup with interval=${interval}ms`);
   }
 
   private async checkAllAgentAuth(): Promise<void> {
