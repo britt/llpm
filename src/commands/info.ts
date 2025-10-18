@@ -9,7 +9,7 @@ import { embeddingsFactory } from '../services/embeddings';
 
 const packageInfo = {
   name: 'LLPM',
-  version: '0.11.0',
+  version: '0.14.0',
   description: 'AI-powered Large Language Model Product Manager'
 };
 

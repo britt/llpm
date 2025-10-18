@@ -144,7 +144,7 @@ export async function sendTestTrace(): Promise<void> {
   }
 
   const { trace, SpanStatusCode } = await import('@opentelemetry/api');
-  const tracer = trace.getTracer('llpm', '0.13.0');
+  const tracer = trace.getTracer('llpm', '0.14.0');
 
   const span = tracer.startSpan('llpm.startup');
   span.setAttribute('test', true);
