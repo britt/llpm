@@ -5,6 +5,11 @@ echo "Starting Claude Code environment as user: $(whoami)"
 echo "Home directory: $HOME"
 echo "Working directory: $(pwd)"
 
+# Initialize skills directories and repository
+if [ -x /usr/local/bin/init-skills.sh ]; then
+    /usr/local/bin/init-skills.sh
+fi
+
 # In subscription mode, remove ANTHROPIC_API_KEY and set base URL to /claude endpoint
 # This must be done FIRST before any other commands that might use it
 if [ "${AGENT_AUTH_TYPE:-api_key}" = "subscription" ]; then
@@ -76,6 +81,18 @@ if [ "$1" = "/bin/bash" ] && command -v claude &> /dev/null; then
     echo "Run: claude $CLAUDE_CLI_OPTS [additional-args]"
     echo ""
     echo "After authenticating with Claude, run: signal-authenticated"
+    echo ""
+    echo "Skills directories:"
+    echo "  - Public skills: /mnt/skills/public"
+    echo "  - User skills: /mnt/skills/user"
+    echo ""
+    echo "To install Superpowers plugin after authentication, run: install-plugins.sh"
+fi
+
+# Optional: Auto-install plugins if SKILLS_INSTALL_PLUGINS is enabled
+# This requires prior authentication, so it's best done manually or via a post-auth hook
+if [ "${SKILLS_INSTALL_PLUGINS:-false}" = "true" ]; then
+    echo "Note: SKILLS_INSTALL_PLUGINS is enabled. Run 'install-plugins.sh' after authentication."
 fi
 
 # If the command is specifically 'claude', add default options
