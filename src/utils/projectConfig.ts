@@ -7,9 +7,54 @@ import { URL } from 'url';
 import * as yaml from 'js-yaml';
 import { traced } from './tracing';
 
+// Cache for project config to avoid repeated filesystem reads
+let projectConfigCache: ProjectConfig | null = null;
+let projectConfigPromise: Promise<ProjectConfig> | null = null;
+let cacheHits = 0;
+let cacheMisses = 0;
+
+/**
+ * Clear the project config cache
+ * Call this after any operation that modifies the project config
+ */
+function invalidateProjectConfigCache(): void {
+  debug('Invalidating project config cache');
+  projectConfigCache = null;
+  projectConfigPromise = null;
+}
+
+/**
+ * Get cache statistics for monitoring
+ */
+export function getProjectConfigCacheStats(): { hits: number; misses: number; hitRate: number } {
+  const total = cacheHits + cacheMisses;
+  return {
+    hits: cacheHits,
+    misses: cacheMisses,
+    hitRate: total > 0 ? cacheHits / total : 0
+  };
+}
+
 export async function loadProjectConfig(): Promise<ProjectConfig> {
-  return traced('fs.loadProjectConfig', {
-    attributes: {}
+  // Return cached value if available
+  if (projectConfigCache !== null) {
+    cacheHits++;
+    debug('Using cached project config (cache hit)');
+    return projectConfigCache;
+  }
+
+  // In-flight deduplication: if a load is already in progress, return that promise
+  if (projectConfigPromise !== null) {
+    debug('Sharing in-flight project config load');
+    return projectConfigPromise;
+  }
+
+  // Start a new load and cache the promise for in-flight deduplication
+  cacheMisses++;
+  projectConfigPromise = traced('fs.loadProjectConfig', {
+    attributes: {
+      'cache.hit': false
+    }
   }, async (span) => {
     try {
       await ensureConfigDir();
@@ -69,6 +114,17 @@ export async function loadProjectConfig(): Promise<ProjectConfig> {
       };
     }
   });
+
+  try {
+    // Wait for the promise to complete
+    const config = await projectConfigPromise;
+    // Cache the result for future calls
+    projectConfigCache = config;
+    return config;
+  } finally {
+    // Clear the in-flight promise so next call will check cache first
+    projectConfigPromise = null;
+  }
 }
 
 export async function saveProjectConfig(config: ProjectConfig): Promise<void> {
@@ -79,6 +135,9 @@ export async function saveProjectConfig(config: ProjectConfig): Promise<void> {
     }
   }, async (span) => {
     debug('Saving project configuration');
+
+    // Invalidate cache since we're writing new data
+    invalidateProjectConfigCache();
 
     try {
       await ensureConfigDir();
