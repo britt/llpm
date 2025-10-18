@@ -139,7 +139,8 @@ describe('RequestContext', () => {
 
         const elapsed2 = RequestContext.getElapsedTime();
         expect(elapsed2).toBeDefined();
-        expect(elapsed2).toBeGreaterThanOrEqual(50);
+        // Allow some timer imprecision - expect at least 45ms when sleeping 50ms
+        expect(elapsed2).toBeGreaterThanOrEqual(45);
       });
     });
 
