@@ -314,9 +314,17 @@ services:
   jaeger:
     image: jaegertracing/all-in-one:latest
     container_name: jaeger
+    depends_on:
+      - prometheus
     environment:
       - COLLECTOR_OTLP_ENABLED=true
       - COLLECTOR_ZIPKIN_HOST_PORT=:9411
+      # Service Performance Monitoring (SPM) with Prometheus
+      - METRICS_STORAGE_TYPE=prometheus
+      - PROMETHEUS_SERVER_URL=http://prometheus:9090
+      - PROMETHEUS_QUERY_SUPPORT_SPANMETRICS_CONNECTOR=true
+      - PROMETHEUS_QUERY_NAMESPACE=span_metrics
+      - PROMETHEUS_QUERY_DURATION_UNIT=ms
     ports:
       - "16686:16686"  # Jaeger UI
       - "4318:4318"    # OTLP HTTP receiver
@@ -324,10 +332,36 @@ services:
       - "14268:14268"  # Jaeger collector HTTP
       - "14250:14250"  # Jaeger collector gRPC
       - "9411:9411"    # Zipkin compatible endpoint
+      - "14269:14269"  # Prometheus metrics endpoint
     networks:
       - llpm-network
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:16686/"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+
+  # Prometheus - Metrics Storage for Jaeger SPM
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+      - '--web.enable-lifecycle'
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    ports:
+      - "9090:9090"  # Prometheus UI
+    networks:
+      - llpm-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:9090/-/healthy"]
       interval: 30s
       timeout: 3s
       retries: 3
@@ -344,4 +378,6 @@ volumes:
   ollama-data:
     driver: local
   postgres-data:
+    driver: local
+  prometheus-data:
     driver: local
