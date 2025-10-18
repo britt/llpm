@@ -612,6 +612,15 @@ export class AgentManager extends EventEmitter {
     await this.checkAllAgentAuth();
   }
 
+  /**
+   * Public method to refresh the agent list by rediscovering containers
+   * Can be called from API endpoints to update the agent list on demand
+   */
+  async refreshAgents(): Promise<void> {
+    await this.discoverAgentContainers();
+    await this.cleanupStaleAgents();
+  }
+
   private async verifyAgentAuth(agent: Agent): Promise<void> {
     if (!agent.provider) {
       logger.debug(`Agent ${agent.id} has no provider, skipping auth verification`);
