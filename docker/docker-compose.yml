@@ -23,7 +23,7 @@ services:
       - LITELLM_MASTER_KEY=${LITELLM_MASTER_KEY:-sk-1234}
       - AUTH_ENABLED=${AUTH_ENABLED:-false}
       - AUTH_TOKEN=${AUTH_TOKEN}
-      - AGENT_AUTH_TYPE=${AGENT_AUTH_TYPE:-api_key}
+      - AGENT_AUTH_TYPE=${AGENT_AUTH_TYPE:-subscription}
       - CLAUDE_MODEL=${CLAUDE_MODEL:-claude-3-5-sonnet-20241022}
       - OPENAI_MODEL=${OPENAI_MODEL:-gpt-4-turbo-preview}
       # OpenTelemetry configuration for Jaeger
@@ -141,7 +141,7 @@ services:
       - CLAUDE_MODEL=${CLAUDE_MODEL:-}
       - CLAUDE_CLI_OPTIONS=${CLAUDE_CLI_OPTIONS:-}
       # Agent registration configuration
-      - AGENT_AUTH_TYPE=${AGENT_AUTH_TYPE:-api_key}
+      - AGENT_AUTH_TYPE=${AGENT_AUTH_TYPE:-subscription}
       - AGENT_PROVIDER=claude
       - AGENT_MODEL=${CLAUDE_MODEL:-claude-sonnet-4-5}
       # OpenTelemetry configuration for Jaeger
@@ -187,7 +187,7 @@ services:
       - OPENAI_ORG_ID=${OPENAI_ORG_ID}
       - OPENAI_CLI_OPTIONS=${OPENAI_CLI_OPTIONS:-}
       # Agent registration configuration
-      - AGENT_AUTH_TYPE=${AGENT_AUTH_TYPE:-api_key}
+      - AGENT_AUTH_TYPE=${AGENT_AUTH_TYPE:-subscription}
       - AGENT_PROVIDER=openai
       - AGENT_MODEL=${OPENAI_MODEL:-gpt-4-turbo-preview}
       # OpenTelemetry configuration for Jaeger
