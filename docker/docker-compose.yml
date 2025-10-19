@@ -154,6 +154,8 @@ services:
     volumes:
       - ${HOME}/.ssh:/home/claude/.ssh:ro
       - ${HOME}/.gitconfig:/home/claude/.gitconfig:ro
+      # Mount user skills directory from host for persistence
+      - ${HOME}/.llpm/skills/user:/mnt/skills/user
     stdin_open: true
     tty: true
     networks:

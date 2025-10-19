@@ -51,8 +51,8 @@ if [ ! -d "$SKILLS_REPO_PATH/.git" ]; then
 else
     echo "Skills repository already exists at $SKILLS_REPO_PATH"
 
-    # Optional: update repository if SKILLS_AUTO_PULL is enabled
-    if [ "${SKILLS_AUTO_PULL:-false}" = "true" ]; then
+    # Optional: update repository if SKILLS_AUTO_PULL is enabled (default: true)
+    if [ "${SKILLS_AUTO_PULL:-true}" = "true" ]; then
         echo "Auto-updating skills repository..."
         (cd "$SKILLS_REPO_PATH" && git pull --ff-only) || {
             echo "Warning: Failed to auto-update skills repository (continuing anyway)"
