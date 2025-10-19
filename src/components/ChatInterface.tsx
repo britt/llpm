@@ -180,7 +180,8 @@ const MessageItem = memo(({ message }: { message: Message }) => {
   );
 });
 
-// TODO: implement buffering of messages
+// Message buffering is implemented in index.ts App component
+// Only RENDER_WINDOW_SIZE messages are passed here to reduce rerenders
 function MessageList({ messages }: { messages: Message[] }) {
   return (
     <>
