@@ -78,15 +78,18 @@ fi
 # If starting an interactive shell and Claude CLI exists, show options
 if [ "$1" = "/bin/bash" ] && command -v claude &> /dev/null; then
     echo "Claude Code CLI available. Default options: $CLAUDE_CLI_OPTS"
-    echo "Run: claude $CLAUDE_CLI_OPTS [additional-args]"
     echo ""
-    echo "After authenticating with Claude, run: signal-authenticated"
+    echo "🚀 Quick Start:"
+    echo "  auth-and-setup.sh    - Authenticate with Claude & install plugins (recommended)"
+    echo ""
+    echo "Manual Setup:"
+    echo "  claude login         - Authenticate with Claude"
+    echo "  signal-authenticated - Signal REST broker after authentication"
+    echo "  install-plugins.sh   - Install Superpowers plugin"
     echo ""
     echo "Skills directories:"
     echo "  - Public skills: /mnt/skills/public"
     echo "  - User skills: /mnt/skills/user"
-    echo ""
-    echo "To install Superpowers plugin after authentication, run: install-plugins.sh"
 fi
 
 # Optional: Auto-install plugins if SKILLS_INSTALL_PLUGINS is enabled

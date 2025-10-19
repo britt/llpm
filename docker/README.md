@@ -326,15 +326,44 @@ When enabled, the container will run `git pull` on startup to update the skills 
 
 ### Plugin Installation
 
-After authenticating with Claude, you can install the Superpowers marketplace plugin:
+The `claude-code` container provides automated plugin installation to set up the Superpowers marketplace.
 
-#### Manual Installation
+#### Automated Setup (Recommended)
+
+Use the interactive `auth-and-setup.sh` script to authenticate and install plugins in one step:
 
 ```bash
 # 1. Connect to the container
 docker exec -it docker-claude-code-1 bash
 
-# 2. Authenticate with Claude (if not already authenticated)
+# 2. Run the automated setup script
+auth-and-setup.sh
+```
+
+The `auth-and-setup.sh` script will:
+- Guide you through Claude authentication (interactive)
+- Detect when authentication is complete
+- Automatically install the Superpowers marketplace
+- Automatically install the Superpowers plugin
+- Signal the REST broker that authentication is complete
+- Verify plugin installation
+
+**Features:**
+- ✅ Interactive - guides you through each step
+- ✅ Idempotent - safe to run multiple times
+- ✅ Works in both API key and subscription modes
+- ✅ Automatically verifies authentication before installing plugins
+- ✅ Shows clear success/failure messages
+
+#### Manual Installation (Alternative)
+
+If you prefer manual control, you can authenticate and install plugins separately:
+
+```bash
+# 1. Connect to the container
+docker exec -it docker-claude-code-1 bash
+
+# 2. Authenticate with Claude
 claude login
 signal-authenticated
 
@@ -342,7 +371,7 @@ signal-authenticated
 install-plugins.sh
 ```
 
-The `install-plugins.sh` script automatically:
+The `install-plugins.sh` script:
 - Adds the Superpowers marketplace
 - Installs the Superpowers plugin
 - Handles idempotent installation (safe to run multiple times)
