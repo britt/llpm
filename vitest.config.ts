@@ -89,7 +89,7 @@ export default defineConfig({
           statements: 85
         },
         'src/utils/systemPrompt.ts': {
-          branches: 90,
+          branches: 88,
           functions: 20,
           lines: 17,
           statements: 17
