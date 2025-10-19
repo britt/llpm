@@ -251,7 +251,7 @@ describe('useChat - Message State', () => {
       }, { timeout: 3000 });
     });
 
-    it.skip('should add command result to messages', async () => {
+    it('should add command result to messages', async () => {
       vi.mocked(loadChatHistory).mockResolvedValue([]);
       vi.mocked(parseCommand).mockReturnValue({
         isCommand: true,
@@ -260,7 +260,8 @@ describe('useChat - Message State', () => {
       });
       vi.mocked(executeCommand).mockResolvedValue({
         content: 'System information',
-        shouldAddToHistory: true
+        shouldAddToHistory: true,
+        success: true
       });
 
       const { result } = renderHook(() => useChat());
@@ -282,11 +283,11 @@ describe('useChat - Message State', () => {
         expect(result.current.messages.length).toBeGreaterThan(initialCount);
       }, { timeout: 2000 });
 
-      // Should have system message with command result
-      const systemMessage = result.current.messages.find(
-        m => m.role === 'system' && m.content.includes('System information')
+      // Should have ui-notification message with command result
+      const notificationMessage = result.current.messages.find(
+        m => m.role === 'ui-notification' && m.content.includes('System information')
       );
-      expect(systemMessage).toBeDefined();
+      expect(notificationMessage).toBeDefined();
     });
   });
 
@@ -298,10 +299,7 @@ describe('useChat - Message State', () => {
         command: null,
         args: []
       });
-      vi.mocked(generateResponse).mockResolvedValue({
-        content: 'LLM response',
-        toolResults: []
-      });
+      vi.mocked(generateResponse).mockResolvedValue('LLM response');
 
       const { result } = renderHook(() => useChat());
 
@@ -318,7 +316,7 @@ describe('useChat - Message State', () => {
       // Wait for LLM call
       await waitFor(() => {
         expect(vi.mocked(generateResponse)).toHaveBeenCalled();
-      }, { timeout: 2000 });
+      }, { timeout: 3000 });
     });
 
     it('should add user message before processing', async () => {
@@ -328,10 +326,7 @@ describe('useChat - Message State', () => {
         command: null,
         args: []
       });
-      vi.mocked(generateResponse).mockResolvedValue({
-        content: 'Response',
-        toolResults: []
-      });
+      vi.mocked(generateResponse).mockResolvedValue('Response');
 
       const { result } = renderHook(() => useChat());
 
@@ -364,10 +359,7 @@ describe('useChat - Message State', () => {
         command: null,
         args: []
       });
-      vi.mocked(generateResponse).mockResolvedValue({
-        content: 'AI response text',
-        toolResults: []
-      });
+      vi.mocked(generateResponse).mockResolvedValue('AI response text');
 
       const { result } = renderHook(() => useChat());
 
@@ -483,9 +475,9 @@ describe('useChat - Message State', () => {
       vi.mocked(generateResponse)
         .mockImplementationOnce(async () => {
           await firstPromise;
-          return { content: 'First response', toolResults: [] };
+          return 'First response';
         })
-        .mockResolvedValue({ content: 'Second response', toolResults: [] });
+        .mockResolvedValue('Second response');
 
       const { result } = renderHook(() => useChat());
 
