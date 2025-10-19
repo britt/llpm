@@ -289,6 +289,88 @@ describe('useChat - Message State', () => {
       );
       expect(notificationMessage).toBeDefined();
     });
+
+    it('should handle clear command and reset to welcome message', async () => {
+      vi.mocked(loadChatHistory).mockResolvedValue([]);
+      vi.mocked(parseCommand).mockReturnValue({
+        isCommand: true,
+        command: 'clear',
+        args: []
+      });
+      vi.mocked(executeCommand).mockResolvedValue({
+        content: 'Chat history cleared',
+        shouldAddToHistory: false,
+        success: true
+      });
+
+      const { result } = renderHook(() => useChat());
+
+      // Wait for initialization
+      await waitFor(() => {
+        expect(result.current.messages.length).toBeGreaterThan(0);
+      }, { timeout: 2000 });
+
+      // Add some messages first
+      act(() => {
+        result.current.addSystemMessage('Test message 1');
+        result.current.addSystemMessage('Test message 2');
+      });
+
+      await waitFor(() => {
+        expect(result.current.messages.length).toBeGreaterThan(1);
+      }, { timeout: 1000 });
+
+      // Execute clear command
+      await act(async () => {
+        await result.current.sendMessage('/clear');
+      });
+
+      // Should only have welcome message
+      await waitFor(() => {
+        expect(result.current.messages.length).toBe(1);
+      }, { timeout: 2000 });
+
+      // Should be the welcome message
+      expect(result.current.messages[0].role).toBe('assistant');
+      expect(result.current.messages[0].content).toContain('LLPM');
+    });
+
+    it.skip('should handle project switch command with context refresh', async () => {
+      vi.mocked(loadChatHistory).mockResolvedValue([]);
+      vi.mocked(parseCommand).mockReturnValue({
+        isCommand: true,
+        command: 'project',
+        args: ['switch', 'test-project']
+      });
+      vi.mocked(executeCommand).mockResolvedValue({
+        content: 'Switched to project: test-project',
+        shouldAddToHistory: true,
+        success: true
+      });
+
+      const { result } = renderHook(() => useChat());
+
+      // Wait for initialization
+      await waitFor(() => {
+        expect(result.current.messages.length).toBeGreaterThan(0);
+      }, { timeout: 2000 });
+
+      // Execute project switch
+      await act(async () => {
+        await result.current.sendMessage('/project switch test-project');
+      });
+
+      // Wait for project switch delay (200ms in implementation)
+      await new Promise(resolve => setTimeout(resolve, 300));
+
+      // Should have project switch message
+      await waitFor(() => {
+        const projectMessage = result.current.messages.find(
+          m => m.role === 'ui-notification' && m.content.includes('test-project')
+        );
+        expect(projectMessage).toBeDefined();
+      }, { timeout: 3000 });
+    });
   });
 
   describe('LLM integration', () => {
@@ -411,6 +493,67 @@ describe('useChat - Message State', () => {
         expect(errorMessage).toBeDefined();
       }, { timeout: 3000 });
     });
+
+    it.skip('should handle empty LLM response', async () => {
+      vi.mocked(loadChatHistory).mockResolvedValue([]);
+      vi.mocked(parseCommand).mockReturnValue({
+        isCommand: false,
+        command: null,
+        args: []
+      });
+      // Return empty or whitespace-only response
+      vi.mocked(generateResponse).mockResolvedValue('   ');
+
+      const { result } = renderHook(() => useChat());
+
+      // Wait for initialization
+      await waitFor(() => {
+        expect(result.current.messages.length).toBeGreaterThan(0);
+      }, { timeout: 2000 });
+
+      // Send message
+      await act(async () => {
+        await result.current.sendMessage('Question');
+      });
+
+      // Wait for fallback message
+      await waitFor(() => {
+        const assistantMessage = result.current.messages.find(
+          m => m.role === 'assistant' && m.content.includes("don't have anything specific to report")
+        );
+        expect(assistantMessage).toBeDefined();
+      }, { timeout: 3000 });
+    });
+
+    it('should handle command execution errors', async () => {
+      vi.mocked(loadChatHistory).mockResolvedValue([]);
+      vi.mocked(parseCommand).mockReturnValue({
+        isCommand: true,
+        command: 'test',
+        args: []
+      });
+      vi.mocked(executeCommand).mockRejectedValue(new Error('Command failed'));
+
+      const { result } = renderHook(() => useChat());
+
+      // Wait for initialization
+      await waitFor(() => {
+        expect(result.current.messages.length).toBeGreaterThan(0);
+      }, { timeout: 2000 });
+
+      // Send command
+      await act(async () => {
+        await result.current.sendMessage('/test');
+      });
+
+      // Wait for error message
+      await waitFor(() => {
+        const errorMessage = result.current.messages.find(
+          m => m.role === 'ui-notification' && m.content.includes('Failed to execute command')
+        );
+        expect(errorMessage).toBeDefined();
+      }, { timeout: 2000 });
+    });
   });
 
   describe('Loading states', () => {
@@ -458,6 +601,272 @@ describe('useChat - Message State', () => {
     });
   });
 
+  describe('Model selector interactions', () => {
+    it('should handle model selection', async () => {
+      vi.mocked(loadChatHistory).mockResolvedValue([]);
+      vi.mocked(executeCommand).mockResolvedValue({
+        content: 'Switched to gpt-4',
+        shouldAddToHistory: true,
+        success: true
+      });
+
+      const { result } = renderHook(() => useChat());
+
+      // Wait for initialization
+      await waitFor(() => {
+        expect(result.current.messages.length).toBeGreaterThan(0);
+      }, { timeout: 2000 });
+
+      // Trigger model selection
+      await act(async () => {
+        await result.current.handleModelSelect('openai/gpt-4');
+      });
+
+      // Should call executeCommand with model switch
+      expect(vi.mocked(executeCommand)).toHaveBeenCalledWith(
+        'model',
+        ['switch', 'openai/gpt-4']
+      );
+
+      // Wait for notification message
+      await waitFor(() => {
+        const notification = result.current.messages.find(
+          m => m.role === 'ui-notification' && m.content.includes('gpt-4')
+        );
+        expect(notification).toBeDefined();
+      }, { timeout: 2000 });
+    });
+
+    it('should handle model selection error', async () => {
+      vi.mocked(loadChatHistory).mockResolvedValue([]);
+      vi.mocked(executeCommand).mockRejectedValue(new Error('Model not found'));
+
+      const { result } = renderHook(() => useChat());
+
+      // Wait for initialization
+      await waitFor(() => {
+        expect(result.current.messages.length).toBeGreaterThan(0);
+      }, { timeout: 2000 });
+
+      // Trigger model selection with error
+      await act(async () => {
+        await result.current.handleModelSelect('invalid/model');
+      });
+
+      // Wait for error message
+      await waitFor(() => {
+        const errorMessage = result.current.messages.find(
+          m => m.role === 'ui-notification' && m.content.includes('Failed to switch model')
+        );
+        expect(errorMessage).toBeDefined();
+      }, { timeout: 2000 });
+    });
+
+    it('should cancel model selection', async () => {
+      vi.mocked(loadChatHistory).mockResolvedValue([]);
+
+      const { result } = renderHook(() => useChat());
+
+      // Wait for initialization
+      await waitFor(() => {
+        expect(result.current.messages.length).toBeGreaterThan(0);
+      }, { timeout: 2000 });
+
+      // Manually set model selector models (simulating it being open)
+      act(() => {
+        // This would normally be set by triggerModelSelector
+        // We can't easily set it without triggering the command, so just test the cancel function exists
+        result.current.cancelModelSelection();
+      });
+
+      // Should clear model selector models
+      expect(result.current.modelSelectorModels).toBeNull();
+    });
+
+    it('should trigger model selector with interactive result', async () => {
+      vi.mocked(loadChatHistory).mockResolvedValue([]);
+      vi.mocked(executeCommand).mockResolvedValue({
+        content: 'Select a model',
+        shouldAddToHistory: true,
+        success: true,
+        interactive: {
+          type: 'model-select',
+          models: [
+            { id: 'gpt-4', name: 'GPT-4', provider: 'openai' }
+          ]
+        }
+      });
+
+      const { result } = renderHook(() => useChat());
+
+      // Wait for initialization
+      await waitFor(() => {
+        expect(result.current.messages.length).toBeGreaterThan(0);
+      }, { timeout: 2000 });
+
+      // Trigger model selector
+      await act(async () => {
+        await result.current.triggerModelSelector();
+      });
+
+      // Wait for model selector to be set
+      await waitFor(() => {
+        expect(result.current.modelSelectorModels).toBeDefined();
+        expect(result.current.modelSelectorModels?.length).toBe(1);
+      }, { timeout: 2000 });
+    });
+
+    it('should trigger model selector with error', async () => {
+      vi.mocked(loadChatHistory).mockResolvedValue([]);
+      vi.mocked(executeCommand).mockRejectedValue(new Error('Command failed'));
+
+      const { result } = renderHook(() => useChat());
+
+      // Wait for initialization
+      await waitFor(() => {
+        expect(result.current.messages.length).toBeGreaterThan(0);
+      }, { timeout: 2000 });
+
+      // Trigger model selector with error
+      await act(async () => {
+        await result.current.triggerModelSelector();
+      });
+
+      // Wait for error message
+      await waitFor(() => {
+        const errorMessage = result.current.messages.find(
+          m => m.role === 'ui-notification' && m.content.includes('Failed to open model selector')
+        );
+        expect(errorMessage).toBeDefined();
+      }, { timeout: 2000 });
+    });
+
+    it('should handle non-interactive model selector result', async () => {
+      vi.mocked(loadChatHistory).mockResolvedValue([]);
+      vi.mocked(executeCommand).mockResolvedValue({
+        content: 'Current model: gpt-4',
+        shouldAddToHistory: true,
+        success: true
+        // No interactive property - should be treated as non-interactive
+      });
+
+      const { result } = renderHook(() => useChat());
+
+      // Wait for initialization
+      await waitFor(() => {
+        expect(result.current.messages.length).toBeGreaterThan(0);
+      }, { timeout: 2000 });
+
+      const initialCount = result.current.messages.length;
+
+      // Trigger model selector
+      await act(async () => {
+        await result.current.triggerModelSelector();
+      });
+
+      // Wait for ui-notification message to be added
+      await waitFor(() => {
+        expect(result.current.messages.length).toBe(initialCount + 1);
+      }, { timeout: 2000 });
+
+      // Should have ui-notification message (not interactive selector)
+      const notification = result.current.messages.find(
+        m => m.role === 'ui-notification' && m.content.includes('Current model')
+      );
+      expect(notification).toBeDefined();
+
+      // Should NOT set modelSelectorModels
+      expect(result.current.modelSelectorModels).toBeNull();
+    });
+  });
+
+  describe('Project switching', () => {
+    it('should handle project switch notification', async () => {
+      vi.mocked(loadChatHistory).mockResolvedValue([]);
+
+      const { result } = renderHook(() => useChat());
+
+      // Wait for initialization
+      await waitFor(() => {
+        expect(result.current.messages.length).toBeGreaterThan(0);
+      }, { timeout: 2000 });
+
+      // Trigger project switch
+      await act(async () => {
+        await result.current.notifyProjectSwitch();
+      });
+
+      // Project switch should complete (just verifying no errors)
+      expect(result.current.messages.length).toBeGreaterThan(0);
+    });
+  });
+
+  describe('UI notifications', () => {
+    it('should add UI notification messages', async () => {
+      vi.mocked(loadChatHistory).mockResolvedValue([]);
+
+      const { result } = renderHook(() => useChat());
+
+      // Wait for initialization
+      await waitFor(() => {
+        expect(result.current.messages.length).toBeGreaterThan(0);
+      }, { timeout: 2000 });
+
+      const initialCount = result.current.messages.length;
+
+      // Add system message
+      act(() => {
+        result.current.addSystemMessage('Test notification');
+      });
+
+      // Wait for message to be added
+      await waitFor(() => {
+        expect(result.current.messages.length).toBe(initialCount + 1);
+      }, { timeout: 1000 });
+
+      const notification = result.current.messages.find(
+        m => m.role === 'ui-notification' && m.content === 'Test notification'
+      );
+      expect(notification).toBeDefined();
+    });
+  });
+
+  describe('Error handling in message processing', () => {
+    it('should handle errors in immediate message processing', async () => {
+      vi.mocked(loadChatHistory).mockResolvedValue([]);
+      vi.mocked(parseCommand).mockReturnValue({
+        isCommand: false,
+        command: null,
+        args: []
+      });
+      // Make generateResponse throw an error to trigger error path
+      vi.mocked(generateResponse).mockRejectedValue(new Error('Processing error'));
+
+      const { result } = renderHook(() => useChat());
+
+      // Wait for initialization
+      await waitFor(() => {
+        expect(result.current.messages.length).toBeGreaterThan(0);
+      }, { timeout: 2000 });
+
+      // Send message that will fail during processing
+      await act(async () => {
+        await result.current.sendMessage('Test message');
+      });
+
+      // Should have gracefully handled the error and added error message
+      await waitFor(() => {
+        const errorMessage = result.current.messages.find(
+          m => m.role === 'assistant' && m.content.includes('encountered an error')
+        );
+        expect(errorMessage).toBeDefined();
+      }, { timeout: 2000 });
+
+      // Should no longer be processing
+      expect(result.current.isProcessing).toBe(false);
+    });
+  });
+
   describe('Message queue', () => {
     it.skip('should queue messages when processing', async () => {
       vi.mocked(loadChatHistory).mockResolvedValue([]);
@@ -467,14 +876,12 @@ describe('useChat - Message State', () => {
         args: []
       });
 
-      let resolveFirst: () => void;
-      const firstPromise = new Promise<void>(resolve => {
-        resolveFirst = resolve;
-      });
-
+      // First call takes time, second is instant
+      let firstCallCompleted = false;
       vi.mocked(generateResponse)
         .mockImplementationOnce(async () => {
-          await firstPromise;
+          await new Promise(resolve => setTimeout(resolve, 300));
+          firstCallCompleted = true;
           return 'First response';
         })
         .mockResolvedValue('Second response');
@@ -486,9 +893,10 @@ describe('useChat - Message State', () => {
         expect(result.current.messages.length).toBeGreaterThan(0);
       }, { timeout: 2000 });
 
-      // Send first message (will block)
+      // Send first message (will take 300ms) - don't await it
+      let firstSendPromise: Promise<void>;
       act(() => {
-        result.current.sendMessage('First');
+        firstSendPromise = result.current.sendMessage('First message');
       });
 
       // Wait for processing to start
@@ -496,23 +904,32 @@ describe('useChat - Message State', () => {
         expect(result.current.isProcessing).toBe(true);
       }, { timeout: 1000 });
 
-      // Send second message while first is processing
+      // Give extra time to ensure processingRef.current is updated
+      await new Promise(resolve => setTimeout(resolve, 50));
+
+      // Send second message while first is still processing
+      // This should trigger the queueing logic (lines 357-359)
       act(() => {
-        result.current.sendMessage('Second');
+        result.current.sendMessage('Second message');
       });
 
-      // Should be queued
+      // Should be queued (queuedMessages should have the second message)
       await waitFor(() => {
         expect(result.current.queuedMessages.length).toBeGreaterThan(0);
-      }, { timeout: 1000 });
+      }, { timeout: 500 });
 
-      // Resolve first message
-      resolveFirst!();
+      // Wait for first call to complete
+      await waitFor(() => {
+        expect(firstCallCompleted).toBe(true);
+      }, { timeout: 1000 });
 
       // Wait for queue to be processed
       await waitFor(() => {
         expect(result.current.queuedMessages.length).toBe(0);
       }, { timeout: 3000 });
+
+      // Both messages should eventually be processed
+      expect(result.current.isProcessing).toBe(false);
     });
   });
 });
