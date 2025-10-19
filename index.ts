@@ -125,29 +125,6 @@ if (import.meta.main) {
 
     debug('Raw mode supported, rendering React app');
 
-    // Use alternate screen buffer to prevent flicker (like vim/htop)
-    // This keeps the main terminal buffer intact and prevents visual artifacts
-    const enterAltScreen = '\x1b[?1049h';
-    const leaveAltScreen = '\x1b[?1049l';
-
-    // Enter alternate screen buffer
-    process.stdout.write(enterAltScreen);
-
-    // Ensure we leave alternate screen on exit
-    const cleanup = () => {
-      process.stdout.write(leaveAltScreen);
-    };
-
-    process.on('exit', cleanup);
-    process.on('SIGINT', () => {
-      cleanup();
-      process.exit(0);
-    });
-    process.on('SIGTERM', () => {
-      cleanup();
-      process.exit(0);
-    });
-
     render(React.createElement(App));
   })();
 }
