@@ -9,6 +9,7 @@ import { validateEnvironment } from './src/utils/validation';
 import { credentialManager } from './src/utils/credentialManager';
 import { modelRegistry } from './src/services/modelRegistry';
 import { initializeTelemetry } from './src/utils/telemetry';
+import { RENDER_WINDOW_SIZE } from './src/constants';
 
 // Re-export validateEnvironment for external use
 export { validateEnvironment } from './src/utils/validation';
@@ -28,11 +29,16 @@ export function App() {
     queuedMessages
   } = useChat();
 
-  // TODO: this is the place to start for message buffering
-  // It is because useChat passes messages as props to ChatInterface that it becomes slow
-  // and re-renders the component every time the messages array changes
+  // Limit messages passed to ChatInterface to reduce rerenders and flicker
+  // Keep only the last RENDER_WINDOW_SIZE messages for rendering
+  // Full history is still maintained in useChat hook
+  const visibleMessages = React.useMemo(
+    () => messages.slice(-RENDER_WINDOW_SIZE),
+    [messages]
+  );
+
   return React.createElement(ChatInterface, {
-    messages,
+    messages: visibleMessages,
     onSendMessage: sendMessage,
     onAddSystemMessage: addSystemMessage,
     isLoading,
