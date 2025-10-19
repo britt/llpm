@@ -244,6 +244,166 @@ ls -ld ~/.llpm/workspaces/claude-code-1/
 # docker-compose up -d --scale claude-code=2  # Wrong - no workspace isolation
 ```
 
+## Skills Repository Setup (Claude Code)
+
+The `claude-code` container automatically sets up the Anthropic skills repository and provides directories for managing Claude Code skills.
+
+### How It Works
+
+On container startup, the `claude-code` service automatically:
+1. Creates `/mnt/skills/public` and clones the Anthropic skills repository
+2. Creates `/mnt/skills/user` for custom user-defined skills
+3. Supports both SSH and HTTPS authentication for cloning
+4. Provides optional plugin installation for the Superpowers marketplace
+
+### Skills Directory Structure
+
+**Public Skills:**
+- Path: `/mnt/skills/public`
+- Contains: Anthropic's official skills repository
+- Cloned automatically on first startup
+- Read-only for standard use
+
+**User Skills:**
+- Path: `/mnt/skills/user`
+- Contains: Custom user-defined skills
+- Fully writable
+- Persists across container restarts
+
+### Configuration
+
+#### SSH Authentication (Recommended for Private Repos)
+
+To use SSH for cloning the skills repository, provide an SSH deploy key:
+
+```bash
+# Option 1: Environment variable
+export SKILLS_SSH_KEY="$(cat ~/.ssh/your_deploy_key)"
+docker-compose up -d claude-code
+
+# Option 2: Add to docker/.env
+SKILLS_SSH_KEY="-----BEGIN OPENSSH PRIVATE KEY-----
+...your key here...
+-----END OPENSSH PRIVATE KEY-----"
+```
+
+**Security Note:** For production use, prefer Docker secrets or secure environment variable management.
+
+#### HTTPS Authentication (Default for Public Repos)
+
+By default, the container uses HTTPS to clone the public skills repository. No additional configuration is needed:
+
+```bash
+# Just start the container - uses HTTPS by default
+docker-compose up -d claude-code
+```
+
+#### Host Mount (Development)
+
+For development, you can mount a local checkout of the skills repository:
+
+```bash
+# In docker-compose.override.yml or docker-compose.yml
+services:
+  claude-code:
+    volumes:
+      - ~/path/to/local/skills:/mnt/skills/public
+
+# Or via command line
+docker run -v ~/skills:/mnt/skills/public llpm-claude-code
+```
+
+#### Auto-Update Skills
+
+Enable automatic updates on container restart:
+
+```bash
+# In docker/.env
+SKILLS_AUTO_PULL=true
+```
+
+When enabled, the container will run `git pull` on startup to update the skills repository.
+
+### Plugin Installation
+
+The `claude-code` container provides automated plugin installation to set up the Superpowers marketplace.
+
+#### Automated Setup (Recommended)
+
+Use the interactive `auth-and-setup.sh` script to authenticate and install plugins in one step:
+
+```bash
+# 1. Connect to the container
+docker exec -it docker-claude-code-1 bash
+
+# 2. Run the automated setup script
+auth-and-setup.sh
+```
+
+The `auth-and-setup.sh` script will:
+- Guide you through Claude authentication (interactive)
+- Detect when authentication is complete
+- Automatically install the Superpowers marketplace
+- Automatically install the Superpowers plugin
+- Signal the REST broker that authentication is complete
+- Verify plugin installation
+
+**Features:**
+- ✅ Interactive - guides you through each step
+- ✅ Idempotent - safe to run multiple times
+- ✅ Works in both API key and subscription modes
+- ✅ Automatically verifies authentication before installing plugins
+- ✅ Shows clear success/failure messages
+
+#### Manual Installation (Alternative)
+
+If you prefer manual control, you can authenticate and install plugins separately:
+
+```bash
+# 1. Connect to the container
+docker exec -it docker-claude-code-1 bash
+
+# 2. Authenticate with Claude
+claude login
+signal-authenticated
+
+# 3. Install plugins
+install-plugins.sh
+```
+
+The `install-plugins.sh` script:
+- Adds the Superpowers marketplace
+- Installs the Superpowers plugin
+- Handles idempotent installation (safe to run multiple times)
+
+#### Environment Variables
+
+- `SKILLS_SSH_KEY` - SSH private key for cloning (optional)
+- `SKILLS_AUTO_PULL` - Enable auto-update on startup (default: `false`)
+- `SKILLS_UID` - User ID for `/mnt/skills/user` ownership (default: 1000)
+- `SKILLS_GID` - Group ID for `/mnt/skills/user` ownership (default: 1000)
+- `SKILLS_INSTALL_PLUGINS` - Show plugin installation reminder (default: `false`)
+
+### Verifying Skills Setup
+
+```bash
+# Check if skills directories exist
+docker exec -it docker-claude-code-1 bash -c "ls -la /mnt/skills/"
+
+# View public skills content
+docker exec -it docker-claude-code-1 bash -c "ls -la /mnt/skills/public/"
+
+# Check user skills directory
+docker exec -it docker-claude-code-1 bash -c "ls -la /mnt/skills/user/"
+```
+
+### Use Cases
+
+1. **Official Skills**: Access Anthropic's curated skills from `/mnt/skills/public`
+2. **Custom Skills**: Create and manage your own skills in `/mnt/skills/user`
+3. **Team Sharing**: Mount a shared directory to `/mnt/skills/user` for team collaboration
+4. **Development**: Mount local skills repo for testing and development
+
 ## Installed Development Tools
 
 Each container includes a comprehensive development environment based on Ubuntu 22.04 LTS:

@@ -12,9 +12,15 @@ RUN useradd -m -s /bin/bash claude && \
 RUN mkdir -p /home/claude/workspace && \
     chown -R claude:claude /home/claude
 
-# Copy entrypoint script
+# Copy entrypoint and init scripts
 COPY ./claude-code/entrypoint.sh /usr/local/bin/entrypoint.sh
-RUN chmod +x /usr/local/bin/entrypoint.sh
+COPY ./claude-code/init-skills.sh /usr/local/bin/init-skills.sh
+COPY ./claude-code/install-plugins.sh /usr/local/bin/install-plugins.sh
+COPY ./claude-code/auth-and-setup.sh /usr/local/bin/auth-and-setup.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh && \
+    chmod +x /usr/local/bin/init-skills.sh && \
+    chmod +x /usr/local/bin/install-plugins.sh && \
+    chmod +x /usr/local/bin/auth-and-setup.sh
 
 # Generate agent rules file from template
 COPY ./rules /tmp/rules
