@@ -1,9 +1,12 @@
 import type { Command, CommandResult } from './types';
 import { getRecentDebugLogs, debug } from '../utils/logger';
 
+// Maximum number of debug logs that can be requested (matches logger's MAX_DEBUG_LOGS)
+const MAX_LIMIT = 1000;
+
 export const debugCommand: Command = {
   name: 'debug',
-  description: 'Show the last N debug log lines (default: 10)',
+  description: 'Show the last N debug log lines (default: 10, max: 1000)',
   execute: (args: string[]): CommandResult => {
     debug('Executing /debug command with args:', args);
 
@@ -12,23 +15,32 @@ export const debugCommand: Command = {
       return {
         content: `🐛 Debug Command:
 
-/debug [count] - Show the last N debug log lines (default: 10)
+/debug [count] - Show the last N debug log lines (default: 10, max: ${MAX_LIMIT})
 /debug help - Show this help message
 
 📝 Examples:
 • /debug - Show last 10 debug logs
 • /debug 25 - Show last 25 debug logs
+• /debug 1000 - Show maximum number of debug logs
 
-💡 Debug logs include internal application operations and can help troubleshoot issues.`,
+💡 Debug logs include internal application operations and can help troubleshoot issues.
+💡 The system stores up to ${MAX_LIMIT} debug logs in memory.`,
         success: true
       };
     }
 
     const count = args.length > 0 && args[0] ? parseInt(args[0], 10) : 10;
-    
+
     if (isNaN(count) || count <= 0) {
       return {
         content: `❌ Invalid number: ${args[0] || 'undefined'}. Please provide a positive integer.`,
+        success: false
+      };
+    }
+
+    if (count > MAX_LIMIT) {
+      return {
+        content: `❌ Count exceeds maximum limit of ${MAX_LIMIT}. Please request ${MAX_LIMIT} or fewer logs.`,
         success: false
       };
     }

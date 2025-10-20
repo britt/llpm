@@ -16,7 +16,7 @@ describe('debugCommand', () => {
 
   it('should have correct name and description', () => {
     expect(debugCommand.name).toBe('debug');
-    expect(debugCommand.description).toBe('Show the last N debug log lines (default: 10)');
+    expect(debugCommand.description).toBe('Show the last N debug log lines (default: 10, max: 1000)');
   });
 
   it('should return default 10 logs when no args provided', async () => {
@@ -148,5 +148,47 @@ describe('debugCommand', () => {
     expect(result.success).toBe(true);
     // Should parse as 5 (parseInt behavior)
     expect(logger.getRecentDebugLogs).toHaveBeenCalledWith(5);
+  });
+
+  it('should reject counts exceeding the maximum limit', async () => {
+    const result = await resolveCommandResult(debugCommand.execute(['10000']));
+
+    expect(result.success).toBe(false);
+    expect(result.content).toContain('❌ Count exceeds maximum limit of 1000');
+    expect(result.content).toContain('Please request 1000 or fewer logs');
+  });
+
+  it('should accept count equal to maximum limit', async () => {
+    const mockLogs = Array.from({ length: 1000 }, (_, i) => ({
+      message: `Log ${i + 1}`,
+      timestamp: `2023-01-01T12:00:${String(i % 60).padStart(2, '0')}.000Z`
+    }));
+
+    vi.spyOn(logger, 'getRecentDebugLogs').mockReturnValue(mockLogs);
+
+    const result = await resolveCommandResult(debugCommand.execute(['1000']));
+
+    expect(result.success).toBe(true);
+    expect(logger.getRecentDebugLogs).toHaveBeenCalledWith(1000);
+    expect(result.content).toContain('🐛 Last 1000 debug logs:');
+  });
+
+  it('should reject count just above maximum limit', async () => {
+    const result = await resolveCommandResult(debugCommand.execute(['1001']));
+
+    expect(result.success).toBe(false);
+    expect(result.content).toContain('❌ Count exceeds maximum limit of 1000');
+  });
+
+  it('should show maximum limit in help text', async () => {
+    const result = await resolveCommandResult(debugCommand.execute(['help']));
+
+    expect(result.success).toBe(true);
+    expect(result.content).toContain('max: 1000');
+    expect(result.content).toContain('The system stores up to 1000 debug logs in memory');
+  });
+
+  it('should show maximum limit in description', () => {
+    expect(debugCommand.description).toContain('max: 1000');
   });
 });
