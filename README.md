@@ -94,6 +94,39 @@ Perfect for developers who want to organize multiple projects, interact with Git
 
    **📖 For detailed provider configuration instructions, see [Model Providers Documentation](MODELS.md)**
 
+### Using a local LLM proxy (litellm)
+
+If you're running a local litellm or other OpenAI-compatible HTTP proxy, point LLPM at it by setting the OpenAI-compatible environment variables. Example (bash):
+
+```bash
+# Example litellm proxy URL (update to your proxy)
+export OPENAI_API_BASE="http://localhost:8080/v1"
+# If your proxy expects a token, set OPENAI_API_KEY (some local proxies accept any string)
+export OPENAI_API_KEY="local-test-key"
+
+# Start llpm in the same shell so it picks up these env vars
+llpm
+```
+
+**Quick curl test**
+
+Run a quick POST to verify the proxy responds using the OpenAI-compatible API:
+
+```bash
+curl -s -X POST "$OPENAI_API_BASE/chat/completions" \
+  -H "Authorization: Bearer $OPENAI_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"model":"gpt-4o-mini","messages":[{"role":"user","content":"ping"}]}' | jq
+```
+
+**Notes and troubleshooting**
+
+- **API path**: include "/v1" in OPENAI_API_BASE if your proxy exposes the OpenAI-compatible path there (e.g. http://localhost:8080/v1). Adjust if your proxy uses a different route.
+- **Streaming**: if you need streaming completions, confirm your proxy supports the streaming semantics (SSE vs. chunked transfer) that LLPM expects.
+- **TLS / certs**: for HTTPS proxies with self-signed certs, either use a valid cert or configure Node to trust the CA (NODE_EXTRA_CA_CERTS) when running LLPM.
+- **Provider selection**: ensure LLPM is configured to use the OpenAI-compatible client path (some LLPM configs expose a provider setting). If needed, set provider=openai in LLPM config so it respects OPENAI_API_BASE.
+- **Persisting env vars**: to avoid re-exporting, add these to ~/.profile, your service unit, or a project .env file (.env.example can be added to the repo).
+
 ## Running the CLI
 
 ### Development mode:
