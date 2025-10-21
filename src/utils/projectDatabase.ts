@@ -8,6 +8,7 @@ import { modelRegistry } from '../services/modelRegistry';
 import type { Project } from '../types/project';
 import { RequestContext } from './requestContext';
 import { traced, getTracer } from './tracing';
+import { SpanKind } from '@opentelemetry/api';
 import { embeddingsFactory } from '../services/embeddings';
 
 interface ProjectNote {
@@ -226,7 +227,8 @@ export class ProjectDatabase {
         'db.table': 'notes',
         'project.id': this.projectId,
         'note.has_tags': !!(tags && tags.length > 0)
-      }
+      },
+      kind: SpanKind.INTERNAL,
     }, async (span) => {
       RequestContext.logDatabaseOperation('insert', 'start', { table: 'notes' });
       debug('Adding note to project database:', title);
@@ -389,7 +391,8 @@ export class ProjectDatabase {
         'project.id': this.projectId,
         'search.query': query.substring(0, 100),
         'search.limit': limit
-      }
+      },
+      kind: SpanKind.INTERNAL,
     }, async (span) => {
       debug('Performing semantic search for query:', query);
 
