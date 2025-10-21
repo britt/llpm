@@ -17,12 +17,24 @@ fi
 
 # Function to check if Claude is authenticated
 check_auth() {
-    # Try a simple command that requires authentication
-    # Using --print for non-interactive execution and --dangerously-skip-permissions to avoid permission prompts
-    if echo "/help" | timeout 5 claude --print --dangerously-skip-permissions &> /dev/null; then
-        return 0  # Authenticated
+    # Check if credentials file exists
+    local creds_file="$HOME/.claude/.credentials.json"
+
+    if [ ! -f "$creds_file" ]; then
+        return 1  # Not authenticated - no credentials file
+    fi
+
+    # In subscription mode, check for OAuth credentials
+    if [ "${AGENT_AUTH_TYPE:-api_key}" = "subscription" ]; then
+        # Check if claudeAiOauth exists in credentials
+        if jq -e 'has("claudeAiOauth")' "$creds_file" &> /dev/null; then
+            return 0  # Authenticated with OAuth
+        else
+            return 1  # No OAuth credentials
+        fi
     else
-        return 1  # Not authenticated
+        # In API key mode, just check if file exists
+        return 0  # Authenticated (credentials file exists)
     fi
 }
 
