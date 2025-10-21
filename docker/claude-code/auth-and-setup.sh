@@ -18,8 +18,8 @@ fi
 # Function to check if Claude is authenticated
 check_auth() {
     # Try a simple command that requires authentication
-    # Using --dangerously-skip-permissions to avoid permission prompts
-    if echo "/help" | timeout 5 claude --dangerously-skip-permissions &> /dev/null; then
+    # Using --print for non-interactive execution and --dangerously-skip-permissions to avoid permission prompts
+    if echo "/help" | timeout 5 claude --print --dangerously-skip-permissions &> /dev/null; then
         return 0  # Authenticated
     else
         return 1  # Not authenticated
@@ -49,6 +49,18 @@ if [ "${SKIP_AUTH:-false}" != "true" ]; then
     # Determine auth method based on mode
     if [ "${AGENT_AUTH_TYPE:-api_key}" = "subscription" ]; then
         echo "Running in SUBSCRIPTION mode - using OAuth authentication"
+        echo ""
+
+        # Unset API keys to avoid conflicts with subscription auth
+        # API keys can interfere with OAuth authentication
+        if [ -n "$ANTHROPIC_API_KEY" ]; then
+            echo "⚠️  Unsetting ANTHROPIC_API_KEY (conflicts with subscription mode)"
+            unset ANTHROPIC_API_KEY
+        fi
+        if [ -n "$OPENAI_API_KEY" ]; then
+            echo "⚠️  Unsetting OPENAI_API_KEY (conflicts with subscription mode)"
+            unset OPENAI_API_KEY
+        fi
         echo ""
 
         # For subscription mode, use 'claude login'
@@ -100,7 +112,7 @@ echo ""
 
 # Install marketplace plugin
 echo "📦 Adding Superpowers marketplace..."
-if echo "/plugin marketplace add obra/superpowers-marketplace" | claude --dangerously-skip-permissions 2>&1 | tee /tmp/plugin-add.log; then
+if echo "/plugin marketplace add obra/superpowers-marketplace" | claude --print --dangerously-skip-permissions 2>&1 | tee /tmp/plugin-add.log; then
     echo "✅ Marketplace added successfully"
 else
     # Check if already exists
@@ -113,7 +125,7 @@ fi
 
 echo ""
 echo "📦 Installing Superpowers plugin..."
-if echo "/plugin install superpowers@superpowers-marketplace" | claude --dangerously-skip-permissions 2>&1 | tee /tmp/plugin-install.log; then
+if echo "/plugin install superpowers@superpowers-marketplace" | claude --print --dangerously-skip-permissions 2>&1 | tee /tmp/plugin-install.log; then
     echo "✅ Plugin installed successfully"
 else
     # Check if already installed
@@ -126,7 +138,7 @@ fi
 
 echo ""
 echo "Verifying plugin installation..."
-echo "/plugin list" | claude --dangerously-skip-permissions
+echo "/plugin list" | claude --print --dangerously-skip-permissions
 
 echo ""
 echo "======================================"
