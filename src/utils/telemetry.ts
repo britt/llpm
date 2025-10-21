@@ -8,6 +8,9 @@ import { resourceFromAttributes } from '@opentelemetry/resources';
 import { ATTR_SERVICE_NAME, ATTR_SERVICE_VERSION } from '@opentelemetry/semantic-conventions';
 import { debug as logDebug } from './logger';
 
+// Custom resource attribute for project name (not in standard OTEL semantic conventions)
+const ATTR_PROJECT_NAME = 'project.name';
+
 export interface TelemetryConfig {
   enabled: boolean;
   serviceName: string;
@@ -61,7 +64,9 @@ export function initializeTelemetry(config?: Partial<TelemetryConfig>): NodeSDK 
     const resource = resourceFromAttributes({
       [ATTR_SERVICE_NAME]: serviceName,
       [ATTR_SERVICE_VERSION]: serviceVersion,
-      // Phoenix project name for grouping traces
+      // Project name for grouping traces (used by Phoenix and other tracing backends)
+      [ATTR_PROJECT_NAME]: 'llpm',
+      // Phoenix-specific project name attribute
       'phoenix.project.name': 'llpm',
     });
 
