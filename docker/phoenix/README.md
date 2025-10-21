@@ -90,6 +90,20 @@ This variant includes:
    docker-compose up -d
    ```
 
+## LLPM CLI Integration
+
+The LLPM CLI is pre-configured to send traces to Phoenix with the project name "llpm". To enable:
+
+```bash
+export OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4319
+export OTEL_EXPORTER_OTLP_PROTOCOL=grpc
+export LLPM_TELEMETRY_ENABLED=1
+```
+
+Run LLPM and traces will appear in Phoenix under the "llpm" project.
+
+**Project Name:** The LLPM CLI automatically sets `phoenix.project.name` to "llpm" in the OpenTelemetry resource attributes. This ensures all LLPM traces are grouped under the "llpm" project in Phoenix.
+
 ## OTEL Collector Integration
 
 To send traces from your OTEL Collector to Phoenix, configure the collector's exporter:

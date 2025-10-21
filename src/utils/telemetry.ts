@@ -61,6 +61,8 @@ export function initializeTelemetry(config?: Partial<TelemetryConfig>): NodeSDK 
     const resource = resourceFromAttributes({
       [ATTR_SERVICE_NAME]: serviceName,
       [ATTR_SERVICE_VERSION]: serviceVersion,
+      // Phoenix project name for grouping traces
+      'phoenix.project.name': 'llpm',
     });
 
     // Configure trace exporter based on protocol

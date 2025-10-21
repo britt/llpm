@@ -4,14 +4,21 @@ LLPM includes OpenTelemetry support for distributed tracing across CLI and Docke
 
 ## Quick Start
 
-### 1. Start Jaeger
+### 1. Start Tracing Backend
 
+**Option A: Jaeger (General-purpose tracing)**
 ```bash
 cd docker
 docker-compose up -d jaeger
 ```
-
 Jaeger UI: http://localhost:16686
+
+**Option B: Phoenix (LLM-focused tracing)**
+```bash
+cd docker/phoenix
+docker-compose up -d
+```
+Phoenix UI: http://localhost:6006
 
 ### 2. Enable Telemetry in CLI
 
@@ -19,9 +26,15 @@ Jaeger UI: http://localhost:16686
 # Enable telemetry (enabled by default)
 export LLPM_TELEMETRY_ENABLED=1
 
-# Configure Jaeger endpoint (optional, defaults to localhost:4318)
+# For Jaeger (HTTP/protobuf - default)
 export OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318
+
+# For Phoenix (gRPC)
+export OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4319
+export OTEL_EXPORTER_OTLP_PROTOCOL=grpc
 ```
+
+**Phoenix Project Name:** The LLPM CLI automatically sets the Phoenix project name to "llpm" via the `phoenix.project.name` resource attribute. All traces will be grouped under the "llpm" project in Phoenix.
 
 ### 3. Run LLPM with Verbose Logging
 
