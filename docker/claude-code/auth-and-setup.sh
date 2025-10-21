@@ -17,12 +17,24 @@ fi
 
 # Function to check if Claude is authenticated
 check_auth() {
-    # Try a simple command that requires authentication
-    # Using --dangerously-skip-permissions to avoid permission prompts
-    if echo "/help" | timeout 5 claude --dangerously-skip-permissions &> /dev/null; then
-        return 0  # Authenticated
+    # Check if credentials file exists
+    local creds_file="$HOME/.claude/.credentials.json"
+
+    if [ ! -f "$creds_file" ]; then
+        return 1  # Not authenticated - no credentials file
+    fi
+
+    # In subscription mode, check for OAuth credentials
+    if [ "${AGENT_AUTH_TYPE:-api_key}" = "subscription" ]; then
+        # Check if claudeAiOauth exists in credentials
+        if jq -e 'has("claudeAiOauth")' "$creds_file" &> /dev/null; then
+            return 0  # Authenticated with OAuth
+        else
+            return 1  # No OAuth credentials
+        fi
     else
-        return 1  # Not authenticated
+        # In API key mode, just check if file exists
+        return 0  # Authenticated (credentials file exists)
     fi
 }
 
@@ -49,6 +61,18 @@ if [ "${SKIP_AUTH:-false}" != "true" ]; then
     # Determine auth method based on mode
     if [ "${AGENT_AUTH_TYPE:-api_key}" = "subscription" ]; then
         echo "Running in SUBSCRIPTION mode - using OAuth authentication"
+        echo ""
+
+        # Unset API keys to avoid conflicts with subscription auth
+        # API keys can interfere with OAuth authentication
+        if [ -n "$ANTHROPIC_API_KEY" ]; then
+            echo "⚠️  Unsetting ANTHROPIC_API_KEY (conflicts with subscription mode)"
+            unset ANTHROPIC_API_KEY
+        fi
+        if [ -n "$OPENAI_API_KEY" ]; then
+            echo "⚠️  Unsetting OPENAI_API_KEY (conflicts with subscription mode)"
+            unset OPENAI_API_KEY
+        fi
         echo ""
 
         # For subscription mode, use 'claude login'
@@ -94,39 +118,19 @@ fi
 
 echo ""
 echo "======================================"
-echo "Installing Plugins"
+echo "Plugin Installation"
 echo "======================================"
 echo ""
-
-# Install marketplace plugin
-echo "📦 Adding Superpowers marketplace..."
-if echo "/plugin marketplace add obra/superpowers-marketplace" | claude --dangerously-skip-permissions 2>&1 | tee /tmp/plugin-add.log; then
-    echo "✅ Marketplace added successfully"
-else
-    # Check if already exists
-    if grep -q "already exists\|already added" /tmp/plugin-add.log; then
-        echo "ℹ️  Marketplace already added"
-    else
-        echo "⚠️  Warning: Marketplace add may have failed (continuing anyway)"
-    fi
-fi
-
+echo "⚠️  Plugin installation requires an interactive Claude session."
 echo ""
-echo "📦 Installing Superpowers plugin..."
-if echo "/plugin install superpowers@superpowers-marketplace" | claude --dangerously-skip-permissions 2>&1 | tee /tmp/plugin-install.log; then
-    echo "✅ Plugin installed successfully"
-else
-    # Check if already installed
-    if grep -q "already installed" /tmp/plugin-install.log; then
-        echo "ℹ️  Plugin already installed"
-    else
-        echo "⚠️  Warning: Plugin installation may have failed"
-    fi
-fi
-
+echo "To install the Superpowers plugin, start Claude and run these commands:"
 echo ""
-echo "Verifying plugin installation..."
-echo "/plugin list" | claude --dangerously-skip-permissions
+echo "  /plugin marketplace add obra/superpowers-marketplace"
+echo "  /plugin install superpowers@superpowers-marketplace"
+echo "  /plugin list"
+echo ""
+echo "Press Enter to continue to REST broker notification..."
+read -p ""
 
 echo ""
 echo "======================================"
@@ -151,15 +155,17 @@ echo "======================================"
 echo "Setup Complete!"
 echo "======================================"
 echo ""
-echo "Your Claude Code environment is ready to use."
+echo "✅ Authentication complete and REST broker notified"
+echo ""
+echo "⚠️  IMPORTANT: Install plugins manually"
+echo "Start Claude and run:"
+echo "  /plugin marketplace add obra/superpowers-marketplace"
+echo "  /plugin install superpowers@superpowers-marketplace"
 echo ""
 echo "Skills directories:"
 echo "  - Public skills: /mnt/skills/public"
 echo "  - User skills: /mnt/skills/user"
 echo ""
-echo "To start using Claude Code, run:"
+echo "To start Claude Code:"
 echo "  claude"
-echo ""
-echo "Or with default options:"
-echo "  claude ${CLAUDE_CLI_OPTIONS:-}"
 echo ""

@@ -10,10 +10,12 @@ if [ -x /usr/local/bin/init-skills.sh ]; then
     /usr/local/bin/init-skills.sh
 fi
 
-# In subscription mode, remove ANTHROPIC_API_KEY and set base URL to /claude endpoint
+# In subscription mode, remove API keys and set base URL to /claude endpoint
 # This must be done FIRST before any other commands that might use it
+# API keys can conflict with OAuth authentication
 if [ "${AGENT_AUTH_TYPE:-api_key}" = "subscription" ]; then
     unset ANTHROPIC_API_KEY
+    unset OPENAI_API_KEY
     export ANTHROPIC_BASE_URL="http://litellm-proxy:4000/claude"
     # Write to /etc/environment so it persists for all shells
     echo "ANTHROPIC_BASE_URL=http://litellm-proxy:4000/claude" | sudo tee -a /etc/environment > /dev/null
@@ -35,21 +37,22 @@ if [ "${AGENT_AUTH_TYPE:-api_key}" = "api_key" ]; then
     echo "Running in api_key mode with ANTHROPIC_API_KEY"
 else
     echo "Running in subscription mode - authenticate via 'claude login'"
-    # Don't export ANTHROPIC_API_KEY in subscription mode
-    # Create a wrapper script for claude that unsets the API key
+    # Don't export API keys in subscription mode (they conflict with OAuth)
+    # Create a wrapper script for claude that unsets the API keys
     unset ANTHROPIC_API_KEY
+    unset OPENAI_API_KEY
 
     # Move the real claude binary and replace it with a wrapper
     if [ -f /home/claude/.npm-global/bin/claude ] && [ ! -f /home/claude/.npm-global/bin/claude-real ]; then
         sudo mv /home/claude/.npm-global/bin/claude /home/claude/.npm-global/bin/claude-real
 
         # Create wrapper that replaces the original claude command
-        # Use env -u to explicitly remove ANTHROPIC_API_KEY from the environment before exec
+        # Use env -u to explicitly remove API keys from the environment before exec
         sudo tee /home/claude/.npm-global/bin/claude > /dev/null << 'CLAUDE_WRAPPER_EOF'
 #!/bin/bash
-# Wrapper to run claude without API key in subscription mode
-# Use env -u to remove ANTHROPIC_API_KEY from environment before executing
-exec env -u ANTHROPIC_API_KEY /home/claude/.npm-global/bin/claude-real "$@"
+# Wrapper to run claude without API keys in subscription mode
+# Use env -u to remove ANTHROPIC_API_KEY and OPENAI_API_KEY from environment before executing
+exec env -u ANTHROPIC_API_KEY -u OPENAI_API_KEY /home/claude/.npm-global/bin/claude-real "$@"
 CLAUDE_WRAPPER_EOF
         sudo chmod +x /home/claude/.npm-global/bin/claude
         echo "Created claude wrapper to prevent API key usage"
@@ -80,12 +83,16 @@ if [ "$1" = "/bin/bash" ] && command -v claude &> /dev/null; then
     echo "Claude Code CLI available. Default options: $CLAUDE_CLI_OPTS"
     echo ""
     echo "🚀 Quick Start:"
-    echo "  auth-and-setup.sh    - Authenticate with Claude & install plugins (recommended)"
+    echo "  auth-and-setup.sh    - Authenticate with Claude (recommended)"
     echo ""
     echo "Manual Setup:"
     echo "  claude login         - Authenticate with Claude"
     echo "  signal-authenticated - Signal REST broker after authentication"
-    echo "  install-plugins.sh   - Install Superpowers plugin"
+    echo ""
+    echo "Plugin Installation (requires interactive Claude session):"
+    echo "  Start 'claude' and run:"
+    echo "    /plugin marketplace add obra/superpowers-marketplace"
+    echo "    /plugin install superpowers@superpowers-marketplace"
     echo ""
     echo "Skills directories:"
     echo "  - Public skills: /mnt/skills/public"
@@ -101,17 +108,17 @@ fi
 # If the command is specifically 'claude', add default options
 if [ "$1" = "claude" ]; then
     shift
-    # In subscription mode, explicitly remove ANTHROPIC_API_KEY from environment
+    # In subscription mode, explicitly remove API keys from environment
     if [ "${AGENT_AUTH_TYPE:-api_key}" = "subscription" ]; then
-        exec env -u ANTHROPIC_API_KEY claude $CLAUDE_CLI_OPTS "$@"
+        exec env -u ANTHROPIC_API_KEY -u OPENAI_API_KEY claude $CLAUDE_CLI_OPTS "$@"
     else
         exec claude $CLAUDE_CLI_OPTS "$@"
     fi
 else
     # Run the command passed to docker run
-    # In subscription mode, explicitly remove ANTHROPIC_API_KEY from environment
+    # In subscription mode, explicitly remove API keys from environment
     if [ "${AGENT_AUTH_TYPE:-api_key}" = "subscription" ]; then
-        exec env -u ANTHROPIC_API_KEY "$@"
+        exec env -u ANTHROPIC_API_KEY -u OPENAI_API_KEY "$@"
     else
         exec "$@"
     fi

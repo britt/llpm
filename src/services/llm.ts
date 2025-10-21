@@ -7,7 +7,7 @@ import { modelRegistry } from './modelRegistry';
 import { RequestContext } from '../utils/requestContext';
 import { traced, getTracer } from '../utils/tracing';
 
-const MAX_STEPS = 10;
+const MAX_STEPS = 35;
 
 export async function generateResponse(messages: Message[]): Promise<string> {
   debug('generateResponse called with', messages.length, 'messages');
