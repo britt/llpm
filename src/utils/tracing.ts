@@ -18,18 +18,17 @@ export async function traced<T>(
   options: SpanOptions,
   operation: (span: Span) => Promise<T>
 ): Promise<T> {
-  // Prepare span options with kind and attributes
-  const spanOptions: any = {
-    kind: options.kind ?? SpanKind.INTERNAL,
-    attributes: {
-      ...(options.attributes ?? {}),
-      // Set OpenInference span kind for Phoenix UI
-      ...(options.openInferenceKind ? { 'openinference.span.kind': options.openInferenceKind } : {}),
-    },
-  };
+  // Build attributes by merging user attributes with OpenInference kind
+  const attributes = { ...options.attributes };
+  if (options.openInferenceKind) {
+    attributes['openinference.span.kind'] = options.openInferenceKind;
+  }
 
   // Start span with current context (automatically uses active span as parent)
-  const span = tracer.startSpan(operationName, spanOptions);
+  const span = tracer.startSpan(operationName, {
+    kind: options.kind ?? SpanKind.INTERNAL,
+    attributes,
+  });
 
   // Set this span as active in context for nested operations
   return context.with(trace.setSpan(context.active(), span), async () => {
@@ -61,18 +60,17 @@ export function tracedSync<T>(
   options: SpanOptions,
   operation: (span: Span) => T
 ): T {
-  // Prepare span options with kind and attributes
-  const spanOptions: any = {
-    kind: options.kind ?? SpanKind.INTERNAL,
-    attributes: {
-      ...(options.attributes ?? {}),
-      // Set OpenInference span kind for Phoenix UI
-      ...(options.openInferenceKind ? { 'openinference.span.kind': options.openInferenceKind } : {}),
-    },
-  };
+  // Build attributes by merging user attributes with OpenInference kind
+  const attributes = { ...options.attributes };
+  if (options.openInferenceKind) {
+    attributes['openinference.span.kind'] = options.openInferenceKind;
+  }
 
   // Start span with current context (automatically uses active span as parent)
-  const span = tracer.startSpan(operationName, spanOptions);
+  const span = tracer.startSpan(operationName, {
+    kind: options.kind ?? SpanKind.INTERNAL,
+    attributes,
+  });
 
   // Set this span as active in context for nested operations
   return context.with(trace.setSpan(context.active(), span), () => {
