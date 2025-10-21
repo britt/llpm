@@ -207,7 +207,8 @@ export function useChat() {
         attributes: {
           'message.length': content.length,
           'message.count': messagesRef.current.length + 1
-        }
+        },
+        openInferenceKind: 'CHAIN',  // Phoenix UI span kind for request flow
       }, async (span) => {
         const userMessage: Message = { role: 'user', content };
 

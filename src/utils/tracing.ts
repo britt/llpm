@@ -1,4 +1,4 @@
-import { trace, context, SpanStatusCode, type Span } from '@opentelemetry/api';
+import { trace, context, SpanStatusCode, SpanKind, type Span } from '@opentelemetry/api';
 import { debug as logDebug } from './logger';
 
 const tracer = trace.getTracer('llpm', '0.14.1');
@@ -6,6 +6,8 @@ const tracer = trace.getTracer('llpm', '0.14.1');
 export interface SpanOptions {
   attributes?: Record<string, string | number | boolean>;
   parent?: Span;
+  kind?: SpanKind; // OpenTelemetry span kind (INTERNAL, SERVER, CLIENT, etc.)
+  openInferenceKind?: 'LLM' | 'CHAIN' | 'TOOL' | 'AGENT' | 'RETRIEVER' | 'EMBEDDING'; // Phoenix/OpenInference span kind
 }
 
 /**
@@ -16,10 +18,18 @@ export async function traced<T>(
   options: SpanOptions,
   operation: (span: Span) => Promise<T>
 ): Promise<T> {
+  // Prepare span options with kind and attributes
+  const spanOptions: any = {
+    kind: options.kind ?? SpanKind.INTERNAL,
+    attributes: {
+      ...(options.attributes ?? {}),
+      // Set OpenInference span kind for Phoenix UI
+      ...(options.openInferenceKind ? { 'openinference.span.kind': options.openInferenceKind } : {}),
+    },
+  };
+
   // Start span with current context (automatically uses active span as parent)
-  const span = tracer.startSpan(operationName, {
-    attributes: options.attributes,
-  });
+  const span = tracer.startSpan(operationName, spanOptions);
 
   // Set this span as active in context for nested operations
   return context.with(trace.setSpan(context.active(), span), async () => {
@@ -51,10 +61,18 @@ export function tracedSync<T>(
   options: SpanOptions,
   operation: (span: Span) => T
 ): T {
+  // Prepare span options with kind and attributes
+  const spanOptions: any = {
+    kind: options.kind ?? SpanKind.INTERNAL,
+    attributes: {
+      ...(options.attributes ?? {}),
+      // Set OpenInference span kind for Phoenix UI
+      ...(options.openInferenceKind ? { 'openinference.span.kind': options.openInferenceKind } : {}),
+    },
+  };
+
   // Start span with current context (automatically uses active span as parent)
-  const span = tracer.startSpan(operationName, {
-    attributes: options.attributes,
-  });
+  const span = tracer.startSpan(operationName, spanOptions);
 
   // Set this span as active in context for nested operations
   return context.with(trace.setSpan(context.active(), span), () => {

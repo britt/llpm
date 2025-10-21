@@ -94,7 +94,8 @@ export class LocalEmbeddingsProvider implements EmbeddingsProvider {
           'embeddings.textLength': text.length,
           'embeddings.model': 'BAAI/bge-base-en-v1.5',
           'embeddings.dimensions': this.dimensions
-        }
+        },
+        openInferenceKind: 'EMBEDDING',  // Phoenix UI span kind for embeddings
       },
       async (span) => {
         const results = await this.generateEmbeddings([text]);
@@ -126,7 +127,8 @@ export class LocalEmbeddingsProvider implements EmbeddingsProvider {
           'embeddings.dimensions': this.dimensions,
           'embeddings.pythonPath': this.config.pythonPath,
           'embeddings.device': process.env.EMBEDDINGS_DEVICE || 'cpu'
-        }
+        },
+        openInferenceKind: 'EMBEDDING',  // Phoenix UI span kind for embeddings
       },
       async (span) => {
         try {
