@@ -41,7 +41,7 @@ export function initializeTelemetry(config?: Partial<TelemetryConfig>): NodeSDK 
   }
 
   const serviceName = config?.serviceName ?? 'llpm';
-  const serviceVersion = config?.serviceVersion ?? '0.1.0'; // Default version
+  const serviceVersion = config?.serviceVersion ?? '0.14.1'; // Default version
   const otlpEndpoint = config?.otlpEndpoint ??
                        process.env.OTEL_EXPORTER_OTLP_ENDPOINT ??
                        'http://localhost:4318';
@@ -160,7 +160,7 @@ export async function sendTestTrace(): Promise<void> {
   }
 
   const { trace, SpanStatusCode } = await import('@opentelemetry/api');
-  const tracer = trace.getTracer('llpm', '0.14.0');
+  const tracer = trace.getTracer('llpm', '0.14.1');
 
   const span = tracer.startSpan('llpm.startup');
   span.setAttribute('test', true);

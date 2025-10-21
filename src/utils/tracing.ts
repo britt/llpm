@@ -1,7 +1,7 @@
 import { trace, context, SpanStatusCode, type Span } from '@opentelemetry/api';
 import { debug as logDebug } from './logger';
 
-const tracer = trace.getTracer('llpm', '0.14.0');
+const tracer = trace.getTracer('llpm', '0.14.1');
 
 export interface SpanOptions {
   attributes?: Record<string, string | number | boolean>;

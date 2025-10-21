@@ -1,6 +1,6 @@
 {
   "name": "llpm",
-  "version": "0.14.0",
+  "version": "0.14.1",
   "description": "Large Language Model Product Manager - AI-powered CLI for software development",
   "keywords": ["llm", "ai", "cli", "product-manager", "development", "tools"],
   "author": "britt",
