@@ -1,6 +1,7 @@
 import { NodeSDK } from '@opentelemetry/sdk-node';
 import { getNodeAutoInstrumentations } from '@opentelemetry/auto-instrumentations-node';
-import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http';
+import { OTLPTraceExporter as OTLPTraceExporterHTTP } from '@opentelemetry/exporter-trace-otlp-http';
+import { OTLPTraceExporter as OTLPTraceExporterGRPC } from '@opentelemetry/exporter-trace-otlp-grpc';
 import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-http';
 import { PeriodicExportingMetricReader } from '@opentelemetry/sdk-metrics';
 import { resourceFromAttributes } from '@opentelemetry/resources';
@@ -42,8 +43,12 @@ export function initializeTelemetry(config?: Partial<TelemetryConfig>): NodeSDK 
                        process.env.OTEL_EXPORTER_OTLP_ENDPOINT ??
                        'http://localhost:4318';
 
+  // Check protocol preference (grpc or http/protobuf)
+  const protocol = process.env.OTEL_EXPORTER_OTLP_PROTOCOL ?? 'http/protobuf';
+
   logDebug(`Initializing OpenTelemetry SDK for ${serviceName}@${serviceVersion}`);
   logDebug(`OTLP endpoint: ${otlpEndpoint}`);
+  logDebug(`OTLP protocol: ${protocol}`);
   logDebug(`Runtime: ${typeof Bun !== 'undefined' ? 'Bun' : 'Node.js'}`);
 
   // Warning: Auto-instrumentations only work with Node.js
@@ -58,10 +63,14 @@ export function initializeTelemetry(config?: Partial<TelemetryConfig>): NodeSDK 
       [ATTR_SERVICE_VERSION]: serviceVersion,
     });
 
-    // Configure trace exporter
-    const traceExporter = new OTLPTraceExporter({
-      url: `${otlpEndpoint}/v1/traces`,
-    });
+    // Configure trace exporter based on protocol
+    const traceExporter = protocol === 'grpc'
+      ? new OTLPTraceExporterGRPC({
+          url: otlpEndpoint,  // gRPC doesn't need /v1/traces path
+        })
+      : new OTLPTraceExporterHTTP({
+          url: `${otlpEndpoint}/v1/traces`,  // HTTP needs explicit path
+        });
 
     // Configure metrics exporter
     const metricReader = new PeriodicExportingMetricReader({

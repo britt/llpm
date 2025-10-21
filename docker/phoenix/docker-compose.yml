@@ -1,0 +1,36 @@
+services:
+  phoenix:
+    image: arizephoenix/phoenix:latest
+    container_name: arize-phoenix
+    ports:
+      - "6006:6006"  # Phoenix web UI
+      - "4319:4317"  # gRPC endpoint for OTEL traces (host:container)
+      # - "9090:9090"  # Prometheus metrics (optional, commented out - port in use)
+    environment:
+      # Server configuration
+      - PHOENIX_HOST=0.0.0.0
+      - PHOENIX_PORT=6006
+      - PHOENIX_GRPC_PORT=4317
+
+      # Working directory for SQLite storage
+      - PHOENIX_WORKING_DIR=/phoenix-data
+
+      # Optional: Disable external resources for air-gapped environments
+      # - PHOENIX_ALLOW_EXTERNAL_RESOURCES=false
+
+      # Optional: Admin user setup (format: username=email;username2=email2)
+      # - PHOENIX_ADMINS=admin=admin@example.com
+    volumes:
+      # Persistent storage for SQLite database
+      - phoenix-data:/phoenix-data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:6006"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+volumes:
+  phoenix-data:
+    driver: local
