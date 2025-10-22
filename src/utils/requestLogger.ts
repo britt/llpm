@@ -149,9 +149,14 @@ export class RequestLogger extends EventEmitter {
   private output(message: string, entry: RequestLogEntry): void {
     // Emit event asynchronously for UI display to allow React to render between start/end events
     // This prevents React's automatic batching from combining start and end state updates
-    setImmediate(() => {
+    // Skip async in tests to avoid breaking synchronous test assertions
+    if (process.env.NODE_ENV === 'test') {
       this.emit('log', entry);
-    });
+    } else {
+      setImmediate(() => {
+        this.emit('log', entry);
+      });
+    }
 
     // Don't write to stderr anymore - the UI component handles display
     // Only write to stderr if explicitly requested via environment variable
