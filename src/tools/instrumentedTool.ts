@@ -21,7 +21,8 @@ export function tool<T extends { description: string; parameters?: any; execute:
           'tool.name': toolName,
           'tool.description': config.description,
           'tool.args': JSON.stringify(args).substring(0, 500) // Limit arg length
-        }
+        },
+        openInferenceKind: 'TOOL',  // Phoenix UI span kind for tool executions
       }, async (span) => {
         // Log tool call start
         RequestContext.logToolCall(toolName, 'start', args);

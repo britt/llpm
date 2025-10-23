@@ -1,0 +1,91 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: phoenix-postgres
+    environment:
+      - POSTGRES_USER=phoenix
+      - POSTGRES_PASSWORD=phoenix
+      - POSTGRES_DB=phoenix
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U phoenix"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+
+  phoenix:
+    image: arizephoenix/phoenix:latest
+    container_name: arize-phoenix
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "6006:6006"  # Phoenix web UI
+      - "4319:4317"  # gRPC endpoint for OTEL traces (host:container)
+      # - "9090:9090"  # Prometheus metrics (optional, commented out - port in use)
+    environment:
+      # Server configuration
+      - PHOENIX_HOST=0.0.0.0
+      - PHOENIX_PORT=6006
+      - PHOENIX_GRPC_PORT=4317
+
+      # PostgreSQL database configuration
+      - PHOENIX_SQL_DATABASE_URL=postgresql://phoenix:phoenix@postgres:5432/phoenix
+
+      # Alternative: Use individual PostgreSQL variables
+      # - PHOENIX_POSTGRES_HOST=postgres
+      # - PHOENIX_POSTGRES_PORT=5432
+      # - PHOENIX_POSTGRES_USER=phoenix
+      # - PHOENIX_POSTGRES_PASSWORD=phoenix
+      # - PHOENIX_POSTGRES_DB=phoenix
+
+      # Working directory (not used with PostgreSQL, but can be set for logs/temp files)
+      - PHOENIX_WORKING_DIR=/phoenix-data
+
+      # Optional: Disable external resources for air-gapped environments
+      # - PHOENIX_ALLOW_EXTERNAL_RESOURCES=false
+
+      # Optional: Admin user setup (format: username=email;username2=email2)
+      # - PHOENIX_ADMINS=admin=admin@example.com
+
+      # Optional: OAuth2/OIDC authentication
+      # - PHOENIX_AUTH_PROVIDER=oidc
+      # - PHOENIX_OIDC_CLIENT_ID=${PHOENIX_OIDC_CLIENT_ID}
+      # - PHOENIX_OIDC_CLIENT_SECRET=${PHOENIX_OIDC_CLIENT_SECRET}
+      # - PHOENIX_OIDC_ISSUER=${PHOENIX_OIDC_ISSUER}
+    volumes:
+      # Optional: Mount for working directory (logs, temp files)
+      - phoenix-working:/phoenix-data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:6006"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 4G
+        reservations:
+          cpus: '1'
+          memory: 2G
+
+volumes:
+  postgres-data:
+    driver: local
+  phoenix-working:
+    driver: local

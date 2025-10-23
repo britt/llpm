@@ -8,6 +8,7 @@ import { debug } from './logger';
 import { DEFAULT_HISTORY_SIZE } from '../constants';
 import { RequestContext } from './requestContext';
 import { traced } from './tracing';
+import { SpanKind } from '@opentelemetry/api';
 
 // Use a delimiter that's unlikely to appear in message content
 const MESSAGE_DELIMITER = '\n---MESSAGE---\n';
@@ -67,7 +68,10 @@ export async function loadChatHistory(): Promise<Message[]> {
   debug('Loading chat history from disk');
   RequestContext.logStep('chat_history_load', 'start', 'debug');
 
-  return traced('fs.loadChatHistory', { attributes: {} }, async (span) => {
+  return traced('fs.loadChatHistory', {
+    attributes: {},
+    kind: SpanKind.INTERNAL,
+  }, async (span) => {
     try {
       await ensureConfigDir();
 
@@ -155,7 +159,8 @@ export async function saveChatHistory(messages: Message[]): Promise<void> {
   const saveOperation = traced('fs.saveChatHistory', {
     attributes: {
       'messages.count': messages.length
-    }
+    },
+    kind: SpanKind.INTERNAL,
   }, async (span) => {
     try {
       await ensureConfigDir();

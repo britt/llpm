@@ -6,6 +6,7 @@ import { debug } from './logger';
 import { URL } from 'url';
 import * as yaml from 'js-yaml';
 import { traced } from './tracing';
+import { SpanKind } from '@opentelemetry/api';
 
 // Cache for project config to avoid repeated filesystem reads
 let projectConfigCache: ProjectConfig | null = null;
@@ -54,7 +55,8 @@ export async function loadProjectConfig(): Promise<ProjectConfig> {
   projectConfigPromise = traced('fs.loadProjectConfig', {
     attributes: {
       'cache.hit': false
-    }
+    },
+    kind: SpanKind.INTERNAL,
   }, async (span) => {
     try {
       await ensureConfigDir();
@@ -132,7 +134,8 @@ export async function saveProjectConfig(config: ProjectConfig): Promise<void> {
     attributes: {
       'projects.count': Object.keys(config.projects || {}).length,
       'has_current_project': !!config.currentProject
-    }
+    },
+    kind: SpanKind.INTERNAL,
   }, async (span) => {
     debug('Saving project configuration');
 
@@ -366,7 +369,8 @@ export async function loadProjectAgentConfig(projectId: string): Promise<AgentCo
   return traced('fs.loadProjectAgentConfig', {
     attributes: {
       'project.id': projectId
-    }
+    },
+    kind: SpanKind.INTERNAL,
   }, async (span) => {
     try {
       const yamlPath = getProjectAgentsYamlPath(projectId);
@@ -412,7 +416,8 @@ export async function saveProjectAgentConfig(projectId: string, agentConfig: Age
     attributes: {
       'project.id': projectId,
       'agents.count': agentConfig?.agents ? Object.keys(agentConfig.agents).length : 0
-    }
+    },
+    kind: SpanKind.INTERNAL,
   }, async (span) => {
     try {
       await ensureProjectDir(projectId);

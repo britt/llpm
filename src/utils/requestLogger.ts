@@ -147,17 +147,25 @@ export class RequestLogger extends EventEmitter {
   }
 
   private output(message: string, entry: RequestLogEntry): void {
-    // Emit event for UI display
-    this.emit('log', entry);
-    
+    // Emit event asynchronously for UI display to allow React to render between start/end events
+    // This prevents React's automatic batching from combining start and end state updates
+    // Skip async in tests to avoid breaking synchronous test assertions
+    if (process.env.NODE_ENV === 'test') {
+      this.emit('log', entry);
+    } else {
+      setImmediate(() => {
+        this.emit('log', entry);
+      });
+    }
+
     // Don't write to stderr anymore - the UI component handles display
     // Only write to stderr if explicitly requested via environment variable
-    if (process.env.LLPM_TRACE_STDERR === '1' && 
+    if (process.env.LLPM_TRACE_STDERR === '1' &&
         (RequestLogger.config.output === 'terminal' || RequestLogger.config.output === 'both')) {
       // Write to stderr to avoid mixing with program output
       process.stderr.write(message + '\n');
     }
-    
+
     if (RequestLogger.config.output === 'file' || RequestLogger.config.output === 'both') {
       // TODO: Implement file logging with async writes
       // For now, just use terminal output

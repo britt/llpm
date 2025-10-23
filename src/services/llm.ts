@@ -17,7 +17,8 @@ export async function generateResponse(messages: Message[]): Promise<string> {
     attributes: {
       'message.count': messages.length,
       'message.last_role': messages[messages.length - 1]?.role || 'unknown',
-    }
+    },
+    openInferenceKind: 'LLM',  // Phoenix UI span kind
   }, async (span) => {
     try {
       const model = await modelRegistry.createLanguageModel();

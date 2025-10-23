@@ -5,6 +5,7 @@ import { getUserReposViaGhCli, searchReposViaGhCli, getRepoViaGhCli } from './gi
 import { credentialManager } from '../utils/credentialManager';
 import { RequestContext } from '../utils/requestContext';
 import { traced } from '../utils/tracing';
+import { SpanKind } from '@opentelemetry/api';
 
 export interface GitHubRepo {
   id: number;
@@ -158,7 +159,8 @@ export async function getUserRepos(
       'github.api': 'repos.listForAuthenticatedUser',
       'github.type': options.type || 'owner',
       'github.per_page': options.per_page || 100
-    }
+    },
+    kind: SpanKind.CLIENT,
   }, async (span) => {
     debug('Getting user repositories with options:', options);
 
@@ -403,7 +405,8 @@ export async function createIssue(
       'github.issue.title': title.substring(0, 100),
       'github.issue.has_body': !!body,
       'github.issue.labels_count': labels?.length || 0
-    }
+    },
+    kind: SpanKind.CLIENT,
   }, async (span) => {
     debug('Creating GitHub issue:', owner, repo, title);
 
@@ -656,7 +659,8 @@ export async function commentOnIssue(
       'github.repo': repo,
       'github.issue.number': issueNumber,
       'github.comment.length': body.length
-    }
+    },
+    kind: SpanKind.CLIENT,
   }, async (span) => {
     debug('Adding comment to GitHub issue:', owner, repo, issueNumber);
 

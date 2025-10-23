@@ -5,6 +5,7 @@ import { debug } from './logger';
 import { getCurrentProject } from './projectConfig';
 import type { Project } from '../types/project';
 import { traced } from './tracing';
+import { SpanKind } from '@opentelemetry/api';
 
 const DEFAULT_SYSTEM_PROMPT = `You are LLPM (Large Language Model Product Manager), an AI-powered project management assistant that operates within an interactive terminal interface. You help users manage multiple projects, interact with GitHub repositories, and coordinate development workflows through natural language conversation.
 
@@ -136,7 +137,8 @@ export function getSystemPromptPath(): string {
 
 export async function getSystemPrompt(): Promise<string> {
   return traced('fs.getSystemPrompt', {
-    attributes: {}
+    attributes: {},
+    kind: SpanKind.INTERNAL,
   }, async (span) => {
     try {
       await ensureConfigDir();
@@ -329,7 +331,8 @@ export async function saveSystemPrompt(prompt: string): Promise<void> {
   return traced('fs.saveSystemPrompt', {
     attributes: {
       'prompt.length': prompt.length
-    }
+    },
+    kind: SpanKind.INTERNAL,
   }, async (span) => {
     debug('Saving custom system prompt');
     try {

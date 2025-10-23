@@ -202,57 +202,60 @@ export function useChat() {
         return;
       }
 
-      // Handle regular chat messages - wrap entire flow in a trace
-      return traced('user.request', {
-        attributes: {
-          'message.length': content.length,
-          'message.count': messagesRef.current.length + 1
-        }
-      }, async (span) => {
-        const userMessage: Message = { role: 'user', content };
+      // Handle regular chat messages - establish request context first, then trace
+      const userMessage: Message = { role: 'user', content };
 
-        debug('Adding user message to state');
-        setMessages(prev => trimMessages([...prev, userMessage]));
-        shouldSaveRef.current = true; // Mark for saving
-        setIsLoading(true);
-        debug('Set loading state to true');
+      debug('Adding user message to state');
+      setMessages(prev => trimMessages([...prev, userMessage]));
+      shouldSaveRef.current = true; // Mark for saving
+      setIsLoading(true);
+      debug('Set loading state to true');
 
-        try {
-          const allMessages = [...messagesRef.current, userMessage];
-          debug('Sending', allMessages.length, 'messages to LLM');
+      try {
+        const allMessages = [...messagesRef.current, userMessage];
+        debug('Sending', allMessages.length, 'messages to LLM');
 
-          // Wrap the entire request processing in a request context
-          const response = await RequestContext.run(async () => {
-            // Register the logger with the display component
-            const logger = RequestContext.getLogger();
-            if (logger) {
-              loggerRegistry.setLogger(logger);
-            }
+        // Wrap the entire request processing in a request context (outer wrapper)
+        const response = await RequestContext.run(async () => {
+          // Register the logger with the display component
+          const logger = RequestContext.getLogger();
+          if (logger) {
+            loggerRegistry.setLogger(logger);
+          }
 
+          // Trace the request flow (inner wrapper)
+          return await traced('user.request', {
+            attributes: {
+              'message.length': content.length,
+              'message.count': allMessages.length
+            },
+            openInferenceKind: 'CHAIN',  // Phoenix UI span kind for request flow
+          }, async (span) => {
             RequestContext.logStep('prompt_assembly', 'start');
             RequestContext.logStep('prompt_assembly', 'end');
-            return await generateResponse(allMessages);
+            const result = await generateResponse(allMessages);
+            span.setAttribute('response.length', result?.length || 0);
+            return result;
           });
+        });
 
-          debug('Received response from LLM, length:', response?.length || 0);
-          debug('Response content preview:', response?.substring(0, 50) || 'EMPTY');
+        debug('Received response from LLM, length:', response?.length || 0);
+        debug('Response content preview:', response?.substring(0, 50) || 'EMPTY');
 
-          // Ensure we have a response before adding it
-          const responseContent =
-            response && response.trim()
-              ? response
-              : "I processed your request but don't have anything specific to report.";
+        // Ensure we have a response before adding it
+        const responseContent =
+          response && response.trim()
+            ? response
+            : "I processed your request but don't have anything specific to report.";
 
-          span.setAttribute('response.length', responseContent.length);
-
-          const assistantMessage: Message = {
-            role: 'assistant',
-            content: responseContent,
-          };
-          setMessages(prev => trimMessages([...prev, assistantMessage]));
-          shouldSaveRef.current = true; // Mark for saving
-          debug('Added assistant response to state');
-        } catch (error) {
+        const assistantMessage: Message = {
+          role: 'assistant',
+          content: responseContent,
+        };
+        setMessages(prev => trimMessages([...prev, assistantMessage]));
+        shouldSaveRef.current = true; // Mark for saving
+        debug('Added assistant response to state');
+      } catch (error) {
         debug('Error in processMessageImmediate:', error);
 
         let errorContent = 'Sorry, I encountered an error. Please try again.';
@@ -271,20 +274,19 @@ export function useChat() {
         setMessages(prev => trimMessages([...prev, errorMessage]));
         shouldSaveRef.current = true; // Mark for saving
         debug('Added error message to state');
-        } finally {
-          setIsLoading(false);
-          debug('Set loading state to false');
+      } finally {
+        setIsLoading(false);
+        debug('Set loading state to false');
 
-          // Clear request logs after a short delay
-          setTimeout(() => {
-            // Get the logger from the registry and clear
-            const logger = RequestContext.getLogger();
-            if (logger) {
-              logger.clearLogs();
-            }
-          }, 500);
-        }
-      }); // End traced()
+        // Clear request logs after a short delay
+        setTimeout(() => {
+          // Get the logger from the registry and clear
+          const logger = RequestContext.getLogger();
+          if (logger) {
+            logger.clearLogs();
+          }
+        }, 500);
+      }
     },
     [isProjectSwitching]
   );
