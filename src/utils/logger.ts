@@ -14,18 +14,18 @@ export function setVerbose(verbose: boolean) {
 
 export function debug(...args: any[]) {
   const timestamp = new Date().toISOString();
-  const message = args.map(arg => 
-    typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
+  const message = args.map(arg =>
+    typeof arg === 'object' ? JSON.stringify(arg) : String(arg)
   ).join(' ');
-  
+
   // Store in memory buffer
   debugLogs.push({ timestamp, message });
-  
+
   // Keep only the last MAX_DEBUG_LOGS entries
   if (debugLogs.length > MAX_DEBUG_LOGS) {
     debugLogs.shift();
   }
-  
+
   if (isVerbose) {
     console.error('[DEBUG]', timestamp, ...args);
   }

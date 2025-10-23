@@ -51,9 +51,9 @@ describe('messageLineCounter', () => {
   });
 
   describe('filterMessagesByLines', () => {
-    const createMessage = (id: string, content: string): Message => ({
+    const createMessage = (id: string, content: string, role: 'user' | 'assistant' | 'system' = 'user'): Message => ({
       id,
-      role: 'user',
+      role,
       content
     });
 
@@ -159,6 +159,20 @@ describe('messageLineCounter', () => {
 
       expect(result.totalLines).toBe(4);
       expect(result.visibleMessages).toHaveLength(2);
+    });
+
+    it('should preserve message role when filtering', () => {
+      const messages = [
+        createMessage('1', 'Line 1\nLine 2', 'user'),
+        createMessage('2', 'Line 3\nLine 4', 'assistant'),
+        createMessage('3', 'Line 5\nLine 6', 'system')
+      ];
+
+      const result = filterMessagesByLines(messages, 4);
+
+      expect(result.visibleMessages).toHaveLength(2);
+      expect(result.visibleMessages[0].role).toBe('assistant');
+      expect(result.visibleMessages[1].role).toBe('system');
     });
   });
 });
