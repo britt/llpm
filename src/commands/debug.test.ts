@@ -213,4 +213,21 @@ describe('debugCommand', () => {
     const logEntryMatches = result.content.match(/\[\d{2}:\d{2}:\d{2}\]/g);
     expect(logEntryMatches).toHaveLength(50); // Should be exactly 50 entries
   });
+
+  it('should handle truncated log messages', async () => {
+    // Create a log with a truncated message (simulating logger truncation)
+    const longMessage = 'x'.repeat(500) + '...'; // Truncated at 500 chars
+    const mockLogs = [{
+      message: longMessage,
+      timestamp: '2023-01-01T12:00:00.000Z'
+    }];
+
+    vi.spyOn(logger, 'getRecentDebugLogs').mockReturnValue(mockLogs);
+
+    const result = await resolveCommandResult(debugCommand.execute(['1']));
+
+    expect(result.success).toBe(true);
+    expect(result.content).toContain('...');
+    expect(result.content).toContain('Last 1 debug log:');
+  });
 });
