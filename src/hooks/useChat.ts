@@ -50,14 +50,12 @@ export function useChat() {
   // Load chat history on component mount and when project changes
   useEffect(() => {
     const initializeChatHistory = async () => {
-      debug('Initializing chat history');
       try {
         // Check if project changed
         const currentProject = await getCurrentProject();
         const newProjectId = currentProject?.id || null;
 
         if (currentProjectId !== newProjectId) {
-          debug('Project changed from', currentProjectId, 'to', newProjectId);
           setCurrentProjectId(newProjectId);
           setHistoryLoaded(false);
         }
@@ -73,15 +71,12 @@ export function useChat() {
           };
           setMessages([welcomeMessage]);
           shouldSaveRef.current = true; // Mark that we need to save the welcome message
-          debug('No saved history found, using welcome message');
         } else {
           // Load saved history
           setMessages(trimMessages(savedMessages));
           shouldSaveRef.current = false; // Don't save immediately after loading
-          debug('Loaded', savedMessages.length, 'messages from history');
         }
       } catch (error) {
-        debug('Error loading chat history:', error);
         // Fallback to welcome message
         const welcomeMessage: Message = {
           role: 'assistant',
@@ -102,14 +97,12 @@ export function useChat() {
   // Save messages whenever they change (after history is loaded)
   useEffect(() => {
     if (historyLoaded && messages.length > 0 && shouldSaveRef.current) {
-      debug('Saving updated chat history with', messages.length, 'messages');
       saveChatHistory(messages)
         .then(() => {
-          debug('Chat history saved successfully');
           shouldSaveRef.current = false; // Reset save flag
         })
         .catch(error => {
-          debug('Failed to save chat history:', error);
+          // Silently fail - not critical
         });
     }
   }, [messages, historyLoaded]);

@@ -4,7 +4,6 @@ import { join } from 'path';
 import type { Message } from '../types';
 import { getConfigDir, ensureConfigDir } from './config';
 import { getCurrentProject } from './projectConfig';
-import { debug } from './logger';
 import { DEFAULT_HISTORY_SIZE } from '../constants';
 import { RequestContext } from './requestContext';
 import { traced } from './tracing';
@@ -45,7 +44,6 @@ async function ensureProjectDir(projectId: string): Promise<void> {
   const projectDir = join(getConfigDir(), 'projects', projectId);
   if (!existsSync(projectDir)) {
     await mkdir(projectDir, { recursive: true });
-    debug('Created project directory:', projectDir);
   }
 }
 
@@ -58,14 +56,11 @@ let pendingSave: Promise<void> | null = null;
  */
 export async function flushChatHistory(): Promise<void> {
   if (pendingSave) {
-    debug('Waiting for pending chat history save to complete');
     await pendingSave;
-    debug('Pending chat history save completed');
   }
 }
 
 export async function loadChatHistory(): Promise<Message[]> {
-  debug('Loading chat history from disk');
   RequestContext.logStep('chat_history_load', 'start', 'debug');
 
   return traced('fs.loadChatHistory', {
@@ -85,7 +80,6 @@ export async function loadChatHistory(): Promise<Message[]> {
       span.setAttribute('file.path', historyPath);
 
       if (!existsSync(historyPath)) {
-        debug('No chat history file found, starting with empty history');
         span.setAttribute('file.exists', false);
         RequestContext.logStep('chat_history_load', 'end', 'debug', {
           messageCount: 0,
@@ -108,7 +102,6 @@ export async function loadChatHistory(): Promise<Message[]> {
 
       // If no current session, get the most recent one
       if (history.length > 0) {
-        debug('Loaded', history.length, 'messages from history');
         const slicedHistory = history.slice(-1*DEFAULT_HISTORY_SIZE);
 
         span.setAttribute('messages.total', history.length);
@@ -135,7 +128,6 @@ export async function loadChatHistory(): Promise<Message[]> {
 
       return [];
     } catch (error) {
-      debug('Error loading chat history:', error);
       RequestContext.logError('chat_history_load', error instanceof Error ? error : String(error));
       throw error; // Re-throw for traced() to record
     }
@@ -146,11 +138,9 @@ export async function saveChatHistory(messages: Message[]): Promise<void> {
   // Wait for any pending save to complete before starting a new one
   // This prevents concurrent writes that could corrupt the file
   if (pendingSave) {
-    debug('Waiting for previous save to complete before starting new save');
     await pendingSave;
   }
 
-  debug('Saving chat history with', messages.length, 'messages');
   RequestContext.logStep('chat_history_save', 'start', 'debug', {
     messageCount: messages.length
   });
@@ -177,7 +167,6 @@ export async function saveChatHistory(messages: Message[]): Promise<void> {
 
       if (messages.length === 0) {
         // Clear the history file for empty messages array
-        debug('Clearing chat history file');
         await writeFile(historyPath, '', 'utf-8');
         span.setAttribute('action', 'clear');
         RequestContext.logStep('chat_history_save', 'end', 'debug', {
@@ -190,7 +179,6 @@ export async function saveChatHistory(messages: Message[]): Promise<void> {
 
       // Limit messages to prevent excessive file sizes
       const messagesToSave = messages.slice(-1 * DEFAULT_HISTORY_SIZE);
-      debug('Saving', messagesToSave.length, 'messages (limited from', messages.length, ')');
 
       span.setAttribute('messages.saved', messagesToSave.length);
       span.setAttribute('messages.truncated', messages.length > DEFAULT_HISTORY_SIZE);
@@ -201,7 +189,6 @@ export async function saveChatHistory(messages: Message[]): Promise<void> {
       span.setAttribute('file.size_kb', fileSizeKB);
 
       await writeFile(historyPath, content + MESSAGE_DELIMITER, 'utf-8');
-      debug('Chat history saved successfully to:', historyPath);
 
       RequestContext.logStep('chat_history_save', 'end', 'debug', {
         totalMessages: messages.length,
@@ -211,7 +198,6 @@ export async function saveChatHistory(messages: Message[]): Promise<void> {
         truncated: messages.length > DEFAULT_HISTORY_SIZE
       });
     } catch (error) {
-      debug('Error saving chat history:', error);
       RequestContext.logError('chat_history_save', error instanceof Error ? error : String(error));
       throw error; // Re-throw for traced() to record
     }
@@ -229,7 +215,6 @@ export async function saveChatHistory(messages: Message[]): Promise<void> {
 }
 
 export async function clearChatHistory(): Promise<void> {
-  debug('Clearing chat history');
   RequestContext.logStep('chat_history_clear', 'start', 'debug');
 
   try {
@@ -243,13 +228,11 @@ export async function clearChatHistory(): Promise<void> {
 
     const historyPath = await getChatHistoryPath();
     await writeFile(historyPath, '', 'utf-8');
-    debug('Chat history cleared successfully');
 
     RequestContext.logStep('chat_history_clear', 'end', 'debug', {
       historyPath
     });
   } catch (error) {
-    debug('Error clearing chat history:', error);
     RequestContext.logError('chat_history_clear', error instanceof Error ? error : String(error));
     throw error;
   }
