@@ -18,6 +18,10 @@ import { renderMarkdown, isASCIICapableTerminal } from '../utils/markdownRendere
 
 interface ChatInterfaceProps {
   messages: Message[];
+  hiddenLinesCount?: number;
+  totalLines?: number;
+  showAllHistory?: boolean;
+  onToggleHistory?: () => void;
   onSendMessage: (message: string) => void;
   onAddSystemMessage: (message: string) => void;
   isLoading: boolean;
@@ -66,6 +70,40 @@ const MessageQueue = memo(({ messages: queuedMessages }: { messages?: Array<Queu
     </Box>
   );
 });
+
+const CollapseIndicator = memo(
+  ({
+    hiddenLinesCount,
+    totalLines,
+    showAllHistory
+  }: {
+    hiddenLinesCount: number;
+    totalLines: number;
+    showAllHistory: boolean;
+  }) => {
+    if (hiddenLinesCount === 0 && !showAllHistory) return null;
+
+    const visibleLines = totalLines - hiddenLinesCount;
+
+    return (
+      <Box paddingX={1} paddingY={0} marginBottom={1}>
+        <Text dimColor>
+          {showAllHistory ? (
+            <>
+              Showing all {totalLines} lines — <Text color="cyan">/history tail</Text> to collapse
+            </>
+          ) : (
+            <>
+              Showing last {visibleLines} lines ({hiddenLinesCount} hidden) —{' '}
+              <Text color="cyan">/history all</Text> |{' '}
+              <Text color="cyan">/history export</Text>
+            </>
+          )}
+        </Text>
+      </Box>
+    );
+  }
+);
 
 const ProjectStatus = memo(
   ({ project, model }: { project: Project | null; model: ModelConfig | null }) => {
@@ -192,18 +230,42 @@ function MessageList({ messages }: { messages: Message[] }) {
   );
 }
 
-function ViewMessages({ messages, queuedMessages }: { messages: Message[]; queuedMessages: QueuedMessage[] }) {
+function ViewMessages({
+  messages,
+  queuedMessages,
+  hiddenLinesCount,
+  totalLines,
+  showAllHistory
+}: {
+  messages: Message[];
+  queuedMessages: QueuedMessage[];
+  hiddenLinesCount?: number;
+  totalLines?: number;
+  showAllHistory?: boolean;
+}) {
   return (
     <Box flexDirection="column" paddingX={1}>
-        <MessageList messages={messages} />
-        {/* Show queued messages in light text */}
-        <MessageQueue messages={queuedMessages} />
-      </Box>
+      {/* Show collapse indicator if there are hidden lines */}
+      {hiddenLinesCount !== undefined && totalLines !== undefined && (
+        <CollapseIndicator
+          hiddenLinesCount={hiddenLinesCount}
+          totalLines={totalLines}
+          showAllHistory={showAllHistory || false}
+        />
+      )}
+      <MessageList messages={messages} />
+      {/* Show queued messages in light text */}
+      <MessageQueue messages={queuedMessages} />
+    </Box>
   );
 }
 
 export const ChatInterface = memo(function ChatInterface({
   messages,
+  hiddenLinesCount = 0,
+  totalLines = 0,
+  showAllHistory = false,
+  onToggleHistory,
   onSendMessage,
   isLoading,
   modelSelectorModels,
@@ -371,7 +433,13 @@ export const ChatInterface = memo(function ChatInterface({
   return (
     <Box flexDirection="column" minHeight="100%">
       {/* Messages - no border, fills available space */}
-      <ViewMessages messages={messages} queuedMessages={queuedMessages} />
+      <ViewMessages
+        messages={messages}
+        queuedMessages={queuedMessages}
+        hiddenLinesCount={hiddenLinesCount}
+        totalLines={totalLines}
+        showAllHistory={showAllHistory}
+      />
       {/* Thinking indicator outside flex container */}
       <ThinkingIndicator isVisible={isLoading || isProcessing} />
       <Box flexDirection="column">

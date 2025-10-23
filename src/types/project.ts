@@ -40,6 +40,10 @@ export interface DockerConfig {
   composeFilePath?: string;
 }
 
+export interface ChatConfig {
+  maxRenderedLines?: number;
+}
+
 export interface AppConfig {
   projects: Record<string, Project>;
   currentProject?: string;
@@ -50,6 +54,7 @@ export interface AppConfig {
   logging?: LoggingConfig;
   automation?: AutomationConfig;
   docker?: DockerConfig;
+  chat?: ChatConfig;
 }
 
 // Keep backwards compatibility

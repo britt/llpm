@@ -9,7 +9,8 @@ import { validateEnvironment } from './src/utils/validation';
 import { credentialManager } from './src/utils/credentialManager';
 import { modelRegistry } from './src/services/modelRegistry';
 import { initializeTelemetry } from './src/utils/telemetry';
-import { RENDER_WINDOW_SIZE } from './src/constants';
+import { filterMessagesByLines } from './src/utils/messageLineCounter';
+import { getMaxRenderedLines } from './src/utils/chatConfig';
 
 // Re-export validateEnvironment for external use
 export { validateEnvironment } from './src/utils/validation';
@@ -29,16 +30,40 @@ export function App() {
     queuedMessages
   } = useChat();
 
-  // Limit messages passed to ChatInterface to reduce rerenders and flicker
-  // Keep only the last RENDER_WINDOW_SIZE messages for rendering
+  // State to track whether to show all history or just the tail
+  const [showAllHistory, setShowAllHistory] = React.useState(false);
+  const [maxRenderedLines, setMaxRenderedLines] = React.useState(300);
+
+  // Load max rendered lines configuration on mount
+  React.useEffect(() => {
+    getMaxRenderedLines().then(setMaxRenderedLines);
+  }, []);
+
+  // Filter messages based on line count (unless showing all history)
   // Full history is still maintained in useChat hook
-  const visibleMessages = React.useMemo(
-    () => messages.slice(-RENDER_WINDOW_SIZE),
-    [messages]
-  );
+  const { visibleMessages, hiddenLinesCount, totalLines } = React.useMemo(() => {
+    if (showAllHistory) {
+      // Show all messages
+      const totalLines = messages.reduce((sum, msg) => {
+        const lines = (msg.content.match(/\n/g) || []).length;
+        return sum + (msg.content.endsWith('\n') ? lines : lines + 1);
+      }, 0);
+      return {
+        visibleMessages: messages,
+        hiddenLinesCount: 0,
+        totalLines
+      };
+    }
+
+    return filterMessagesByLines(messages, maxRenderedLines);
+  }, [messages, showAllHistory, maxRenderedLines]);
 
   return React.createElement(ChatInterface, {
     messages: visibleMessages,
+    hiddenLinesCount,
+    totalLines,
+    showAllHistory,
+    onToggleHistory: () => setShowAllHistory(!showAllHistory),
     onSendMessage: sendMessage,
     onAddSystemMessage: addSystemMessage,
     isLoading,
