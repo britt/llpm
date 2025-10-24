@@ -296,7 +296,7 @@ export const ChatInterface = memo(function ChatInterface({
     loadCurrentProject();
   }, []);
 
-  // Load current model on mount
+  // Load current model on mount and when messages change (to detect model switches)
   useEffect(() => {
     const loadModel = async () => {
       try {
@@ -309,6 +309,22 @@ export const ChatInterface = memo(function ChatInterface({
 
     loadModel();
   }, []);
+
+  // Reload model when a model switch notification is detected
+  useEffect(() => {
+    const lastMessage = messages[messages.length - 1];
+    if (lastMessage?.role === 'ui-notification' && lastMessage.content.includes('Switched to')) {
+      const loadModel = async () => {
+        try {
+          const model = await loadCurrentModel();
+          setCurrentModel(model);
+        } catch (error) {
+          console.error('Failed to reload model after switch:', error);
+        }
+      };
+      loadModel();
+    }
+  }, [messages]);
 
   // Handle project selection - memoized to prevent re-creation
   const handleProjectSelect = useCallback(
