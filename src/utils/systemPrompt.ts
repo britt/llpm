@@ -6,6 +6,7 @@ import { getCurrentProject } from './projectConfig';
 import type { Project } from '../types/project';
 import { traced } from './tracing';
 import { SpanKind } from '@opentelemetry/api';
+import { getSkillRegistry } from '../services/SkillRegistry';
 
 const DEFAULT_SYSTEM_PROMPT = `You are LLPM (Large Language Model Product Manager), an AI-powered project management assistant that operates within an interactive terminal interface. You help users manage multiple projects, interact with GitHub repositories, and coordinate development workflows through natural language conversation.
 
@@ -165,11 +166,14 @@ export async function getSystemPrompt(): Promise<string> {
       }
 
       // Inject current project context
-      const finalPrompt = await injectProjectContext(basePrompt);
-      span.setAttribute('project.context_injected', finalPrompt !== basePrompt);
-      span.setAttribute('prompt.final_length', finalPrompt.length);
+      let promptWithContext = await injectProjectContext(basePrompt);
+      span.setAttribute('project.context_injected', promptWithContext !== basePrompt);
 
-      return finalPrompt;
+      // Inject active skills
+      promptWithContext = await injectSkillsContext(promptWithContext);
+      span.setAttribute('prompt.final_length', promptWithContext.length);
+
+      return promptWithContext;
     } catch (error) {
       debug('Error loading system prompt:', error);
       span.setAttribute('error', true);
@@ -324,6 +328,27 @@ async function injectProjectContext(basePrompt: string): Promise<string> {
   } catch (error) {
     debug('Unexpected error in project context injection:', error);
     return basePrompt; // Always graceful fallback
+  }
+}
+
+/**
+ * Inject active skills into the system prompt
+ */
+async function injectSkillsContext(basePrompt: string): Promise<string> {
+  try {
+    const registry = getSkillRegistry();
+    const skillsContent = await registry.generatePromptAugmentation();
+
+    if (!skillsContent || skillsContent.trim().length === 0) {
+      // No active skills, return base prompt unchanged
+      return basePrompt;
+    }
+
+    // Insert skills content at the end of the prompt
+    return `${basePrompt}\n\n${skillsContent}`;
+  } catch (error) {
+    debug('Error injecting skills context:', error);
+    return basePrompt; // Graceful fallback
   }
 }
 

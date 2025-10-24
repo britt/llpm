@@ -15,6 +15,7 @@ import { historyCommand } from './history';
 import { credentialsCommand } from './credentials';
 import { agentsCommand } from './agents';
 import { jobsCommand } from './jobs';
+import { skillsCommand } from './skills';
 import { debug } from '../utils/logger';
 
 const commandRegistry: CommandRegistry = {
@@ -32,7 +33,8 @@ const commandRegistry: CommandRegistry = {
   // 'project-scan': projectScanCommand, // Now available as /project scan
   credentials: credentialsCommand,
   agents: agentsCommand,
-  jobs: jobsCommand
+  jobs: jobsCommand,
+  skills: skillsCommand
 };
 
 export function getCommandRegistry(): CommandRegistry {

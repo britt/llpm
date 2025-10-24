@@ -11,6 +11,7 @@ import { modelRegistry } from './src/services/modelRegistry';
 import { initializeTelemetry } from './src/utils/telemetry';
 import { filterMessagesByLines } from './src/utils/messageLineCounter';
 import { getMaxRenderedLines } from './src/utils/chatConfig';
+import { getSkillRegistry } from './src/services/SkillRegistry';
 
 // Re-export validateEnvironment for external use
 export { validateEnvironment } from './src/utils/validation';
@@ -122,6 +123,12 @@ if (import.meta.main) {
     debug('Initializing model registry');
     await modelRegistry.init();
     debug('Model registry initialized');
+
+    // Initialize skill registry and scan for skills
+    debug('Initializing skill registry');
+    const skillRegistry = getSkillRegistry();
+    await skillRegistry.scan();
+    debug(`Skill registry initialized, discovered ${skillRegistry.getAllSkills().length} skills`);
 
     // Ensure default system prompt file exists
     try {
