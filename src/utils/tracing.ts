@@ -1,5 +1,4 @@
 import { trace, context, SpanStatusCode, SpanKind, type Span } from '@opentelemetry/api';
-import { debug as logDebug } from './logger';
 
 const tracer = trace.getTracer('llpm', '0.14.1');
 
@@ -33,10 +32,8 @@ export async function traced<T>(
   // Set this span as active in context for nested operations
   return context.with(trace.setSpan(context.active(), span), async () => {
     try {
-      logDebug(`[Trace] Starting span: ${operationName}`);
       const result = await operation(span);
       span.setStatus({ code: SpanStatusCode.OK });
-      logDebug(`[Trace] Completed span: ${operationName}`);
       return result;
     } catch (error) {
       span.setStatus({
@@ -44,7 +41,6 @@ export async function traced<T>(
         message: error instanceof Error ? error.message : String(error),
       });
       span.recordException(error instanceof Error ? error : new Error(String(error)));
-      logDebug(`[Trace] Error in span: ${operationName}`, error);
       throw error;
     } finally {
       span.end();
@@ -75,10 +71,8 @@ export function tracedSync<T>(
   // Set this span as active in context for nested operations
   return context.with(trace.setSpan(context.active(), span), () => {
     try {
-      logDebug(`[Trace] Starting sync span: ${operationName}`);
       const result = operation(span);
       span.setStatus({ code: SpanStatusCode.OK });
-      logDebug(`[Trace] Completed sync span: ${operationName}`);
       return result;
     } catch (error) {
       span.setStatus({
@@ -86,7 +80,6 @@ export function tracedSync<T>(
         message: error instanceof Error ? error.message : String(error),
       });
       span.recordException(error instanceof Error ? error : new Error(String(error)));
-      logDebug(`[Trace] Error in sync span: ${operationName}`, error);
       throw error;
     } finally {
       span.end();

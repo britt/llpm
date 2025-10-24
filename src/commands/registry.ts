@@ -9,6 +9,7 @@ import { githubCommand } from './github';
 import { debugCommand } from './debug';
 import { modelCommand } from './model';
 import { notesCommand } from './notes';
+import { historyCommand } from './history';
 // Remove old separate commands - now integrated into project command
 // import { projectScanCommand } from './project-scan';
 import { credentialsCommand } from './credentials';
@@ -27,6 +28,7 @@ const commandRegistry: CommandRegistry = {
   debug: debugCommand,
   model: modelCommand,
   notes: notesCommand,
+  history: historyCommand,
   // 'project-scan': projectScanCommand, // Now available as /project scan
   credentials: credentialsCommand,
   agents: agentsCommand,

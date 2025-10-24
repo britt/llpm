@@ -191,4 +191,43 @@ describe('debugCommand', () => {
   it('should show maximum limit in description', () => {
     expect(debugCommand.description).toContain('max: 1000');
   });
+
+  it('should return exactly N log entries when requested', async () => {
+    // Create 100 logs with some containing objects that would be pretty-printed
+    const mockLogs = Array.from({ length: 100 }, (_, i) => ({
+      message: i % 5 === 0 ? JSON.stringify({ id: i, data: 'test' }, null, 2) : `Simple log ${i}`,
+      timestamp: `2023-01-01T12:00:${String(i % 60).padStart(2, '0')}.000Z`
+    }));
+
+    // Mock to return last 50
+    vi.spyOn(logger, 'getRecentDebugLogs').mockReturnValue(mockLogs.slice(-50));
+
+    const result = await resolveCommandResult(debugCommand.execute(['50']));
+
+    expect(result.success).toBe(true);
+    expect(logger.getRecentDebugLogs).toHaveBeenCalledWith(50);
+    expect(result.content).toContain('🐛 Last 50 debug logs:');
+
+    // Count the actual log entries in the output
+    // Each log has a timestamp in brackets [HH:MM:SS]
+    const logEntryMatches = result.content.match(/\[\d{2}:\d{2}:\d{2}\]/g);
+    expect(logEntryMatches).toHaveLength(50); // Should be exactly 50 entries
+  });
+
+  it('should handle truncated log messages', async () => {
+    // Create a log with a truncated message (simulating logger truncation)
+    const longMessage = 'x'.repeat(500) + '...'; // Truncated at 500 chars
+    const mockLogs = [{
+      message: longMessage,
+      timestamp: '2023-01-01T12:00:00.000Z'
+    }];
+
+    vi.spyOn(logger, 'getRecentDebugLogs').mockReturnValue(mockLogs);
+
+    const result = await resolveCommandResult(debugCommand.execute(['1']));
+
+    expect(result.success).toBe(true);
+    expect(result.content).toContain('...');
+    expect(result.content).toContain('Last 1 debug log:');
+  });
 });
