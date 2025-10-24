@@ -195,11 +195,18 @@ async function enableSkill(args: string[]): Promise<CommandResult> {
     };
   }
 
+  if (skill.enabled) {
+    return {
+      success: true,
+      content: `Skill "${skillName}" is already enabled.\n\nUse \`/skills list\` to see all skills.`
+    };
+  }
+
   registry.enableSkill(skillName);
 
   return {
     success: true,
-    content: `Enabled skill: ${skillName}`
+    content: `✓ Enabled skill: ${skillName}\n\nThe skill can now be automatically selected when relevant.\nUse \`/skills list\` to verify.`
   };
 }
 
@@ -225,11 +232,18 @@ async function disableSkill(args: string[]): Promise<CommandResult> {
     };
   }
 
+  if (!skill.enabled) {
+    return {
+      success: true,
+      content: `Skill "${skillName}" is already disabled.\n\nUse \`/skills list\` to see all skills.`
+    };
+  }
+
   registry.disableSkill(skillName);
 
   return {
     success: true,
-    content: `Disabled skill: ${skillName}\n\nNote: The skill will not be automatically activated, but can still be used if explicitly activated.`
+    content: `✓ Disabled skill: ${skillName}\n\nThe skill will not be automatically selected.\nUse \`/skills list\` to verify.`
   };
 }
 
