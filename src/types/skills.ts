@@ -95,14 +95,11 @@ export interface SkillActivationContext {
 }
 
 /**
- * Result of skill selection/ranking
+ * Result of skill selection
  */
 export interface SkillActivationResult {
   /** Selected skill */
   skill: Skill;
-
-  /** Relevance score (0-1) */
-  score: number;
 
   /** Brief rationale for why this skill was selected */
   rationale: string;
@@ -115,17 +112,14 @@ export interface SkillsConfig {
   /** Whether skills are enabled globally */
   enabled: boolean;
 
-  /** Maximum number of skills to activate simultaneously */
-  limit: number;
+  /** Maximum number of skills to include per prompt */
+  maxSkillsPerPrompt: number;
 
   /** Paths to scan for skills */
   paths: string[];
 
   /** Whether to require confirmation when a tool is denied */
   requireConfirmationOnDeniedTool: boolean;
-
-  /** Minimum relevance score to activate a skill (0-1) */
-  minActivationScore?: number;
 }
 
 /**
@@ -134,7 +128,6 @@ export interface SkillsConfig {
 export type SkillEvent =
   | { type: 'skill.discovered'; skillName: string; source: 'personal' | 'project' }
   | { type: 'skill.validation_error'; skillName: string; errors: string[] }
-  | { type: 'skill.activated'; skillName: string; score: number; rationale: string }
-  | { type: 'skill.deactivated'; skillName: string }
+  | { type: 'skill.selected'; skillName: string; rationale: string }
   | { type: 'skill.denied_tool'; skillName: string; toolName: string }
   | { type: 'skill.applied_to_prompt'; skillName: string; promptSection: 'system' | 'assistant' };

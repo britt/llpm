@@ -28,7 +28,12 @@ export async function generateResponse(messages: Message[]): Promise<string> {
       span.setAttribute('llm.model', currentModel.modelId);
       span.setAttribute('llm.model_display', currentModel.displayName);
 
-      const systemPromptContent = await getSystemPrompt();
+      // Extract last user message for skill selection
+      const lastUserMessage = messages
+        .filter(msg => msg.role === 'user')
+        .pop()?.content;
+
+      const systemPromptContent = await getSystemPrompt(lastUserMessage);
       const systemMessage = {
         role: 'system' as const,
         content: systemPromptContent

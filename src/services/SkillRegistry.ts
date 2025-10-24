@@ -27,10 +27,9 @@ import { EventEmitter } from 'events';
  */
 const DEFAULT_CONFIG: SkillsConfig = {
   enabled: true,
-  limit: 3,
+  maxSkillsPerPrompt: 3,
   paths: ['~/.llpm/skills', '.llpm/skills'],
-  requireConfirmationOnDeniedTool: true,
-  minActivationScore: 0.3
+  requireConfirmationOnDeniedTool: true
 };
 
 /**
@@ -39,7 +38,6 @@ const DEFAULT_CONFIG: SkillsConfig = {
 export class SkillRegistry extends EventEmitter {
   private skills: Map<string, Skill> = new Map();
   private config: SkillsConfig;
-  private activeSkills: Set<string> = new Set();
 
   constructor(config: Partial<SkillsConfig> = {}) {
     super();
@@ -114,8 +112,11 @@ export class SkillRegistry extends EventEmitter {
   /**
    * Find skills relevant to the current context
    *
-   * This uses a simple keyword-based approach for MVP.
-   * Future: semantic similarity via vector search.
+   * Uses binary matching: a skill either matches or doesn't (no scoring)
+   * Matching criteria:
+   * 1. User message contains skill name
+   * 2. User message contains any skill tag
+   * 3. User message has keyword overlap with description
    */
   findRelevant(context: SkillActivationContext): SkillActivationResult[] {
     const results: SkillActivationResult[] = [];
@@ -123,131 +124,60 @@ export class SkillRegistry extends EventEmitter {
     for (const skill of this.skills.values()) {
       if (!skill.enabled) continue;
 
-      const score = this.calculateRelevanceScore(skill, context);
-
-      if (score >= (this.config.minActivationScore || 0)) {
+      const match = this.checkMatch(skill, context);
+      if (match) {
         results.push({
           skill,
-          score,
-          rationale: this.generateRationale(skill, context, score)
+          rationale: match.reason
         });
       }
     }
 
-    // Sort by score descending and limit
-    results.sort((a, b) => b.score - a.score);
-    return results.slice(0, this.config.limit);
+    // Sort alphabetically (deterministic without scores)
+    results.sort((a, b) => a.skill.name.localeCompare(b.skill.name));
+
+    // Apply limit
+    return results.slice(0, this.config.maxSkillsPerPrompt);
   }
 
   /**
-   * Calculate relevance score for a skill given context
-   *
-   * MVP: Simple keyword matching
-   * Future: Semantic similarity with embeddings
+   * Check if a skill matches the context (binary yes/no)
    */
-  private calculateRelevanceScore(
+  private checkMatch(
     skill: Skill,
     context: SkillActivationContext
-  ): number {
+  ): { reason: string } | null {
     const userMessageLower = context.userMessage.toLowerCase();
-    const descriptionLower = skill.description.toLowerCase();
-    const nameLower = skill.name.toLowerCase();
 
-    let score = 0;
-
-    // Exact name match = high score
-    if (userMessageLower.includes(nameLower)) {
-      score += 0.5;
+    // Check 1: Skill name in message
+    if (userMessageLower.includes(skill.name.toLowerCase())) {
+      return { reason: 'name match' };
     }
 
-    // Tag matches
+    // Check 2: Any tag in message
     if (skill.tags) {
       for (const tag of skill.tags) {
         if (userMessageLower.includes(tag.toLowerCase())) {
-          score += 0.2;
+          return { reason: `tag: ${tag}` };
         }
       }
     }
 
-    // Description keyword overlap
-    const descriptionWords = descriptionLower.split(/\s+/);
+    // Check 3: Description keyword overlap
+    const descriptionWords = skill.description
+      .toLowerCase()
+      .split(/\s+/)
+      .filter(w => w.length > 3);
     const messageWords = userMessageLower.split(/\s+/);
+    const hasOverlap = descriptionWords.some(word => messageWords.includes(word));
 
-    const overlap = descriptionWords.filter(word =>
-      word.length > 3 && messageWords.includes(word)
-    ).length;
-
-    const overlapRatio = overlap / Math.max(descriptionWords.length, 1);
-    score += overlapRatio * 0.4;
-
-    return Math.min(score, 1.0); // Cap at 1.0
-  }
-
-  /**
-   * Generate a brief rationale for why a skill was selected
-   */
-  private generateRationale(
-    skill: Skill,
-    context: SkillActivationContext,
-    score: number
-  ): string {
-    const parts: string[] = [];
-
-    if (context.userMessage.toLowerCase().includes(skill.name.toLowerCase())) {
-      parts.push('name match');
+    if (hasOverlap) {
+      return { reason: 'description keywords' };
     }
 
-    if (skill.tags?.some(tag => context.userMessage.toLowerCase().includes(tag.toLowerCase()))) {
-      parts.push('tag match');
-    }
-
-    if (parts.length === 0) {
-      parts.push('description similarity');
-    }
-
-    return parts.join(', ');
+    return null;
   }
 
-  /**
-   * Activate a skill for the current session
-   */
-  activateSkill(skillName: string): void {
-    const skill = this.skills.get(skillName);
-    if (!skill) {
-      throw new Error(`Skill not found: ${skillName}`);
-    }
-
-    this.activeSkills.add(skillName);
-
-    // Emit activation event
-    this.emit('skill.activated', {
-      type: 'skill.activated',
-      skillName,
-      score: 1.0,
-      rationale: 'manually activated'
-    } as SkillEvent);
-  }
-
-  /**
-   * Deactivate a skill
-   */
-  deactivateSkill(skillName: string): void {
-    this.activeSkills.delete(skillName);
-
-    this.emit('skill.deactivated', {
-      type: 'skill.deactivated',
-      skillName
-    } as SkillEvent);
-  }
-
-  /**
-   * Get all active skills
-   */
-  getActiveSkills(): Skill[] {
-    return Array.from(this.activeSkills)
-      .map(name => this.skills.get(name))
-      .filter((s): s is Skill => s !== undefined);
-  }
 
   /**
    * Get all discovered skills
@@ -280,27 +210,24 @@ export class SkillRegistry extends EventEmitter {
     const skill = this.skills.get(name);
     if (skill) {
       skill.enabled = false;
-      this.deactivateSkill(name); // Also deactivate if currently active
     }
   }
 
   /**
-   * Check if a tool is allowed for currently active skills
+   * Check if a tool is allowed for given skills
    *
    * Returns:
    * - true: tool is allowed
    * - false: tool is denied (requires confirmation)
    */
-  isToolAllowed(toolName: string): boolean {
-    const activeSkills = this.getActiveSkills();
-
+  isToolAllowed(toolName: string, selectedSkills: Skill[] = []): boolean {
     // If no skills have allowed_tools restrictions, allow all
-    const skillsWithRestrictions = activeSkills.filter(s => s.allowed_tools);
+    const skillsWithRestrictions = selectedSkills.filter(s => s.allowed_tools);
     if (skillsWithRestrictions.length === 0) {
       return true;
     }
 
-    // Check if ANY active skill allows this tool
+    // Check if ANY selected skill allows this tool
     for (const skill of skillsWithRestrictions) {
       if (skill.allowed_tools?.includes(toolName)) {
         return true;
@@ -320,21 +247,19 @@ export class SkillRegistry extends EventEmitter {
   }
 
   /**
-   * Generate augmented prompt content for active skills
+   * Generate augmented prompt content for selected skills
    */
-  async generatePromptAugmentation(): Promise<string> {
-    const activeSkills = this.getActiveSkills();
-
-    if (activeSkills.length === 0) {
+  async generatePromptAugmentation(selectedSkills: Skill[]): Promise<string> {
+    if (selectedSkills.length === 0) {
       return '';
     }
 
     const sections: string[] = [];
 
-    sections.push('# Active Skills\n');
-    sections.push('The following skills are currently active. Follow their instructions:\n');
+    sections.push('# Selected Skills\n');
+    sections.push('The following skills have been selected for this prompt. Follow their instructions:\n');
 
-    for (const skill of activeSkills) {
+    for (const skill of selectedSkills) {
       sections.push(`\n## Skill: ${skill.name}`);
       sections.push(`${skill.description}\n`);
 

@@ -136,7 +136,7 @@ export function getSystemPromptPath(): string {
   return SYSTEM_PROMPT_FILE;
 }
 
-export async function getSystemPrompt(): Promise<string> {
+export async function getSystemPrompt(userMessage?: string): Promise<string> {
   return traced('fs.getSystemPrompt', {
     attributes: {},
     kind: SpanKind.INTERNAL,
@@ -169,11 +169,12 @@ export async function getSystemPrompt(): Promise<string> {
       let promptWithContext = await injectProjectContext(basePrompt);
       span.setAttribute('project.context_injected', promptWithContext !== basePrompt);
 
-      // Inject active skills
-      promptWithContext = await injectSkillsContext(promptWithContext);
-      span.setAttribute('prompt.final_length', promptWithContext.length);
+      // Inject selected skills based on user message
+      const { prompt: promptWithSkills, selectedSkills } = await injectSkillsContext(promptWithContext, userMessage);
+      span.setAttribute('skills.selected_count', selectedSkills.length);
+      span.setAttribute('prompt.final_length', promptWithSkills.length);
 
-      return promptWithContext;
+      return promptWithSkills;
     } catch (error) {
       debug('Error loading system prompt:', error);
       span.setAttribute('error', true);
@@ -332,23 +333,58 @@ async function injectProjectContext(basePrompt: string): Promise<string> {
 }
 
 /**
- * Inject active skills into the system prompt
+ * Inject selected skills into the system prompt based on user message
  */
-async function injectSkillsContext(basePrompt: string): Promise<string> {
+async function injectSkillsContext(
+  basePrompt: string,
+  userMessage?: string
+): Promise<{ prompt: string; selectedSkills: string[] }> {
   try {
     const registry = getSkillRegistry();
-    const skillsContent = await registry.generatePromptAugmentation();
+
+    // If no user message, no skills are selected
+    if (!userMessage || userMessage.trim().length === 0) {
+      return { prompt: basePrompt, selectedSkills: [] };
+    }
+
+    // Find relevant skills based on user message
+    const matchedSkills = registry.findRelevant({ userMessage });
+
+    if (matchedSkills.length === 0) {
+      debug('No skills matched for user message');
+      return { prompt: basePrompt, selectedSkills: [] };
+    }
+
+    debug(`Selected ${matchedSkills.length} skill(s) for prompt:`, matchedSkills.map(r => r.skill.name));
+
+    // Emit selection events
+    for (const result of matchedSkills) {
+      registry.emit('skill.selected', {
+        type: 'skill.selected',
+        skillName: result.skill.name,
+        rationale: result.rationale
+      });
+    }
+
+    // Generate prompt augmentation with selected skills
+    const skills = matchedSkills.map(r => r.skill);
+    const skillsContent = await registry.generatePromptAugmentation(skills);
 
     if (!skillsContent || skillsContent.trim().length === 0) {
-      // No active skills, return base prompt unchanged
-      return basePrompt;
+      return { prompt: basePrompt, selectedSkills: [] };
     }
 
     // Insert skills content at the end of the prompt
-    return `${basePrompt}\n\n${skillsContent}`;
+    const augmentedPrompt = `${basePrompt}\n\n${skillsContent}`;
+    const selectedSkillNames = matchedSkills.map(r => r.skill.name);
+
+    return {
+      prompt: augmentedPrompt,
+      selectedSkills: selectedSkillNames
+    };
   } catch (error) {
     debug('Error injecting skills context:', error);
-    return basePrompt; // Graceful fallback
+    return { prompt: basePrompt, selectedSkills: [] }; // Graceful fallback
   }
 }
 

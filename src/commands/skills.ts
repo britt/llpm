@@ -284,9 +284,9 @@ Manage Agent Skills - reusable packages of instructions that the AI can invoke a
 ## Usage
 
 \`/skills list\` - List all discovered skills and their status
-\`/skills test <name>\` - Dry-run a skill (shows content without activating)
-\`/skills enable <name>\` - Enable a skill
-\`/skills disable <name>\` - Disable a skill
+\`/skills test <name>\` - Preview a skill's content and settings
+\`/skills enable <name>\` - Enable a skill (eligible for automatic selection)
+\`/skills disable <name>\` - Disable a skill (won't be selected)
 \`/skills reload\` - Rescan skill directories and reload all skills
 \`/skills help\` - Show this help message
 
@@ -298,14 +298,18 @@ Manage Agent Skills - reusable packages of instructions that the AI can invoke a
 ## How Skills Work
 
 Skills are discovered automatically from the above locations. When you send a message,
-LLPM evaluates your intent and activates relevant skills based on:
+LLPM evaluates your intent and selects relevant skills based on:
 
-- Name and tag matches with your message
-- Description similarity with your request
-- Relevance score (configurable threshold)
+- **Name match**: Your message contains the skill name
+- **Tag match**: Your message contains any skill tag
+- **Description keywords**: Keyword overlap with the skill description
 
-Active skills augment the AI's system prompt with their instructions, and can optionally
-restrict tool usage to an allowed list.
+Skills are selected fresh for each prompt (no persistent state). Selected skills augment
+the AI's system prompt with their instructions, and can optionally restrict tool usage
+to an allowed list.
+
+**Configuration**: Set \`maxSkillsPerPrompt\` in config to limit how many skills can be
+selected per message (default: 3).
 
 ## Creating a Skill
 
