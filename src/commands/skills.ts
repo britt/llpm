@@ -279,7 +279,7 @@ function showHelp(): CommandResult {
     content: `
 # Skills Command
 
-Manage Agent Skills - reusable packages of instructions that Claude can invoke automatically.
+Manage Agent Skills - reusable packages of instructions that the AI can invoke automatically.
 
 ## Usage
 
@@ -298,13 +298,13 @@ Manage Agent Skills - reusable packages of instructions that Claude can invoke a
 ## How Skills Work
 
 Skills are discovered automatically from the above locations. When you send a message,
-Claude evaluates your intent and activates relevant skills based on:
+LLPM evaluates your intent and activates relevant skills based on:
 
 - Name and tag matches with your message
 - Description similarity with your request
 - Relevance score (configurable threshold)
 
-Active skills augment Claude's system prompt with their instructions, and can optionally
+Active skills augment the AI's system prompt with their instructions, and can optionally
 restrict tool usage to an allowed list.
 
 ## Creating a Skill
