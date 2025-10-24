@@ -45,8 +45,7 @@ async function listSkills(args: string[]): Promise<CommandResult> {
   if (skills.length === 0) {
     return {
       success: true,
-      message: 'No skills discovered. Run `/skills reload` to scan for skills.',
-      data: []
+      content: 'No skills discovered. Run `/skills reload` to scan for skills.'
     };
   }
 
@@ -100,8 +99,7 @@ async function listSkills(args: string[]): Promise<CommandResult> {
 
   return {
     success: true,
-    message: lines.join('\n'),
-    data: skills
+    content: lines.join('\n')
   };
 }
 
@@ -112,7 +110,7 @@ async function testSkill(args: string[]): Promise<CommandResult> {
   if (args.length === 0) {
     return {
       success: false,
-      message: 'Usage: /skills test <skill-name>\n\nShows how the skill would alter context and tooling without activating it.'
+      content: 'Usage: /skills test <skill-name>\n\nShows how the skill would alter context and tooling without activating it.'
     };
   }
 
@@ -123,7 +121,7 @@ async function testSkill(args: string[]): Promise<CommandResult> {
   if (!skill) {
     return {
       success: false,
-      message: `Skill not found: ${skillName}\n\nRun \`/skills list\` to see available skills.`
+      content: `Skill not found: ${skillName}\n\nRun \`/skills list\` to see available skills.`
     };
   }
 
@@ -171,8 +169,7 @@ async function testSkill(args: string[]): Promise<CommandResult> {
 
   return {
     success: true,
-    message: lines.join('\n'),
-    data: skill
+    content: lines.join('\n')
   };
 }
 
@@ -183,7 +180,7 @@ async function enableSkill(args: string[]): Promise<CommandResult> {
   if (args.length === 0) {
     return {
       success: false,
-      message: 'Usage: /skills enable <skill-name>'
+      content: 'Usage: /skills enable <skill-name>'
     };
   }
 
@@ -194,7 +191,7 @@ async function enableSkill(args: string[]): Promise<CommandResult> {
   if (!skill) {
     return {
       success: false,
-      message: `Skill not found: ${skillName}`
+      content: `Skill not found: ${skillName}`
     };
   }
 
@@ -202,7 +199,7 @@ async function enableSkill(args: string[]): Promise<CommandResult> {
 
   return {
     success: true,
-    message: `Enabled skill: ${skillName}`
+    content: `Enabled skill: ${skillName}`
   };
 }
 
@@ -213,7 +210,7 @@ async function disableSkill(args: string[]): Promise<CommandResult> {
   if (args.length === 0) {
     return {
       success: false,
-      message: 'Usage: /skills disable <skill-name>'
+      content: 'Usage: /skills disable <skill-name>'
     };
   }
 
@@ -224,7 +221,7 @@ async function disableSkill(args: string[]): Promise<CommandResult> {
   if (!skill) {
     return {
       success: false,
-      message: `Skill not found: ${skillName}`
+      content: `Skill not found: ${skillName}`
     };
   }
 
@@ -232,7 +229,7 @@ async function disableSkill(args: string[]): Promise<CommandResult> {
 
   return {
     success: true,
-    message: `Disabled skill: ${skillName}\n\nNote: The skill will not be automatically activated, but can still be used if explicitly activated.`
+    content: `Disabled skill: ${skillName}\n\nNote: The skill will not be automatically activated, but can still be used if explicitly activated.`
   };
 }
 
@@ -249,12 +246,12 @@ async function reloadSkills(): Promise<CommandResult> {
 
     return {
       success: true,
-      message: `Skills reloaded successfully.\n\nDiscovered ${skills.length} skill(s). Use \`/skills list\` to see them.`
+      content: `Skills reloaded successfully.\n\nDiscovered ${skills.length} skill(s). Use \`/skills list\` to see them.`
     };
   } catch (error) {
     return {
       success: false,
-      message: `Failed to reload skills: ${error instanceof Error ? error.message : String(error)}`
+      content: `Failed to reload skills: ${error instanceof Error ? error.message : String(error)}`
     };
   }
 }
@@ -265,7 +262,7 @@ async function reloadSkills(): Promise<CommandResult> {
 function showHelp(): CommandResult {
   return {
     success: true,
-    message: `
+    content: `
 # Skills Command
 
 Manage Agent Skills - reusable packages of instructions that Claude can invoke automatically.
