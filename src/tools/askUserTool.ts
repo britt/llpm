@@ -29,7 +29,7 @@ const askUserInputSchema = z.object({
 /**
  * Format the question based on type
  */
-function formatQuestion(input: typeof askUserInputSchema._type): string {
+function formatQuestion(input: { question: string; type?: 'text' | 'confirm' | 'choice' | 'number'; options?: string[]; context?: string }): string {
   const parts: string[] = [];
 
   // Add context if provided
@@ -91,6 +91,7 @@ function formatQuestion(input: typeof askUserInputSchema._type): string {
  * 3. Their next message will contain the answer - interpret it accordingly
  */
 export const askUserTool = tool({
+  name: 'ask_user',
   description: `Format a question to ask the user in the chat. After asking, you should stop your response and wait for their answer. Their next message will be the response.
 
 Use this when you need information not provided in the original request:
