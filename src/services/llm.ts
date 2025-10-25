@@ -10,7 +10,7 @@ import { getSkillRegistry } from './SkillRegistry';
 
 const MAX_STEPS = 35;
 
-export async function generateResponse(messages: Message[]): Promise<string> {
+export async function generateResponse(messages: Message[]): Promise<{ response: string; selectedSkills: string[] }> {
   debug('generateResponse called with', messages.length, 'messages');
   debug('Last message:', messages[messages.length - 1]);
 
@@ -43,6 +43,7 @@ export async function generateResponse(messages: Message[]): Promise<string> {
 
       // Find relevant skills based on user message
       let skillsMessage: ModelMessage | null = null;
+      const selectedSkillNames: string[] = [];
       if (lastUserMessage) {
         try {
           const skillRegistry = getSkillRegistry();
@@ -58,6 +59,9 @@ export async function generateResponse(messages: Message[]): Promise<string> {
                 role: 'assistant' as const,
                 content: `I'll use the following skills as helpful instructions for answering your next question:\n\n${skillsContent}`
               };
+
+              // Collect selected skill names for UI display
+              selectedSkillNames.push(...matchedSkills.map(r => r.skill.name));
 
               // Emit selection events
               for (const result of matchedSkills) {
@@ -188,12 +192,13 @@ export async function generateResponse(messages: Message[]): Promise<string> {
       }
 
       // If we have user messages, prepend them to the AI's response
+      let responseText = result.text;
       if (userMessages.length > 0) {
         const userMessageSection = userMessages.join('\n\n---\n\n');
-        return userMessageSection + '\n\n' + result.text;
+        responseText = userMessageSection + '\n\n' + result.text;
       }
 
-      return result.text;
+      return { response: responseText, selectedSkills: selectedSkillNames };
     } catch (error) {
       // Log LLM error
       const currentModel = modelRegistry.getCurrentModel();

@@ -28,7 +28,8 @@ export function App() {
     triggerModelSelector,
     notifyProjectSwitch,
     isProcessing,
-    queuedMessages
+    queuedMessages,
+    selectedSkills
   } = useChat();
 
   // State to track whether to show all history or just the tail
@@ -74,7 +75,8 @@ export function App() {
     onTriggerModelSelector: triggerModelSelector,
     onProjectSwitch: notifyProjectSwitch,
     isProcessing,
-    queuedMessages
+    queuedMessages,
+    selectedSkills
   });
 }
 

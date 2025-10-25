@@ -32,9 +32,10 @@ interface ChatInterfaceProps {
   onProjectSwitch?: () => Promise<void>;
   isProcessing?: boolean;
   queuedMessages?: Array<QueuedMessage>;
+  selectedSkills?: string[];
 }
 
-const ThinkingIndicator = memo(({ isVisible }: { isVisible: boolean }) => {
+const ThinkingIndicator = memo(({ isVisible, selectedSkills }: { isVisible: boolean; selectedSkills?: string[] }) => {
   if (!isVisible) return null;
 
   return (
@@ -43,6 +44,11 @@ const ThinkingIndicator = memo(({ isVisible }: { isVisible: boolean }) => {
         <Text color="red">
           PM is thinking...
         </Text>
+        {selectedSkills && selectedSkills.length > 0 && (
+          <Text color="cyan" dimColor>
+            {' '}(using skill{selectedSkills.length > 1 ? 's' : ''}: {selectedSkills.join(', ')})
+          </Text>
+        )}
       </Box>
       <RequestLogDisplay />
     </Box>
@@ -274,7 +280,8 @@ export const ChatInterface = memo(function ChatInterface({
   onTriggerModelSelector,
   onProjectSwitch,
   isProcessing = false,
-  queuedMessages = []
+  queuedMessages = [],
+  selectedSkills = []
 }: ChatInterfaceProps) {
   const [currentProject, setCurrentProject] = useState<Project | null>(null);
   const [currentModel, setCurrentModel] = useState<ModelConfig | null>(null);
@@ -457,7 +464,7 @@ export const ChatInterface = memo(function ChatInterface({
         showAllHistory={showAllHistory}
       />
       {/* Thinking indicator outside flex container */}
-      <ThinkingIndicator isVisible={isLoading || isProcessing} />
+      <ThinkingIndicator isVisible={isLoading || isProcessing} selectedSkills={selectedSkills} />
       <Box flexDirection="column">
         {/* Input */}
         {inputComponent}
