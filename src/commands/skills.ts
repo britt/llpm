@@ -49,10 +49,6 @@ async function listSkills(args: string[]): Promise<CommandResult> {
     };
   }
 
-  const activeSkillNames = new Set(
-    registry.getActiveSkills().map(s => s.name)
-  );
-
   const lines: string[] = [];
   lines.push('# Discovered Skills\n');
 
@@ -63,8 +59,7 @@ async function listSkills(args: string[]): Promise<CommandResult> {
   if (personalSkills.length > 0) {
     lines.push('## Personal Skills (~/.llpm/skills)\n');
     for (const skill of personalSkills) {
-      const status = activeSkillNames.has(skill.name) ? '✓ ACTIVE' :
-                     skill.enabled ? '○ enabled' : '✗ disabled';
+      const status = skill.enabled ? '✓ enabled' : '✗ disabled';
       lines.push(`**${skill.name}** [${status}]`);
       lines.push(`  ${skill.description}`);
       if (skill.tags && skill.tags.length > 0) {
@@ -80,8 +75,7 @@ async function listSkills(args: string[]): Promise<CommandResult> {
   if (projectSkills.length > 0) {
     lines.push('## Project Skills (.llpm/skills)\n');
     for (const skill of projectSkills) {
-      const status = activeSkillNames.has(skill.name) ? '✓ ACTIVE' :
-                     skill.enabled ? '○ enabled' : '✗ disabled';
+      const status = skill.enabled ? '✓ enabled' : '✗ disabled';
       lines.push(`**${skill.name}** [${status}]`);
       lines.push(`  ${skill.description}`);
       if (skill.tags && skill.tags.length > 0) {
@@ -94,8 +88,9 @@ async function listSkills(args: string[]): Promise<CommandResult> {
     }
   }
 
+  const enabledCount = skills.filter(s => s.enabled).length;
   lines.push(`\nTotal: ${skills.length} skill(s)`);
-  lines.push(`Active: ${activeSkillNames.size} skill(s)\n`);
+  lines.push(`Enabled: ${enabledCount} skill(s)\n`);
 
   return {
     success: true,
