@@ -28,7 +28,7 @@ import { EventEmitter } from 'events';
 const DEFAULT_CONFIG: SkillsConfig = {
   enabled: true,
   maxSkillsPerPrompt: 3,
-  paths: ['~/.llpm/skills', '.llpm/skills', '.llpm/skills/user'],
+  paths: ['~/.llpm/skills', '~/.llpm/skills/user', '.llpm/skills', '.llpm/skills/user'],
   requireConfirmationOnDeniedTool: true
 };
 

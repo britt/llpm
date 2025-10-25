@@ -288,8 +288,9 @@ Manage Agent Skills - reusable packages of instructions that the AI can invoke a
 ## Skill Locations
 
 - **Personal Skills:** ~/.llpm/skills/*/SKILL.md
+- **Personal User Skills:** ~/.llpm/skills/user/*/SKILL.md
 - **Project Skills:** .llpm/skills/*/SKILL.md
-- **User-Specific Project Skills:** .llpm/skills/user/*/SKILL.md
+- **Project User Skills:** .llpm/skills/user/*/SKILL.md
 
 ## How Skills Work
 
