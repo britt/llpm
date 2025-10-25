@@ -165,11 +165,11 @@ export async function getSystemPrompt(): Promise<string> {
       }
 
       // Inject current project context
-      const finalPrompt = await injectProjectContext(basePrompt);
-      span.setAttribute('project.context_injected', finalPrompt !== basePrompt);
-      span.setAttribute('prompt.final_length', finalPrompt.length);
+      let promptWithContext = await injectProjectContext(basePrompt);
+      span.setAttribute('project.context_injected', promptWithContext !== basePrompt);
+      span.setAttribute('prompt.final_length', promptWithContext.length);
 
-      return finalPrompt;
+      return promptWithContext;
     } catch (error) {
       debug('Error loading system prompt:', error);
       span.setAttribute('error', true);
@@ -326,6 +326,7 @@ async function injectProjectContext(basePrompt: string): Promise<string> {
     return basePrompt; // Always graceful fallback
   }
 }
+
 
 export async function saveSystemPrompt(prompt: string): Promise<void> {
   return traced('fs.saveSystemPrompt', {

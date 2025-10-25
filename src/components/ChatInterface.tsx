@@ -313,7 +313,7 @@ export const ChatInterface = memo(function ChatInterface({
   // Reload model when a model switch notification is detected
   useEffect(() => {
     const lastMessage = messages[messages.length - 1];
-    if (lastMessage?.role === 'ui-notification' && lastMessage.content.includes('Switched to')) {
+    if (lastMessage?.role === 'ui-notification' && lastMessage?.content?.includes('Switched to')) {
       const loadModel = async () => {
         try {
           const model = await loadCurrentModel();

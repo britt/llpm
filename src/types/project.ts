@@ -25,6 +25,7 @@ export interface Project {
 
 import type { ModelConfig } from './models';
 import type { LoggingConfig } from '../utils/requestLogger';
+import type { SkillsConfig } from './skills';
 
 export interface SalutationConfig {
   enabled?: boolean;
@@ -55,6 +56,7 @@ export interface AppConfig {
   automation?: AutomationConfig;
   docker?: DockerConfig;
   chat?: ChatConfig;
+  skills?: SkillsConfig;
 }
 
 // Keep backwards compatibility
