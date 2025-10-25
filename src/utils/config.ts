@@ -1,5 +1,5 @@
 import { existsSync } from 'fs';
-import { mkdir } from 'fs/promises';
+import { mkdir, cp, readdir } from 'fs/promises';
 import { join } from 'path';
 import { homedir, tmpdir } from 'os';
 import { debug } from './logger';
@@ -34,11 +34,57 @@ export const CONFIG_DIR = getBaseConfigDir();
 export const CONFIG_FILE = join(CONFIG_DIR, 'config.json');
 export const SYSTEM_PROMPT_FILE = join(CONFIG_DIR, 'system_prompt.txt');
 
+/**
+ * Install core skills from the bundled skills directory to user's config
+ */
+async function installCoreSkills(): Promise<void> {
+  const skillsDir = join(CONFIG_DIR, 'skills');
+
+  // Create skills directory if it doesn't exist
+  if (!existsSync(skillsDir)) {
+    await mkdir(skillsDir, { recursive: true });
+  }
+
+  // Path to bundled core skills (relative to project root)
+  const coreSkillsPath = join(process.cwd(), 'skills', 'core');
+
+  if (!existsSync(coreSkillsPath)) {
+    debug('Core skills directory not found:', coreSkillsPath);
+    return;
+  }
+
+  try {
+    // Read all core skill directories
+    const entries = await readdir(coreSkillsPath, { withFileTypes: true });
+
+    for (const entry of entries) {
+      if (!entry.isDirectory()) continue;
+
+      const skillName = entry.name;
+      const sourcePath = join(coreSkillsPath, skillName);
+      const targetPath = join(skillsDir, skillName);
+
+      // Only install if not already present
+      if (!existsSync(targetPath)) {
+        debug('Installing core skill:', skillName);
+        await cp(sourcePath, targetPath, { recursive: true });
+        debug('Installed core skill:', skillName);
+      }
+    }
+  } catch (error) {
+    debug('Error installing core skills:', error);
+    // Don't fail config creation if skills installation fails
+  }
+}
+
 export async function ensureConfigDir(): Promise<void> {
   if (!existsSync(CONFIG_DIR)) {
     debug('Creating config directory:', CONFIG_DIR);
     await mkdir(CONFIG_DIR, { recursive: true });
     debug('Config directory created successfully');
+
+    // Install core skills on first run
+    await installCoreSkills();
   }
 }
 
