@@ -85,6 +85,7 @@ import {
   getProjectAgentConfigTool,
   removeProjectAgentConfigTool
 } from './projectAgentConfigTools';
+import { askUserTool } from './askUserTool';
 
 const toolRegistry: ToolRegistry = {
   get_current_project: getCurrentProjectTool,
@@ -162,7 +163,9 @@ const toolRegistry: ToolRegistry = {
   // Project Agent Configuration
   set_project_agent_config: setProjectAgentConfigTool,
   get_project_agent_config: getProjectAgentConfigTool,
-  remove_project_agent_config: removeProjectAgentConfigTool
+  remove_project_agent_config: removeProjectAgentConfigTool,
+  // Interactive User Input
+  ask_user: askUserTool
 };
 
 export async function getToolRegistry(): Promise<ToolRegistry> {
