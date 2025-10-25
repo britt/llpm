@@ -10,6 +10,7 @@ import { DEFAULT_HISTORY_SIZE } from '../constants';
 import { RequestContext } from '../utils/requestContext';
 import { loggerRegistry } from '../components/RequestLogDisplay';
 import { traced } from '../utils/tracing';
+import { getSkillRegistry } from '../services/SkillRegistry';
 
 export interface QueuedMessage {
   content: string;
@@ -439,6 +440,18 @@ export function useChat() {
     debug('Project switch notification received');
     setIsProjectSwitching(true);
     setProjectSwitchTrigger(prev => prev + 1);
+
+    // Rescan skills to pick up project-specific skills
+    try {
+      debug('Rescanning skills after project switch');
+      const skillRegistry = getSkillRegistry();
+      await skillRegistry.scan();
+      const skillCount = skillRegistry.getAllSkills().length;
+      debug(`Skills rescanned: ${skillCount} skill(s) discovered`);
+    } catch (error) {
+      debug('Error rescanning skills:', error);
+    }
+
     // Wait for the project context to be updated
     await new Promise(resolve => setTimeout(resolve, 200));
     setIsProjectSwitching(false);
