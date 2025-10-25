@@ -29,6 +29,7 @@ export function useChat() {
   const [modelSelectorModels, setModelSelectorModels] = useState<Model[] | null>(null);
   const [projectSwitchTrigger, setProjectSwitchTrigger] = useState(0);
   const [isProjectSwitching, setIsProjectSwitching] = useState(false);
+  const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
 
   // Message queue state
   const [messageQueue, setMessageQueue] = useState<QueuedMessage[]>([]);
@@ -202,6 +203,7 @@ export function useChat() {
       debug('Adding user message to state');
       setMessages(prev => trimMessages([...prev, userMessage]));
       shouldSaveRef.current = true; // Mark for saving
+      setSelectedSkills([]); // Clear previous skills
       setIsLoading(true);
       debug('Set loading state to true');
 
@@ -228,18 +230,22 @@ export function useChat() {
             RequestContext.logStep('prompt_assembly', 'start');
             RequestContext.logStep('prompt_assembly', 'end');
             const result = await generateResponse(allMessages);
-            span.setAttribute('response.length', result?.length || 0);
+            span.setAttribute('response.length', result?.response?.length || 0);
             return result;
           });
         });
 
-        debug('Received response from LLM, length:', response?.length || 0);
-        debug('Response content preview:', response?.substring(0, 50) || 'EMPTY');
+        debug('Received response from LLM, length:', response?.response?.length || 0);
+        debug('Response content preview:', response?.response?.substring(0, 50) || 'EMPTY');
+        debug('Selected skills:', response?.selectedSkills || []);
+
+        // Update selected skills state
+        setSelectedSkills(response?.selectedSkills || []);
 
         // Ensure we have a response before adding it
         const responseContent =
-          response && response.trim()
-            ? response
+          response?.response && response.response.trim()
+            ? response.response
             : "I processed your request but don't have anything specific to report.";
 
         const assistantMessage: Message = {
@@ -470,6 +476,7 @@ export function useChat() {
     // Queue status for UI indicators
     queueLength: messageQueue.length,
     isProcessing,
-    queuedMessages: messageQueue
+    queuedMessages: messageQueue,
+    selectedSkills
   };
 }
