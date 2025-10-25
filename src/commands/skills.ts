@@ -289,8 +289,7 @@ Manage Agent Skills - reusable packages of instructions that the AI can invoke a
 
 - **Personal Skills:** ~/.llpm/skills/*/SKILL.md
 - **Personal User Skills:** ~/.llpm/skills/user/*/SKILL.md
-- **Project Skills:** .llpm/skills/*/SKILL.md
-- **Project User Skills:** .llpm/skills/user/*/SKILL.md
+- **Project Skills:** .llpm/skills/*/SKILL.md (user-specific by definition)
 
 ## How Skills Work
 
@@ -310,7 +309,7 @@ selected per message (default: 3).
 
 ## Creating a Skill
 
-Create a folder in ~/.llpm/skills/, .llpm/skills/, or .llpm/skills/user/ with a SKILL.md file:
+Create a folder in ~/.llpm/skills/, ~/.llpm/skills/user/, or .llpm/skills/ with a SKILL.md file:
 
 \`\`\`markdown
 ---
