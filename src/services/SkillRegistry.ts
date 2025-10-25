@@ -256,11 +256,8 @@ export class SkillRegistry extends EventEmitter {
 
     const sections: string[] = [];
 
-    sections.push('# Selected Skills\n');
-    sections.push('The following skills have been selected for this prompt. Follow their instructions:\n');
-
     for (const skill of selectedSkills) {
-      sections.push(`\n## Skill: ${skill.name}`);
+      sections.push(`## ${skill.name}`);
       sections.push(`${skill.description}\n`);
 
       // Apply variable substitution
@@ -270,16 +267,17 @@ export class SkillRegistry extends EventEmitter {
       }
 
       sections.push(content);
+      sections.push(''); // Empty line between skills
 
       // Emit event
       this.emit('skill.applied_to_prompt', {
         type: 'skill.applied_to_prompt',
         skillName: skill.name,
-        promptSection: 'system'
+        promptSection: 'assistant'
       } as SkillEvent);
     }
 
-    return sections.join('\n');
+    return sections.join('\n').trim();
   }
 
   /**

@@ -6,7 +6,6 @@ import { getCurrentProject } from './projectConfig';
 import type { Project } from '../types/project';
 import { traced } from './tracing';
 import { SpanKind } from '@opentelemetry/api';
-import { getSkillRegistry } from '../services/SkillRegistry';
 
 const DEFAULT_SYSTEM_PROMPT = `You are LLPM (Large Language Model Product Manager), an AI-powered project management assistant that operates within an interactive terminal interface. You help users manage multiple projects, interact with GitHub repositories, and coordinate development workflows through natural language conversation.
 
@@ -136,7 +135,7 @@ export function getSystemPromptPath(): string {
   return SYSTEM_PROMPT_FILE;
 }
 
-export async function getSystemPrompt(userMessage?: string): Promise<string> {
+export async function getSystemPrompt(): Promise<string> {
   return traced('fs.getSystemPrompt', {
     attributes: {},
     kind: SpanKind.INTERNAL,
@@ -168,13 +167,9 @@ export async function getSystemPrompt(userMessage?: string): Promise<string> {
       // Inject current project context
       let promptWithContext = await injectProjectContext(basePrompt);
       span.setAttribute('project.context_injected', promptWithContext !== basePrompt);
+      span.setAttribute('prompt.final_length', promptWithContext.length);
 
-      // Inject selected skills based on user message
-      const { prompt: promptWithSkills, selectedSkills } = await injectSkillsContext(promptWithContext, userMessage);
-      span.setAttribute('skills.selected_count', selectedSkills.length);
-      span.setAttribute('prompt.final_length', promptWithSkills.length);
-
-      return promptWithSkills;
+      return promptWithContext;
     } catch (error) {
       debug('Error loading system prompt:', error);
       span.setAttribute('error', true);
@@ -332,61 +327,6 @@ async function injectProjectContext(basePrompt: string): Promise<string> {
   }
 }
 
-/**
- * Inject selected skills into the system prompt based on user message
- */
-async function injectSkillsContext(
-  basePrompt: string,
-  userMessage?: string
-): Promise<{ prompt: string; selectedSkills: string[] }> {
-  try {
-    const registry = getSkillRegistry();
-
-    // If no user message, no skills are selected
-    if (!userMessage || userMessage.trim().length === 0) {
-      return { prompt: basePrompt, selectedSkills: [] };
-    }
-
-    // Find relevant skills based on user message
-    const matchedSkills = registry.findRelevant({ userMessage });
-
-    if (matchedSkills.length === 0) {
-      debug('No skills matched for user message');
-      return { prompt: basePrompt, selectedSkills: [] };
-    }
-
-    debug(`Selected ${matchedSkills.length} skill(s) for prompt:`, matchedSkills.map(r => r.skill.name));
-
-    // Emit selection events
-    for (const result of matchedSkills) {
-      registry.emit('skill.selected', {
-        type: 'skill.selected',
-        skillName: result.skill.name,
-        rationale: result.rationale
-      });
-    }
-
-    // Generate prompt augmentation with selected skills
-    const skills = matchedSkills.map(r => r.skill);
-    const skillsContent = await registry.generatePromptAugmentation(skills);
-
-    if (!skillsContent || skillsContent.trim().length === 0) {
-      return { prompt: basePrompt, selectedSkills: [] };
-    }
-
-    // Insert skills content at the end of the prompt
-    const augmentedPrompt = `${basePrompt}\n\n${skillsContent}`;
-    const selectedSkillNames = matchedSkills.map(r => r.skill.name);
-
-    return {
-      prompt: augmentedPrompt,
-      selectedSkills: selectedSkillNames
-    };
-  } catch (error) {
-    debug('Error injecting skills context:', error);
-    return { prompt: basePrompt, selectedSkills: [] }; // Graceful fallback
-  }
-}
 
 export async function saveSystemPrompt(prompt: string): Promise<void> {
   return traced('fs.saveSystemPrompt', {

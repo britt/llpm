@@ -355,8 +355,7 @@ describe('SkillRegistry - Binary Matching', () => {
 
       const result = await registry.generatePromptAugmentation([skill]);
 
-      expect(result).toContain('# Selected Skills');
-      expect(result).toContain('test-skill');
+      expect(result).toContain('## test-skill');
       expect(result).toContain('Test description');
       expect(result).toContain('# Test Instructions');
     });
