@@ -88,16 +88,16 @@ export class SkillRegistry extends EventEmitter {
 
     const result = await parseSkillFile(skillPath, source);
 
-    if (!result.valid) {
+    if (!result.valid || !result.skill) {
       this.emit('skill.validation_error', {
         type: 'skill.validation_error',
         skillName: skillPath,
-        errors: result.errors
+        errors: result.errors || ['Skill validation failed']
       } as SkillEvent);
       return;
     }
 
-    const skill = result.skill!;
+    const skill = result.skill;
 
     // Store skill
     this.skills.set(skill.name, skill);

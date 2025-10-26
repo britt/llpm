@@ -154,11 +154,13 @@ export function RequestLogDisplay() {
 
         if (foundKey) {
           // Update existing log with completed status
-          const existingLog = logMapRef.current.get(foundKey)!;
-          existingLog.status = 'completed';
-          existingLog.duration = log.duration;
-          if (log.metadata) {
-            existingLog.metadata = { ...existingLog.metadata, ...log.metadata };
+          const existingLog = logMapRef.current.get(foundKey);
+          if (existingLog) {
+            existingLog.status = 'completed';
+            existingLog.duration = log.duration;
+            if (log.metadata) {
+              existingLog.metadata = { ...existingLog.metadata, ...log.metadata };
+            }
           }
         } else {
           // If no matching start found, create a new completed entry

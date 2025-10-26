@@ -104,11 +104,18 @@ export const modelCommand: Command = {
           // Show interactive model selector for configured providers
           return showInteractiveModelSelector();
         }
-        return await switchModel(args[1]!);
+        // args[1] guaranteed to exist due to length check above
+        return await switchModel(args[1] as string);
 
       default:
         // Try to interpret the first arg as a model switch
-        return await switchModel(args[0]!);
+        if (!args[0]) {
+          return {
+            content: '❌ Please provide a model specification. Use `/model list` to see available models.',
+            success: false
+          };
+        }
+        return await switchModel(args[0]);
     }
   }
 };
@@ -268,8 +275,14 @@ async function switchModel(modelSpec: string): Promise<CommandResult> {
 
   if (modelSpec.includes('/')) {
     const parts = modelSpec.split('/', 2);
-    provider = parts[0]!;
-    modelId = parts[1]!;
+    if (parts.length !== 2 || !parts[0] || !parts[1]) {
+      return {
+        content: '❌ Invalid model specification format. Use: provider/model-id',
+        success: false
+      };
+    }
+    provider = parts[0];
+    modelId = parts[1];
   } else {
     // Try to find model by ID across all providers
     const availableModels = modelRegistry.getAvailableModels();

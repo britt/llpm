@@ -347,7 +347,7 @@ export const createJobTool = tool({
 **Job ID**: ${jobId}
 **Agent**: ${agentId}
 **Status**: ${status}
-**Created**: ${new Date(createdAt!).toLocaleString()}
+**Created**: ${createdAt ? new Date(createdAt).toLocaleString() : 'unknown'}
 
 💡 Use \`get_job\` with agentId="${agentId}" and jobId="${jobId}" to check job status.`;
   }
@@ -705,9 +705,9 @@ export const scaleAgentClusterTool = tool({
       let responseMsg = `✅ **Agent Cluster Scaled Successfully**\n\n`;
 
       // Show source of configuration
-      if (projectAgentConfig && !preset && !hasCustomCounts) {
+      if (projectAgentConfig && !preset && !hasCustomCounts && appConfig.currentProject) {
         const { getProjectAgentsYamlPath } = await import('../utils/config');
-        const yamlPath = getProjectAgentsYamlPath(appConfig.currentProject!);
+        const yamlPath = getProjectAgentsYamlPath(appConfig.currentProject);
         responseMsg += `📁 **Using project config from**: ${yamlPath}\n\n`;
       }
 

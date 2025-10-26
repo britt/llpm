@@ -204,7 +204,7 @@ export const jobsCommand: Command = {
 **Job ID**: ${jobId}
 **Agent**: ${agentId}
 **Status**: ${status}
-**Created**: ${new Date(createdAt!).toLocaleString()}
+**Created**: ${createdAt ? new Date(createdAt).toLocaleString() : 'unknown'}
 
 💡 Use \`/jobs get ${agentId} ${jobId}\` to check job status.`,
           success: true

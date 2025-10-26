@@ -195,11 +195,16 @@ export class LocalEmbeddingsProvider implements EmbeddingsProvider {
             span.setAttribute('embeddings.dimensions', result.dimension);
           }
 
+          // Validate required fields
+          if (!result.embeddings || !result.dimension || !result.model) {
+            throw new Error('Invalid embedding response: missing required fields');
+          }
+
           // Convert to EmbeddingResult format
-          const results: EmbeddingResult[] = result.embeddings!.map(emb => ({
+          const results: EmbeddingResult[] = result.embeddings.map(emb => ({
             embedding: new Float32Array(emb),
-            dimensions: result.dimension!,
-            model: result.model!
+            dimensions: result.dimension,
+            model: result.model
           }));
 
           debug(`Successfully generated ${results.length} embeddings`);

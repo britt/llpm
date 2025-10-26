@@ -23,7 +23,8 @@ describe('systemTools', () => {
         .spyOn(systemPrompt, 'getSystemPrompt')
         .mockResolvedValueOnce(mockPrompt);
 
-      const result = await getSystemPromptTool.execute!({}, {} as any);
+      expect(getSystemPromptTool.execute).toBeDefined();
+      const result = await getSystemPromptTool.execute({}, {} as any);
 
       expect(getSystemPromptSpy).toHaveBeenCalledOnce();
       expect(result).toEqual({
@@ -41,7 +42,8 @@ describe('systemTools', () => {
         .spyOn(systemPrompt, 'getSystemPrompt')
         .mockRejectedValueOnce(mockError);
 
-      const result = await getSystemPromptTool.execute!({}, {} as any);
+      expect(getSystemPromptTool.execute).toBeDefined();
+      const result = await getSystemPromptTool.execute({}, {} as any);
 
       expect(getSystemPromptSpy).toHaveBeenCalledOnce();
       expect(result).toEqual({
@@ -57,7 +59,8 @@ describe('systemTools', () => {
         .spyOn(systemPrompt, 'getSystemPrompt')
         .mockRejectedValueOnce('String error');
 
-      const result = await getSystemPromptTool.execute!({}, {} as any);
+      expect(getSystemPromptTool.execute).toBeDefined();
+      const result = await getSystemPromptTool.execute({}, {} as any);
 
       expect(getSystemPromptSpy).toHaveBeenCalledOnce();
       expect(result).toEqual({

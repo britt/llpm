@@ -22,7 +22,11 @@ class ModelRegistry {
 
   constructor() {
     // Default to GPT-4.1 mini, but will be overridden by init()
-    this.currentModel = DEFAULT_MODEL_CONFIGS.openai.find(m => m.modelId === 'gpt-4.1-mini')!;
+    const defaultModel = DEFAULT_MODEL_CONFIGS.openai.find(m => m.modelId === 'gpt-4.1-mini');
+    if (!defaultModel) {
+      throw new Error('Default model (gpt-4.1-mini) not found in configuration');
+    }
+    this.currentModel = defaultModel;
 
     // Provider configs will be populated during init() using credential manager
     this.providerConfigs = {
@@ -61,14 +65,17 @@ class ModelRegistry {
       // Find first configured provider
       const configuredProviders = this.getConfiguredProviders();
       if (configuredProviders.length > 0) {
-        const firstProvider = configuredProviders[0]!;
-        const models = this.getModelsForProvider(firstProvider);
-        if (models.length > 0) {
-          this.currentModel = models[0]!;
-          debug(
-            'Using default model for first configured provider:',
-            this.currentModel.displayName
-          );
+        const firstProvider = configuredProviders[0];
+        if (firstProvider) {
+          const models = this.getModelsForProvider(firstProvider);
+          const firstModel = models[0];
+          if (firstModel) {
+            this.currentModel = firstModel;
+            debug(
+              'Using default model for first configured provider:',
+              this.currentModel.displayName
+            );
+          }
         }
       }
     }
