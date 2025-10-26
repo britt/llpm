@@ -801,7 +801,7 @@ export async function getIssueWithComments(
     };
 
     let comments: GitHubIssueComment[] = [];
-    let totalComments = issueData.comments || 0;
+    const totalComments = issueData.comments || 0;
     let hasNextPage = false;
 
     if (includeComments && totalComments > 0) {

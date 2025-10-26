@@ -30,6 +30,7 @@ describe('skillParser', () => {
       const skillContent = `---
 name: test-skill
 description: "A test skill for unit testing"
+instructions: "When testing the skill system, use this skill"
 tags:
   - test
   - example
@@ -49,6 +50,7 @@ This is a test skill.
       expect(result.skill).toBeDefined();
       expect(result.skill?.name).toBe('test-skill');
       expect(result.skill?.description).toBe('A test skill for unit testing');
+      expect(result.skill?.instructions).toBe('When testing the skill system, use this skill');
       expect(result.skill?.tags).toEqual(['test', 'example']);
       expect(result.skill?.content).toContain('# Test Skill');
     });
@@ -102,6 +104,97 @@ name: invalid-skill-2
       expect(result.errors).toContain('Missing required field: description');
     });
 
+    it('should fail when instructions is missing', async () => {
+      const skillPath = join(testDir, 'no-instructions-skill');
+      await mkdir(skillPath, { recursive: true });
+
+      const skillContent = `---
+name: no-instructions-skill
+description: "Skill without instructions field"
+---
+
+# Skill Without Instructions
+
+This skill is missing the required instructions field.
+`;
+
+      await writeFile(join(skillPath, 'SKILL.md'), skillContent, 'utf-8');
+
+      const result = await parseSkillFile(skillPath, 'personal');
+
+      expect(result.valid).toBe(false);
+      expect(result.errors).toContain('Missing required field: instructions - Skills without instructions will not be loaded into the system prompt');
+    });
+
+    it('should fail when instructions is not a string', async () => {
+      const skillPath = join(testDir, 'invalid-instructions-type');
+      await mkdir(skillPath, { recursive: true });
+
+      const skillContent = `---
+name: invalid-instructions-type
+description: "Skill with invalid instructions type"
+instructions: 123
+---
+
+# Invalid Instructions Type
+`;
+
+      await writeFile(join(skillPath, 'SKILL.md'), skillContent, 'utf-8');
+
+      const result = await parseSkillFile(skillPath, 'personal');
+
+      expect(result.valid).toBe(false);
+      expect(result.errors).toContain('Field "instructions" must be a string');
+    });
+
+    it('should fail when instructions is empty', async () => {
+      const skillPath = join(testDir, 'empty-instructions-skill');
+      await mkdir(skillPath, { recursive: true });
+
+      const skillContent = `---
+name: empty-instructions-skill
+description: "Skill with empty instructions"
+instructions: "   "
+---
+
+# Empty Instructions
+`;
+
+      await writeFile(join(skillPath, 'SKILL.md'), skillContent, 'utf-8');
+
+      const result = await parseSkillFile(skillPath, 'personal');
+
+      expect(result.valid).toBe(false);
+      expect(result.errors).toContain('Field "instructions" cannot be empty');
+    });
+
+    it('should parse a skill with valid instructions', async () => {
+      const skillPath = join(testDir, 'valid-instructions-skill');
+      await mkdir(skillPath, { recursive: true });
+
+      const skillContent = `---
+name: valid-instructions-skill
+description: "Skill with valid instructions"
+instructions: "When asked to perform a specific task, use this skill"
+tags:
+  - test
+---
+
+# Valid Instructions Skill
+
+This skill has proper instructions.
+`;
+
+      await writeFile(join(skillPath, 'SKILL.md'), skillContent, 'utf-8');
+
+      const result = await parseSkillFile(skillPath, 'personal');
+
+      expect(result.valid).toBe(true);
+      expect(result.errors).toHaveLength(0);
+      expect(result.skill).toBeDefined();
+      expect(result.skill?.instructions).toBe('When asked to perform a specific task, use this skill');
+    });
+
     it('should fail when name contains invalid characters', async () => {
       const skillPath = join(testDir, 'invalid-name-skill');
       await mkdir(skillPath, { recursive: true });
@@ -129,6 +222,7 @@ description: "Name has invalid characters"
       const skillContent = `---
 name: tools-skill
 description: "Skill with allowed tools"
+instructions: "When using this skill, only specific tools are allowed"
 allowed_tools:
   - github
   - shell
@@ -153,6 +247,7 @@ allowed_tools:
       const skillContent = `---
 name: vars-skill
 description: "Skill with variables"
+instructions: "When using variables in skills, they get substituted"
 vars:
   repoName: "my-repo"
   owner: "john-doe"

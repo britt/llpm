@@ -45,6 +45,7 @@ export async function parseSkillFile(
     const skill: Skill = {
       name: frontmatter.name,
       description: frontmatter.description,
+      instructions: frontmatter.instructions,
       content: content.trim(),
       source,
       path: skillPath,
@@ -92,6 +93,15 @@ function validateFrontmatter(data: any): string[] {
     errors.push('Field "description" must be a string');
   } else if (data.description.length > 1024) {
     errors.push('Field "description" must be <=1024 characters');
+  }
+
+  // Required: instructions
+  if (!data.instructions) {
+    errors.push('Missing required field: instructions - Skills without instructions will not be loaded into the system prompt');
+  } else if (typeof data.instructions !== 'string') {
+    errors.push('Field "instructions" must be a string');
+  } else if (data.instructions.trim().length === 0) {
+    errors.push('Field "instructions" cannot be empty');
   }
 
   // Optional: allowed_tools

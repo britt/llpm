@@ -4,7 +4,57 @@ import typescriptParser from '@typescript-eslint/parser';
 import prettier from 'eslint-config-prettier';
 
 export default [
+  // Ignore patterns
+  {
+    ignores: [
+      'node_modules/**',
+      'dist/**',
+      'build/**',
+      'coverage/**',
+      '.llpm/**',
+      'docker/**',
+      'scripts/**',
+      '*.min.js',
+      '*.bundle.js'
+    ]
+  },
+
   js.configs.recommended,
+
+  // JavaScript/CommonJS files (Node.js context)
+  {
+    files: ['**/*.js', '**/*.cjs', '**/*.mjs'],
+    languageOptions: {
+      ecmaVersion: 'latest',
+      sourceType: 'module',
+      globals: {
+        // Node.js globals
+        process: 'readonly',
+        console: 'readonly',
+        Buffer: 'readonly',
+        setTimeout: 'readonly',
+        clearTimeout: 'readonly',
+        setInterval: 'readonly',
+        clearInterval: 'readonly',
+        setImmediate: 'readonly',
+        clearImmediate: 'readonly',
+        require: 'readonly',
+        module: 'readonly',
+        exports: 'readonly',
+        __dirname: 'readonly',
+        __filename: 'readonly',
+        global: 'readonly'
+      }
+    },
+    rules: {
+      'no-console': ['warn', { allow: ['warn', 'error'] }],
+      'no-debugger': 'error',
+      'prefer-const': 'error',
+      'no-var': 'error'
+    }
+  },
+
+  // TypeScript files
   {
     files: ['**/*.ts', '**/*.tsx'],
     languageOptions: {
@@ -25,16 +75,25 @@ export default [
         clearTimeout: 'readonly',
         setInterval: 'readonly',
         clearInterval: 'readonly',
+        setImmediate: 'readonly',
+        clearImmediate: 'readonly',
         require: 'readonly',
         module: 'readonly',
         exports: 'readonly',
         __dirname: 'readonly',
         __filename: 'readonly',
-        // Browser/Web APIs that might be used
+        global: 'readonly',
+        // Browser/Web APIs
         URLSearchParams: 'readonly',
         fetch: 'readonly',
+        Request: 'readonly',
+        Response: 'readonly',
+        Headers: 'readonly',
+        RequestInit: 'readonly',
         // Node.js types
-        NodeJS: 'readonly'
+        NodeJS: 'readonly',
+        // Bun globals
+        Bun: 'readonly'
       }
     },
     plugins: {

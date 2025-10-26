@@ -6,9 +6,22 @@ import { getCurrentProject } from './projectConfig';
 import type { Project } from '../types/project';
 import { traced } from './tracing';
 import { SpanKind } from '@opentelemetry/api';
+import { getSkillRegistry } from '../services/SkillRegistry';
 
 const DEFAULT_SYSTEM_PROMPT = `You are LLPM (Large Language Model Product Manager), an AI-powered project management assistant that operates within an interactive terminal interface. You help users manage multiple projects, interact with GitHub repositories, and coordinate development workflows through natural language conversation.
 
+<Core Context>
+## Core Context
+- You operate in a terminal UI built with Ink, providing real-time interactive assistance
+- Users can switch between different AI models/providers during conversation using \`/model\` commands
+- Each project maintains its own chat history and context, along with a project-specific notes database
+- Users have access to slash commands (e.g., \`/project\`, \`/github\`, \`/model\`, \`/notes\`, \`/help\`) for system operations
+
+### **IMPORTANT**: You are note a coding agent.
+Do not offer to write code or work on issues.
+</Core Context>
+
+<Project Context>
 ## 🎯 Active Project Context
 **IMPORTANT**: When a project is active, detailed project information is automatically injected into this system prompt above the Core Context section. This includes:
 - Current project name, ID, and description
@@ -24,13 +37,9 @@ const DEFAULT_SYSTEM_PROMPT = `You are LLPM (Large Language Model Product Manage
 - Maintain awareness of the project throughout the entire conversation
 
 **When no project is active**, provide general assistance while suggesting users select or create a project for enhanced functionality.
+</Project Context>
 
-## Core Context
-- You operate in a terminal UI built with Ink, providing real-time interactive assistance
-- Users can switch between different AI models/providers during conversation using \`/model\` commands
-- Each project maintains its own chat history and context, along with a project-specific notes database
-- Users have access to slash commands (e.g., \`/project\`, \`/github\`, \`/model\`, \`/notes\`, \`/help\`) for system operations
-
+<Tools>
 ## Available Tools
 
 **Project Management:**
@@ -72,18 +81,20 @@ const DEFAULT_SYSTEM_PROMPT = `You are LLPM (Large Language Model Product Manage
 **System Management:**
 - Access and modify system prompts and configuration
 - Provide system information and debugging support
+</Tools>
 
+<Responses>
 ## Response Guidelines
 
 **CRITICAL: Always provide substantive text responses.** Never respond with only tool calls, empty responses, or generic acknowledgments like "Action completed."
 
 **For every interaction:**
 1. **Search existing notes first** - Always use \`search_notes\` to check for relevant information before starting work
-2. Call appropriate tools to gather necessary information
-3. Provide clear, natural language explanations of what the tools returned
-4. Answer the user's question directly with actionable insights
-5. **Save important insights** - Use \`add_note\` to record discoveries, decisions, or solutions for future reference
-6. Offer relevant next steps or follow-up suggestions when appropriate
+2. Load appropriate skills for the task at hand
+3. Call appropriate tools to gather necessary information
+4. Provide clear, natural language explanations of what the tools returned
+5. Answer the user's question directly with actionable insights
+6. **Save important insights** - Use \`add_note\` to record discoveries, decisions, or solutions for future reference
 
 **Proactive Notes Management:**
 - **Always search notes before starting tasks** to leverage previous knowledge and avoid duplication
@@ -96,6 +107,12 @@ const DEFAULT_SYSTEM_PROMPT = `You are LLPM (Large Language Model Product Manage
   - Important URLs, documentation links, or external resources
   - Meeting notes, requirements, or stakeholder feedback
   - Testing strategies, deployment procedures, or troubleshooting steps
+- ** DO NOT save notes when: **
+  - The information is already in the project's GitHub repository
+  - The information is not relevant to the current project
+  - The information can be fetched with a tool call
+  - The information will be out of date, like snapshots
+  - The information is already in the project notes database
 - **Use descriptive titles and comprehensive content** in notes for better searchability
 - **Tag notes appropriately** (e.g., 'architecture', 'bug-fix', 'config', 'api', 'deployment')
 - **Update existing notes** when information changes or becomes more complete
@@ -119,7 +136,9 @@ const DEFAULT_SYSTEM_PROMPT = `You are LLPM (Large Language Model Product Manage
 - Relate GitHub operations (issues, PRs) to the current project's repository
 - Maintain awareness of project history and previous conversations
 - Suggest project-relevant workflows and best practices
+</Responses>
 
+<Key Capabilities>
 ## Key Capabilities Summary
 1. **Multi-Project Orchestration**: Organize work across projects with persistent configuration and project-specific notes
 2. **Intelligent Knowledge Management**: Vector-based semantic search across project notes with automatic embedding generation
@@ -128,6 +147,7 @@ const DEFAULT_SYSTEM_PROMPT = `You are LLPM (Large Language Model Product Manage
 5. **Proactive Learning**: Automatically capture and organize project insights for future reference
 6. **Flexible AI Model Support**: Seamless operation across different AI providers
 7. **Terminal-Native Experience**: Optimized for command-line productivity workflows
+</Key Capabilities>
 
 Always prioritize user productivity and provide actionable, contextual assistance that moves their projects forward.`;
 
@@ -167,6 +187,9 @@ export async function getSystemPrompt(): Promise<string> {
       // Inject current project context
       let promptWithContext = await injectProjectContext(basePrompt);
       span.setAttribute('project.context_injected', promptWithContext !== basePrompt);
+
+      // Inject skills context
+      promptWithContext = injectSkillsContext(promptWithContext);
       span.setAttribute('prompt.final_length', promptWithContext.length);
 
       return promptWithContext;
@@ -260,21 +283,21 @@ async function injectProjectContext(basePrompt: string): Promise<string> {
   try {
     // Attempt to get current project with additional error handling
     let currentProject: Project | null = null;
-    
+
     try {
       currentProject = await getCurrentProject();
     } catch (projectError) {
       debug('Failed to get current project for context injection:', projectError);
       return basePrompt; // Graceful fallback
     }
-    
+
     if (!currentProject) {
       debug('No active project to inject into system prompt - using base prompt');
       return basePrompt;
     }
 
     debug('Injecting project context for:', currentProject.name);
-    
+
     // Safely format project context with error handling
     let projectContext: string;
     try {
@@ -283,12 +306,12 @@ async function injectProjectContext(basePrompt: string): Promise<string> {
       debug('Failed to format project context:', formatError);
       return basePrompt; // Graceful fallback
     }
-    
+
     // Insert project context with robust positioning logic
     try {
       const lines = basePrompt.split('\n');
       let insertIndex = -1;
-      
+
       // Try to find Core Context section first
       const coreContextIndex = lines.findIndex(line => line.includes('## Core Context'));
       if (coreContextIndex > 0) {
@@ -299,7 +322,7 @@ async function injectProjectContext(basePrompt: string): Promise<string> {
         const activeProjectIndex = lines.findIndex(line => line.includes('## 🎯 Active Project Context'));
         if (activeProjectIndex > 0) {
           // Insert after the Active Project Context section
-          const nextSectionIndex = lines.findIndex((line, index) => 
+          const nextSectionIndex = lines.findIndex((line, index) =>
             index > activeProjectIndex && line.startsWith('##') && !line.includes('🎯 Active Project Context')
           );
           insertIndex = nextSectionIndex > 0 ? nextSectionIndex : activeProjectIndex + 15; // Rough estimate after section
@@ -311,19 +334,92 @@ async function injectProjectContext(basePrompt: string): Promise<string> {
           debug('Using fallback insertion point at line:', insertIndex);
         }
       }
-      
+
       // Insert the project context
       lines.splice(insertIndex, 0, projectContext);
       return lines.join('\n');
-      
+
     } catch (insertError) {
       debug('Failed to insert project context into prompt:', insertError);
       return basePrompt; // Graceful fallback
     }
-    
+
   } catch (error) {
     debug('Unexpected error in project context injection:', error);
     return basePrompt; // Always graceful fallback
+  }
+}
+
+/**
+ * Inject available skills section into system prompt
+ */
+function injectSkillsContext(basePrompt: string): string {
+  try {
+    const registry = getSkillRegistry();
+    const skills = registry.getAllSkills();
+
+    debug(`Total skills in registry: ${skills.length}`);
+    debug('All skills:', skills.map(s => `${s.name} (enabled: ${s.enabled}, has instructions: ${!!s.instructions})`));
+
+    // Filter to enabled skills with instructions
+    const skillsWithInstructions = skills.filter(skill =>
+      skill.enabled && skill.instructions
+    );
+
+    debug(`Skills with instructions and enabled: ${skillsWithInstructions.length}`);
+    debug('Filtered skills:', skillsWithInstructions.map(s => s.name));
+
+    if (skillsWithInstructions.length === 0) {
+      debug('No enabled skills with instructions to inject');
+      return basePrompt;
+    }
+
+    debug(`Injecting ${skillsWithInstructions.length} skills into system prompt`);
+
+    // Format skills section
+    const skillsLines: string[] = [
+      '<Skills>',
+      '## Available Skills',
+      '',
+      'When you need specialized guidance, you can load skills using the load_skills tool:',
+      ''
+    ];
+
+    for (const skill of skillsWithInstructions) {
+      skillsLines.push(`- ${skill.instructions} load the \`${skill.name}\` skill`);
+    }
+
+    skillsLines.push('</Skills>');
+    skillsLines.push('');
+
+    const skillsContent = skillsLines.join('\n');
+
+    // Insert after </Tools> section, before <Responses> section
+    try {
+      const lines = basePrompt.split('\n');
+
+      // Find </Tools> closing tag
+      const toolsEndIndex = lines.findIndex(line => line.includes('</Tools>'));
+
+      if (toolsEndIndex >= 0) {
+        // Insert after </Tools> and add a blank line
+        lines.splice(toolsEndIndex + 1, 0, '', skillsContent);
+        debug('Skills section inserted after </Tools> at line:', toolsEndIndex);
+        debug('Skills section:', skillsContent);
+        return lines.join('\n');
+      } else {
+        debug('Could not find </Tools> section, appending skills to end');
+        return basePrompt + '\n\n' + skillsContent;
+      }
+
+    } catch (insertError) {
+      debug('Failed to insert skills context into prompt:', insertError);
+      return basePrompt;
+    }
+
+  } catch (error) {
+    debug('Unexpected error in skills context injection:', error);
+    return basePrompt;
   }
 }
 

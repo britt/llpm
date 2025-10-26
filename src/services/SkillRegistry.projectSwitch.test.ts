@@ -35,6 +35,7 @@ describe('SkillRegistry - Project Switch Discovery', () => {
       `---
 name: test-skill
 description: "Test skill for project"
+instructions: "When testing skill discovery, use this test skill"
 ---
 
 # Test Skill
@@ -65,6 +66,7 @@ description: "Test skill for project"
       `---
 name: user-specific-skill
 description: "User-specific test skill"
+instructions: "When testing user-specific skills, use this skill"
 ---
 
 # User Specific Skill
@@ -95,6 +97,7 @@ description: "User-specific test skill"
       `---
 name: project-skill
 description: "Project-wide skill"
+instructions: "When testing project-wide skills, use this skill"
 ---
 
 # Project Skill
@@ -109,6 +112,7 @@ description: "Project-wide skill"
       `---
 name: user-skill
 description: "User-specific skill"
+instructions: "When testing user skills, use this skill"
 ---
 
 # User Skill
@@ -155,6 +159,7 @@ description: "User-specific skill"
       `---
 name: new-skill
 description: "Newly discovered skill"
+instructions: "When testing newly discovered skills, use this skill"
 ---
 
 # New Skill
@@ -178,6 +183,7 @@ description: "Newly discovered skill"
       `---
 name: old-skill
 description: "Old skill"
+instructions: "When testing old skills, use this skill"
 ---
 
 # Old Skill
@@ -205,6 +211,7 @@ description: "Old skill"
       `---
 name: new-skill
 description: "New skill"
+instructions: "When testing new skills after clearing old ones, use this skill"
 ---
 
 # New Skill

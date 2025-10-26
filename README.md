@@ -30,6 +30,14 @@ Perfect for developers who want to organize multiple projects, interact with Git
 - 🎯 Repository selection for new projects
 - 🔗 Direct integration with project management
 
+### Skills System
+
+- 🎓 **Dynamic skill loading** with automatic system prompt injection
+- 📚 **Core skills included**: Mermaid diagrams, stakeholder updates, user story templates
+- 🔧 **Custom skills support** - Create your own reusable instruction sets
+- 🤖 **AI-aware**: Skills are automatically listed in the system prompt with usage guidance
+- 🔄 **Hot reloading** - Changes take effect immediately with `/skills reload`
+
 ### Slash Commands
 
 - `/info` - Show application and current project information
@@ -39,6 +47,7 @@ Perfect for developers who want to organize multiple projects, interact with Git
 - `/project` - Manage projects (add, list, switch, remove)
 - `/github` - Browse and search GitHub repositories
 - `/model` - Switch between AI models and view provider status
+- `/skills` - Manage skills (list, test, enable, disable, reload)
 - `/debug` - Show recent debug logs for troubleshooting
 
 ## Prerequisites
@@ -309,6 +318,7 @@ LLPM stores configuration in `~/.llpm/`:
 - `config.json` - Project configurations and current project
 - `chat-sessions/` - Persistent chat history by session
 - `system_prompt.txt` - Custom system prompt (automatically created on first run)
+- `skills/` - Core skills and custom skills (automatically installed on first run)
 
 ### Custom System Prompt
 
@@ -332,6 +342,121 @@ code ~/.llpm/system_prompt.txt
 
 The default system prompt focuses on project management, GitHub integration, and provides access to all available tools and commands.
 
+## Skills System
+
+LLPM includes a powerful skills system that allows the AI to load specialized instruction sets on demand. Skills are automatically injected into the system prompt, making the AI aware of when and how to use them.
+
+### Core Skills
+
+LLPM comes with three core skills installed by default in `~/.llpm/skills/`:
+
+1. **mermaid-diagrams** - Create syntactically correct Mermaid diagrams for GitHub
+   - Flowcharts, sequence diagrams, class diagrams, ERDs
+   - Critical syntax rules to prevent rendering errors
+   - Best practices and common patterns
+
+2. **stakeholder-updates** - Craft clear stakeholder communications
+   - Templates for executives, management, peers, and team members
+   - Status updates, delay communications, launch announcements
+   - Best practices for effective communication
+
+3. **user-story-template** - Write well-formed user stories
+   - Proper user story format with acceptance criteria
+   - Given-When-Then structure
+   - INVEST quality checklist
+
+### Using Skills
+
+Skills are automatically listed in the system prompt, showing the AI when to load them:
+
+```
+You: "I need to create a sequence diagram for the authentication flow"
+AI: I'll load the mermaid-diagrams skill to help create a syntactically correct diagram.
+    [Uses load_skills tool]
+```
+
+**AI Tools for Skills:**
+- `load_skills` - Load one or more skills to augment context
+- `list_available_skills` - Discover available skills with optional tag filtering
+
+**Slash Commands:**
+```bash
+/skills list              # List all discovered skills and their status
+/skills test <name>       # Preview a skill's content and settings
+/skills enable <name>     # Enable a skill
+/skills disable <name>    # Disable a skill
+/skills reload            # Rescan skill directories and reload all skills
+```
+
+### Creating Custom Skills
+
+Create your own skills in `~/.llpm/skills/` or `.llpm/skills/` (project-specific):
+
+```markdown
+# ~/.llpm/skills/my-skill/SKILL.md
+---
+name: my-skill
+description: "Brief description of what this skill does"
+instructions: "When [condition], [action]"
+tags:
+  - tag1
+  - tag2
+allowed_tools:
+  - tool1
+  - tool2
+---
+
+# My Skill Instructions
+
+Your markdown instructions here...
+```
+
+**Frontmatter Fields:**
+- `name` (required): Unique skill identifier (lowercase, hyphens only)
+- `description` (required): What the skill does (max 1024 chars)
+- `instructions` (optional): Single-line guidance on when to use this skill
+- `tags` (optional): Array of tags for filtering and discovery
+- `allowed_tools` (optional): Restrict tool usage when skill is active
+- `vars` (optional): Variables for content substitution
+- `resources` (optional): Additional files to load
+
+**Skill Locations:**
+- `~/.llpm/skills/` - Personal skills (shared across all projects)
+- `~/.llpm/skills/user/` - User-specific personal skills
+- `.llpm/skills/` - Project-specific skills (not shared)
+
+**How Skills Work:**
+1. Skills are scanned on startup and when `/skills reload` is called
+2. All enabled skills with instructions are injected into the system prompt
+3. The AI sees when to load each skill based on the `instructions` field
+4. When loaded via `load_skills` tool, the skill's full content is added to context
+5. Loaded skills can optionally restrict tool usage to an allowed list
+
+**Example Custom Skill:**
+
+```markdown
+# ~/.llpm/skills/api-design/SKILL.md
+---
+name: api-design
+description: "Guide for designing RESTful API endpoints following best practices"
+instructions: "When designing APIs, creating endpoints, or reviewing API specifications"
+tags:
+  - api
+  - rest
+  - design
+allowed_tools:
+  - github
+  - notes
+---
+
+# API Design Skill
+
+## RESTful Principles
+- Use nouns for resources (not verbs)
+- HTTP methods: GET (read), POST (create), PUT/PATCH (update), DELETE (remove)
+...
+```
+
 ## Architecture
 
 ### Core Components
@@ -354,14 +479,21 @@ The default system prompt focuses on project management, GitHub integration, and
 
 The AI assistant has access to these tools:
 
+**Project Management:**
 - `get_current_project` - Get active project information
 - `list_projects` - List all configured projects
 - `add_project` - Add new projects
 - `set_current_project` - Switch current project
 - `remove_project` - Remove projects
+
+**GitHub Integration:**
 - `list_github_repos` - Browse user's GitHub repositories
 - `search_github_repos` - Search GitHub repositories
 - `get_github_repo` - Get specific repository details
+
+**Skills Management:**
+- `load_skills` - Load one or more skills to augment context
+- `list_available_skills` - List all available skills with optional tag filtering
 
 ## Contributing
 

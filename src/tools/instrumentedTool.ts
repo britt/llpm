@@ -6,12 +6,12 @@ import { traced } from '../utils/tracing';
 /**
  * Instrumented version of the AI SDK's tool function that adds request logging and OpenTelemetry tracing
  */
-export function tool<T extends { description: string; parameters?: any; execute: (...args: any[]) => any }>(
+export function tool<T extends { name?: string; description: string; inputSchema?: any; parameters?: any; execute: (...args: any[]) => any }>(
   config: T
 ): ReturnType<typeof baseTool> {
-  // Extract the tool name from the description (first few words)
-  const toolName = config.description.split(' ').slice(0, 3).join('_').toLowerCase().replace(/[^a-z0-9_]/g, '_');
-  
+  // Use the explicit tool name from config, or auto-generate from description if not provided
+  const toolName = config.name || config.description.split(' ').slice(0, 3).join('_').toLowerCase().replace(/[^a-z0-9_]/g, '_');
+
   // Wrap the execute function with logging and tracing
   const instrumentedConfig = {
     ...config,

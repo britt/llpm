@@ -38,6 +38,7 @@ export function useChat() {
   const messagesRef = useRef<Message[]>([]);
   const processingRef = useRef(false);
   const shouldSaveRef = useRef(false);
+  const selectedSkillsRef = useRef<string[]>([]);
 
   // Keep refs in sync with state
   useEffect(() => {
@@ -109,10 +110,32 @@ export function useChat() {
     }
   }, [messages, historyLoaded]);
 
+  // Listen for skill selection events to update thinking indicator in real-time
+  useEffect(() => {
+    const skillRegistry = getSkillRegistry();
+
+    const handleSkillSelected = (event: any) => {
+      debug('Skill selected event received:', event.skillName);
+      if (!selectedSkillsRef.current.includes(event.skillName)) {
+        selectedSkillsRef.current.push(event.skillName);
+        debug('Updating selectedSkills state:', selectedSkillsRef.current);
+        setSelectedSkills([...selectedSkillsRef.current]);
+      }
+    };
+
+    debug('Setting up skill.selected event listener');
+    // Listen to skill selection events
+    skillRegistry.on('skill.selected', handleSkillSelected);
+
+    return () => {
+      debug('Removing skill.selected event listener');
+      skillRegistry.removeListener('skill.selected', handleSkillSelected);
+    };
+  }, []);
+
   // Process a message immediately (internal function)
   const processMessageImmediate = useCallback(
     async (content: string) => {
-      debug('processMessageImmediate called with:', content);
       
       // If we're in the middle of a project switch, wait for it to complete
       if (isProjectSwitching) {
@@ -203,6 +226,7 @@ export function useChat() {
       debug('Adding user message to state');
       setMessages(prev => trimMessages([...prev, userMessage]));
       shouldSaveRef.current = true; // Mark for saving
+      selectedSkillsRef.current = []; // Clear previous skills
       setSelectedSkills([]); // Clear previous skills
       setIsLoading(true);
       debug('Set loading state to true');
@@ -330,8 +354,6 @@ export function useChat() {
 
   const sendMessage = useCallback(
     async (content: string) => {
-      debug('sendMessage called with:', content);
-
       // Don't process empty messages
       const trimmedContent = content.trim();
       if (!trimmedContent) {

@@ -248,16 +248,57 @@ async function disableSkill(args: string[]): Promise<CommandResult> {
 async function reloadSkills(): Promise<CommandResult> {
   const registry = getSkillRegistry();
 
+  const validationErrors: string[] = [];
+  const discoveredSkills: string[] = [];
+
+  // Listen for validation errors during scan
+  const errorHandler = (event: any) => {
+    validationErrors.push(`${event.skillName}: ${event.errors.join(', ')}`);
+  };
+
+  const discoveryHandler = (event: any) => {
+    discoveredSkills.push(event.skillName);
+  };
+
+  registry.on('skill.validation_error', errorHandler);
+  registry.on('skill.discovered', discoveryHandler);
+
   try {
     await registry.scan();
 
     const skills = registry.getAllSkills();
 
+    // Remove listeners
+    registry.removeListener('skill.validation_error', errorHandler);
+    registry.removeListener('skill.discovered', discoveryHandler);
+
+    const lines: string[] = [];
+    lines.push(`✓ Skills reloaded successfully\n`);
+    lines.push(`Discovered: ${skills.length} skill(s)`);
+
+    if (discoveredSkills.length > 0) {
+      lines.push(`\n**Successfully loaded:**`);
+      discoveredSkills.forEach(name => lines.push(`  ✓ ${name}`));
+    }
+
+    if (validationErrors.length > 0) {
+      lines.push(`\n**Validation errors:**`);
+      validationErrors.forEach(error => lines.push(`  ✗ ${error}`));
+      lines.push(`\n💡 **Tip:** Skills must be in subdirectories with a SKILL.md file:`);
+      lines.push(`   ~/.llpm/skills/my-skill-name/SKILL.md`);
+    }
+
+    lines.push(`\nUse \`/skills list\` to see all loaded skills.`);
+
     return {
       success: true,
-      content: `Skills reloaded successfully.\n\nDiscovered ${skills.length} skill(s). Use \`/skills list\` to see them.`
+      content: lines.join('\n')
     };
   } catch (error) {
+    // Remove listeners on error
+    registry.removeListener('skill.validation_error', errorHandler);
+    registry.removeListener('skill.discovered', discoveryHandler);
+
     return {
       success: false,
       content: `Failed to reload skills: ${error instanceof Error ? error.message : String(error)}`

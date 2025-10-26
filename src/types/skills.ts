@@ -15,6 +15,9 @@ export interface SkillFrontmatter {
   /** Brief summary of what the skill does and when to use it (<=1024 chars) */
   description: string;
 
+  /** Optional: Single-line instruction for when to use this skill */
+  instructions?: string;
+
   /** Optional: List of allowed tools/MCP servers when this skill is active */
   allowed_tools?: string[];
 
@@ -37,6 +40,9 @@ export interface Skill {
 
   /** Description from frontmatter */
   description: string;
+
+  /** Single-line instruction for when to use this skill */
+  instructions?: string;
 
   /** Full markdown content (excluding frontmatter) */
   content: string;
