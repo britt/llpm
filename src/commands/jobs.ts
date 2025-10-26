@@ -35,12 +35,12 @@ async function brokerRequest<T = unknown>(
     if (body) options.body = JSON.stringify(body);
 
     const response = await fetch(url, options);
-    const data = await response.json();
+    const data = (await response.json()) as Record<string, unknown>;
 
     if (!response.ok) {
       return {
         success: false,
-        error: data.message || `Request failed with status ${response.status}`
+        error: (data.message as string) || `Request failed with status ${response.status}`
       };
     }
 

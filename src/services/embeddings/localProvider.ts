@@ -102,13 +102,13 @@ export class LocalEmbeddingsProvider implements EmbeddingsProvider {
 
         if (results && results.length > 0) {
           span.setAttribute('embeddings.success', true);
-          return results[0];
+          return results[0]!; // Safe: length checked above
         }
 
         span.setAttribute('embeddings.success', false);
         return null;
       }
-    );
+    ) as Promise<EmbeddingResult | null>;
   }
 
   async generateEmbeddings(texts: string[]): Promise<EmbeddingResult[] | null> {
@@ -203,8 +203,8 @@ export class LocalEmbeddingsProvider implements EmbeddingsProvider {
           // Convert to EmbeddingResult format
           const results: EmbeddingResult[] = result.embeddings.map(emb => ({
             embedding: new Float32Array(emb),
-            dimensions: result.dimension,
-            model: result.model
+            dimensions: result.dimension!, // Safe: validated above
+            model: result.model! // Safe: validated above
           }));
 
           debug(`Successfully generated ${results.length} embeddings`);

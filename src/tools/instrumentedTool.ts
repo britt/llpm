@@ -81,5 +81,6 @@ export function tool<
   };
 
   // Create and return the instrumented tool
-  return baseTool(instrumentedConfig);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return baseTool(instrumentedConfig as any) as any;
 }

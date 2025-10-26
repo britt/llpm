@@ -95,7 +95,7 @@ export class RequestLogger extends EventEmitter {
     }
 
     if (typeof data === 'object' && data !== null) {
-      const redacted: Record<string, unknown> = Array.isArray(data) ? [] : {};
+      const redacted: Record<string, unknown> = (Array.isArray(data) ? [] : {}) as Record<string, unknown>;
       const dataRecord = data as Record<string, unknown>;
       for (const key in dataRecord) {
         const lowerKey = key.toLowerCase();
@@ -218,7 +218,7 @@ export class RequestLogger extends EventEmitter {
       step,
       phase,
       duration,
-      metadata: redactedMetadata
+      metadata: redactedMetadata as Record<string, unknown> | undefined
     };
 
     const message = this.formatLogEntry(entry);

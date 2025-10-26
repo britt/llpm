@@ -53,7 +53,7 @@ export function filterMessagesByLines(
   // Second pass: collect messages from the end until we hit the limit
   // Work backwards through messages
   for (let i = messages.length - 1; i >= 0; i--) {
-    const message = messages[i];
+    const message = messages[i]!; // Safe: i is within array bounds
     const messageLines = countMessageLines(message);
 
     // If adding this message would exceed the limit, stop

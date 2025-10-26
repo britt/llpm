@@ -41,9 +41,7 @@ export class OpenAIEmbeddingsProvider implements EmbeddingsProvider {
 
       // Use OpenAI's text-embedding-3-small model
       const result = await embed({
-        model: openai.embedding('text-embedding-3-small', {
-          dimensions: this.dimensions
-        }),
+        model: openai.embedding('text-embedding-3-small'),
         value: text,
         experimental_telemetry: {
           isEnabled: true,

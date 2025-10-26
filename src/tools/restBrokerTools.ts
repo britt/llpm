@@ -687,7 +687,7 @@ export const scaleAgentClusterTool = tool({
           heavy: { claude: 2, codex: 3, aider: 3, opencode: 2 },
           minimal: { claude: 0, codex: 0, aider: 1, opencode: 0 }
         };
-        config = presets[preset as string];
+        config = presets[preset as string] ?? { claude: 0, codex: 0, aider: 0, opencode: 0 };
       } else if (projectAgentConfig) {
         // Use project-specific agent config
         if (projectAgentConfig.customCounts) {
