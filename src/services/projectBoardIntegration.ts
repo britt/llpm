@@ -12,7 +12,7 @@ import { credentialManager } from '../utils/credentialManager';
 export async function autoLinkProjectBoard(
   owner?: string,
   projectNumber?: number
-): Promise<{ success: boolean; message: string; project?: any }> {
+): Promise<{ success: boolean; message: string; project?: unknown }> {
   try {
     const currentProject = await getCurrentProject();
     if (!currentProject) {
@@ -139,7 +139,7 @@ export async function autoAddToProjectBoard(
 export async function getCurrentProjectBoard(): Promise<{
   success: boolean;
   message: string;
-  projectBoard?: { projectBoardId: string; projectBoardNumber?: number; details?: any };
+  projectBoard?: { projectBoardId: string; projectBoardNumber?: number; details?: unknown };
 }> {
   try {
     const currentProject = await getCurrentProject();
@@ -181,7 +181,7 @@ export async function getCurrentProjectBoard(): Promise<{
 export async function validateProjectBoardIntegration(): Promise<{
   success: boolean;
   message: string;
-  details?: any;
+  details?: unknown;
 }> {
   try {
     const currentProject = await getCurrentProject();
@@ -225,7 +225,7 @@ export async function validateProjectBoardIntegration(): Promise<{
 /**
  * Helper function to get project by ID (not exposed in main service)
  */
-async function getProjectV2ById(projectId: string): Promise<any> {
+async function getProjectV2ById(projectId: string): Promise<unknown> {
   const { Octokit } = await import('@octokit/rest');
   const { execSync } = await import('child_process');
 
@@ -240,7 +240,7 @@ async function getProjectV2ById(projectId: string): Promise<any> {
         stdio: ['ignore', 'pipe', 'ignore']
       });
       token = rawToken.trim();
-    } catch (error: any) {
+    } catch (error: unknown) {
       throw new Error('GitHub token not found');
     }
   }
