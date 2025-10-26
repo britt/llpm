@@ -17,7 +17,7 @@ export interface RequestLogEntry {
   step: string;
   phase: 'start' | 'end';
   duration?: number;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 export type { RequestLogEntry as LogEntry };
@@ -69,31 +69,35 @@ export class RequestLogger extends EventEmitter {
     return messagePriority <= configPriority;
   }
 
-  private redactPII(data: any): any {
+  private redactPII(data: unknown): unknown {
     if (!RequestLogger.config.piiRedaction) return data;
 
     if (typeof data === 'string') {
       // Redact email addresses
-      data = data.replace(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g, '[EMAIL_REDACTED]');
+      let redactedStr = data.replace(
+        /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g,
+        '[EMAIL_REDACTED]'
+      );
 
       // Redact common API key patterns
       // OpenAI/Anthropic style keys (sk-...)
-      data = data.replace(/sk-[a-zA-Z0-9]{20,}/g, '[REDACTED]');
+      redactedStr = redactedStr.replace(/sk-[a-zA-Z0-9]{20,}/g, '[REDACTED]');
       // GitHub tokens (ghp_...)
-      data = data.replace(/ghp_[a-zA-Z0-9]{20,}/g, '[REDACTED]');
+      redactedStr = redactedStr.replace(/ghp_[a-zA-Z0-9]{20,}/g, '[REDACTED]');
       // Generic long alphanumeric strings that could be keys
-      data = data.replace(/[a-zA-Z0-9]{40,}/g, '[REDACTED]');
+      redactedStr = redactedStr.replace(/[a-zA-Z0-9]{40,}/g, '[REDACTED]');
 
       // Redact JWT/Bearer tokens
-      data = data.replace(/Bearer\s+[a-zA-Z0-9._-]+/gi, 'Bearer [TOKEN_REDACTED]');
-      data = data.replace(/eyJ[a-zA-Z0-9._-]+/g, '[TOKEN_REDACTED]');
+      redactedStr = redactedStr.replace(/Bearer\s+[a-zA-Z0-9._-]+/gi, 'Bearer [TOKEN_REDACTED]');
+      redactedStr = redactedStr.replace(/eyJ[a-zA-Z0-9._-]+/g, '[TOKEN_REDACTED]');
 
-      return data;
+      return redactedStr;
     }
 
     if (typeof data === 'object' && data !== null) {
-      const redacted: any = Array.isArray(data) ? [] : {};
-      for (const key in data) {
+      const redacted: Record<string, unknown> = Array.isArray(data) ? [] : {};
+      const dataRecord = data as Record<string, unknown>;
+      for (const key in dataRecord) {
         const lowerKey = key.toLowerCase();
         if (
           lowerKey.includes('token') ||
@@ -104,14 +108,14 @@ export class RequestLogger extends EventEmitter {
           redacted[key] = '[REDACTED]';
         } else if (lowerKey.includes('auth')) {
           // Special handling for auth headers - preserve "Bearer " prefix
-          const value = data[key];
+          const value = dataRecord[key];
           if (typeof value === 'string' && value.startsWith('Bearer ')) {
             redacted[key] = 'Bearer [TOKEN_REDACTED]';
           } else {
             redacted[key] = '[REDACTED]';
           }
         } else {
-          redacted[key] = this.redactPII(data[key]);
+          redacted[key] = this.redactPII(dataRecord[key]);
         }
       }
       return redacted;
@@ -181,7 +185,7 @@ export class RequestLogger extends EventEmitter {
     step: string,
     phase: 'start' | 'end',
     level: LogLevel = 'info',
-    metadata?: Record<string, any>
+    metadata?: Record<string, unknown>
   ): void {
     if (!this.shouldLogAtLevel(level)) return;
 
@@ -240,11 +244,11 @@ export class RequestLogger extends EventEmitter {
   logToolCall(
     toolName: string,
     phase: 'start' | 'end',
-    args?: any,
-    result?: any,
+    args?: unknown,
+    result?: unknown,
     error?: string
   ): void {
-    const metadata: any = { name: toolName };
+    const metadata: Record<string, unknown> = { name: toolName };
 
     if (phase === 'start' && args) {
       metadata.args = this.redactPII(args);
@@ -257,7 +261,8 @@ export class RequestLogger extends EventEmitter {
       } else {
         metadata.status = 'success';
         if (result && typeof result === 'object' && 'length' in result) {
-          metadata.resultSize = result.length;
+          const resultObj = result as { length: number };
+          metadata.resultSize = resultObj.length;
         }
       }
     }
