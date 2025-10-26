@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import type { Command, CommandResult } from './types';
 import { debug } from '../utils/logger';
 import { writeFile } from 'fs/promises';
@@ -10,7 +11,7 @@ import type { Message } from '../types';
  */
 function messagesToTranscript(messages: Message[]): string {
   return messages
-    .map((msg) => {
+    .map(msg => {
       const role = msg.role === 'user' ? 'User' : msg.role === 'assistant' ? 'Assistant' : 'System';
       const timestamp = new Date().toISOString();
       return `[${timestamp}] ${role}:\n${msg.content}\n`;
@@ -45,7 +46,10 @@ async function exportTranscript(messages: Message[]): Promise<CommandResult> {
 export const historyCommand: Command = {
   name: 'history',
   description: 'Manage chat history display and export',
-  execute: async (args: string[], context?: import('./types').CommandContext): Promise<CommandResult> => {
+  execute: async (
+    args: string[],
+    context?: import('./types').CommandContext
+  ): Promise<CommandResult> => {
     debug('Executing /history command with args:', args);
 
     // No arguments - show help

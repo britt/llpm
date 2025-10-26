@@ -13,7 +13,7 @@ export const userMessage: Message = {
 
 export const assistantMessage: Message = {
   role: 'assistant',
-  content: 'Of course! I\'d be happy to help you. What do you need assistance with?'
+  content: "Of course! I'd be happy to help you. What do you need assistance with?"
 };
 
 export const systemMessage: Message = {
@@ -37,15 +37,17 @@ export const conversationHistory: Message[] = [
   },
   {
     role: 'assistant',
-    content: 'I\'d be happy to help you debug your TypeScript code. Could you please share the code and describe the issue you\'re experiencing?'
+    content:
+      "I'd be happy to help you debug your TypeScript code. Could you please share the code and describe the issue you're experiencing?"
   },
   {
     role: 'user',
-    content: 'I\'m getting a type error on line 42.'
+    content: "I'm getting a type error on line 42."
   },
   {
     role: 'assistant',
-    content: 'Let me take a look at the type error. Please share the specific error message and the code around line 42.'
+    content:
+      'Let me take a look at the type error. Please share the specific error message and the code around line 42.'
   }
 ];
 

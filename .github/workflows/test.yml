@@ -2,41 +2,41 @@ name: Tests
 
 on:
   pull_request:
-    branches: [ main ]
+    branches: [main]
   push:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   test:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      
-    - name: Setup Bun
-      uses: oven-sh/setup-bun@v1
-      with:
-        bun-version: latest
-        
-    - name: Install dependencies
-      run: bun install
-      
-    - name: Run tests
-      env:
-        # Provide test environment variables to prevent validation errors
-        OPENAI_API_KEY: test-key-for-actions
-        ANTHROPIC_API_KEY: test-key-for-actions
-        GROQ_API_KEY: test-key-for-actions
-        GOOGLE_VERTEX_PROJECT_ID: test-project-for-actions
-        CI: true
-        NODE_ENV: test
-        FORCE_COLOR: 0
-      run: bun run test --run
-    
-    - name: Run security audit
-      run: bun audit
-      continue-on-error: true
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Run tests
+        env:
+          # Provide test environment variables to prevent validation errors
+          OPENAI_API_KEY: test-key-for-actions
+          ANTHROPIC_API_KEY: test-key-for-actions
+          GROQ_API_KEY: test-key-for-actions
+          GOOGLE_VERTEX_PROJECT_ID: test-project-for-actions
+          CI: true
+          NODE_ENV: test
+          FORCE_COLOR: 0
+        run: bun run test --run
+
+      - name: Run security audit
+        run: bun audit
+        continue-on-error: true
 
   coverage:
     runs-on: ubuntu-latest
@@ -51,115 +51,115 @@ jobs:
       pull-requests: write
 
     steps:
-    - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-    - name: Setup Bun
-      uses: oven-sh/setup-bun@v2
-      with:
-        bun-version: latest
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
 
-    - name: Install dependencies
-      run: bun install
+      - name: Install dependencies
+        run: bun install
 
-    - name: Generate coverage summary
-      continue-on-error: true
-      env:
-        # Provide test environment variables to prevent validation errors
-        OPENAI_API_KEY: test-key-for-coverage
-        ANTHROPIC_API_KEY: test-key-for-coverage
-        GROQ_API_KEY: test-key-for-coverage
-        GOOGLE_VERTEX_PROJECT_ID: test-project-for-coverage
-        CI: true
-      run: |
-        # Generate a markdown coverage report from the console output
-        echo "## 📊 Test Coverage Report" > coverage-summary.md
-        echo "" >> coverage-summary.md
-
-        # Capture the coverage output and strip ANSI color codes (with error handling)
-        if bun run test:coverage 2>&1 | sed 's/\x1b\[[0-9;]*m//g' > coverage_output.log; then
-          echo "Tests completed successfully"
-        else
-          echo "Tests failed, generating partial report"
-          echo "**Status:** ❌ Tests failed in CI environment" >> coverage-summary.md
-          echo "" >> coverage-summary.md
-        fi
-
-        # Extract test results (with fallback for failed runs)
-        TEST_COUNT=$(grep -o '[0-9]\+ passed' coverage_output.log 2>/dev/null | head -1 | grep -o '[0-9]\+' || echo "unknown")
-        TEST_FILES=$(grep -o '[0-9]\+ passed ([0-9]\+)' coverage_output.log 2>/dev/null | head -1 || echo "unknown files")
-
-        echo "**Tests:** $TEST_COUNT passed" >> coverage-summary.md
-        if [ "$TEST_FILES" != "unknown files" ] && [ ! -z "$TEST_FILES" ]; then
-          echo "**Test Files:** $TEST_FILES" >> coverage-summary.md
-        fi
-        echo "" >> coverage-summary.md
-
-        # Extract and format overall coverage as table (with error handling)
-        OVERALL_COVERAGE=$(grep "All files" coverage_output.log 2>/dev/null | head -1 || echo "")
-        if [ ! -z "$OVERALL_COVERAGE" ]; then
-          echo "### 🎯 Overall Coverage" >> coverage-summary.md
-          echo "" >> coverage-summary.md
-          echo "| Metric | Percentage |" >> coverage-summary.md
-          echo "|--------|------------|" >> coverage-summary.md
-
-          # Parse the coverage line and extract percentages - handle both formats
-          STMT_COV=$(echo "$OVERALL_COVERAGE" | awk -F'|' '{print $2}' | tr -d ' ' | sed 's/%//')
-          BRANCH_COV=$(echo "$OVERALL_COVERAGE" | awk -F'|' '{print $3}' | tr -d ' ' | sed 's/%//')
-          FUNC_COV=$(echo "$OVERALL_COVERAGE" | awk -F'|' '{print $4}' | tr -d ' ' | sed 's/%//')
-          LINE_COV=$(echo "$OVERALL_COVERAGE" | awk -F'|' '{print $5}' | tr -d ' ' | sed 's/%//')
-
-          # Format with percentage signs
-          echo "| **Statements** | ${STMT_COV}% |" >> coverage-summary.md
-          echo "| **Branches** | ${BRANCH_COV}% |" >> coverage-summary.md
-          echo "| **Functions** | ${FUNC_COV}% |" >> coverage-summary.md
-          echo "| **Lines** | ${LINE_COV}% |" >> coverage-summary.md
+      - name: Generate coverage summary
+        continue-on-error: true
+        env:
+          # Provide test environment variables to prevent validation errors
+          OPENAI_API_KEY: test-key-for-coverage
+          ANTHROPIC_API_KEY: test-key-for-coverage
+          GROQ_API_KEY: test-key-for-coverage
+          GOOGLE_VERTEX_PROJECT_ID: test-project-for-coverage
+          CI: true
+        run: |
+          # Generate a markdown coverage report from the console output
+          echo "## 📊 Test Coverage Report" > coverage-summary.md
           echo "" >> coverage-summary.md
 
-          # Add coverage badges based on thresholds
-          if [ "${STMT_COV%.*}" -ge 80 ]; then
-            echo "**Overall Status:** 🟢 Good coverage" >> coverage-summary.md
-          elif [ "${STMT_COV%.*}" -ge 60 ]; then
-            echo "**Overall Status:** 🟡 Moderate coverage" >> coverage-summary.md
+          # Capture the coverage output and strip ANSI color codes (with error handling)
+          if bun run test:coverage 2>&1 | sed 's/\x1b\[[0-9;]*m//g' > coverage_output.log; then
+            echo "Tests completed successfully"
           else
-            echo "**Overall Status:** 🔴 Low coverage" >> coverage-summary.md
+            echo "Tests failed, generating partial report"
+            echo "**Status:** ❌ Tests failed in CI environment" >> coverage-summary.md
+            echo "" >> coverage-summary.md
+          fi
+
+          # Extract test results (with fallback for failed runs)
+          TEST_COUNT=$(grep -o '[0-9]\+ passed' coverage_output.log 2>/dev/null | head -1 | grep -o '[0-9]\+' || echo "unknown")
+          TEST_FILES=$(grep -o '[0-9]\+ passed ([0-9]\+)' coverage_output.log 2>/dev/null | head -1 || echo "unknown files")
+
+          echo "**Tests:** $TEST_COUNT passed" >> coverage-summary.md
+          if [ "$TEST_FILES" != "unknown files" ] && [ ! -z "$TEST_FILES" ]; then
+            echo "**Test Files:** $TEST_FILES" >> coverage-summary.md
           fi
           echo "" >> coverage-summary.md
-        else
-          echo "### ⚠️ Coverage Information Unavailable" >> coverage-summary.md
-          echo "" >> coverage-summary.md
-          echo "Coverage data could not be generated. Please check the test execution logs." >> coverage-summary.md
-          echo "" >> coverage-summary.md
-        fi
 
-        # Only try to extract detailed coverage if we have coverage data
-        if [ ! -z "$OVERALL_COVERAGE" ]; then
-          # Extract coverage table - format as proper markdown table
-          echo "### 📋 Detailed Coverage" >> coverage-summary.md
-          echo "" >> coverage-summary.md
+          # Extract and format overall coverage as table (with error handling)
+          OVERALL_COVERAGE=$(grep "All files" coverage_output.log 2>/dev/null | head -1 || echo "")
+          if [ ! -z "$OVERALL_COVERAGE" ]; then
+            echo "### 🎯 Overall Coverage" >> coverage-summary.md
+            echo "" >> coverage-summary.md
+            echo "| Metric | Percentage |" >> coverage-summary.md
+            echo "|--------|------------|" >> coverage-summary.md
 
-          # Create markdown table from coverage output
-          echo "| File | Statements | Branches | Functions | Lines | Uncovered Lines |" >> coverage-summary.md
-          echo "|------|------------|----------|-----------|-------|-----------------|" >> coverage-summary.md
+            # Parse the coverage line and extract percentages - handle both formats
+            STMT_COV=$(echo "$OVERALL_COVERAGE" | awk -F'|' '{print $2}' | tr -d ' ' | sed 's/%//')
+            BRANCH_COV=$(echo "$OVERALL_COVERAGE" | awk -F'|' '{print $3}' | tr -d ' ' | sed 's/%//')
+            FUNC_COV=$(echo "$OVERALL_COVERAGE" | awk -F'|' '{print $4}' | tr -d ' ' | sed 's/%//')
+            LINE_COV=$(echo "$OVERALL_COVERAGE" | awk -F'|' '{print $5}' | tr -d ' ' | sed 's/%//')
 
-          # Extract coverage data and convert to table format
-          awk '/% Coverage report from v8/,/^$/' coverage_output.log 2>/dev/null | \
-          grep -E '.*\|.*\|.*\|.*\|.*\|' | \
-          grep -v '^[[:space:]]*File[[:space:]]*|' | \
-          grep -v '^[[:space:]]*-*[[:space:]]*|' | \
-          sed 's/^[ ]*//' | \
-          sed 's/[ ]*|[ ]*/|/g' | \
-          sed 's/^/| /' | \
-          sed 's/$/ |/' >> coverage-summary.md 2>/dev/null || echo "| No detailed coverage data available | - | - | - | - | - |" >> coverage-summary.md
-          echo "" >> coverage-summary.md
-        fi
+            # Format with percentage signs
+            echo "| **Statements** | ${STMT_COV}% |" >> coverage-summary.md
+            echo "| **Branches** | ${BRANCH_COV}% |" >> coverage-summary.md
+            echo "| **Functions** | ${FUNC_COV}% |" >> coverage-summary.md
+            echo "| **Lines** | ${LINE_COV}% |" >> coverage-summary.md
+            echo "" >> coverage-summary.md
 
-        echo "---" >> coverage-summary.md
-        echo "*Generated on: $(date)*" >> coverage-summary.md
+            # Add coverage badges based on thresholds
+            if [ "${STMT_COV%.*}" -ge 80 ]; then
+              echo "**Overall Status:** 🟢 Good coverage" >> coverage-summary.md
+            elif [ "${STMT_COV%.*}" -ge 60 ]; then
+              echo "**Overall Status:** 🟡 Moderate coverage" >> coverage-summary.md
+            else
+              echo "**Overall Status:** 🔴 Low coverage" >> coverage-summary.md
+            fi
+            echo "" >> coverage-summary.md
+          else
+            echo "### ⚠️ Coverage Information Unavailable" >> coverage-summary.md
+            echo "" >> coverage-summary.md
+            echo "Coverage data could not be generated. Please check the test execution logs." >> coverage-summary.md
+            echo "" >> coverage-summary.md
+          fi
 
-    - name: Comment PR with coverage
-      if: success() && github.event_name == 'pull_request'
-      uses: thollander/actions-comment-pull-request@v2
-      with:
-        filePath: coverage-summary.md
-        comment_tag: coverage-report
-        mode: recreate
+          # Only try to extract detailed coverage if we have coverage data
+          if [ ! -z "$OVERALL_COVERAGE" ]; then
+            # Extract coverage table - format as proper markdown table
+            echo "### 📋 Detailed Coverage" >> coverage-summary.md
+            echo "" >> coverage-summary.md
+
+            # Create markdown table from coverage output
+            echo "| File | Statements | Branches | Functions | Lines | Uncovered Lines |" >> coverage-summary.md
+            echo "|------|------------|----------|-----------|-------|-----------------|" >> coverage-summary.md
+
+            # Extract coverage data and convert to table format
+            awk '/% Coverage report from v8/,/^$/' coverage_output.log 2>/dev/null | \
+            grep -E '.*\|.*\|.*\|.*\|.*\|' | \
+            grep -v '^[[:space:]]*File[[:space:]]*|' | \
+            grep -v '^[[:space:]]*-*[[:space:]]*|' | \
+            sed 's/^[ ]*//' | \
+            sed 's/[ ]*|[ ]*/|/g' | \
+            sed 's/^/| /' | \
+            sed 's/$/ |/' >> coverage-summary.md 2>/dev/null || echo "| No detailed coverage data available | - | - | - | - | - |" >> coverage-summary.md
+            echo "" >> coverage-summary.md
+          fi
+
+          echo "---" >> coverage-summary.md
+          echo "*Generated on: $(date)*" >> coverage-summary.md
+
+      - name: Comment PR with coverage
+        if: success() && github.event_name == 'pull_request'
+        uses: thollander/actions-comment-pull-request@v2
+        with:
+          filePath: coverage-summary.md
+          comment_tag: coverage-report
+          mode: recreate

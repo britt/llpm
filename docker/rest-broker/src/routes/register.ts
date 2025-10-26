@@ -11,7 +11,7 @@ router.post('/register', async (req: Request, res: Response) => {
     return res.status(400).json({
       status: 400,
       code: 'MISSING_REQUIRED_FIELDS',
-      message: 'agentId, name, and type are required',
+      message: 'agentId, name, and type are required'
     });
   }
 
@@ -20,7 +20,7 @@ router.post('/register', async (req: Request, res: Response) => {
     return res.status(400).json({
       status: 400,
       code: 'INVALID_AUTH_TYPE',
-      message: 'authType must be either "subscription" or "api_key"',
+      message: 'authType must be either "subscription" or "api_key"'
     });
   }
 
@@ -30,14 +30,14 @@ router.post('/register', async (req: Request, res: Response) => {
       return res.status(400).json({
         status: 400,
         code: 'MISSING_PROVIDER',
-        message: 'provider is required for subscription auth type',
+        message: 'provider is required for subscription auth type'
       });
     }
     if (!model) {
       return res.status(400).json({
         status: 400,
         code: 'MISSING_MODEL',
-        message: 'model is required for subscription auth type',
+        message: 'model is required for subscription auth type'
       });
     }
   }
@@ -55,7 +55,7 @@ router.post('/register', async (req: Request, res: Response) => {
       metadata: metadata || {},
       authType,
       provider,
-      model,
+      model
     });
 
     if (registered) {
@@ -63,7 +63,7 @@ router.post('/register', async (req: Request, res: Response) => {
       const responseData: any = {
         status: 201,
         message: 'Agent registered successfully',
-        agentId,
+        agentId
       };
 
       // Include LiteLLM passthrough URL for subscription agents
@@ -81,14 +81,14 @@ router.post('/register', async (req: Request, res: Response) => {
         status: 409,
         code: 'AGENT_ALREADY_REGISTERED',
         message: 'Agent is already registered',
-        agentId,
+        agentId
       });
     }
   } catch (error: any) {
     return res.status(500).json({
       status: 500,
       code: 'REGISTRATION_FAILED',
-      message: error.message || 'Failed to register agent',
+      message: error.message || 'Failed to register agent'
     });
   }
 });
@@ -96,31 +96,31 @@ router.post('/register', async (req: Request, res: Response) => {
 // Agent deregistration endpoint
 router.delete('/register/:agentId', async (req: Request, res: Response) => {
   const { agentId } = req.params;
-  
+
   try {
     const agentManager = req.app.locals.agentManager as AgentManager;
-    
+
     const deregistered = await agentManager.deregisterAgent(agentId);
-    
+
     if (deregistered) {
       res.json({
         status: 200,
         message: 'Agent deregistered successfully',
-        agentId,
+        agentId
       });
     } else {
       res.status(404).json({
         status: 404,
         code: 'AGENT_NOT_FOUND',
         message: 'Agent not found',
-        agentId,
+        agentId
       });
     }
   } catch (error: any) {
     res.status(500).json({
       status: 500,
       code: 'DEREGISTRATION_FAILED',
-      message: error.message || 'Failed to deregister agent',
+      message: error.message || 'Failed to deregister agent'
     });
   }
 });
@@ -129,31 +129,31 @@ router.delete('/register/:agentId', async (req: Request, res: Response) => {
 router.post('/heartbeat/:agentId', async (req: Request, res: Response) => {
   const { agentId } = req.params;
   const { status, metadata } = req.body;
-  
+
   try {
     const agentManager = req.app.locals.agentManager as AgentManager;
-    
+
     const updated = await agentManager.updateAgentHeartbeat(agentId, status, metadata);
-    
+
     if (updated) {
       res.json({
         status: 200,
         message: 'Heartbeat received',
-        agentId,
+        agentId
       });
     } else {
       res.status(404).json({
         status: 404,
         code: 'AGENT_NOT_FOUND',
         message: 'Agent not found - please register first',
-        agentId,
+        agentId
       });
     }
   } catch (error: any) {
     res.status(500).json({
       status: 500,
       code: 'HEARTBEAT_FAILED',
-      message: error.message || 'Failed to process heartbeat',
+      message: error.message || 'Failed to process heartbeat'
     });
   }
 });

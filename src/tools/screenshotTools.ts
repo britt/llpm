@@ -1,5 +1,5 @@
 import { tool } from './instrumentedTool';
-import * as z from "zod";
+import * as z from 'zod';
 import { exec } from 'node:child_process';
 import { promisify } from 'node:util';
 import { promises as fs } from 'node:fs';
@@ -13,14 +13,21 @@ const execAsync = promisify(exec);
  * Take a screenshot of a web page using shot-scraper
  */
 export const takeScreenshotTool = tool({
-  description: 'Take a screenshot of a web page using the shot-scraper CLI tool. Returns the path to the saved screenshot file.',
+  description:
+    'Take a screenshot of a web page using the shot-scraper CLI tool. Returns the path to the saved screenshot file.',
   inputSchema: z.object({
     url: z.string().describe('The URL of the web page to screenshot'),
     width: z.number().optional().describe('Browser width in pixels (default: 1280)'),
     height: z.number().optional().describe('Browser height in pixels (default: 720)'),
-    selector: z.string().optional().describe('CSS selector to screenshot specific element instead of full page'),
+    selector: z
+      .string()
+      .optional()
+      .describe('CSS selector to screenshot specific element instead of full page'),
     wait: z.number().optional().describe('Milliseconds to wait before taking screenshot'),
-    filename: z.string().optional().describe('Custom filename for the screenshot (without extension)')
+    filename: z
+      .string()
+      .optional()
+      .describe('Custom filename for the screenshot (without extension)')
   }),
   execute: async ({ url, width, height, selector, wait, filename }) => {
     try {
@@ -56,7 +63,7 @@ export const takeScreenshotTool = tool({
 
       try {
         await execAsync('uvx shot-scraper --version');
-      } catch (_error) {
+      } catch {
         const instructions = [
           '📸 Shot-scraper Setup Required',
           '',
@@ -80,18 +87,12 @@ export const takeScreenshotTool = tool({
 
       // Generate filename if not provided
       const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-      const screenshotFilename = filename 
-        ? `${filename}.png` 
-        : `screenshot-${timestamp}.png`;
-      
+      const screenshotFilename = filename ? `${filename}.png` : `screenshot-${timestamp}.png`;
+
       const outputPath = join(tmpdir(), screenshotFilename);
 
       // Build uvx shot-scraper command
-      const args = [
-        'uvx', 'shot-scraper',
-        `"${url}"`,
-        '--output', `"${outputPath}"`
-      ];
+      const args = ['uvx', 'shot-scraper', `"${url}"`, '--output', `"${outputPath}"`];
 
       if (width && height) {
         args.push('--width', width.toString(), '--height', height.toString());
@@ -130,7 +131,7 @@ export const takeScreenshotTool = tool({
       try {
         await fs.access(outputPath);
         const stats = await fs.stat(outputPath);
-        
+
         if (stats.size === 0) {
           return {
             success: false,
@@ -138,9 +139,9 @@ export const takeScreenshotTool = tool({
             userMessage: `Screenshot of ${url} failed - file was created but is empty. The page might have failed to load or render properly.`
           };
         }
-        
+
         debug('Screenshot saved:', outputPath, 'Size:', stats.size, 'bytes');
-        
+
         return {
           success: true,
           path: outputPath,
@@ -158,7 +159,6 @@ export const takeScreenshotTool = tool({
           userMessage: `Screenshot of ${url} failed - file was not created. This might be due to network issues, invalid URL, or rendering problems.`
         };
       }
-
     } catch (error) {
       debug('Screenshot error:', error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
@@ -184,7 +184,7 @@ export const checkScreenshotSetupTool = tool({
       // Check if uv is installed
       try {
         await execAsync('uv --version');
-      } catch (_uvError) {
+      } catch {
         const instructions = [
           '📸 Screenshot Setup Required',
           '',
@@ -212,17 +212,16 @@ export const checkScreenshotSetupTool = tool({
 
       // Check if shot-scraper is available via uvx
       const { stdout } = await execAsync('uvx shot-scraper --version');
-      
+
       return {
         success: true,
         version: stdout.trim(),
         message: 'shot-scraper is available via uvx and ready to use',
         installCommand: 'uv pip install shot-scraper'
       };
-
     } catch (error) {
       debug('shot-scraper check failed:', error);
-      
+
       const instructions = [
         '📸 Shot-scraper Not Available',
         '',
@@ -236,7 +235,7 @@ export const checkScreenshotSetupTool = tool({
         '',
         'After installation, screenshots will work!'
       ].join('\n');
-      
+
       return {
         success: false,
         userMessage: instructions,

@@ -4,7 +4,7 @@ import type { ChildProcess } from 'child_process';
 
 // Mock child_process exec
 jest.mock('child_process', () => ({
-  exec: jest.fn(),
+  exec: jest.fn()
 }));
 
 describe('AuthVerifier', () => {
@@ -31,7 +31,7 @@ describe('AuthVerifier', () => {
           const result = JSON.stringify({
             authenticated: true,
             expiresAt: Date.now() + 86400000, // Expires in 24 hours
-            subscriptionType: 'max',
+            subscriptionType: 'max'
           });
           callback(null, { stdout: result + '\n', stderr: '' });
           return {} as ChildProcess;
@@ -74,7 +74,7 @@ describe('AuthVerifier', () => {
           const result = JSON.stringify({
             authenticated: true,
             expiresAt: Date.now() - 1000, // Expired 1 second ago
-            subscriptionType: 'pro',
+            subscriptionType: 'pro'
           });
           callback(null, { stdout: result + '\n', stderr: '' });
           return {} as ChildProcess;
@@ -108,7 +108,7 @@ describe('AuthVerifier', () => {
         .mockImplementationOnce((_command, callback: any) => {
           callback(new Error('Docker exec failed') as any, {
             stdout: '',
-            stderr: 'error',
+            stderr: 'error'
           });
           return {} as ChildProcess;
         });
@@ -176,9 +176,9 @@ describe('AuthVerifier', () => {
         return {} as ChildProcess;
       });
 
-      await expect(
-        authVerifier.verifyAgentAuth('some-agent', 'invalid' as any)
-      ).rejects.toThrow('Unknown provider: invalid');
+      await expect(authVerifier.verifyAgentAuth('some-agent', 'invalid' as any)).rejects.toThrow(
+        'Unknown provider: invalid'
+      );
     });
   });
 });

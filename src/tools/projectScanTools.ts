@@ -1,5 +1,6 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { tool } from './instrumentedTool';
-import * as z from "zod";
+import * as z from 'zod';
 import { projectScanCommand } from '../commands/project-scan';
 import { getCurrentProject } from '../utils/projectConfig';
 import { debug } from '../utils/logger';
@@ -40,17 +41,21 @@ export const scanProjectTool = tool({
 The scan automatically ignores build artifacts, dependencies, and common ignored files.
 Results are cached in memory and can be referenced in future conversations.`,
   inputSchema: z.object({
-    force_rescan: z.boolean().default(false).describe('Force a new scan even if cached results exist for this project')
+    force_rescan: z
+      .boolean()
+      .default(false)
+      .describe('Force a new scan even if cached results exist for this project')
   }),
   execute: async ({ force_rescan = false }) => {
     debug('Executing project scan tool, force_rescan:', force_rescan);
 
     try {
       const currentProject = await getCurrentProject();
-      
+
       if (!currentProject) {
         return {
-          error: 'No active project set. Use the project switching tools to set an active project first.',
+          error:
+            'No active project set. Use the project switching tools to set an active project first.',
           success: false
         };
       }
@@ -81,7 +86,7 @@ Results are cached in memory and can be referenced in future conversations.`,
 
       // Execute the project scan command
       const scanResult = await projectScanCommand.execute([]);
-      
+
       if (!scanResult.success) {
         return {
           error: `Failed to scan project: ${scanResult.content}`,
@@ -93,14 +98,15 @@ Results are cached in memory and can be referenced in future conversations.`,
       // Since we need the actual data structure, we'll need to modify the command or extract it differently
       // For now, we'll extract what we can from the formatted result and create a simplified structure
       const analysisText = scanResult.content;
-      
+
       // Extract key metrics from the formatted output
       const totalFilesMatch = analysisText.match(/\*\*Total Files\*\*: ([\d,]+)/);
       const _totalSizeMatch = analysisText.match(/\*\*Total Size\*\*: ([\d.]+ [KMGT]?B)/);
       const totalLinesMatch = analysisText.match(/\*\*Lines of Code\*\*: ([\d,]+)/);
-      
+
       // Extract languages section
-      const languagesSection = analysisText.match(/## 💻 Languages\n([\s\S]*?)(?=\n##|$)/)?.[1] || '';
+      const languagesSection =
+        analysisText.match(/## 💻 Languages\n([\s\S]*?)(?=\n##|$)/)?.[1] || '';
       const languages: Record<string, number> = {};
       languagesSection.split('\n').forEach(line => {
         const match = line.match(/^\s*(.+?):\s*(\d+)\s*files?/);
@@ -110,7 +116,8 @@ Results are cached in memory and can be referenced in future conversations.`,
       });
 
       // Extract file types section
-      const fileTypesSection = analysisText.match(/## 📁 File Types\n([\s\S]*?)(?=\n##|$)/)?.[1] || '';
+      const fileTypesSection =
+        analysisText.match(/## 📁 File Types\n([\s\S]*?)(?=\n##|$)/)?.[1] || '';
       const fileTypes: Record<string, number> = {};
       fileTypesSection.split('\n').forEach(line => {
         const match = line.match(/^\s*(.+?):\s*(\d+)/);
@@ -120,14 +127,23 @@ Results are cached in memory and can be referenced in future conversations.`,
       });
 
       // Extract structure
-      const structureSection = analysisText.match(/## 🏗️ Directory Structure\n([\s\S]*?)(?=\n---|$)/)?.[1] || '';
-      const structure = structureSection.split('\n')
+      const structureSection =
+        analysisText.match(/## 🏗️ Directory Structure\n([\s\S]*?)(?=\n---|$)/)?.[1] || '';
+      const structure = structureSection
+        .split('\n')
         .filter(line => line.trim().startsWith('📁'))
         .map(line => line.trim());
 
       // Extract largest files
-      const largestFilesSection = analysisText.match(/## 📈 Largest Files\n([\s\S]*?)(?=\n##|$)/)?.[1] || '';
-      const largestFiles: Array<{ path: string; type: string; size: number; lines?: number; language?: string }> = [];
+      const largestFilesSection =
+        analysisText.match(/## 📈 Largest Files\n([\s\S]*?)(?=\n##|$)/)?.[1] || '';
+      const largestFiles: Array<{
+        path: string;
+        type: string;
+        size: number;
+        lines?: number;
+        language?: string;
+      }> = [];
       largestFilesSection.split('\n').forEach(line => {
         const match = line.match(/^\s*📄\s*(.+?)\s*\((.+?)\)(?:\s*-\s*(\d+)\s*lines)?/);
         if (match && match[1]) {
@@ -135,7 +151,7 @@ Results are cached in memory and can be referenced in future conversations.`,
           const sizeStr = match[2] || '';
           const lines = match[3] ? parseInt(match[3]) : undefined;
           const ext = path.split('.').pop();
-          
+
           largestFiles.push({
             path,
             type: ext ? `.${ext}` : 'no extension',
@@ -148,9 +164,15 @@ Results are cached in memory and can be referenced in future conversations.`,
 
       // Create the analysis structure
       const analysis = {
-        totalFiles: totalFilesMatch && totalFilesMatch[1] ? parseInt(totalFilesMatch[1].replace(/,/g, '')) : 0,
+        totalFiles:
+          totalFilesMatch && totalFilesMatch[1]
+            ? parseInt(totalFilesMatch[1].replace(/,/g, ''))
+            : 0,
         totalSize: 0, // We'd need to parse the size string
-        totalLines: totalLinesMatch && totalLinesMatch[1] ? parseInt(totalLinesMatch[1].replace(/,/g, '')) : 0,
+        totalLines:
+          totalLinesMatch && totalLinesMatch[1]
+            ? parseInt(totalLinesMatch[1].replace(/,/g, ''))
+            : 0,
         filesByType: fileTypes,
         filesByLanguage: languages,
         largestFiles,
@@ -179,7 +201,6 @@ Results are cached in memory and can be referenced in future conversations.`,
         timestamp: projectScanMemory.timestamp,
         cached: false
       };
-
     } catch (error) {
       debug('Error in project scan tool:', error);
       return {
@@ -195,14 +216,17 @@ export const getProjectScanTool = tool({
 This tool returns the stored analysis without re-scanning the project.
 Useful for referencing project structure and metrics from previous scans.`,
   inputSchema: z.object({
-    project_id: z.string().optional().describe('Project ID to retrieve scan for. If not provided, uses current project')
+    project_id: z
+      .string()
+      .optional()
+      .describe('Project ID to retrieve scan for. If not provided, uses current project')
   }),
   execute: async ({ project_id }) => {
     debug('Retrieving project scan from memory, project_id:', project_id);
 
     try {
       let targetProjectId = project_id;
-      
+
       if (!targetProjectId) {
         const currentProject = await getCurrentProject();
         if (!currentProject) {
@@ -215,7 +239,7 @@ Useful for referencing project structure and metrics from previous scans.`,
       }
 
       const cachedScan = projectScans.get(targetProjectId);
-      
+
       if (!cachedScan) {
         return {
           error: 'No cached scan results found for this project. Use scan_project tool first.',
@@ -235,7 +259,6 @@ Useful for referencing project structure and metrics from previous scans.`,
         timestamp: cachedScan.timestamp,
         projectId: cachedScan.projectId
       };
-
     } catch (error) {
       debug('Error retrieving project scan:', error);
       return {
@@ -280,7 +303,6 @@ Shows which projects have been scanned and when, allowing you to see what analys
         message: `Found ${scans.length} cached project scan${scans.length === 1 ? '' : 's'}`,
         scans
       };
-
     } catch (error) {
       debug('Error listing project scans:', error);
       return {

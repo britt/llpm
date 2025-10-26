@@ -1,24 +1,35 @@
 import { tool } from './instrumentedTool';
-import * as z from "zod";
-import { 
-  getCurrentProject, 
-  setProjectBoard, 
-  removeProjectBoard, 
-  getProjectBoard 
+import * as z from 'zod';
+import {
+  getCurrentProject,
+  setProjectBoard,
+  removeProjectBoard,
+  getProjectBoard
 } from '../utils/projectConfig';
-import { 
-  autoLinkProjectBoard, 
-  getCurrentProjectBoard, 
-  validateProjectBoardIntegration 
+import {
+  autoLinkProjectBoard,
+  getCurrentProjectBoard,
+  validateProjectBoardIntegration
 } from '../services/projectBoardIntegration';
 import { debug } from '../utils/logger';
 
 export const setProjectBoardTool = tool({
-  description: 'Set or link a GitHub Project Board to the current LLPM project for automatic issue/PR assignment',
+  description:
+    'Set or link a GitHub Project Board to the current LLPM project for automatic issue/PR assignment',
   inputSchema: z.object({
     owner: z.string().describe('GitHub username or organization name'),
-    projectNumber: z.number().optional().describe('GitHub Project Board number (e.g., 8). If not provided, will auto-detect by name matching'),
-    projectBoardId: z.string().optional().describe('Direct GitHub Project Board ID (e.g., gid://Project/123). Use this if you already know the exact project ID')
+    projectNumber: z
+      .number()
+      .optional()
+      .describe(
+        'GitHub Project Board number (e.g., 8). If not provided, will auto-detect by name matching'
+      ),
+    projectBoardId: z
+      .string()
+      .optional()
+      .describe(
+        'Direct GitHub Project Board ID (e.g., gid://Project/123). Use this if you already know the exact project ID'
+      )
   }),
   execute: async ({ owner, projectNumber, projectBoardId }) => {
     try {
@@ -26,16 +37,26 @@ export const setProjectBoardTool = tool({
       if (!currentProject) {
         return {
           success: false,
-          error: 'No active project found. Use the project management tools to set an active project first.'
+          error:
+            'No active project found. Use the project management tools to set an active project first.'
         };
       }
 
-      debug('Setting project board:', { owner, projectNumber, projectBoardId, currentProjectId: currentProject.id });
+      debug('Setting project board:', {
+        owner,
+        projectNumber,
+        projectBoardId,
+        currentProjectId: currentProject.id
+      });
 
       let result;
       if (projectBoardId && projectNumber) {
         // Direct assignment with both ID and number
-        const updatedProject = await setProjectBoard(currentProject.id, projectBoardId, projectNumber);
+        const updatedProject = await setProjectBoard(
+          currentProject.id,
+          projectBoardId,
+          projectNumber
+        );
         result = {
           success: true,
           message: `✅ Successfully linked project "${currentProject.name}" to GitHub Project Board (ID: ${projectBoardId}, #${projectNumber})`,
@@ -50,14 +71,15 @@ export const setProjectBoardTool = tool({
         success: result.success,
         message: result.message,
         projectName: currentProject.name,
-        projectBoard: result.project ? {
-          id: result.project.id,
-          number: result.project.number,
-          title: result.project.title,
-          url: result.project.url
-        } : undefined
+        projectBoard: result.project
+          ? {
+              id: result.project.id,
+              number: result.project.number,
+              title: result.project.title,
+              url: result.project.url
+            }
+          : undefined
       };
-
     } catch (error) {
       debug('Error setting project board:', error);
       return {
@@ -69,9 +91,13 @@ export const setProjectBoardTool = tool({
 });
 
 export const getProjectBoardInfoTool = tool({
-  description: 'Get information about the current project\'s linked GitHub Project Board',
+  description: "Get information about the current project's linked GitHub Project Board",
   inputSchema: z.object({
-    validate: z.boolean().optional().default(false).describe('If true, validates that the project board integration is working correctly')
+    validate: z
+      .boolean()
+      .optional()
+      .default(false)
+      .describe('If true, validates that the project board integration is working correctly')
   }),
   execute: async ({ validate }) => {
     try {
@@ -84,7 +110,7 @@ export const getProjectBoardInfoTool = tool({
       }
 
       const result = await getCurrentProjectBoard();
-      
+
       if (!result.success) {
         return {
           success: false,
@@ -116,7 +142,6 @@ export const getProjectBoardInfoTool = tool({
       }
 
       return response;
-
     } catch (error) {
       debug('Error getting project board info:', error);
       return {
@@ -130,7 +155,10 @@ export const getProjectBoardInfoTool = tool({
 export const removeProjectBoardTool = tool({
   description: 'Remove the GitHub Project Board link from the current LLPM project',
   inputSchema: z.object({
-    confirm: z.boolean().default(false).describe('Set to true to confirm removal of project board link')
+    confirm: z
+      .boolean()
+      .default(false)
+      .describe('Set to true to confirm removal of project board link')
   }),
   execute: async ({ confirm }) => {
     try {
@@ -171,7 +199,6 @@ export const removeProjectBoardTool = tool({
           projectBoardNumber: projectBoard.projectBoardNumber
         }
       };
-
     } catch (error) {
       debug('Error removing project board:', error);
       return {
@@ -191,11 +218,11 @@ export const listAvailableProjectBoardsTool = tool({
     try {
       // Import here to avoid circular dependency
       const { listProjectsV2 } = await import('../services/githubProjects');
-      
+
       debug('Listing available project boards for owner:', owner);
-      
+
       const projects = await listProjectsV2(owner);
-      
+
       if (projects.length === 0) {
         return {
           success: true,
@@ -222,7 +249,6 @@ export const listAvailableProjectBoardsTool = tool({
         owner,
         projectBoards
       };
-
     } catch (error) {
       debug('Error listing project boards:', error);
       return {

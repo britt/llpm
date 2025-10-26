@@ -53,10 +53,12 @@ Perfect for developers who want to organize multiple projects, interact with Git
 ## Prerequisites
 
 ### Required
+
 - [Bun](https://bun.com) runtime
 - At least one AI provider API key (see configuration below)
 
 ### Optional (for local embeddings)
+
 - **Python 3.8+** - For local text embeddings using bge-base-en-v1.5
 - **Python packages**: `torch`, `transformers` (install via `./scripts/embeddings/setup.sh`)
 - Without Python, LLPM will use OpenAI embeddings API (requires `OPENAI_API_KEY`)
@@ -335,6 +337,7 @@ code ~/.llpm/system_prompt.txt
 ```
 
 **Key features:**
+
 - **Automatic creation**: Default prompt is copied to `~/.llpm/system_prompt.txt` on first install/run
 - **Idempotent**: Existing customizations are preserved during updates
 - **Real-time loading**: Changes take effect on next chat session start
@@ -376,10 +379,12 @@ AI: I'll load the mermaid-diagrams skill to help create a syntactically correct 
 ```
 
 **AI Tools for Skills:**
+
 - `load_skills` - Load one or more skills to augment context
 - `list_available_skills` - Discover available skills with optional tag filtering
 
 **Slash Commands:**
+
 ```bash
 /skills list              # List all discovered skills and their status
 /skills test <name>       # Preview a skill's content and settings
@@ -394,16 +399,20 @@ Create your own skills in `~/.llpm/skills/` or `.llpm/skills/` (project-specific
 
 ```markdown
 # ~/.llpm/skills/my-skill/SKILL.md
+
 ---
+
 name: my-skill
 description: "Brief description of what this skill does"
 instructions: "When [condition], [action]"
 tags:
-  - tag1
-  - tag2
-allowed_tools:
-  - tool1
-  - tool2
+
+- tag1
+- tag2
+  allowed_tools:
+- tool1
+- tool2
+
 ---
 
 # My Skill Instructions
@@ -412,6 +421,7 @@ Your markdown instructions here...
 ```
 
 **Frontmatter Fields:**
+
 - `name` (required): Unique skill identifier (lowercase, hyphens only)
 - `description` (required): What the skill does (max 1024 chars)
 - `instructions` (optional): Single-line guidance on when to use this skill
@@ -421,11 +431,13 @@ Your markdown instructions here...
 - `resources` (optional): Additional files to load
 
 **Skill Locations:**
+
 - `~/.llpm/skills/` - Personal skills (shared across all projects)
 - `~/.llpm/skills/user/` - User-specific personal skills
 - `.llpm/skills/` - Project-specific skills (not shared)
 
 **How Skills Work:**
+
 1. Skills are scanned on startup and when `/skills reload` is called
 2. All enabled skills with instructions are injected into the system prompt
 3. The AI sees when to load each skill based on the `instructions` field
@@ -436,25 +448,30 @@ Your markdown instructions here...
 
 ```markdown
 # ~/.llpm/skills/api-design/SKILL.md
+
 ---
+
 name: api-design
 description: "Guide for designing RESTful API endpoints following best practices"
 instructions: "When designing APIs, creating endpoints, or reviewing API specifications"
 tags:
-  - api
-  - rest
-  - design
-allowed_tools:
-  - github
-  - notes
+
+- api
+- rest
+- design
+  allowed_tools:
+- github
+- notes
+
 ---
 
 # API Design Skill
 
 ## RESTful Principles
+
 - Use nouns for resources (not verbs)
 - HTTP methods: GET (read), POST (create), PUT/PATCH (update), DELETE (remove)
-...
+  ...
 ```
 
 ## Architecture
@@ -480,6 +497,7 @@ allowed_tools:
 The AI assistant has access to these tools:
 
 **Project Management:**
+
 - `get_current_project` - Get active project information
 - `list_projects` - List all configured projects
 - `add_project` - Add new projects
@@ -487,11 +505,13 @@ The AI assistant has access to these tools:
 - `remove_project` - Remove projects
 
 **GitHub Integration:**
+
 - `list_github_repos` - Browse user's GitHub repositories
 - `search_github_repos` - Search GitHub repositories
 - `get_github_repo` - Get specific repository details
 
 **Skills Management:**
+
 - `load_skills` - Load one or more skills to augment context
 - `list_available_skills` - List all available skills with optional tag filtering
 

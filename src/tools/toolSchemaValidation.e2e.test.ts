@@ -22,7 +22,6 @@ describe('Tool Schema Validation E2E', () => {
     it('should validate all tool schemas against OpenAI API', async () => {
       // Skip if no OpenAI API key
       if (!process.env.OPENAI_API_KEY) {
-        console.warn('Skipping OpenAI validation: OPENAI_API_KEY not set');
         return;
       }
 
@@ -86,7 +85,6 @@ describe('Tool Schema Validation E2E', () => {
     it('should validate all tool schemas against Anthropic API', async () => {
       // Skip if no Anthropic API key
       if (!process.env.ANTHROPIC_API_KEY) {
-        console.warn('Skipping Anthropic validation: ANTHROPIC_API_KEY not set');
         return;
       }
 
@@ -187,17 +185,12 @@ describe('Tool Schema Validation E2E', () => {
               );
             }
           }
-        } catch (error) {
+        } catch {
           // Skip validation if we can't parse
         }
       }
 
-      // These are warnings, not errors
-      if (warnings.length > 0) {
-        console.warn(
-          `Schema format warnings for ${warnings.length} tool(s):\n  - ${warnings.join('\n  - ')}`
-        );
-      }
+      // These are warnings, not errors (silently ignored in tests)
     });
   });
 });

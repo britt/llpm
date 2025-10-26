@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import '../../test/setup';
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import {
@@ -205,7 +206,7 @@ describe('systemPrompt', () => {
     });
 
     it('should insert context before Core Context section', async () => {
-      const _basePrompt = `Some intro\n\n## Core Context\nBase content`;
+      const __basePrompt = `Some intro\n\n## Core Context\nBase content`;
       const mockProject: Project = {
         id: 'test',
         name: 'Test',
@@ -225,7 +226,7 @@ describe('systemPrompt', () => {
     });
 
     it('should handle prompt without Core Context section', async () => {
-      const _basePrompt = `## 🎯 Active Project Context\nInfo\n\n## Other Section\nContent`;
+      const __basePrompt = `## 🎯 Active Project Context\nInfo\n\n## Other Section\nContent`;
       const mockProject: Project = {
         id: 'test',
         name: 'Test',
@@ -243,7 +244,7 @@ describe('systemPrompt', () => {
     });
 
     it('should use fallback insertion when no known sections found', async () => {
-      const _basePrompt = `Line 1\n\nLine 3`;
+      const __basePrompt = `Line 1\n\nLine 3`;
       const mockProject: Project = {
         id: 'test',
         name: 'Test',
@@ -346,7 +347,7 @@ describe('systemPrompt', () => {
     });
 
     it('should handle errors in project path processing', async () => {
-      const _basePrompt = `## Core Context\nBase content`;
+      const __basePrompt = `## Core Context\nBase content`;
       const mockProject = {
         id: 'test',
         name: 'Test',
@@ -371,7 +372,7 @@ describe('systemPrompt', () => {
     });
 
     it('should handle errors in project board processing', async () => {
-      const _basePrompt = `## Core Context\nBase content`;
+      const __basePrompt = `## Core Context\nBase content`;
       const mockProject = {
         id: 'test',
         name: 'Test',
@@ -396,7 +397,7 @@ describe('systemPrompt', () => {
     });
 
     it('should handle errors in repository processing', async () => {
-      const _basePrompt = `## Core Context\nBase content`;
+      const __basePrompt = `## Core Context\nBase content`;
       const mockProject = {
         id: 'test',
         name: 'Test',
@@ -419,7 +420,7 @@ describe('systemPrompt', () => {
     });
 
     it('should handle errors in formatProjectContext', async () => {
-      const _basePrompt = `## Core Context\nBase content`;
+      const __basePrompt = `## Core Context\nBase content`;
       // Create a project that will cause formatProjectContext to throw
       const mockProject = {
         get name() {
@@ -437,7 +438,7 @@ describe('systemPrompt', () => {
     });
 
     it('should handle errors in insert operation', async () => {
-      const _basePrompt = `## Core Context\nBase content`;
+      const __basePrompt = `## Core Context\nBase content`;
       const mockProject: Project = {
         id: 'test',
         name: 'Test',
@@ -451,7 +452,7 @@ describe('systemPrompt', () => {
 
       // Mock String.prototype.split to throw during insert operation
       const originalSplit = String.prototype.split;
-      String.prototype.split = function() {
+      String.prototype.split = function () {
         if (this.includes('## Core Context')) {
           throw new Error('Split error');
         }
@@ -468,7 +469,7 @@ describe('systemPrompt', () => {
     });
 
     it('should handle unexpected errors in project context injection', async () => {
-      const _basePrompt = `## Core Context\nBase content`;
+      const __basePrompt = `## Core Context\nBase content`;
 
       vi.mocked(fs.existsSync).mockReturnValue(false);
       vi.mocked(projectConfig.getCurrentProject).mockImplementation(() => {
@@ -585,7 +586,8 @@ describe('systemPrompt', () => {
         {
           name: 'mermaid-diagrams',
           description: 'Create Mermaid diagrams',
-          instructions: 'When creating flowcharts, sequence diagrams, or any visual diagrams in markdown',
+          instructions:
+            'When creating flowcharts, sequence diagrams, or any visual diagrams in markdown',
           content: 'Skill content',
           source: 'project',
           path: '/path/to/skill',
@@ -594,7 +596,8 @@ describe('systemPrompt', () => {
         {
           name: 'stakeholder-updates',
           description: 'Craft stakeholder communications',
-          instructions: 'When writing status updates, communicating delays, or sharing launch announcements',
+          instructions:
+            'When writing status updates, communicating delays, or sharing launch announcements',
           content: 'Skill content',
           source: 'project',
           path: '/path/to/skill',
@@ -603,7 +606,8 @@ describe('systemPrompt', () => {
         {
           name: 'user-story-template',
           description: 'Write user stories',
-          instructions: 'When creating new features, writing GitHub issues, or documenting user requirements',
+          instructions:
+            'When creating new features, writing GitHub issues, or documenting user requirements',
           content: 'Skill content',
           source: 'project',
           path: '/path/to/skill',
@@ -621,7 +625,8 @@ describe('systemPrompt', () => {
         {
           name: 'writing-clearly-and-concisely',
           description: 'Write clear prose',
-          instructions: 'When asked to write a longer text or document, or when asked to review or edit text',
+          instructions:
+            'When asked to write a longer text or document, or when asked to review or edit text',
           content: 'Skill content',
           source: 'personal',
           path: '/path/to/skill',
@@ -640,11 +645,21 @@ describe('systemPrompt', () => {
       expect(prompt).toContain('</Skills>');
 
       // Verify all 5 skills are listed
-      expect(prompt).toContain('When creating flowcharts, sequence diagrams, or any visual diagrams in markdown load the `mermaid-diagrams` skill');
-      expect(prompt).toContain('When writing status updates, communicating delays, or sharing launch announcements load the `stakeholder-updates` skill');
-      expect(prompt).toContain('When creating new features, writing GitHub issues, or documenting user requirements load the `user-story-template` skill');
-      expect(prompt).toContain('When asked to brainstorm, or to help design anything load the `brainstorming` skill');
-      expect(prompt).toContain('When asked to write a longer text or document, or when asked to review or edit text load the `writing-clearly-and-concisely` skill');
+      expect(prompt).toContain(
+        'When creating flowcharts, sequence diagrams, or any visual diagrams in markdown load the `mermaid-diagrams` skill'
+      );
+      expect(prompt).toContain(
+        'When writing status updates, communicating delays, or sharing launch announcements load the `stakeholder-updates` skill'
+      );
+      expect(prompt).toContain(
+        'When creating new features, writing GitHub issues, or documenting user requirements load the `user-story-template` skill'
+      );
+      expect(prompt).toContain(
+        'When asked to brainstorm, or to help design anything load the `brainstorming` skill'
+      );
+      expect(prompt).toContain(
+        'When asked to write a longer text or document, or when asked to review or edit text load the `writing-clearly-and-concisely` skill'
+      );
     });
 
     it('should not inject skills without instructions', async () => {

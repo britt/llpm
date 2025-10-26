@@ -18,21 +18,19 @@ export default defineConfig({
     testTimeout: process.env.CI === 'true' ? 15000 : 30000, // 15s in CI, 30s locally
     hookTimeout: process.env.CI === 'true' ? 10000 : 30000, // 10s in CI, 30s locally
     // Exclude performance tests, node modules, and docker subdirectories with their own test setup
-    exclude: [
-      '**/node_modules/**',
-      '**/*.d.ts',
-      '**/*.performance.test.*',
-      'docker/**/*.test.*'
-    ],
+    exclude: ['**/node_modules/**', '**/*.d.ts', '**/*.performance.test.*', 'docker/**/*.test.*'],
     // Force tests to run in single thread in CI to avoid resource contention
     // threads: process.env.CI === 'true' ? false : true,
     // Add pool options for CI stability
     pool: process.env.CI === 'true' ? 'forks' : 'threads',
-    poolOptions: process.env.CI === 'true' ? {
-      forks: {
-        singleFork: true,
-      }
-    } : undefined,
+    poolOptions:
+      process.env.CI === 'true'
+        ? {
+            forks: {
+              singleFork: true
+            }
+          }
+        : undefined,
     coverage: {
       provider: 'v8',
       reporter: ['text', 'html', 'json', 'lcov'],
@@ -42,23 +40,23 @@ export default defineConfig({
         'vitest.config.ts',
         'test/setup.ts',
         '**/*.config.{js,ts}',
-        
+
         // Build and output directories
         'dist/**',
         'build/**',
         'coverage/**',
-        
+
         // Test files themselves
         '**/*.test.{js,ts,jsx,tsx}',
         '**/*.spec.{js,ts,jsx,tsx}',
-        
+
         // Node modules
         'node_modules/**',
-        
+
         // Specific files to exclude
         'scripts/**',
         'bin/**',
-        
+
         // Type definition files
         '**/*.d.ts'
       ],

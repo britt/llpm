@@ -118,6 +118,7 @@ You can also query metrics directly in Prometheus:
 
 - **URL**: http://localhost:9090
 - **Example Queries**:
+
   ```promql
   # Average duration of local embeddings
   rate(span_metrics_latency_sum{operation="localEmbeddings.generateEmbeddings"}[5m])
@@ -137,21 +138,25 @@ You can also query metrics directly in Prometheus:
 If traces don't appear in the Jaeger UI:
 
 1. **Check service is running:**
+
    ```bash
    docker-compose ps jaeger
    ```
 
 2. **Check agent containers have OTEL env vars:**
+
    ```bash
    docker exec <container-name> env | grep OTEL
    ```
 
 3. **Check DNS resolution:**
+
    ```bash
    docker exec <container-name> ping -c 1 jaeger
    ```
 
 4. **Check Jaeger logs:**
+
    ```bash
    docker-compose logs jaeger
    ```
@@ -174,12 +179,14 @@ docker network inspect llpm-network
 If the "Monitor" tab shows no data or metrics:
 
 1. **Check Prometheus is running:**
+
    ```bash
    docker-compose ps prometheus
    docker-compose logs prometheus
    ```
 
 2. **Verify Jaeger can reach Prometheus:**
+
    ```bash
    docker exec jaeger wget -qO- http://prometheus:9090/-/healthy
    ```
@@ -195,9 +202,11 @@ If the "Monitor" tab shows no data or metrics:
    - Should see metrics after generating some traces
 
 5. **Check Jaeger metrics configuration:**
+
    ```bash
    docker exec jaeger env | grep PROMETHEUS
    ```
+
    Should show:
    - `METRICS_STORAGE_TYPE=prometheus`
    - `PROMETHEUS_SERVER_URL=http://prometheus:9090`

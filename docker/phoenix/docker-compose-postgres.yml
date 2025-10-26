@@ -9,10 +9,10 @@ services:
     volumes:
       - postgres-data:/var/lib/postgresql/data
     ports:
-      - "5432:5432"
+      - '5432:5432'
     restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U phoenix"]
+      test: ['CMD-SHELL', 'pg_isready -U phoenix']
       interval: 10s
       timeout: 5s
       retries: 5
@@ -32,8 +32,8 @@ services:
       postgres:
         condition: service_healthy
     ports:
-      - "6006:6006"  # Phoenix web UI
-      - "4319:4317"  # gRPC endpoint for OTEL traces (host:container)
+      - '6006:6006' # Phoenix web UI
+      - '4319:4317' # gRPC endpoint for OTEL traces (host:container)
       # - "9090:9090"  # Prometheus metrics (optional, commented out - port in use)
     environment:
       # Server configuration
@@ -70,7 +70,7 @@ services:
       - phoenix-working:/phoenix-data
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:6006"]
+      test: ['CMD', 'wget', '--quiet', '--tries=1', '--spider', 'http://localhost:6006']
       interval: 30s
       timeout: 10s
       retries: 3

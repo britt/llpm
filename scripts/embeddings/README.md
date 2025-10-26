@@ -29,6 +29,7 @@ This provides local embeddings as an alternative to OpenAI's embeddings API, ena
 ```
 
 This will:
+
 - Create a Python virtual environment at `scripts/embeddings/venv/`
 - Install `torch` (PyTorch) and `transformers` (Hugging Face) in the venv
 - Isolate dependencies from your system Python
@@ -36,6 +37,7 @@ This will:
 The model (~420MB) will be downloaded automatically on first use.
 
 **Why a virtual environment?**
+
 - Keeps dependencies isolated from system Python
 - Prevents conflicts with other Python projects
 - Easy to remove (just delete the `venv/` directory)
@@ -47,6 +49,7 @@ echo '{"input": ["test"]}' | scripts/embeddings/venv/bin/python scripts/embeddin
 ```
 
 Or if you prefer to activate the venv:
+
 ```bash
 source scripts/embeddings/venv/bin/activate
 echo '{"input": ["test"]}' | python scripts/embeddings/generate.py
@@ -54,6 +57,7 @@ deactivate
 ```
 
 Expected output:
+
 ```json
 {"embeddings": [[0.1, 0.2, ...]], "model": "BAAI/bge-base-en-v1.5", "dimension": 768}
 ```
@@ -69,7 +73,7 @@ import { embeddingsFactory } from './src/services/embeddings';
 
 // Auto-selects best available provider (local or OpenAI)
 const provider = await embeddingsFactory.getProvider();
-const result = await provider.generateEmbedding("Hello world");
+const result = await provider.generateEmbedding('Hello world');
 
 console.log(result.embedding); // Float32Array[768]
 console.log(result.model); // "BAAI/bge-base-en-v1.5"
@@ -93,6 +97,7 @@ echo '{"input": ["text1", "text2"], "batch_size": 16}' | python3 scripts/embeddi
 ### Environment Variables
 
 **Provider Selection:**
+
 ```bash
 # Auto-select best available (local → OpenAI)
 EMBEDDINGS_PROVIDER=auto  # default
@@ -108,6 +113,7 @@ EMBEDDINGS_FALLBACK_OPENAI=false
 ```
 
 **Device Selection:**
+
 ```bash
 # Auto-detect (default: cpu → mps → cuda)
 # No setting needed
@@ -123,6 +129,7 @@ EMBEDDINGS_DEVICE=mps
 ```
 
 **Custom Python:**
+
 ```bash
 # Use custom Python interpreter
 EMBEDDINGS_PYTHON=/path/to/python3
@@ -141,6 +148,7 @@ EMBEDDINGS_PYTHON=/path/to/python3
 The Python process exits after each invocation. Model weights are cached by Transformers library.
 
 **Python Detection Order:**
+
 1. `EMBEDDINGS_PYTHON` environment variable (if set)
 2. `scripts/embeddings/venv/bin/python` (if setup.sh was run)
 3. `python3` (system Python)
@@ -148,19 +156,23 @@ The Python process exits after each invocation. Model weights are cached by Tran
 ## Performance
 
 ### Model Loading
+
 - **First run**: 5-10 seconds (downloads model)
 - **Subsequent runs**: 2-5 seconds (loads from cache)
 
 ### Inference Speed
+
 - **CPU** (Apple M1): ~50-100 texts/second
 - **CUDA** (RTX 3090): ~200-400 texts/second
 - **MPS** (M1 Max): ~100-200 texts/second
 
 ### Latency
+
 - Single text: 2-5s (includes model loading)
 - Batch of 32: 3-6s (includes model loading)
 
 ### Memory
+
 - **Model weights**: ~420MB on disk
 - **Runtime memory**: ~1-2GB
 
@@ -218,14 +230,14 @@ Default timeout is 60 seconds. If model loading is slow:
 
 ## Comparison with OpenAI
 
-| Feature | Local (BGE) | OpenAI |
-|---------|-------------|--------|
-| Dimensions | 768 | 1536 |
-| Latency | 2-5s (first), 50-200ms (cached) | 100-500ms |
-| Cost | Free (compute only) | ~$0.0001 per 1K tokens |
-| Privacy | Fully local | Sent to OpenAI |
-| Setup | Requires Python + deps | Just API key |
-| Model Size | ~420MB | N/A (cloud) |
+| Feature    | Local (BGE)                     | OpenAI                 |
+| ---------- | ------------------------------- | ---------------------- |
+| Dimensions | 768                             | 1536                   |
+| Latency    | 2-5s (first), 50-200ms (cached) | 100-500ms              |
+| Cost       | Free (compute only)             | ~$0.0001 per 1K tokens |
+| Privacy    | Fully local                     | Sent to OpenAI         |
+| Setup      | Requires Python + deps          | Just API key           |
+| Model Size | ~420MB                          | N/A (cloud)            |
 
 ## License
 

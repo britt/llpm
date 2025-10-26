@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import type { Command, CommandResult } from './types';
 import { debug } from '../utils/logger';
 import { exec } from 'child_process';
@@ -21,7 +22,10 @@ async function brokerRequest(method: string, path: string, body?: any) {
     const data = await response.json();
 
     if (!response.ok) {
-      return { success: false, error: data.message || `Request failed with status ${response.status}` };
+      return {
+        success: false,
+        error: data.message || `Request failed with status ${response.status}`
+      };
     }
 
     return { success: true, data };
@@ -53,22 +57,29 @@ export const agentsCommand: Command = {
 
         if (agents.length === 0) {
           return {
-            content: '📋 No agents registered.\n\n💡 Start agents with `docker-compose up` to register them.',
+            content:
+              '📋 No agents registered.\n\n💡 Start agents with `docker-compose up` to register them.',
             success: true
           };
         }
 
-        const agentList = agents.map((agent: any) => {
-          const status = agent.status === 'available' ? '🟢' :
-                        agent.status === 'busy' ? '🟡' : '🔴';
-          const health = agent.health?.status === 'healthy' ? '✅' :
-                        agent.health?.status === 'unhealthy' ? '❌' : '❓';
-          const auth = agent.health?.authenticated ? '🔒' : '🔓';
+        const agentList = agents
+          .map((agent: any) => {
+            const status =
+              agent.status === 'available' ? '🟢' : agent.status === 'busy' ? '🟡' : '🔴';
+            const health =
+              agent.health?.status === 'healthy'
+                ? '✅'
+                : agent.health?.status === 'unhealthy'
+                  ? '❌'
+                  : '❓';
+            const auth = agent.health?.authenticated ? '🔒' : '🔓';
 
-          return `${status} **${agent.name}** (${agent.id})
+            return `${status} **${agent.name}** (${agent.id})
   Status: ${agent.status} | Health: ${health} ${agent.health?.status || 'unknown'}
   Auth: ${auth} ${agent.health?.authenticated ? 'authenticated' : 'not authenticated'}${agent.provider ? `\n  Provider: ${agent.provider}` : ''}${agent.model ? ` | Model: ${agent.model}` : ''}`;
-        }).join('\n\n');
+          })
+          .join('\n\n');
 
         return {
           content: `📋 **Registered Agents** (${agents.length} total):\n\n${agentList}`,
@@ -103,10 +114,18 @@ export const agentsCommand: Command = {
           };
         }
 
-        const status = agent.status === 'available' ? '🟢 Available' :
-                      agent.status === 'busy' ? '🟡 Busy' : '🔴 Offline';
-        const health = agent.health?.status === 'healthy' ? '✅ Healthy' :
-                      agent.health?.status === 'unhealthy' ? '❌ Unhealthy' : '❓ Unknown';
+        const status =
+          agent.status === 'available'
+            ? '🟢 Available'
+            : agent.status === 'busy'
+              ? '🟡 Busy'
+              : '🔴 Offline';
+        const health =
+          agent.health?.status === 'healthy'
+            ? '✅ Healthy'
+            : agent.health?.status === 'unhealthy'
+              ? '❌ Unhealthy'
+              : '❓ Unknown';
         const auth = agent.health?.authenticated ? '🔒 Authenticated' : '🔓 Not Authenticated';
 
         let details = `📋 **Agent Details: ${agent.name}**
@@ -155,8 +174,8 @@ export const agentsCommand: Command = {
         }
 
         const health = agent.health || {};
-        const status = health.status === 'healthy' ? '✅' :
-                      health.status === 'unhealthy' ? '❌' : '❓';
+        const status =
+          health.status === 'healthy' ? '✅' : health.status === 'unhealthy' ? '❌' : '❓';
 
         return {
           content: `${status} **Health Check: ${agent.name}**
@@ -203,18 +222,25 @@ export const agentsCommand: Command = {
         try {
           // Search for containers with names containing the agentId
           // This handles docker-compose prefixes like: docker-claude-code-1, myproject-claude-code-1, etc.
-          const { stdout } = await execAsync(`docker ps --filter "name=${agentId}" --format "{{.Names}}"`);
+          const { stdout } = await execAsync(
+            `docker ps --filter "name=${agentId}" --format "{{.Names}}"`
+          );
           const matchingContainers = stdout.trim().split('\n').filter(Boolean);
 
           if (matchingContainers.length > 0) {
             // Prefer exact matches or compose-style matches
             // Priority: exact match > *-agentId-1 > *-agentId > agentId
             const exactMatch = matchingContainers.find(name => name === agentId);
-            const composeSuffixMatch = matchingContainers.find(name => name.endsWith(`-${agentId}-1`));
+            const composeSuffixMatch = matchingContainers.find(name =>
+              name.endsWith(`-${agentId}-1`)
+            );
             const composeMatch = matchingContainers.find(name => name.endsWith(`-${agentId}`));
 
-            containerName = exactMatch || composeSuffixMatch || composeMatch || matchingContainers[0];
-            debug(`Found container for ${agentId}: ${containerName} (from ${matchingContainers.length} matches)`);
+            containerName =
+              exactMatch || composeSuffixMatch || composeMatch || matchingContainers[0];
+            debug(
+              `Found container for ${agentId}: ${containerName} (from ${matchingContainers.length} matches)`
+            );
           } else {
             debug(`No containers found matching ${agentId}, using agentId as fallback`);
           }

@@ -11,7 +11,7 @@ const agents = {
     output_filename: 'CLAUDE.md',
     agent_specific_rules: null
   },
-  'aider': {
+  aider: {
     agent_name: 'Aider',
     output_filename: 'CONVENTIONS.md',
     agent_specific_rules: null
@@ -21,7 +21,7 @@ const agents = {
     output_filename: 'AGENT.md',
     agent_specific_rules: null
   },
-  'opencode': {
+  opencode: {
     agent_name: 'OpenCode',
     output_filename: 'AGENT.md',
     agent_specific_rules: null
@@ -82,4 +82,8 @@ for (const [agentId, config] of Object.entries(agentsToProcess)) {
   console.log(`Generated ${containerOutputPath} (without warning for container)`);
 }
 
-console.log(requestedAgent ? `Generated rules for ${requestedAgent}` : 'All agent rules files generated successfully!');
+console.log(
+  requestedAgent
+    ? `Generated rules for ${requestedAgent}`
+    : 'All agent rules files generated successfully!'
+);

@@ -46,7 +46,8 @@ export class RequestLogger extends EventEmitter {
   constructor(requestId?: string) {
     super();
     this.requestId = requestId || randomUUID();
-    this.shouldLog = RequestLogger.config.enabled && Math.random() < RequestLogger.config.sampleRate;
+    this.shouldLog =
+      RequestLogger.config.enabled && Math.random() < RequestLogger.config.sampleRate;
   }
 
   static configure(config: Partial<LoggingConfig>): void {
@@ -70,11 +71,11 @@ export class RequestLogger extends EventEmitter {
 
   private redactPII(data: any): any {
     if (!RequestLogger.config.piiRedaction) return data;
-    
+
     if (typeof data === 'string') {
       // Redact email addresses
       data = data.replace(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g, '[EMAIL_REDACTED]');
-      
+
       // Redact common API key patterns
       // OpenAI/Anthropic style keys (sk-...)
       data = data.replace(/sk-[a-zA-Z0-9]{20,}/g, '[REDACTED]');
@@ -82,22 +83,24 @@ export class RequestLogger extends EventEmitter {
       data = data.replace(/ghp_[a-zA-Z0-9]{20,}/g, '[REDACTED]');
       // Generic long alphanumeric strings that could be keys
       data = data.replace(/[a-zA-Z0-9]{40,}/g, '[REDACTED]');
-      
+
       // Redact JWT/Bearer tokens
       data = data.replace(/Bearer\s+[a-zA-Z0-9._-]+/gi, 'Bearer [TOKEN_REDACTED]');
       data = data.replace(/eyJ[a-zA-Z0-9._-]+/g, '[TOKEN_REDACTED]');
-      
+
       return data;
     }
-    
+
     if (typeof data === 'object' && data !== null) {
       const redacted: any = Array.isArray(data) ? [] : {};
       for (const key in data) {
         const lowerKey = key.toLowerCase();
-        if (lowerKey.includes('token') || 
-            lowerKey.includes('key') || 
-            lowerKey.includes('secret') ||
-            lowerKey.includes('password')) {
+        if (
+          lowerKey.includes('token') ||
+          lowerKey.includes('key') ||
+          lowerKey.includes('secret') ||
+          lowerKey.includes('password')
+        ) {
           redacted[key] = '[REDACTED]';
         } else if (lowerKey.includes('auth')) {
           // Special handling for auth headers - preserve "Bearer " prefix
@@ -113,25 +116,25 @@ export class RequestLogger extends EventEmitter {
       }
       return redacted;
     }
-    
+
     return data;
   }
 
   private formatLogEntry(entry: RequestLogEntry): string {
     // Metadata has already been redacted in logStep
     const metadata = entry.metadata || {};
-    
+
     const parts = [
       `[${entry.timestamp}]`,
       `requestId=${entry.requestId}`,
       `STEP=${entry.step}`,
       entry.phase
     ];
-    
+
     if (entry.duration !== undefined) {
       parts.push(`duration=${entry.duration}ms`);
     }
-    
+
     // Add metadata as key=value pairs
     for (const [key, value] of Object.entries(metadata)) {
       if (value !== undefined && value !== null) {
@@ -142,7 +145,7 @@ export class RequestLogger extends EventEmitter {
         }
       }
     }
-    
+
     return parts.join(' ');
   }
 
@@ -160,8 +163,10 @@ export class RequestLogger extends EventEmitter {
 
     // Don't write to stderr anymore - the UI component handles display
     // Only write to stderr if explicitly requested via environment variable
-    if (process.env.LLPM_TRACE_STDERR === '1' &&
-        (RequestLogger.config.output === 'terminal' || RequestLogger.config.output === 'both')) {
+    if (
+      process.env.LLPM_TRACE_STDERR === '1' &&
+      (RequestLogger.config.output === 'terminal' || RequestLogger.config.output === 'both')
+    ) {
       // Write to stderr to avoid mixing with program output
       process.stderr.write(message + '\n');
     }
@@ -172,20 +177,25 @@ export class RequestLogger extends EventEmitter {
     }
   }
 
-  logStep(step: string, phase: 'start' | 'end', level: LogLevel = 'info', metadata?: Record<string, any>): void {
+  logStep(
+    step: string,
+    phase: 'start' | 'end',
+    level: LogLevel = 'info',
+    metadata?: Record<string, any>
+  ): void {
     if (!this.shouldLogAtLevel(level)) return;
-    
+
     // Debug to ensure we're actually logging
     if (process.env.DEBUG_LOGGING === '1') {
       console.error(`[DEBUG] Logging step: ${step} ${phase}`);
     }
-    
+
     const timestamp = new Date().toISOString();
-    
+
     if (phase === 'start') {
       this.stepTimings.set(step, Date.now());
     }
-    
+
     let duration: number | undefined;
     if (phase === 'end') {
       const startTime = this.stepTimings.get(step);
@@ -194,10 +204,10 @@ export class RequestLogger extends EventEmitter {
         this.stepTimings.delete(step);
       }
     }
-    
+
     // Apply PII redaction to metadata before creating the entry
     const redactedMetadata = metadata ? this.redactPII(metadata) : undefined;
-    
+
     const entry: RequestLogEntry = {
       timestamp,
       requestId: this.requestId,
@@ -206,30 +216,40 @@ export class RequestLogger extends EventEmitter {
       duration,
       metadata: redactedMetadata
     };
-    
+
     const message = this.formatLogEntry(entry);
     this.output(message, entry);
   }
 
-  logLLMCall(phase: 'start' | 'end', model: string, metadata?: {
-    tokensIn?: number;
-    tokensOut?: number;
-    status?: number;
-    error?: string;
-  }): void {
+  logLLMCall(
+    phase: 'start' | 'end',
+    model: string,
+    metadata?: {
+      tokensIn?: number;
+      tokensOut?: number;
+      status?: number;
+      error?: string;
+    }
+  ): void {
     this.logStep('llm_call', phase, 'info', {
       model,
       ...metadata
     });
   }
 
-  logToolCall(toolName: string, phase: 'start' | 'end', args?: any, result?: any, error?: string): void {
+  logToolCall(
+    toolName: string,
+    phase: 'start' | 'end',
+    args?: any,
+    result?: any,
+    error?: string
+  ): void {
     const metadata: any = { name: toolName };
-    
+
     if (phase === 'start' && args) {
       metadata.args = this.redactPII(args);
     }
-    
+
     if (phase === 'end') {
       if (error) {
         metadata.error = error;
@@ -241,24 +261,32 @@ export class RequestLogger extends EventEmitter {
         }
       }
     }
-    
+
     this.logStep('tool_call', phase, 'debug', metadata);
   }
 
-  logDatabaseOperation(operation: string, phase: 'start' | 'end', metadata?: {
-    table?: string;
-    rowCount?: number;
-    error?: string;
-  }): void {
+  logDatabaseOperation(
+    operation: string,
+    phase: 'start' | 'end',
+    metadata?: {
+      table?: string;
+      rowCount?: number;
+      error?: string;
+    }
+  ): void {
     this.logStep(`db_${operation}`, phase, 'debug', metadata);
   }
 
-  logAPICall(service: string, phase: 'start' | 'end', metadata?: {
-    method?: string;
-    path?: string;
-    status?: number;
-    error?: string;
-  }): void {
+  logAPICall(
+    service: string,
+    phase: 'start' | 'end',
+    metadata?: {
+      method?: string;
+      path?: string;
+      status?: number;
+      error?: string;
+    }
+  ): void {
     this.logStep(`api_${service}`, phase, 'info', metadata);
   }
 
@@ -269,7 +297,7 @@ export class RequestLogger extends EventEmitter {
       status: 'failed'
     });
   }
-  
+
   clearLogs(): void {
     this.emit('clear');
   }

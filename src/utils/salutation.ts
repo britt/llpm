@@ -2,6 +2,8 @@
  * Utilities for composing GitHub content with LLPM salutation
  */
 
+import type { ProjectConfig } from "../types/project";
+
 export const DEFAULT_SALUTATION = '🤖 LLPM';
 
 export interface SalutationConfig {
@@ -47,7 +49,7 @@ export function composeWithSalutation(
  * @param appConfig - The application configuration object
  * @returns The salutation configuration
  */
-export function getSalutationConfig(appConfig?: any): SalutationConfig {
+export function getSalutationConfig(appConfig?: ProjectConfig): SalutationConfig {
   if (!appConfig?.automation?.salutation) {
     return {
       enabled: true,

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { describe, it, expect, vi } from 'vitest';
 import { DEFAULT_SALUTATION } from '../utils/salutation';
 
@@ -7,10 +8,7 @@ vi.mock('../services/github');
 vi.mock('../services/githubAssets');
 
 // Import after mocking
-import {
-  createGitHubPullRequestTool,
-  listGitHubPullRequestsTool
-} from './githubPullRequestTools';
+import { createGitHubPullRequestTool, listGitHubPullRequestsTool } from './githubPullRequestTools';
 
 import * as projectConfig from '../utils/projectConfig';
 import * as github from '../services/github';
@@ -19,12 +17,9 @@ import * as githubAssets from '../services/githubAssets';
 describe('GitHub Pull Request Tools', () => {
   describe('Schema Validation', () => {
     it('should have valid Zod schemas for all GitHub pull request tools', () => {
-      const tools = [
-        createGitHubPullRequestTool,
-        listGitHubPullRequestsTool
-      ];
+      const tools = [createGitHubPullRequestTool, listGitHubPullRequestsTool];
 
-      tools.forEach((tool) => {
+      tools.forEach(tool => {
         expect(tool.inputSchema).toBeDefined();
         expect(tool.inputSchema.toString).not.toThrow();
         expect(typeof tool.inputSchema.parse).toBe('function');

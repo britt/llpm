@@ -1,7 +1,7 @@
 ---
 name: mermaid-diagrams
-description: "Guide for creating syntactically correct Mermaid diagrams that render properly on GitHub"
-instructions: "When creating flowcharts, sequence diagrams, class diagrams, or any visual diagrams in markdown"
+description: 'Guide for creating syntactically correct Mermaid diagrams that render properly on GitHub'
+instructions: 'When creating flowcharts, sequence diagrams, class diagrams, or any visual diagrams in markdown'
 tags:
   - diagram
   - visualization
@@ -33,6 +33,7 @@ Use Mermaid syntax to create clear, maintainable diagrams directly in markdown. 
 **Using parentheses inside a label causes syntax errors when rendering on GitHub.**
 
 **NEVER DO THIS:**
+
 ```mermaid
 flowchart TD
   Start[Start agent loop (beginning)]
@@ -42,6 +43,7 @@ flowchart TD
 ```
 
 **ALWAYS DO THIS INSTEAD:**
+
 ```mermaid
 flowchart TD
   Start[Start agent loop - beginning]
@@ -55,6 +57,7 @@ flowchart TD
 **Labels must have matching opening and closing brackets based on their shape.**
 
 **CORRECT - Matching brackets:**
+
 ```mermaid
 flowchart TD
   Start[Start agent loop]
@@ -64,6 +67,7 @@ flowchart TD
 ```
 
 **INCORRECT - Mismatched brackets:**
+
 ```mermaid
 flowchart TD
   Start[Start agent loop]
@@ -71,11 +75,13 @@ flowchart TD
   ShowCriteria[Show criteria to user for approval]
   CriteriaOK{User approved]
 ```
+
 Notice that the brackets do not match on the label for CriteriaOK (`{` opens but `]` closes).
 
 ## Basic Syntax Examples
 
 ### Flowchart
+
 ```mermaid
 flowchart TD
     A[Start] --> B{Decision}
@@ -86,6 +92,7 @@ flowchart TD
 ```
 
 ### Sequence Diagram
+
 ```mermaid
 sequenceDiagram
     participant Client
@@ -99,6 +106,7 @@ sequenceDiagram
 ```
 
 ### Class Diagram
+
 ```mermaid
 classDiagram
     class User {
@@ -118,6 +126,7 @@ classDiagram
 ```
 
 ### State Diagram
+
 ```mermaid
 stateDiagram-v2
     [*] --> Draft
@@ -128,6 +137,7 @@ stateDiagram-v2
 ```
 
 ### Entity Relationship Diagram
+
 ```mermaid
 erDiagram
     USER ||--o{ POST : creates
@@ -155,6 +165,7 @@ erDiagram
 ## Common Patterns
 
 ### API Flow
+
 ```mermaid
 sequenceDiagram
     participant U as User
@@ -171,6 +182,7 @@ sequenceDiagram
 ```
 
 ### Decision Flow
+
 ```mermaid
 flowchart TD
     Start[Receive Request] --> Auth{Authenticated?}
@@ -182,6 +194,7 @@ flowchart TD
 ```
 
 ### System Architecture
+
 ```mermaid
 flowchart LR
     Client[Client App]
@@ -203,6 +216,7 @@ flowchart LR
 ## Syntax Reference
 
 ### Node Shapes
+
 - `[Rectangle]` - Basic box
 - `(Rounded)` - Rounded edges
 - `{Diamond}` - Decision point
@@ -212,6 +226,7 @@ flowchart LR
 - `((Circle))` - Circle
 
 ### Arrow Types
+
 - `-->` - Solid arrow
 - `-.->` - Dotted arrow
 - `==>` - Thick arrow
@@ -219,6 +234,7 @@ flowchart LR
 - `---` - Line (no arrow)
 
 ### Styling
+
 ```mermaid
 flowchart TD
     A[Normal]
@@ -244,6 +260,7 @@ flowchart TD
 ## Tool Usage
 
 When asked to create diagrams:
+
 1. Choose the appropriate Mermaid diagram type
 2. **NEVER use parentheses inside labels** - use dashes or commas instead
 3. **ALWAYS ensure brackets match** - `[...]`, `{...}`, `(...)`, etc.

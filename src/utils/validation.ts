@@ -3,12 +3,12 @@ import { credentialManager } from './credentialManager';
 
 export async function validateEnvironment() {
   debug('Validating credentials (environment variables and profiles)');
-  
+
   const hasOpenAI = !!(await credentialManager.getOpenAIAPIKey());
   const hasAnthropic = !!(await credentialManager.getAnthropicAPIKey());
   const hasGroq = !!(await credentialManager.getGroqAPIKey());
   const hasVertex = !!(await credentialManager.getGoogleVertexProjectId());
-  
+
   if (!hasOpenAI && !hasAnthropic && !hasGroq && !hasVertex) {
     const currentProfile = credentialManager.getCurrentProfileName();
     debug('No AI provider credentials found');
@@ -40,7 +40,7 @@ export async function validateEnvironment() {
     console.error('• Groq: https://console.groq.com/keys');
     process.exit(1);
   }
-  
+
   debug('Environment validation passed');
   debug('Available providers:', { hasOpenAI, hasAnthropic, hasGroq, hasVertex });
 }

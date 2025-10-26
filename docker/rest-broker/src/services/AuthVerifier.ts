@@ -28,7 +28,7 @@ export class AuthVerifier {
       logger.warn(`[AUTH] No container found for agent ${agentId}`);
       return {
         authenticated: false,
-        lastVerifiedAt: new Date().toISOString(),
+        lastVerifiedAt: new Date().toISOString()
       };
     }
 
@@ -48,7 +48,9 @@ export class AuthVerifier {
    */
   private async verifyClaudeAuth(containerName: string, agentId: string): Promise<AuthResult> {
     try {
-      logger.info(`[AUTH] Checking Claude credentials for ${agentId} in container ${containerName}`);
+      logger.info(
+        `[AUTH] Checking Claude credentials for ${agentId} in container ${containerName}`
+      );
 
       // Check if credentials file exists first
       const checkFile = `docker exec ${containerName} test -f /home/claude/.claude/.credentials.json`;
@@ -60,7 +62,7 @@ export class AuthVerifier {
         logger.warn(`[AUTH] Credentials file does not exist for ${agentId}`);
         return {
           authenticated: false,
-          lastVerifiedAt: new Date().toISOString(),
+          lastVerifiedAt: new Date().toISOString()
         };
       }
 
@@ -78,10 +80,14 @@ export class AuthVerifier {
       if (data.authenticated && data.expiresAt) {
         const now = Date.now();
         if (data.expiresAt <= now) {
-          logger.warn(`[AUTH] Claude Code OAuth token expired for ${agentId} (expiresAt: ${data.expiresAt}, now: ${now})`);
+          logger.warn(
+            `[AUTH] Claude Code OAuth token expired for ${agentId} (expiresAt: ${data.expiresAt}, now: ${now})`
+          );
           data.authenticated = false;
         } else {
-          logger.info(`[AUTH] Token is valid for ${agentId} (expiresAt: ${data.expiresAt}, now: ${now})`);
+          logger.info(
+            `[AUTH] Token is valid for ${agentId} (expiresAt: ${data.expiresAt}, now: ${now})`
+          );
         }
       }
 
@@ -89,7 +95,7 @@ export class AuthVerifier {
         authenticated: data.authenticated || false,
         expiresAt: data.expiresAt,
         subscriptionType: data.subscriptionType,
-        lastVerifiedAt: new Date().toISOString(),
+        lastVerifiedAt: new Date().toISOString()
       };
 
       logger.info(`[AUTH] Final result for ${agentId}: ${JSON.stringify(result)}`);
@@ -98,7 +104,7 @@ export class AuthVerifier {
       logger.error(`[AUTH] Failed to verify Claude Code authentication for ${agentId}:`, error);
       return {
         authenticated: false,
-        lastVerifiedAt: new Date().toISOString(),
+        lastVerifiedAt: new Date().toISOString()
       };
     }
   }
@@ -108,7 +114,9 @@ export class AuthVerifier {
    */
   private async verifyOpenAIAuth(containerName: string, agentId: string): Promise<AuthResult> {
     try {
-      logger.info(`[AUTH] Checking OpenAI Codex credentials for ${agentId} in container ${containerName}`);
+      logger.info(
+        `[AUTH] Checking OpenAI Codex credentials for ${agentId} in container ${containerName}`
+      );
 
       // Check for codex auth file (newer codex CLI uses ~/.codex/auth.json)
       // Also check legacy ~/.openai/config.json for backwards compatibility
@@ -126,7 +134,7 @@ export class AuthVerifier {
 
       const result = {
         authenticated: data.authenticated || false,
-        lastVerifiedAt: new Date().toISOString(),
+        lastVerifiedAt: new Date().toISOString()
       };
 
       logger.info(`[AUTH] Final result for ${agentId}: ${JSON.stringify(result)}`);
@@ -135,7 +143,7 @@ export class AuthVerifier {
       logger.error(`[AUTH] Failed to verify OpenAI Codex authentication for ${agentId}:`, error);
       return {
         authenticated: false,
-        lastVerifiedAt: new Date().toISOString(),
+        lastVerifiedAt: new Date().toISOString()
       };
     }
   }

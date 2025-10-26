@@ -1,5 +1,5 @@
 import { tool } from './instrumentedTool';
-import * as z from "zod";
+import * as z from 'zod';
 import { getSystemPrompt } from '../utils/systemPrompt';
 import { debug } from '../utils/logger';
 
@@ -11,7 +11,7 @@ export const getSystemPromptTool = tool({
 
     try {
       const systemPrompt = await getSystemPrompt();
-      
+
       return {
         success: true,
         prompt: systemPrompt,

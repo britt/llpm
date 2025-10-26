@@ -74,7 +74,7 @@ describe('Screenshot Tools', () => {
 
     it('should check shot-scraper availability', async () => {
       const result = await checkScreenshotSetupTool.execute({});
-      
+
       // Either succeeds or provides installation instructions
       if (result.success) {
         expect(result.version).toBeDefined();
@@ -86,7 +86,7 @@ describe('Screenshot Tools', () => {
           // CI environments may return different installation commands (uv vs pip)
           expect(
             result.installCommand.includes('pip install shot-scraper') ||
-            result.installCommand.includes('uv/install.sh')
+              result.installCommand.includes('uv/install.sh')
           ).toBe(true);
         }
       }

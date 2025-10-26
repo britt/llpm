@@ -12,7 +12,7 @@ describe('App', () => {
     process.env.ANTHROPIC_API_KEY = 'test-anthropic-key';
     process.env.GROQ_API_KEY = 'test-groq-key';
     process.env.GOOGLE_VERTEX_PROJECT_ID = 'test-project';
-    
+
     // Mock dependencies
     vi.spyOn(llmService, 'generateResponse').mockResolvedValue('Hello! How can I help you?');
     vi.spyOn(chatHistory, 'loadChatHistory').mockResolvedValue([]);

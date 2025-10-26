@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 export interface WaitForStateOptions {
   /**
    * Maximum time to wait in milliseconds (default: 5000)
@@ -43,11 +44,7 @@ export async function waitForState(
   predicate: () => boolean | Promise<boolean>,
   options: WaitForStateOptions = {}
 ): Promise<void> {
-  const {
-    timeout = 5000,
-    interval = 50,
-    description
-  } = options;
+  const { timeout = 5000, interval = 50, description } = options;
 
   const startTime = Date.now();
 

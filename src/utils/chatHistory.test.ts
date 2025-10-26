@@ -1,5 +1,11 @@
 import { test, expect, describe, afterEach } from 'vitest';
-import { MessageToLogString, LogStringToMessage, saveChatHistory, loadChatHistory, flushChatHistory } from './chatHistory';
+import {
+  MessageToLogString,
+  LogStringToMessage,
+  saveChatHistory,
+  loadChatHistory,
+  flushChatHistory
+} from './chatHistory';
 import type { Message } from '../types';
 import { unlink } from 'fs/promises';
 import { existsSync } from 'fs';
@@ -19,7 +25,7 @@ describe('Chat History Serialization', () => {
 
   test('LogStringToMessage unescapes newlines correctly', () => {
     const logString = 'user: Hello\\nWorld\\nThis is a\\nmulti-line message';
-    
+
     const result = LogStringToMessage(logString);
     expect(result).toEqual({
       role: 'user',
@@ -35,7 +41,7 @@ describe('Chat History Serialization', () => {
 
     const serialized = MessageToLogString(message);
     const deserialized = LogStringToMessage(serialized);
-    
+
     expect(deserialized).toEqual(message);
   });
 
@@ -47,7 +53,7 @@ describe('Chat History Serialization', () => {
 
     const serialized = MessageToLogString(message);
     const deserialized = LogStringToMessage(serialized);
-    
+
     expect(deserialized).toEqual(message);
   });
 
@@ -104,7 +110,7 @@ describe('Chat History Save/Load Integrity', () => {
       { role: 'user', content: 'What is the current project?' },
       { role: 'assistant', content: 'The current project is LLPM.' },
       { role: 'user', content: 'Thanks' },
-      { role: 'assistant', content: 'You\'re welcome! Is there anything else?' },
+      { role: 'assistant', content: "You're welcome! Is there anything else?" },
       // User types /exit - this is a command, not added to history as user message
       { role: 'ui-notification', content: '✌️ Peace out!' } // exit command response
     ];
@@ -120,7 +126,7 @@ describe('Chat History Save/Load Integrity', () => {
     expect(assistantMessages.length).toBe(3);
     expect(assistantMessages[0].content).toBe('Hello! How can I help you?');
     expect(assistantMessages[1].content).toBe('The current project is LLPM.');
-    expect(assistantMessages[2].content).toBe('You\'re welcome! Is there anything else?');
+    expect(assistantMessages[2].content).toBe("You're welcome! Is there anything else?");
 
     // Verify user messages are still user messages
     const userMessages = loadedMessages.filter(m => m.role === 'user');

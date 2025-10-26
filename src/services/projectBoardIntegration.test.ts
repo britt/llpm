@@ -122,7 +122,10 @@ describe('Project Board Integration', () => {
 
       expect(result.success).toBe(true);
       expect(result.message).toContain('Automatically added issue');
-      expect(githubProjects.addProjectV2Item).toHaveBeenCalledWith('gid://Project/123', 'gid://Issue/456');
+      expect(githubProjects.addProjectV2Item).toHaveBeenCalledWith(
+        'gid://Project/123',
+        'gid://Issue/456'
+      );
     });
 
     it('should fail when no active project exists', async () => {

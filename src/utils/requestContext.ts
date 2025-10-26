@@ -72,7 +72,7 @@ export class RequestContext {
   static getMetadata(key?: string): any {
     const context = this.get();
     if (!context?.metadata) return undefined;
-    
+
     if (key) {
       return context.metadata[key];
     }

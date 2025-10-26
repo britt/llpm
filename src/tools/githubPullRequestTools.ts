@@ -1,5 +1,5 @@
 import { tool } from './instrumentedTool';
-import * as z from "zod";
+import * as z from 'zod';
 import { listPullRequests, createPullRequest } from '../services/github';
 import { uploadFilesToGitHub } from '../services/githubAssets';
 import { debug } from '../utils/logger';
@@ -24,25 +24,25 @@ export const listGitHubPullRequestsTool = tool({
     direction: z.string().optional().describe('Sort direction: asc or desc (default: desc)'),
     limit: z.number().optional().describe('Maximum number of pull requests to return (default: 30)')
   }),
-  execute: async ({ 
-    owner, 
-    repo, 
-    state = 'open', 
-    head, 
-    base, 
-    sort = 'created', 
-    direction = 'desc', 
-    limit = 30 
+  execute: async ({
+    owner,
+    repo,
+    state = 'open',
+    head,
+    base,
+    sort = 'created',
+    direction = 'desc',
+    limit = 30
   }) => {
-    debug('Executing list_github_pull_requests tool with params:', { 
-      owner, 
-      repo, 
-      state, 
-      head, 
-      base, 
-      sort, 
-      direction, 
-      limit 
+    debug('Executing list_github_pull_requests tool with params:', {
+      owner,
+      repo,
+      state,
+      head,
+      base,
+      sort,
+      direction,
+      limit
     });
 
     try {
@@ -95,16 +95,19 @@ export const createGitHubPullRequestTool = tool({
     base: z.string().describe('Branch to merge into (target branch, usually "main" or "master")'),
     body: z.string().optional().describe('Pull request description/body'),
     draft: z.boolean().optional().describe('Create as draft pull request (default: false)'),
-    attachments: z.array(z.string()).optional().describe('Array of file paths to upload and attach to the pull request')
+    attachments: z
+      .array(z.string())
+      .optional()
+      .describe('Array of file paths to upload and attach to the pull request')
   }),
   execute: async ({ owner, repo, title, head, base, body, draft = false, attachments }) => {
-    debug('Executing create_github_pull_request tool with params:', { 
-      owner, 
-      repo, 
-      title, 
-      head, 
-      base, 
-      body: body ? `${body.substring(0, 50)}...` : undefined, 
+    debug('Executing create_github_pull_request tool with params:', {
+      owner,
+      repo,
+      title,
+      head,
+      base,
+      body: body ? `${body.substring(0, 50)}...` : undefined,
       draft,
       attachments: attachments?.length || 0
     });
@@ -123,7 +126,8 @@ export const createGitHubPullRequestTool = tool({
             .join('\n\n');
 
           if (attachmentMarkdown) {
-            finalBody += (finalBody ? '\n\n---\n\n' : '') + '**Attachments:**\n\n' + attachmentMarkdown;
+            finalBody +=
+              (finalBody ? '\n\n---\n\n' : '') + '**Attachments:**\n\n' + attachmentMarkdown;
           }
         } catch (uploadError) {
           debug('Failed to upload some attachments:', uploadError);
@@ -137,15 +141,7 @@ export const createGitHubPullRequestTool = tool({
       const salutationConfig = getSalutationConfig(appConfig);
       finalBody = composeWithSalutation(finalBody, salutationConfig);
 
-      const pullRequest = await createPullRequest(
-        owner,
-        repo,
-        title,
-        head,
-        base,
-        finalBody,
-        draft
-      );
+      const pullRequest = await createPullRequest(owner, repo, title, head, base, finalBody, draft);
 
       return {
         success: true,

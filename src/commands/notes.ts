@@ -50,18 +50,18 @@ export const notesCommand: Command = {
       switch (subCommand) {
         case 'list': {
           const notes = db.getNotes();
-          
+
           if (notes.length === 0) {
             return {
-              content: '📝 No notes found for this project.\n\n💡 Use `/notes add "Title" "Content"` to create your first note.',
+              content:
+                '📝 No notes found for this project.\n\n💡 Use `/notes add "Title" "Content"` to create your first note.',
               success: true
             };
           }
 
           const notesList = notes.map(note => {
-            const preview = note.content.length > 50 
-              ? note.content.substring(0, 50) + '...' 
-              : note.content;
+            const preview =
+              note.content.length > 50 ? note.content.substring(0, 50) + '...' : note.content;
             const tags = note.tags ? ` [${note.tags}]` : '';
             return `📝 ${note.id}: ${note.title}${tags}\n   ${preview}\n   📅 ${new Date(note.updatedAt).toLocaleString()}`;
           });
@@ -75,23 +75,24 @@ export const notesCommand: Command = {
         case 'add': {
           if (args.length < 2) {
             return {
-              content: '❌ Usage: /notes add <title> [content]\n\nExample: /notes add "Meeting Notes" "Discussed project features"',
+              content:
+                '❌ Usage: /notes add <title> [content]\n\nExample: /notes add "Meeting Notes" "Discussed project features"',
               success: false
             };
           }
 
           const title = args[1] || '';
           const content = args.slice(2).join(' ') || '';
-          
+
           if (!title) {
             return {
               content: '❌ Title is required.\n\nUsage: /notes add <title> [content]',
               success: false
             };
           }
-          
+
           const note = await db.addNote(title, content);
-          
+
           return {
             content: `✅ Added note "${note.title}" (ID: ${note.id})\n📝 Content: ${content || '(empty)'}`,
             success: true
@@ -123,7 +124,7 @@ export const notesCommand: Command = {
           }
 
           const tags = note.tags ? `\n🏷️ Tags: ${note.tags}` : '';
-          
+
           return {
             content: `📝 Note #${note.id}: ${note.title}${tags}\n📅 Created: ${new Date(note.createdAt).toLocaleString()}\n📅 Updated: ${new Date(note.updatedAt).toLocaleString()}\n\n${note.content}`,
             success: true
@@ -140,7 +141,7 @@ export const notesCommand: Command = {
 
           const query = args.slice(1).join(' ');
           const results = db.searchNotes(query);
-          
+
           if (results.length === 0) {
             return {
               content: `📝 No notes found matching "${query}"`,
@@ -149,9 +150,8 @@ export const notesCommand: Command = {
           }
 
           const resultsList = results.map(note => {
-            const preview = note.content.length > 40 
-              ? note.content.substring(0, 40) + '...' 
-              : note.content;
+            const preview =
+              note.content.length > 40 ? note.content.substring(0, 40) + '...' : note.content;
             const tags = note.tags ? ` [${note.tags}]` : '';
             return `📝 ${note.id}: ${note.title}${tags}\n   ${preview}`;
           });
@@ -165,7 +165,8 @@ export const notesCommand: Command = {
         case 'update': {
           if (args.length < 3) {
             return {
-              content: '❌ Usage: /notes update <id> <title> [content]\n\nExample: /notes update 1 "Updated Title" "New content"',
+              content:
+                '❌ Usage: /notes update <id> <title> [content]\n\nExample: /notes update 1 "Updated Title" "New content"',
               success: false
             };
           }
@@ -180,14 +181,14 @@ export const notesCommand: Command = {
 
           const title = args[2] || '';
           const content = args.slice(3).join(' ');
-          
+
           if (!title) {
             return {
               content: '❌ Title is required.\n\nUsage: /notes update <id> <title> [content]',
               success: false
             };
           }
-          
+
           const updatedNote = await db.updateNote(id, title, content || undefined);
           if (!updatedNote) {
             return {
@@ -235,10 +236,10 @@ export const notesCommand: Command = {
         case 'stats': {
           const stats = db.getStats();
           const metadata = db.getAllMetadata();
-          
-          const metadataList = Object.entries(metadata).map(([key, value]) => 
-            `• ${key}: ${value}`
-          ).join('\n');
+
+          const metadataList = Object.entries(metadata)
+            .map(([key, value]) => `• ${key}: ${value}`)
+            .join('\n');
 
           return {
             content: `📊 Project Database Statistics:

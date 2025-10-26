@@ -34,7 +34,7 @@ export default function HybridInput({
     cursor: value.length
   });
   const [inputHistory, setInputHistory] = useState<string[]>([]);
-  
+
   // Use refs to avoid re-renders during typing
   const inputStateRef = useRef(inputState);
   const historyIndexRef = useRef(-1);
@@ -46,7 +46,7 @@ export default function HybridInput({
     };
     setInputState(inputStateRef.current);
   }, []);
-  
+
   // Load input history on mount
   useEffect(() => {
     loadInputHistory().then(history => {
@@ -94,144 +94,161 @@ export default function HybridInput({
     }
   }, [inputHistory]);
 
-  useInput((inputChar, key) => {
-    if (!focus || disabled) return;
+  useInput(
+    (inputChar, key) => {
+      if (!focus || disabled) return;
 
-    if (key.shift && key.tab) {
-      onShowProjectSelector?.();
-      return;
-    }
-
-    if (key.meta && inputChar === 'm') {
-      onShowModelSelector?.();
-      return;
-    }
-
-    if (key.meta && inputChar === 'n') {
-      onShowNotesSelector?.();
-      return;
-    }
-
-    // Handle return key
-    if (key.return) {
-      const currentInput = inputStateRef.current.input.trim();
-      onSubmit?.(currentInput);
-      
-      // Add to history and save
-      if (currentInput) {
-        setInputHistory(prev => {
-          const newHistory = [currentInput, ...prev.filter(h => h !== currentInput)];
-          const limitedHistory = newHistory.slice(0, 100); // Keep last 100 commands
-          
-          // Save to disk asynchronously
-          saveInputHistory(limitedHistory);
-          
-          return limitedHistory;
-        });
-      }
-      
-      // Reset input
-      updateInputState('', 0);
-      historyIndexRef.current = -1;
-      return;
-    }
-
-    // Handle backspace
-    // This works around a fucking bug in Ink useInput where it doesn't handle backspace correctly
-    // If they come in fast it treats them as characters and not as backspaces
-    if (key.backspace || key.delete || inputChar.charCodeAt(0) === 127) {
-      const deleteLength = Math.max(inputChar.lastIndexOf(String.fromCharCode(127)) + 1, 1);
-      if (inputStateRef.current.cursor > 0) {
-        const newCursor = inputStateRef.current.cursor - deleteLength;
-        const newInput = inputStateRef.current.input.slice(0, newCursor) + inputStateRef.current.input.slice(newCursor + deleteLength);
-        updateInputState(newInput, newCursor);
-      }
-      return;
-    }
-
-    // Handle arrow keys
-    if (key.upArrow && !key.ctrl && !key.shift) {
-      handleHistoryUp();
-      return;
-    }
-
-    if (key.downArrow && !key.ctrl && !key.shift) {
-      handleHistoryDown();
-      return;
-    }
-
-    if (key.leftArrow) {
-      debug('leftArrow', inputStateRef.current.cursor);
-      updateInputState(inputStateRef.current.input, Math.max(0, inputStateRef.current.cursor - 1));
-      return;
-    }
-
-    if (key.rightArrow) {
-      debug('rightArrow', inputStateRef.current.cursor);
-      updateInputState(inputStateRef.current.input, Math.min(inputStateRef.current.input.length, inputStateRef.current.cursor + 1));
-      return;
-    }
-
-    // Handle Ctrl combinations
-    if (key.ctrl && inputChar === 'a') {
-      inputStateRef.current = {
-        input: inputStateRef.current.input,
-        cursor: 0
-      };
-      updateInputState(inputStateRef.current.input, 0);
-      return;
-    }
-
-    if (key.ctrl && inputChar === 'e') {
-      inputStateRef.current = {
-        input: inputStateRef.current.input,
-        cursor: inputStateRef.current.input.length
-      };
-      updateInputState(inputStateRef.current.input, inputStateRef.current.input.length);
-      return;
-    }
-
-    if (key.ctrl && inputChar === 'u') {
-      inputStateRef.current = {
-        input: '',
-        cursor: 0
-      };
-      updateInputState('', 0);
-      return;
-    }
-
-    // Regular character input
-    if (inputChar && !key.ctrl && !key.meta && !key.delete && !key.backspace) {
-      // Check for pasted content (multiple characters at once)
-      if (inputChar.length > 1) {
-        const currentInput = inputStateRef.current.input;
-        const cursor = inputStateRef.current.cursor;
-        const newInput = currentInput.slice(0, cursor) + inputChar + currentInput.slice(cursor);
-        inputStateRef.current = {
-          input: newInput,
-          cursor: cursor + inputChar.length
-        };
-        updateInputState(inputStateRef.current.input, inputStateRef.current.cursor);
+      if (key.shift && key.tab) {
+        onShowProjectSelector?.();
         return;
       }
 
-      // Single character input
-      if (inputChar.length === 1) {
-        const currentInput = inputStateRef.current.input;
-        const cursor = 0 + inputStateRef.current.cursor;
-        const newInput = currentInput.slice(0, cursor) + inputChar + currentInput.slice(cursor);
-        inputStateRef.current = {
-          input: newInput,
-          cursor: cursor + 1
-        };
-        updateInputState(inputStateRef.current.input, inputStateRef.current.cursor);
+      if (key.meta && inputChar === 'm') {
+        onShowModelSelector?.();
         return;
       }
-    }
-  }, { isActive: focus && !disabled });
+
+      if (key.meta && inputChar === 'n') {
+        onShowNotesSelector?.();
+        return;
+      }
+
+      // Handle return key
+      if (key.return) {
+        const currentInput = inputStateRef.current.input.trim();
+        onSubmit?.(currentInput);
+
+        // Add to history and save
+        if (currentInput) {
+          setInputHistory(prev => {
+            const newHistory = [currentInput, ...prev.filter(h => h !== currentInput)];
+            const limitedHistory = newHistory.slice(0, 100); // Keep last 100 commands
+
+            // Save to disk asynchronously
+            saveInputHistory(limitedHistory);
+
+            return limitedHistory;
+          });
+        }
+
+        // Reset input
+        updateInputState('', 0);
+        historyIndexRef.current = -1;
+        return;
+      }
+
+      // Handle backspace
+      // This works around a fucking bug in Ink useInput where it doesn't handle backspace correctly
+      // If they come in fast it treats them as characters and not as backspaces
+      if (key.backspace || key.delete || inputChar.charCodeAt(0) === 127) {
+        const deleteLength = Math.max(inputChar.lastIndexOf(String.fromCharCode(127)) + 1, 1);
+        if (inputStateRef.current.cursor > 0) {
+          const newCursor = inputStateRef.current.cursor - deleteLength;
+          const newInput =
+            inputStateRef.current.input.slice(0, newCursor) +
+            inputStateRef.current.input.slice(newCursor + deleteLength);
+          updateInputState(newInput, newCursor);
+        }
+        return;
+      }
+
+      // Handle arrow keys
+      if (key.upArrow && !key.ctrl && !key.shift) {
+        handleHistoryUp();
+        return;
+      }
+
+      if (key.downArrow && !key.ctrl && !key.shift) {
+        handleHistoryDown();
+        return;
+      }
+
+      if (key.leftArrow) {
+        debug('leftArrow', inputStateRef.current.cursor);
+        updateInputState(
+          inputStateRef.current.input,
+          Math.max(0, inputStateRef.current.cursor - 1)
+        );
+        return;
+      }
+
+      if (key.rightArrow) {
+        debug('rightArrow', inputStateRef.current.cursor);
+        updateInputState(
+          inputStateRef.current.input,
+          Math.min(inputStateRef.current.input.length, inputStateRef.current.cursor + 1)
+        );
+        return;
+      }
+
+      // Handle Ctrl combinations
+      if (key.ctrl && inputChar === 'a') {
+        inputStateRef.current = {
+          input: inputStateRef.current.input,
+          cursor: 0
+        };
+        updateInputState(inputStateRef.current.input, 0);
+        return;
+      }
+
+      if (key.ctrl && inputChar === 'e') {
+        inputStateRef.current = {
+          input: inputStateRef.current.input,
+          cursor: inputStateRef.current.input.length
+        };
+        updateInputState(inputStateRef.current.input, inputStateRef.current.input.length);
+        return;
+      }
+
+      if (key.ctrl && inputChar === 'u') {
+        inputStateRef.current = {
+          input: '',
+          cursor: 0
+        };
+        updateInputState('', 0);
+        return;
+      }
+
+      // Regular character input
+      if (inputChar && !key.ctrl && !key.meta && !key.delete && !key.backspace) {
+        // Check for pasted content (multiple characters at once)
+        if (inputChar.length > 1) {
+          const currentInput = inputStateRef.current.input;
+          const cursor = inputStateRef.current.cursor;
+          const newInput = currentInput.slice(0, cursor) + inputChar + currentInput.slice(cursor);
+          inputStateRef.current = {
+            input: newInput,
+            cursor: cursor + inputChar.length
+          };
+          updateInputState(inputStateRef.current.input, inputStateRef.current.cursor);
+          return;
+        }
+
+        // Single character input
+        if (inputChar.length === 1) {
+          const currentInput = inputStateRef.current.input;
+          const cursor = 0 + inputStateRef.current.cursor;
+          const newInput = currentInput.slice(0, cursor) + inputChar + currentInput.slice(cursor);
+          inputStateRef.current = {
+            input: newInput,
+            cursor: cursor + 1
+          };
+          updateInputState(inputStateRef.current.input, inputStateRef.current.cursor);
+          return;
+        }
+      }
+    },
+    { isActive: focus && !disabled }
+  );
 
   return (
-    <Box paddingX={1} borderStyle="single" borderColor="cyan" borderLeft={false} borderRight={false}>
+    <Box
+      paddingX={1}
+      borderStyle="single"
+      borderColor="cyan"
+      borderLeft={false}
+      borderRight={false}
+    >
       <Text>
         <Text color="cyan" bold>
           &gt;{' '}
@@ -242,7 +259,8 @@ export default function HybridInput({
             <Text backgroundColor="white" color="black">
               {inputStateRef.current.input[inputStateRef.current.cursor] || ' '}
             </Text>
-            {inputStateRef.current.cursor +1 < inputStateRef.current.input.length && inputStateRef.current.input.slice(inputStateRef.current.cursor + 1)}
+            {inputStateRef.current.cursor + 1 < inputStateRef.current.input.length &&
+              inputStateRef.current.input.slice(inputStateRef.current.cursor + 1)}
           </Text>
         ) : (
           <>

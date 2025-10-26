@@ -3,8 +3,8 @@ services:
     image: arizephoenix/phoenix:latest
     container_name: arize-phoenix
     ports:
-      - "6006:6006"  # Phoenix web UI
-      - "4319:4317"  # gRPC endpoint for OTEL traces (host:container)
+      - '6006:6006' # Phoenix web UI
+      - '4319:4317' # gRPC endpoint for OTEL traces (host:container)
       # - "9090:9090"  # Prometheus metrics (optional, commented out - port in use)
     environment:
       # Server configuration
@@ -25,7 +25,7 @@ services:
       - phoenix-data:/phoenix-data
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:6006"]
+      test: ['CMD', 'wget', '--quiet', '--tries=1', '--spider', 'http://localhost:6006']
       interval: 30s
       timeout: 10s
       retries: 3

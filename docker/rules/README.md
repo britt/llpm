@@ -48,6 +48,7 @@ npm run generate
 ```
 
 This generates:
+
 - `docker/claude-code/CLAUDE.md`
 - `docker/aider/CONVENTIONS.md`
 - `docker/openai-codex/AGENT.md`
@@ -85,11 +86,13 @@ COPY --from=builder /tmp/rules/../<agent>/RULES.md /home/<user>/workspace/
 ## Modifying Rules
 
 To update rules shared by all agents:
+
 1. Edit `AGENT_RULES.base.md`
 2. Run `npm run generate`
 3. Commit all generated files
 
 To add agent-specific rules:
+
 1. Create/edit `rules/<agent-id>/specific-rules.md`
 2. Run `npm run generate`
 3. Commit the specific rules file and generated output

@@ -42,9 +42,8 @@ export function initializeTelemetry(config?: Partial<TelemetryConfig>): NodeSDK 
 
   const serviceName = config?.serviceName ?? 'llpm';
   const serviceVersion = config?.serviceVersion ?? '0.14.1'; // Default version
-  const otlpEndpoint = config?.otlpEndpoint ??
-                       process.env.OTEL_EXPORTER_OTLP_ENDPOINT ??
-                       'http://localhost:4318';
+  const otlpEndpoint =
+    config?.otlpEndpoint ?? process.env.OTEL_EXPORTER_OTLP_ENDPOINT ?? 'http://localhost:4318';
 
   // Check protocol preference (grpc or http/protobuf)
   const protocol = process.env.OTEL_EXPORTER_OTLP_PROTOCOL ?? 'http/protobuf';
@@ -56,7 +55,9 @@ export function initializeTelemetry(config?: Partial<TelemetryConfig>): NodeSDK 
 
   // Warning: Auto-instrumentations only work with Node.js
   if (typeof Bun !== 'undefined') {
-    logDebug('WARNING: Running in Bun - auto-instrumentations may not work. Use manual tracing with traced() from utils/tracing.ts');
+    logDebug(
+      'WARNING: Running in Bun - auto-instrumentations may not work. Use manual tracing with traced() from utils/tracing.ts'
+    );
   }
 
   try {
@@ -67,24 +68,25 @@ export function initializeTelemetry(config?: Partial<TelemetryConfig>): NodeSDK 
       // OpenInference project name for Phoenix (required for project grouping)
       'openinference.project.name': 'llpm',
       // Standard project name attribute for compatibility
-      [ATTR_PROJECT_NAME]: 'llpm',
+      [ATTR_PROJECT_NAME]: 'llpm'
     });
 
     // Configure trace exporter based on protocol
-    const traceExporter = protocol === 'grpc'
-      ? new OTLPTraceExporterGRPC({
-          url: otlpEndpoint,  // gRPC doesn't need /v1/traces path
-        })
-      : new OTLPTraceExporterHTTP({
-          url: `${otlpEndpoint}/v1/traces`,  // HTTP needs explicit path
-        });
+    const traceExporter =
+      protocol === 'grpc'
+        ? new OTLPTraceExporterGRPC({
+            url: otlpEndpoint // gRPC doesn't need /v1/traces path
+          })
+        : new OTLPTraceExporterHTTP({
+            url: `${otlpEndpoint}/v1/traces` // HTTP needs explicit path
+          });
 
     // Configure metrics exporter
     const metricReader = new PeriodicExportingMetricReader({
       exporter: new OTLPMetricExporter({
-        url: `${otlpEndpoint}/v1/metrics`,
+        url: `${otlpEndpoint}/v1/metrics`
       }),
-      exportIntervalMillis: 60000, // Export every 60 seconds
+      exportIntervalMillis: 60000 // Export every 60 seconds
     });
 
     // Initialize the SDK
@@ -95,13 +97,13 @@ export function initializeTelemetry(config?: Partial<TelemetryConfig>): NodeSDK 
       instrumentations: [
         getNodeAutoInstrumentations({
           '@opentelemetry/instrumentation-fs': {
-            enabled: true,
+            enabled: true
           },
           '@opentelemetry/instrumentation-http': {
-            enabled: true,
-          },
-        }),
-      ],
+            enabled: true
+          }
+        })
+      ]
     });
 
     // Start the SDK
@@ -114,7 +116,7 @@ export function initializeTelemetry(config?: Partial<TelemetryConfig>): NodeSDK 
     process.on('SIGTERM', () => {
       shutdownTelemetry()
         .then(() => logDebug('OpenTelemetry SDK shut down successfully'))
-        .catch((error) => logDebug('Error shutting down OpenTelemetry SDK:', error));
+        .catch(error => logDebug('Error shutting down OpenTelemetry SDK:', error));
     });
 
     return sdk;

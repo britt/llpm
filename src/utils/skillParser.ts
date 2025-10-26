@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /**
  * Utilities for parsing and validating SKILL.md files
  */
@@ -64,7 +65,9 @@ export async function parseSkillFile(
   } catch (error) {
     return {
       valid: false,
-      errors: [`Failed to parse SKILL.md: ${error instanceof Error ? error.message : String(error)}`]
+      errors: [
+        `Failed to parse SKILL.md: ${error instanceof Error ? error.message : String(error)}`
+      ]
     };
   }
 }
@@ -97,7 +100,9 @@ function validateFrontmatter(data: any): string[] {
 
   // Required: instructions
   if (!data.instructions) {
-    errors.push('Missing required field: instructions - Skills without instructions will not be loaded into the system prompt');
+    errors.push(
+      'Missing required field: instructions - Skills without instructions will not be loaded into the system prompt'
+    );
   } else if (typeof data.instructions !== 'string') {
     errors.push('Field "instructions" must be a string');
   } else if (data.instructions.trim().length === 0) {
@@ -144,10 +149,7 @@ function validateFrontmatter(data: any): string[] {
 /**
  * Apply variable substitution to skill content
  */
-export function applyVariableSubstitution(
-  content: string,
-  vars: Record<string, string>
-): string {
+export function applyVariableSubstitution(content: string, vars: Record<string, string>): string {
   let result = content;
 
   // Replace {{varName}} with var values
@@ -162,9 +164,7 @@ export function applyVariableSubstitution(
 /**
  * Load resource files referenced by a skill
  */
-export async function loadSkillResources(
-  skill: Skill
-): Promise<Map<string, string>> {
+export async function loadSkillResources(skill: Skill): Promise<Map<string, string>> {
   const resourceContents = new Map<string, string>();
 
   if (!skill.resources || skill.resources.length === 0) {

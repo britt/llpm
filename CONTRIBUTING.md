@@ -13,23 +13,27 @@ Thank you for your interest in contributing to LLPM! This document provides guid
 ### Getting Started
 
 1. **Fork and clone the repository**
+
    ```bash
    git clone https://github.com/your-username/llpm.git
    cd llpm
    ```
 
 2. **Install dependencies**
+
    ```bash
    bun install
    ```
 
 3. **Set up environment variables**
+
    ```bash
    cp .env.example .env
    # Edit .env and add at least one AI provider API key
    ```
 
 4. **Run tests to ensure everything works**
+
    ```bash
    bun test
    ```
@@ -107,7 +111,7 @@ describe('ModuleName', () => {
 #### Best Practices
 
 - **Meaningful Test Names**: Use descriptive test names that explain the expected behavior
-- **Arrange, Act, Assert**: Structure tests clearly with setup, execution, and verification phases  
+- **Arrange, Act, Assert**: Structure tests clearly with setup, execution, and verification phases
 - **Test Edge Cases**: Include tests for empty inputs, null values, and boundary conditions
 - **Mock External Dependencies**: Use `vi.mock()` to isolate units under test
 - **Clean Up**: Use `beforeEach` and `afterEach` to ensure test isolation
@@ -115,6 +119,7 @@ describe('ModuleName', () => {
 #### Example Test Patterns
 
 **Command Tests:**
+
 ```typescript
 describe('helpCommand', () => {
   it('should have correct name and description', () => {
@@ -124,7 +129,7 @@ describe('helpCommand', () => {
 
   it('should return success result with help content', () => {
     const result = helpCommand.execute([]);
-    
+
     expect(result.success).toBe(true);
     expect(result.content).toContain('Available Commands:');
   });
@@ -132,11 +137,12 @@ describe('helpCommand', () => {
 ```
 
 **Async Function Tests:**
+
 ```typescript
 describe('asyncFunction', () => {
   it('should handle successful operation', async () => {
     const result = await asyncFunction('valid input');
-    
+
     expect(result).toEqual(expectedResult);
   });
 
@@ -173,6 +179,7 @@ bun test:coverage
 ### Mocking Guidelines
 
 #### File System Operations
+
 ```typescript
 vi.mock('fs/promises', () => ({
   writeFile: vi.fn(),
@@ -181,6 +188,7 @@ vi.mock('fs/promises', () => ({
 ```
 
 #### External APIs
+
 ```typescript
 vi.mock('../services/api', () => ({
   fetchData: vi.fn().mockResolvedValue(mockData)
@@ -188,6 +196,7 @@ vi.mock('../services/api', () => ({
 ```
 
 #### Environment Variables
+
 ```typescript
 beforeEach(() => {
   process.env.TEST_VAR = 'test-value';
@@ -251,24 +260,28 @@ The CI pipeline runs automatically on push and pull requests:
 ## Module-Specific Testing
 
 ### Commands (`src/commands/`)
+
 - Test command execution with various arguments
 - Test error handling and edge cases
 - Verify command metadata (name, description)
 - Mock external dependencies (file system, APIs)
 
 ### Services (`src/services/`)
+
 - Mock external API calls
 - Test configuration handling
 - Test error scenarios and retries
 - Verify data transformation logic
 
 ### Tools (`src/tools/`)
+
 - Test tool execution with sample inputs
 - Mock external integrations (GitHub, etc.)
 - Test validation logic
 - Verify error handling
 
 ### Utilities (`src/utils/`)
+
 - Test pure functions thoroughly
 - Test file system operations with mocks
 - Test configuration parsing
@@ -281,9 +294,9 @@ For performance-critical components:
 ```typescript
 it('should handle large datasets efficiently', () => {
   const startTime = performance.now();
-  
+
   processLargeDataset(largeTestData);
-  
+
   const duration = performance.now() - startTime;
   expect(duration).toBeLessThan(1000); // 1 second threshold
 });

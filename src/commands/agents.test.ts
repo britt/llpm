@@ -302,12 +302,14 @@ describe('agentsCommand', () => {
 
   describe('status indicators', () => {
     it('should use correct emoji for available status', async () => {
-      const mockAgents = [{
-        id: 'test',
-        name: 'Test',
-        status: 'available',
-        health: { status: 'healthy' }
-      }];
+      const mockAgents = [
+        {
+          id: 'test',
+          name: 'Test',
+          status: 'available',
+          health: { status: 'healthy' }
+        }
+      ];
 
       (global.fetch as any).mockResolvedValue({
         ok: true,
@@ -319,12 +321,14 @@ describe('agentsCommand', () => {
     });
 
     it('should use correct emoji for busy status', async () => {
-      const mockAgents = [{
-        id: 'test',
-        name: 'Test',
-        status: 'busy',
-        health: { status: 'healthy' }
-      }];
+      const mockAgents = [
+        {
+          id: 'test',
+          name: 'Test',
+          status: 'busy',
+          health: { status: 'healthy' }
+        }
+      ];
 
       (global.fetch as any).mockResolvedValue({
         ok: true,
@@ -336,12 +340,14 @@ describe('agentsCommand', () => {
     });
 
     it('should use correct emoji for offline status', async () => {
-      const mockAgents = [{
-        id: 'test',
-        name: 'Test',
-        status: 'offline',
-        health: { status: 'unhealthy' }
-      }];
+      const mockAgents = [
+        {
+          id: 'test',
+          name: 'Test',
+          status: 'offline',
+          health: { status: 'unhealthy' }
+        }
+      ];
 
       (global.fetch as any).mockResolvedValue({
         ok: true,

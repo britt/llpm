@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { parseSkillFile, applyVariableSubstitution } from './skillParser';
 import { writeFile, mkdir, rm } from 'fs/promises';
@@ -123,7 +124,9 @@ This skill is missing the required instructions field.
       const result = await parseSkillFile(skillPath, 'personal');
 
       expect(result.valid).toBe(false);
-      expect(result.errors).toContain('Missing required field: instructions - Skills without instructions will not be loaded into the system prompt');
+      expect(result.errors).toContain(
+        'Missing required field: instructions - Skills without instructions will not be loaded into the system prompt'
+      );
     });
 
     it('should fail when instructions is not a string', async () => {
@@ -192,7 +195,9 @@ This skill has proper instructions.
       expect(result.valid).toBe(true);
       expect(result.errors).toHaveLength(0);
       expect(result.skill).toBeDefined();
-      expect(result.skill?.instructions).toBe('When asked to perform a specific task, use this skill');
+      expect(result.skill?.instructions).toBe(
+        'When asked to perform a specific task, use this skill'
+      );
     });
 
     it('should fail when name contains invalid characters', async () => {
@@ -212,7 +217,9 @@ description: "Name has invalid characters"
       const result = await parseSkillFile(skillPath, 'personal');
 
       expect(result.valid).toBe(false);
-      expect(result.errors.some(e => e.includes('lowercase letters, numbers, and hyphens'))).toBe(true);
+      expect(result.errors.some(e => e.includes('lowercase letters, numbers, and hyphens'))).toBe(
+        true
+      );
     });
 
     it('should parse allowed_tools correctly', async () => {

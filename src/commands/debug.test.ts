@@ -5,7 +5,9 @@ import * as logger from '../utils/logger';
 import type { CommandResult } from './types';
 
 // Helper to resolve command results (handles both sync and async)
-async function resolveCommandResult(result: CommandResult | Promise<CommandResult>): Promise<CommandResult> {
+async function resolveCommandResult(
+  result: CommandResult | Promise<CommandResult>
+): Promise<CommandResult> {
   return Promise.resolve(result);
 }
 
@@ -16,7 +18,9 @@ describe('debugCommand', () => {
 
   it('should have correct name and description', () => {
     expect(debugCommand.name).toBe('debug');
-    expect(debugCommand.description).toBe('Show the last N debug log lines (default: 10, max: 1000)');
+    expect(debugCommand.description).toBe(
+      'Show the last N debug log lines (default: 10, max: 1000)'
+    );
   });
 
   it('should return default 10 logs when no args provided', async () => {
@@ -79,10 +83,12 @@ describe('debugCommand', () => {
   });
 
   it('should format timestamps correctly', async () => {
-    const mockLogs = [{
-      message: 'Test message',
-      timestamp: '2023-01-01T12:34:56.789Z'
-    }];
+    const mockLogs = [
+      {
+        message: 'Test message',
+        timestamp: '2023-01-01T12:34:56.789Z'
+      }
+    ];
 
     vi.spyOn(logger, 'getRecentDebugLogs').mockReturnValue(mockLogs);
 
@@ -95,10 +101,12 @@ describe('debugCommand', () => {
   });
 
   it('should handle malformed timestamps', async () => {
-    const mockLogs = [{
-      message: 'Test message',
-      timestamp: 'invalid-timestamp'
-    }];
+    const mockLogs = [
+      {
+        message: 'Test message',
+        timestamp: 'invalid-timestamp'
+      }
+    ];
 
     vi.spyOn(logger, 'getRecentDebugLogs').mockReturnValue(mockLogs);
 
@@ -111,10 +119,12 @@ describe('debugCommand', () => {
   });
 
   it('should handle single log with correct grammar', async () => {
-    const mockLogs = [{
-      message: 'Single log',
-      timestamp: '2023-01-01T12:00:00.000Z'
-    }];
+    const mockLogs = [
+      {
+        message: 'Single log',
+        timestamp: '2023-01-01T12:00:00.000Z'
+      }
+    ];
 
     vi.spyOn(logger, 'getRecentDebugLogs').mockReturnValue(mockLogs);
 
@@ -126,10 +136,12 @@ describe('debugCommand', () => {
   });
 
   it('should colorize log output', async () => {
-    const mockLogs = [{
-      message: 'Colorized message',
-      timestamp: '2023-01-01T12:00:00.000Z'
-    }];
+    const mockLogs = [
+      {
+        message: 'Colorized message',
+        timestamp: '2023-01-01T12:00:00.000Z'
+      }
+    ];
 
     vi.spyOn(logger, 'getRecentDebugLogs').mockReturnValue(mockLogs);
 
@@ -139,7 +151,7 @@ describe('debugCommand', () => {
     // Check for ANSI color codes
     expect(result.content).toContain('\x1b[90m'); // Gray timestamp
     expect(result.content).toContain('\x1b[37m'); // White message
-    expect(result.content).toContain('\x1b[0m');  // Reset
+    expect(result.content).toContain('\x1b[0m'); // Reset
   });
 
   it('should handle floating point numbers', async () => {
@@ -217,10 +229,12 @@ describe('debugCommand', () => {
   it('should handle truncated log messages', async () => {
     // Create a log with a truncated message (simulating logger truncation)
     const longMessage = 'x'.repeat(500) + '...'; // Truncated at 500 chars
-    const mockLogs = [{
-      message: longMessage,
-      timestamp: '2023-01-01T12:00:00.000Z'
-    }];
+    const mockLogs = [
+      {
+        message: longMessage,
+        timestamp: '2023-01-01T12:00:00.000Z'
+      }
+    ];
 
     vi.spyOn(logger, 'getRecentDebugLogs').mockReturnValue(mockLogs);
 

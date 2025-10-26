@@ -19,7 +19,8 @@ describe('systemTools', () => {
   describe('getSystemPromptTool', () => {
     it('should return success with prompt when getSystemPrompt succeeds', async () => {
       const mockPrompt = 'Test system prompt content';
-      const getSystemPromptSpy = vi.spyOn(systemPrompt, 'getSystemPrompt')
+      const getSystemPromptSpy = vi
+        .spyOn(systemPrompt, 'getSystemPrompt')
         .mockResolvedValueOnce(mockPrompt);
 
       const result = await getSystemPromptTool.execute!({}, {} as any);
@@ -36,7 +37,8 @@ describe('systemTools', () => {
 
     it('should return error when getSystemPrompt fails', async () => {
       const mockError = new Error('Failed to read system prompt');
-      const getSystemPromptSpy = vi.spyOn(systemPrompt, 'getSystemPrompt')
+      const getSystemPromptSpy = vi
+        .spyOn(systemPrompt, 'getSystemPrompt')
         .mockRejectedValueOnce(mockError);
 
       const result = await getSystemPromptTool.execute!({}, {} as any);
@@ -51,7 +53,8 @@ describe('systemTools', () => {
     });
 
     it('should handle unknown error types', async () => {
-      const getSystemPromptSpy = vi.spyOn(systemPrompt, 'getSystemPrompt')
+      const getSystemPromptSpy = vi
+        .spyOn(systemPrompt, 'getSystemPrompt')
         .mockRejectedValueOnce('String error');
 
       const result = await getSystemPromptTool.execute!({}, {} as any);

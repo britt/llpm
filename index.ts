@@ -117,7 +117,7 @@ if (import.meta.main) {
     debug('Initializing telemetry');
     initializeTelemetry({
       serviceName: 'llpm',
-      serviceVersion: '0.16.0',
+      serviceVersion: '0.16.0'
     });
     debug('Telemetry initialization completed');
 

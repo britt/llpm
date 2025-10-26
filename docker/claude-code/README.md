@@ -19,31 +19,37 @@ The Claude Code container automatically manages two skills directories:
 ### Public Skills (`/mnt/skills/public`)
 
 **What it is:**
+
 - Official skills repository from Anthropic
 - Contains pre-built skills for common tasks
 - Read-only for standard use
 
 **How it works:**
+
 - Automatically cloned from `https://github.com/anthropics/skills.git` on first startup
 - Updated automatically on each container restart (configurable)
 - Idempotent - won't re-clone if already exists
 
 **Repository URL:**
+
 - HTTPS: `https://github.com/anthropics/skills.git`
 - SSH: `git@github.com:anthropics/skills.git` (requires `SKILLS_SSH_KEY`)
 
 ### User Skills (`/mnt/skills/user`)
 
 **What it is:**
+
 - Your custom skills directory
 - Fully writable for creating and modifying skills
 - Persisted on host system for durability
 
 **Host Path:**
+
 - Mounted from: `~/.llpm/skills/user` on your host system
 - Container path: `/mnt/skills/user`
 
 **Benefits:**
+
 - ✅ Skills persist across container restarts and removals
 - ✅ Easy to edit from host system with your favorite editor
 - ✅ Version control your custom skills with git
@@ -76,6 +82,7 @@ docker-compose up -d claude-code
 ```
 
 On first startup, the container will:
+
 - Clone the Anthropic skills repository to `/mnt/skills/public`
 - Create the user skills directory at `/mnt/skills/user`
 - Create `~/.llpm/skills/user` on your host system if it doesn't exist
@@ -90,6 +97,7 @@ auth-and-setup.sh
 ```
 
 The `auth-and-setup.sh` script will:
+
 1. Guide you through Claude authentication
 2. Verify authentication is successful
 3. Automatically install the Superpowers marketplace
@@ -112,6 +120,7 @@ claude
 The **`auth-and-setup.sh`** script provides a guided, interactive setup experience:
 
 **Features:**
+
 - ✅ Interactive - walks you through each step
 - ✅ Smart detection - checks if already authenticated
 - ✅ Mode-aware - works in API key and subscription modes
@@ -120,12 +129,14 @@ The **`auth-and-setup.sh`** script provides a guided, interactive setup experien
 - ✅ Idempotent - safe to run multiple times
 
 **Usage:**
+
 ```bash
 docker exec -it docker-claude-code-1 bash
 auth-and-setup.sh
 ```
 
 **What happens:**
+
 ```
 ======================================
 Claude Code Authentication & Setup
@@ -196,21 +207,21 @@ Configure these in `docker/.env` or via docker-compose:
 
 ### Skills Repository Configuration
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `SKILLS_SSH_KEY` | _(none)_ | SSH private key for cloning private repos. Use for private Anthropic skills access. |
-| `SKILLS_AUTO_PULL` | `true` | Automatically update skills repository on container restart. Set to `false` to disable. |
-| `SKILLS_UID` | `1000` | User ID for skills directory ownership. Auto-detected for `claude` user. |
-| `SKILLS_GID` | `1000` | Group ID for skills directory ownership. Auto-detected for `claude` user. |
+| Variable           | Default  | Description                                                                             |
+| ------------------ | -------- | --------------------------------------------------------------------------------------- |
+| `SKILLS_SSH_KEY`   | _(none)_ | SSH private key for cloning private repos. Use for private Anthropic skills access.     |
+| `SKILLS_AUTO_PULL` | `true`   | Automatically update skills repository on container restart. Set to `false` to disable. |
+| `SKILLS_UID`       | `1000`   | User ID for skills directory ownership. Auto-detected for `claude` user.                |
+| `SKILLS_GID`       | `1000`   | Group ID for skills directory ownership. Auto-detected for `claude` user.               |
 
 ### Authentication & Plugin Configuration
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `SKILLS_INSTALL_PLUGINS` | `false` | Show plugin installation reminder on startup. |
-| `ANTHROPIC_API_KEY` | _(required)_ | Your Anthropic API key (API key mode only). |
-| `CLAUDE_CLI_OPTIONS` | `--dangerously-skip-permissions` | Default CLI options for Claude Code. |
-| `AGENT_AUTH_TYPE` | `subscription` | Authentication mode: `api_key` or `subscription`. |
+| Variable                 | Default                          | Description                                       |
+| ------------------------ | -------------------------------- | ------------------------------------------------- |
+| `SKILLS_INSTALL_PLUGINS` | `false`                          | Show plugin installation reminder on startup.     |
+| `ANTHROPIC_API_KEY`      | _(required)_                     | Your Anthropic API key (API key mode only).       |
+| `CLAUDE_CLI_OPTIONS`     | `--dangerously-skip-permissions` | Default CLI options for Claude Code.              |
+| `AGENT_AUTH_TYPE`        | `subscription`                   | Authentication mode: `api_key` or `subscription`. |
 
 ## Advanced Configuration
 
@@ -219,6 +230,7 @@ Configure these in `docker/.env` or via docker-compose:
 If you need to clone a private version of the skills repository:
 
 **Option 1: Environment Variable**
+
 ```bash
 # In docker/.env
 SKILLS_SSH_KEY="-----BEGIN OPENSSH PRIVATE KEY-----
@@ -227,6 +239,7 @@ SKILLS_SSH_KEY="-----BEGIN OPENSSH PRIVATE KEY-----
 ```
 
 **Option 2: Mount SSH Directory**
+
 ```yaml
 # In docker-compose.yml (already configured)
 volumes:
@@ -245,6 +258,7 @@ SKILLS_AUTO_PULL=false
 ```
 
 Then manually update when desired:
+
 ```bash
 docker exec docker-claude-code-1 bash -c "cd /mnt/skills/public && git pull"
 ```
@@ -333,6 +347,7 @@ git push
 **Problem:** Container starts but skills repository is not cloned.
 
 **Solution:**
+
 ```bash
 # Check container logs
 docker logs docker-claude-code-1
@@ -346,6 +361,7 @@ docker exec docker-claude-code-1 bash -c "rm -rf /mnt/skills/public && /usr/loca
 **Problem:** Cannot create or modify skills in `/mnt/skills/user`.
 
 **Solution:**
+
 ```bash
 # Check permissions on host
 ls -ld ~/.llpm/skills/user
@@ -363,6 +379,7 @@ docker-compose restart claude-code
 **Problem:** `auth-and-setup.sh` times out or authentication doesn't complete.
 
 **Solution:**
+
 ```bash
 # Try manual authentication
 docker exec -it docker-claude-code-1 bash
@@ -380,6 +397,7 @@ signal-authenticated
 **Problem:** Plugins don't install even after authentication.
 
 **Solution:**
+
 ```bash
 # Verify authentication first
 docker exec docker-claude-code-1 bash -c "echo '/help' | claude --dangerously-skip-permissions"
@@ -397,6 +415,7 @@ echo "/plugin list" | claude --dangerously-skip-permissions
 **Problem:** `SKILLS_AUTO_PULL=true` but repository doesn't update.
 
 **Solution:**
+
 ```bash
 # Check if git pull is working
 docker exec docker-claude-code-1 bash -c "cd /mnt/skills/public && git pull --ff-only"
@@ -413,6 +432,7 @@ docker exec docker-claude-code-1 bash -c "cd /mnt/skills/public && git reset --h
 **Problem:** `~/.llpm/skills/user` doesn't exist on host system.
 
 **Solution:**
+
 ```bash
 # Create directory manually
 mkdir -p ~/.llpm/skills/user
@@ -434,6 +454,7 @@ docker exec docker-claude-code-1 bash -c "ls -la /mnt/skills/user"
 ## Quick Reference
 
 **Common Commands:**
+
 ```bash
 # Start container
 docker-compose up -d claude-code
@@ -463,6 +484,7 @@ claude
 ```
 
 **Important Paths:**
+
 - Host user skills: `~/.llpm/skills/user`
 - Container public skills: `/mnt/skills/public`
 - Container user skills: `/mnt/skills/user`

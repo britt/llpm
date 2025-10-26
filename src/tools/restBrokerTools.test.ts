@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import {
   listAgentsTool,
@@ -14,7 +15,7 @@ import {
 import { exec } from 'child_process';
 
 // Mock child_process.exec - needs to be hoisted before any imports
-vi.mock('child_process', async (importOriginal) => {
+vi.mock('child_process', async importOriginal => {
   const actual = await importOriginal<typeof import('child_process')>();
   return {
     ...actual,
@@ -43,7 +44,7 @@ describe('REST Broker Tools', () => {
         scaleAgentClusterTool
       ];
 
-      tools.forEach((tool) => {
+      tools.forEach(tool => {
         expect(tool.inputSchema).toBeDefined();
         expect(typeof tool.inputSchema.parse).toBe('function');
         expect(typeof tool.inputSchema.safeParse).toBe('function');
@@ -196,7 +197,9 @@ describe('REST Broker Tools', () => {
 
   describe('markAgentAuthenticatedTool', () => {
     it('should require agentId parameter', () => {
-      const parseResult = markAgentAuthenticatedTool.inputSchema.safeParse({ agentId: 'test-agent' });
+      const parseResult = markAgentAuthenticatedTool.inputSchema.safeParse({
+        agentId: 'test-agent'
+      });
       expect(parseResult.success).toBe(true);
     });
 
@@ -278,10 +281,7 @@ describe('REST Broker Tools', () => {
 
     it('should use consistent parameter naming for jobs', () => {
       // All job-related tools should use "jobId" consistently
-      const jobIdTools = [
-        getJobTool,
-        cancelJobTool
-      ];
+      const jobIdTools = [getJobTool, cancelJobTool];
 
       jobIdTools.forEach(tool => {
         const schema = tool.inputSchema;
@@ -457,16 +457,25 @@ describe('REST Broker Tools', () => {
       });
 
       // Mock exec to return docker ps output with filter
-      mockExec.mockImplementation((cmd: string, callback: (error: Error | null, result?: { stdout: string; stderr: string }) => void) => {
-        if (cmd.includes('docker ps') && cmd.includes('--filter') && cmd.includes('name=claude-code-3')) {
-          // Return exact match
-          setImmediate(() => callback(null, { stdout: 'claude-code-3', stderr: '' }));
-        } else if (cmd.includes('pbcopy')) {
-          setImmediate(() => callback(null, { stdout: '', stderr: '' }));
-        } else {
-          setImmediate(() => callback(null, { stdout: '', stderr: '' }));
+      mockExec.mockImplementation(
+        (
+          cmd: string,
+          callback: (error: Error | null, result?: { stdout: string; stderr: string }) => void
+        ) => {
+          if (
+            cmd.includes('docker ps') &&
+            cmd.includes('--filter') &&
+            cmd.includes('name=claude-code-3')
+          ) {
+            // Return exact match
+            setImmediate(() => callback(null, { stdout: 'claude-code-3', stderr: '' }));
+          } else if (cmd.includes('pbcopy')) {
+            setImmediate(() => callback(null, { stdout: '', stderr: '' }));
+          } else {
+            setImmediate(() => callback(null, { stdout: '', stderr: '' }));
+          }
         }
-      });
+      );
 
       if (getAgentConnectCommandTool.execute) {
         const result = await getAgentConnectCommandTool.execute({ agentId: 'claude-code-3' });
@@ -489,16 +498,25 @@ describe('REST Broker Tools', () => {
       });
 
       // Mock exec to return docker ps output with no matches (empty result)
-      mockExec.mockImplementation((cmd: string, callback: (error: Error | null, result?: { stdout: string; stderr: string }) => void) => {
-        if (cmd.includes('docker ps') && cmd.includes('--filter') && cmd.includes('name=claude-code-99')) {
-          // Return no matches (empty string)
-          setImmediate(() => callback(null, { stdout: '', stderr: '' }));
-        } else if (cmd.includes('pbcopy')) {
-          setImmediate(() => callback(null, { stdout: '', stderr: '' }));
-        } else {
-          setImmediate(() => callback(null, { stdout: '', stderr: '' }));
+      mockExec.mockImplementation(
+        (
+          cmd: string,
+          callback: (error: Error | null, result?: { stdout: string; stderr: string }) => void
+        ) => {
+          if (
+            cmd.includes('docker ps') &&
+            cmd.includes('--filter') &&
+            cmd.includes('name=claude-code-99')
+          ) {
+            // Return no matches (empty string)
+            setImmediate(() => callback(null, { stdout: '', stderr: '' }));
+          } else if (cmd.includes('pbcopy')) {
+            setImmediate(() => callback(null, { stdout: '', stderr: '' }));
+          } else {
+            setImmediate(() => callback(null, { stdout: '', stderr: '' }));
+          }
         }
-      });
+      );
 
       if (getAgentConnectCommandTool.execute) {
         const result = await getAgentConnectCommandTool.execute({ agentId: 'claude-code-99' });
@@ -522,16 +540,25 @@ describe('REST Broker Tools', () => {
       });
 
       // Mock exec to return docker ps output where container name matches agent ID
-      mockExec.mockImplementation((cmd: string, callback: (error: Error | null, result?: { stdout: string; stderr: string }) => void) => {
-        if (cmd.includes('docker ps') && cmd.includes('--filter') && cmd.includes('name=my-agent-1')) {
-          // Return exact match
-          setImmediate(() => callback(null, { stdout: 'my-agent-1', stderr: '' }));
-        } else if (cmd.includes('pbcopy')) {
-          setImmediate(() => callback(null, { stdout: '', stderr: '' }));
-        } else {
-          setImmediate(() => callback(null, { stdout: '', stderr: '' }));
+      mockExec.mockImplementation(
+        (
+          cmd: string,
+          callback: (error: Error | null, result?: { stdout: string; stderr: string }) => void
+        ) => {
+          if (
+            cmd.includes('docker ps') &&
+            cmd.includes('--filter') &&
+            cmd.includes('name=my-agent-1')
+          ) {
+            // Return exact match
+            setImmediate(() => callback(null, { stdout: 'my-agent-1', stderr: '' }));
+          } else if (cmd.includes('pbcopy')) {
+            setImmediate(() => callback(null, { stdout: '', stderr: '' }));
+          } else {
+            setImmediate(() => callback(null, { stdout: '', stderr: '' }));
+          }
         }
-      });
+      );
 
       if (getAgentConnectCommandTool.execute) {
         const result = await getAgentConnectCommandTool.execute({ agentId: 'my-agent-1' });
@@ -554,9 +581,14 @@ describe('REST Broker Tools', () => {
       });
 
       // Mock exec to throw error (e.g., Docker not running)
-      mockExec.mockImplementation((cmd: string, callback: (error: Error | null, result?: { stdout: string; stderr: string }) => void) => {
-        setImmediate(() => callback(new Error('Docker not running')));
-      });
+      mockExec.mockImplementation(
+        (
+          cmd: string,
+          callback: (error: Error | null, result?: { stdout: string; stderr: string }) => void
+        ) => {
+          setImmediate(() => callback(new Error('Docker not running')));
+        }
+      );
 
       if (getAgentConnectCommandTool.execute) {
         const result = await getAgentConnectCommandTool.execute({ agentId: 'test-agent' });
@@ -600,16 +632,21 @@ describe('REST Broker Tools', () => {
 
       // Mock exec to return docker ps output with filter
       // Simulates docker-compose with -1 suffix (docker-aider-2-1)
-      mockExec.mockImplementation((cmd: string, callback: (error: Error | null, result?: { stdout: string; stderr: string }) => void) => {
-        if (cmd.includes('docker ps') && cmd.includes('aider-2')) {
-          // Return compose-style container name
-          setImmediate(() => callback(null, { stdout: 'docker-aider-2-1', stderr: '' }));
-        } else if (cmd.includes('pbcopy') || cmd.includes('echo')) {
-          setImmediate(() => callback(null, { stdout: '', stderr: '' }));
-        } else {
-          setImmediate(() => callback(null, { stdout: '', stderr: '' }));
+      mockExec.mockImplementation(
+        (
+          cmd: string,
+          callback: (error: Error | null, result?: { stdout: string; stderr: string }) => void
+        ) => {
+          if (cmd.includes('docker ps') && cmd.includes('aider-2')) {
+            // Return compose-style container name
+            setImmediate(() => callback(null, { stdout: 'docker-aider-2-1', stderr: '' }));
+          } else if (cmd.includes('pbcopy') || cmd.includes('echo')) {
+            setImmediate(() => callback(null, { stdout: '', stderr: '' }));
+          } else {
+            setImmediate(() => callback(null, { stdout: '', stderr: '' }));
+          }
         }
-      });
+      );
 
       if (getAgentConnectCommandTool.execute) {
         const result = await getAgentConnectCommandTool.execute({ agentId: 'aider-2' });
@@ -637,16 +674,21 @@ describe('REST Broker Tools', () => {
 
       // Mock exec to return docker ps output with custom project name
       // Simulates: docker-compose -p myproject up
-      mockExec.mockImplementation((cmd: string, callback: (error: Error | null, result?: { stdout: string; stderr: string }) => void) => {
-        if (cmd.includes('docker ps') && cmd.includes('claude-code-1')) {
-          // Return custom compose project name
-          setImmediate(() => callback(null, { stdout: 'myproject-claude-code-1', stderr: '' }));
-        } else if (cmd.includes('pbcopy') || cmd.includes('echo')) {
-          setImmediate(() => callback(null, { stdout: '', stderr: '' }));
-        } else {
-          setImmediate(() => callback(null, { stdout: '', stderr: '' }));
+      mockExec.mockImplementation(
+        (
+          cmd: string,
+          callback: (error: Error | null, result?: { stdout: string; stderr: string }) => void
+        ) => {
+          if (cmd.includes('docker ps') && cmd.includes('claude-code-1')) {
+            // Return custom compose project name
+            setImmediate(() => callback(null, { stdout: 'myproject-claude-code-1', stderr: '' }));
+          } else if (cmd.includes('pbcopy') || cmd.includes('echo')) {
+            setImmediate(() => callback(null, { stdout: '', stderr: '' }));
+          } else {
+            setImmediate(() => callback(null, { stdout: '', stderr: '' }));
+          }
         }
-      });
+      );
 
       if (getAgentConnectCommandTool.execute) {
         const result = await getAgentConnectCommandTool.execute({ agentId: 'claude-code-1' });

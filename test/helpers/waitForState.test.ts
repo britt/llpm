@@ -17,9 +17,15 @@ describe('waitForState', () => {
     const predicate = () => counter >= 3;
 
     // Simulate state changes
-    setTimeout(() => { counter = 1; }, 50);
-    setTimeout(() => { counter = 2; }, 100);
-    setTimeout(() => { counter = 3; }, 150);
+    setTimeout(() => {
+      counter = 1;
+    }, 50);
+    setTimeout(() => {
+      counter = 2;
+    }, 100);
+    setTimeout(() => {
+      counter = 3;
+    }, 150);
 
     // Should resolve once counter >= 3
     await waitForState(predicate, { timeout: 1000, interval: 10 });
@@ -30,9 +36,9 @@ describe('waitForState', () => {
   it('should timeout if condition never becomes true', async () => {
     const predicate = () => false;
 
-    await expect(
-      waitForState(predicate, { timeout: 100, interval: 10 })
-    ).rejects.toThrow('Timeout waiting for state condition');
+    await expect(waitForState(predicate, { timeout: 100, interval: 10 })).rejects.toThrow(
+      'Timeout waiting for state condition'
+    );
   });
 
   it('should use custom timeout', async () => {
@@ -85,8 +91,12 @@ describe('waitForState', () => {
     };
 
     // Change state asynchronously
-    setTimeout(() => { value = 1; }, 50);
-    setTimeout(() => { value = 2; }, 100);
+    setTimeout(() => {
+      value = 1;
+    }, 50);
+    setTimeout(() => {
+      value = 2;
+    }, 100);
 
     await waitForState(asyncPredicate, { timeout: 500, interval: 10 });
 
@@ -103,7 +113,9 @@ describe('waitForState', () => {
     };
 
     // Fix the error after a delay
-    setTimeout(() => { shouldError = false; }, 100);
+    setTimeout(() => {
+      shouldError = false;
+    }, 100);
 
     // Should eventually succeed once predicate stops throwing
     await waitForState(predicate, { timeout: 500, interval: 10 });
@@ -116,7 +128,9 @@ describe('waitForState', () => {
     const predicate = () => value;
 
     // Set value to true after a short delay
-    setTimeout(() => { value = true; }, 50);
+    setTimeout(() => {
+      value = true;
+    }, 50);
 
     // Should use defaults (timeout: 5000, interval: 50)
     await waitForState(predicate);

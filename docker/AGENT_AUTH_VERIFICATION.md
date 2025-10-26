@@ -7,6 +7,7 @@ This document outlines research findings on how to verify authentication state f
 ## Current Architecture
 
 ### LiteLLM Proxy Setup
+
 - **Proxy URL**: `http://litellm-proxy:4000`
 - **Pass-through endpoints**:
   - `/claude` → `https://api.anthropic.com` (auth: false)
@@ -17,11 +18,13 @@ This document outlines research findings on how to verify authentication state f
 ### Agent Configuration
 
 #### Claude Code Agent
+
 **Container**: `docker-claude-code-1`
 **User**: `claude`
 **Home**: `/home/claude`
 
 **Environment Variables**:
+
 ```bash
 ANTHROPIC_API_KEY=sk-ant-api03-...
 ANTHROPIC_BASE_URL=http://litellm-proxy:4000
@@ -30,6 +33,7 @@ AGENT_PROVIDER=claude
 ```
 
 **Configuration Storage**:
+
 - **Primary config**: `/home/claude/.claude.json` (application settings)
 - **Credentials file**: `/home/claude/.claude/.credentials.json` (OAuth tokens)
 - **Directory**: `/home/claude/.claude/` (mode 700, only user readable)
@@ -37,6 +41,7 @@ AGENT_PROVIDER=claude
 
 **OAuth Authentication Storage** (after authentication):
 File: `/home/claude/.claude/.credentials.json` (mode 600)
+
 ```json
 {
   "claudeAiOauth": {
@@ -50,6 +55,7 @@ File: `/home/claude/.claude/.credentials.json` (mode 600)
 ```
 
 **Verification Method**:
+
 ```bash
 curl -H "x-api-key: $ANTHROPIC_API_KEY" \
      -H "anthropic-version: 2023-06-01" \
@@ -59,11 +65,13 @@ curl -H "x-api-key: $ANTHROPIC_API_KEY" \
 ```
 
 #### OpenAI Codex Agent
+
 **Container**: `docker-openai-codex-1`
 **User**: `codex`
 **Home**: `/home/codex`
 
 **Environment Variables**:
+
 ```bash
 OPENAI_API_KEY=sk-svcacct-...
 OPENAI_API_BASE=http://litellm-proxy:4000
@@ -73,6 +81,7 @@ AGENT_PROVIDER=openai
 ```
 
 **Configuration Storage**:
+
 - **File**: `/home/codex/.openai/config.json`
 - **Contents**:
   ```json
@@ -85,6 +94,7 @@ AGENT_PROVIDER=openai
   ```
 
 **Verification Method**:
+
 ```bash
 curl -H "Authorization: Bearer $OPENAI_API_KEY" \
      "$OPENAI_API_BASE/v1/models"
@@ -93,9 +103,11 @@ curl -H "Authorization: Bearer $OPENAI_API_KEY" \
 ## Authentication State Detection Methods
 
 ### Method 1: OAuth Credentials File Inspection (Best for Claude Code)
+
 **Approach**: Check for the presence and validity of OAuth credentials in the .credentials.json file
 
 **Implementation**:
+
 ```bash
 # Check if credentials file exists and contains OAuth data
 docker exec <container> sh -c '
@@ -120,19 +132,21 @@ docker exec <container> sh -c '
 ```
 
 **Detailed Credentials Structure**:
+
 ```json
 {
   "claudeAiOauth": {
-    "accessToken": "sk-ant-oat01-...",      // OAuth access token
-    "refreshToken": "sk-ant-ort01-...",     // Refresh token for renewal
-    "expiresAt": 1759985021825,             // Expiry timestamp (milliseconds)
+    "accessToken": "sk-ant-oat01-...", // OAuth access token
+    "refreshToken": "sk-ant-ort01-...", // Refresh token for renewal
+    "expiresAt": 1759985021825, // Expiry timestamp (milliseconds)
     "scopes": ["user:inference", "user:profile"],
-    "subscriptionType": "max"                // Subscription level
+    "subscriptionType": "max" // Subscription level
   }
 }
 ```
 
 **Pros**:
+
 - Directly checks actual authentication state
 - Can determine if token is expired by checking `expiresAt`
 - Shows subscription type (max, pro, etc.)
@@ -141,15 +155,18 @@ docker exec <container> sh -c '
 - File is only present after successful authentication
 
 **Cons**:
+
 - Claude Code specific (doesn't work for OpenAI Codex)
 - Requires file system access (docker exec)
 - Token could be revoked server-side (not reflected in file)
 - Requires jq to be installed in container
 
 ### Method 2: Environment Variable Inspection (Basic)
+
 **Approach**: Check if API key environment variables are set in the container
 
 **Implementation**:
+
 ```bash
 # Claude Code
 docker exec <container> sh -c 'test -n "$ANTHROPIC_API_KEY" && echo "configured" || echo "not configured"'
@@ -159,38 +176,46 @@ docker exec <container> sh -c 'test -n "$OPENAI_API_KEY" && echo "configured" ||
 ```
 
 **Pros**:
+
 - Simple and fast
 - No network calls required
 
 **Cons**:
+
 - Only verifies presence, not validity
 - Cannot detect expired/revoked keys
 - Cannot detect subscription authentication state
 
 ### Method 2: Configuration File Inspection
+
 **Approach**: Check for config files and parse their contents
 
 **Implementation**:
+
 ```bash
 # OpenAI Codex only (Claude doesn't use config files)
 docker exec <container> cat /home/codex/.openai/config.json
 ```
 
 **Pros**:
+
 - Can read API key from file
 - OpenAI config includes organization ID
 
 **Cons**:
+
 - Same limitations as Method 1
 - Claude Code doesn't use config files
 - File may not exist or be readable
 
 ### Method 3: API Validation Call (Recommended)
+
 **Approach**: Make a lightweight API call to verify the key is valid
 
 **Implementation**:
 
 For Claude Code:
+
 ```bash
 docker exec <container> sh -c '
   curl -s -w "\n%{http_code}" \
@@ -203,6 +228,7 @@ docker exec <container> sh -c '
 ```
 
 For OpenAI Codex:
+
 ```bash
 docker exec <container> sh -c '
   curl -s -w "\n%{http_code}" \
@@ -212,6 +238,7 @@ docker exec <container> sh -c '
 ```
 
 **Response Codes**:
+
 - `200`: Authenticated and valid
 - `401`: Invalid or expired API key
 - `403`: Forbidden (quota exceeded, wrong permissions)
@@ -219,22 +246,26 @@ docker exec <container> sh -c '
 - `5xx`: Server error
 
 **Pros**:
+
 - Actually validates the key works
 - Detects expired/revoked keys
 - Detects quota/permission issues
 - Works through LiteLLM proxy
 
 **Cons**:
+
 - Requires network call
 - May consume quota (minimal - 1 token for Claude)
 - Requires proper error handling
 - Slower than environment inspection
 
 ### Method 4: Agent Health Endpoint (Future Enhancement)
+
 **Approach**: Have each agent expose a health endpoint that includes auth status
 
 **Implementation**:
 Each agent would expose `http://localhost:8080/_broker/health`:
+
 ```json
 {
   "healthy": true,
@@ -247,12 +278,14 @@ Each agent would expose `http://localhost:8080/_broker/health`:
 ```
 
 **Pros**:
+
 - Clean separation of concerns
 - Agent controls its own auth verification
 - Can include additional metadata
 - Supports complex auth flows
 
 **Cons**:
+
 - Requires modifying all agent containers
 - Adds complexity to agent implementation
 - Requires securing the endpoint
@@ -260,6 +293,7 @@ Each agent would expose `http://localhost:8080/_broker/health`:
 ## Recommended Approach for Issue #96
 
 ### Phase 1: Docker Exec Verification (Immediate)
+
 Use **Method 1 (OAuth Credentials File)** for Claude Code and **Method 2 (Config File)** for OpenAI Codex:
 
 1. **On Agent Registration**:
@@ -276,6 +310,7 @@ Use **Method 1 (OAuth Credentials File)** for Claude Code and **Method 2 (Config
    - Update agent auth state based on file contents
 
 3. **Implementation**:
+
    ```typescript
    interface AuthResult {
      authenticated: boolean;
@@ -283,7 +318,10 @@ Use **Method 1 (OAuth Credentials File)** for Claude Code and **Method 2 (Config
      subscriptionType?: string;
    }
 
-   async function verifyAgentAuth(containerId: string, provider: 'claude' | 'openai'): Promise<AuthResult> {
+   async function verifyAgentAuth(
+     containerId: string,
+     provider: 'claude' | 'openai'
+   ): Promise<AuthResult> {
      if (provider === 'claude') {
        // Check OAuth credentials file
        const script = `
@@ -321,6 +359,7 @@ Use **Method 1 (OAuth Credentials File)** for Claude Code and **Method 2 (Config
    ```
 
 ### Phase 2: Agent Health Endpoints (Future)
+
 Implement **Method 4** by:
 
 1. Adding health endpoint to agent entrypoint scripts
@@ -329,7 +368,9 @@ Implement **Method 4** by:
 4. Supports webhook notifications from agents
 
 ### Phase 3: LiteLLM Integration (Advanced)
+
 Query LiteLLM proxy directly for key validity:
+
 - Use LiteLLM's key management API
 - Check key status, usage, quotas
 - More accurate than making test API calls
@@ -360,14 +401,14 @@ After authenticating a Claude Code agent, we discovered that **Claude CLI stores
 
 ### Comparison: Claude Code vs OpenAI Codex
 
-| Aspect | Claude Code | OpenAI Codex |
-|--------|-------------|--------------|
-| Auth Type | OAuth 2.0 | API Key |
-| Storage | `/home/claude/.claude/.credentials.json` | `/home/codex/.openai/config.json` |
-| Token Expiry | Yes, tracked in file | No expiry |
-| Subscription Info | Yes | No |
-| Refresh Token | Yes | N/A |
-| Detection Method | Check for OAuth object | Check for api_key field |
+| Aspect            | Claude Code                              | OpenAI Codex                      |
+| ----------------- | ---------------------------------------- | --------------------------------- |
+| Auth Type         | OAuth 2.0                                | API Key                           |
+| Storage           | `/home/claude/.claude/.credentials.json` | `/home/codex/.openai/config.json` |
+| Token Expiry      | Yes, tracked in file                     | No expiry                         |
+| Subscription Info | Yes                                      | No                                |
+| Refresh Token     | Yes                                      | N/A                               |
+| Detection Method  | Check for OAuth object                   | Check for api_key field           |
 
 ## Security Considerations
 

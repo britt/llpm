@@ -63,8 +63,8 @@ export class LocalEmbeddingsProvider implements EmbeddingsProvider {
       // Check if Python is available
       const pythonCheck = spawn(this.config.pythonPath, ['--version']);
 
-      return new Promise((resolve) => {
-        pythonCheck.on('close', (code) => {
+      return new Promise(resolve => {
+        pythonCheck.on('close', code => {
           resolve(code === 0);
         });
         pythonCheck.on('error', () => {
@@ -95,9 +95,9 @@ export class LocalEmbeddingsProvider implements EmbeddingsProvider {
           'embeddings.model': 'BAAI/bge-base-en-v1.5',
           'embeddings.dimensions': this.dimensions
         },
-        openInferenceKind: 'EMBEDDING',  // Phoenix UI span kind for embeddings
+        openInferenceKind: 'EMBEDDING' // Phoenix UI span kind for embeddings
       },
-      async (span) => {
+      async span => {
         const results = await this.generateEmbeddings([text]);
 
         if (results && results.length > 0) {
@@ -128,9 +128,9 @@ export class LocalEmbeddingsProvider implements EmbeddingsProvider {
           'embeddings.pythonPath': this.config.pythonPath,
           'embeddings.device': process.env.EMBEDDINGS_DEVICE || 'cpu'
         },
-        openInferenceKind: 'EMBEDDING',  // Phoenix UI span kind for embeddings
+        openInferenceKind: 'EMBEDDING' // Phoenix UI span kind for embeddings
       },
-      async (span) => {
+      async span => {
         try {
           debug(`Generating embeddings for ${texts.length} texts using Python CLI`);
 
@@ -147,11 +147,11 @@ export class LocalEmbeddingsProvider implements EmbeddingsProvider {
           let stdout = '';
           let stderr = '';
 
-          python.stdout.on('data', (data) => {
+          python.stdout.on('data', data => {
             stdout += data.toString();
           });
 
-          python.stderr.on('data', (data) => {
+          python.stderr.on('data', data => {
             stderr += data.toString();
           });
 
@@ -162,7 +162,7 @@ export class LocalEmbeddingsProvider implements EmbeddingsProvider {
           // Wait for process to complete with timeout
           const result = await Promise.race([
             new Promise<EmbeddingResponse>((resolve, reject) => {
-              python.on('close', (code) => {
+              python.on('close', code => {
                 if (code !== 0) {
                   reject(new Error(`Python process exited with code ${code}: ${stderr}`));
                 } else {
@@ -179,7 +179,7 @@ export class LocalEmbeddingsProvider implements EmbeddingsProvider {
                 }
               });
 
-              python.on('error', (error) => {
+              python.on('error', error => {
                 reject(error);
               });
             }),
@@ -206,11 +206,13 @@ export class LocalEmbeddingsProvider implements EmbeddingsProvider {
           span.setAttribute('embeddings.success', true);
           span.setAttribute('embeddings.resultCount', results.length);
           return results;
-
         } catch (error) {
           debug('Failed to generate embeddings:', error);
           span.setAttribute('embeddings.success', false);
-          span.setAttribute('embeddings.error', error instanceof Error ? error.message : String(error));
+          span.setAttribute(
+            'embeddings.error',
+            error instanceof Error ? error.message : String(error)
+          );
           return null;
         }
       }

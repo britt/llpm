@@ -59,7 +59,9 @@ describe('askUserTool', () => {
       expect(result.content).toContain('  1. main');
       expect(result.content).toContain('  2. staging');
       expect(result.content).toContain('  3. development');
-      expect(result.content).toContain('_Please respond with the number or exact text of your choice_');
+      expect(result.content).toContain(
+        '_Please respond with the number or exact text of your choice_'
+      );
     });
 
     it('should handle choice without options', async () => {

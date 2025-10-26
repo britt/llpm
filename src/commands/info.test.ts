@@ -19,7 +19,7 @@ describe('infoCommand', () => {
   it('should return basic app info without project', async () => {
     // Mock no current project
     vi.spyOn(projectConfig, 'getCurrentProject').mockResolvedValue(null);
-    
+
     // Mock model registry
     vi.spyOn(modelRegistry, 'getCurrentModel').mockReturnValue({
       displayName: 'GPT-4o Mini',
@@ -119,7 +119,7 @@ describe('infoCommand', () => {
     it('should return system prompt when prompt sub-command is used', async () => {
       const mockPrompt = 'Test system prompt content for testing';
       const mockHighlightedPrompt = 'Highlighted test system prompt content for testing';
-      
+
       vi.spyOn(systemPrompt, 'getSystemPrompt').mockResolvedValue(mockPrompt);
       vi.spyOn(markdownHighlight, 'highlightMarkdown').mockReturnValue(mockHighlightedPrompt);
 
@@ -134,7 +134,7 @@ describe('infoCommand', () => {
     it('should handle prompt sub-command case insensitively', async () => {
       const mockPrompt = 'Test system prompt';
       const mockHighlightedPrompt = 'Highlighted test system prompt';
-      
+
       vi.spyOn(systemPrompt, 'getSystemPrompt').mockResolvedValue(mockPrompt);
       vi.spyOn(markdownHighlight, 'highlightMarkdown').mockReturnValue(mockHighlightedPrompt);
 

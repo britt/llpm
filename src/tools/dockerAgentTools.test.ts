@@ -20,7 +20,7 @@ describe('Docker Agent Tools', () => {
         checkDockerBrokerHealthTool
       ];
 
-      tools.forEach((tool) => {
+      tools.forEach(tool => {
         expect(tool.inputSchema).toBeDefined();
         expect(tool.inputSchema.toString).not.toThrow();
       });

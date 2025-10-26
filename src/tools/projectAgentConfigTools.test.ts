@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { describe, it, expect } from 'vitest';
 import {
   setProjectAgentConfigTool,
@@ -14,7 +15,7 @@ describe('Project Agent Config Tools', () => {
         removeProjectAgentConfigTool
       ];
 
-      tools.forEach((tool) => {
+      tools.forEach(tool => {
         expect(tool.inputSchema).toBeDefined();
         expect(typeof tool.inputSchema.parse).toBe('function');
         expect(typeof tool.inputSchema.safeParse).toBe('function');
@@ -27,13 +28,17 @@ describe('Project Agent Config Tools', () => {
       const validPresets = ['dev', 'team', 'heavy', 'minimal'];
 
       validPresets.forEach(preset => {
-        const parseResult = setProjectAgentConfigTool.inputSchema.safeParse({ defaultPreset: preset });
+        const parseResult = setProjectAgentConfigTool.inputSchema.safeParse({
+          defaultPreset: preset
+        });
         expect(parseResult.success).toBe(true);
       });
     });
 
     it('should reject invalid preset', () => {
-      const parseResult = setProjectAgentConfigTool.inputSchema.safeParse({ defaultPreset: 'invalid' });
+      const parseResult = setProjectAgentConfigTool.inputSchema.safeParse({
+        defaultPreset: 'invalid'
+      });
       expect(parseResult.success).toBe(false);
     });
 
@@ -65,7 +70,9 @@ describe('Project Agent Config Tools', () => {
       const parseResult1 = setProjectAgentConfigTool.inputSchema.safeParse({ authType: 'api_key' });
       expect(parseResult1.success).toBe(true);
 
-      const parseResult2 = setProjectAgentConfigTool.inputSchema.safeParse({ authType: 'subscription' });
+      const parseResult2 = setProjectAgentConfigTool.inputSchema.safeParse({
+        authType: 'subscription'
+      });
       expect(parseResult2.success).toBe(true);
     });
 

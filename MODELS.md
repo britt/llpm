@@ -36,6 +36,7 @@ OpenAI provides GPT and o-series models, known for strong reasoning capabilities
    - Create a new secret key
 
 2. **Add to your `.env` file**:
+
    ```bash
    OPENAI_API_KEY=your-openai-api-key-here
    ```
@@ -98,6 +99,7 @@ All formats are automatically normalized to the preferred alias form.
    - Navigate to API Keys and create a new key
 
 2. **Add to your `.env` file**:
+
    ```bash
    ANTHROPIC_API_KEY=your-anthropic-api-key-here
    ```
@@ -152,6 +154,7 @@ Groq provides ultra-fast inference for various open-source models, including Lla
    - Generate a new API key
 
 2. **Add to your `.env` file**:
+
    ```bash
    GROQ_API_KEY=your-groq-api-key-here
    ```
@@ -197,20 +200,23 @@ Google Vertex AI requires a Google Cloud project and proper authentication.
    - Set up authentication (service account or application default credentials)
 
 2. **Add to your `.env` file**:
+
    ```bash
    GOOGLE_VERTEX_PROJECT_ID=your-google-cloud-project-id
    GOOGLE_VERTEX_REGION=us-central1  # Optional, defaults to us-central1
    ```
 
 3. **Authenticate** (choose one method):
-   
+
    **Method 1: Service Account Key**
+
    ```bash
    # Download service account key JSON file
    export GOOGLE_APPLICATION_CREDENTIALS=/path/to/service-account-key.json
    ```
-   
+
    **Method 2: Application Default Credentials**
+
    ```bash
    # Login with gcloud CLI
    gcloud auth application-default login
@@ -292,21 +298,25 @@ Use arrow keys to navigate, Enter to select, ESC to cancel.
 ## Model Selection Guidelines
 
 ### For General Tasks
+
 - **OpenAI GPT-4.1 Mini** (default) - Improved GPT-4 model with good balance
 - **Anthropic Claude Sonnet 4.5** - Latest and most capable Claude model
 - **Groq Llama 3.1 8B** - Very fast responses
 
 ### For Complex Reasoning
+
 - **OpenAI o4 Mini** - Designed for reasoning tasks
 - **Anthropic Claude Opus 4.1** - Most powerful Claude for complex analysis
 - **DeepSeek R1 Distill** - Specialized reasoning model
 
 ### For Speed
+
 - **OpenAI GPT-4o Mini** - Fast and efficient
 - **Anthropic Claude 3.5 Haiku** - Quick responses
 - **Groq models** - Ultra-fast inference
 
 ### For Latest Capabilities
+
 - **OpenAI GPT-5** series - Next-generation models
 - **Anthropic Claude Sonnet 4.5** - Latest Claude model with enhanced capabilities
 - **Google Gemini 2.5** series - Latest multimodal capabilities
@@ -318,6 +328,7 @@ Use arrow keys to navigate, Enter to select, ESC to cancel.
 ### Provider Not Showing as Configured
 
 1. **Check environment variables**:
+
    ```bash
    echo $OPENAI_API_KEY      # Should show your key
    echo $ANTHROPIC_API_KEY   # Should show your key
@@ -337,11 +348,13 @@ Use arrow keys to navigate, Enter to select, ESC to cancel.
 ### Model Switch Fails
 
 1. **Check provider configuration**:
+
    ```bash
    /model providers
    ```
 
 2. **Verify model ID**:
+
    ```bash
    /model list --all  # See exact model IDs
    ```
@@ -353,11 +366,13 @@ Use arrow keys to navigate, Enter to select, ESC to cancel.
 ### Authentication Issues (Google Vertex)
 
 1. **Verify project ID**:
+
    ```bash
    gcloud config get-value project
    ```
 
 2. **Check authentication**:
+
    ```bash
    gcloud auth application-default print-access-token
    ```
@@ -397,4 +412,3 @@ GITHUB_TOKEN=...                         # GitHub integration
 - **Default fallback** is GPT-4.1 Mini if configured, or first available model
 
 _This list is out of date_
-

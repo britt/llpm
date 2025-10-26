@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { DEFAULT_SALUTATION } from '../utils/salutation';
 
@@ -32,7 +33,7 @@ describe('GitHub Issue Tools', () => {
         searchGitHubIssuesTool
       ];
 
-      tools.forEach((tool) => {
+      tools.forEach(tool => {
         expect(tool.inputSchema).toBeDefined();
         expect(typeof tool.inputSchema.parse).toBe('function');
         expect(typeof tool.inputSchema.safeParse).toBe('function');

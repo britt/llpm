@@ -9,6 +9,7 @@ The LLPM Docker environment provides containerized versions of popular AI coding
 ## Available Services
 
 ### 1. REST API Broker (`rest-broker`)
+
 - **HTTP interface for AI agents** - Central management and job execution service
 - Port: 3010
 - Features:
@@ -22,6 +23,7 @@ The LLPM Docker environment provides containerized versions of popular AI coding
   - **Subscription Mode**: Agents use provider-specific passthrough paths for subscription authentication
 
 ### 2. Claude Code (`claude-code`)
+
 - Anthropic's Claude-based coding assistant
 - Requires: `ANTHROPIC_API_KEY` or subscription authentication
 - Default model: `claude-sonnet-4-5`
@@ -29,6 +31,7 @@ The LLPM Docker environment provides containerized versions of popular AI coding
 - Authentication: Run `signal-authenticated` in container after authenticating
 
 ### 3. OpenAI Codex (`openai-codex`)
+
 - OpenAI GPT-based coding assistant
 - Requires: `OPENAI_API_KEY` or subscription authentication
 - Default model: `gpt-4-turbo-preview`
@@ -36,16 +39,19 @@ The LLPM Docker environment provides containerized versions of popular AI coding
 - Authentication: Run `signal-authenticated` in container after authenticating
 
 ### 4. Aider (`aider`)
+
 - AI pair programming tool supporting multiple models
 - Requires: `OPENAI_API_KEY` or `ANTHROPIC_API_KEY`
 - Features: Git integration, auto-commits, diff editing
 
 ### 5. OpenCode (`opencode`)
+
 - Open-source model support via Ollama, HuggingFace, and LiteLLM
 - Optional: `HUGGINGFACE_TOKEN`
 - Default model: `codellama`
 
 ### 6. LiteLLM Proxy (`litellm-proxy`)
+
 - **Central AI Gateway** for all agents
 - Unified OpenAI-compatible API endpoint
 - Routes requests to 100+ LLM providers
@@ -55,6 +61,7 @@ The LLPM Docker environment provides containerized versions of popular AI coding
 - All agents use this proxy instead of direct API connections
 
 ### 7. PostgreSQL Database (`postgres`)
+
 - Database backend for LiteLLM proxy
 - Stores model configurations, usage data, and prompt history
 - Automatic schema management via LiteLLM
@@ -69,23 +76,27 @@ The LLPM Docker environment provides containerized versions of popular AI coding
 ## Quick Start
 
 1. **Clone the repository and navigate to the docker directory:**
+
    ```bash
    git clone https://github.com/britt/llpm.git
    cd llpm/docker
    ```
 
 2. **Copy the environment example and add your API keys:**
+
    ```bash
    cp .env.example .env
    # Edit .env and add your API keys
    ```
 
 3. **Build the required services:**
+
    ```bash
    docker-compose build base litellm-proxy rest-broker
    ```
 
 4. **Start the core services:**
+
    ```bash
    # Start database, proxy, and REST broker
    docker-compose up -d postgres litellm-proxy rest-broker
@@ -99,11 +110,13 @@ The LLPM Docker environment provides containerized versions of popular AI coding
 5. **Start AI agents:**
 
    **Option A: API Key Mode (Default)**
+
    ```bash
    docker-compose up -d claude-code openai-codex aider
    ```
 
    **Option B: Subscription Mode**
+
    ```bash
    AGENT_AUTH_TYPE=subscription \
      ANTHROPIC_BASE_URL=http://litellm-proxy:4000/claude \
@@ -114,20 +127,22 @@ The LLPM Docker environment provides containerized versions of popular AI coding
 6. **Start multiple agents with scaling:**
 
    **Option A: Using the scale script (easiest)**
+
    ```bash
    # First, ensure LiteLLM proxy is running
    docker-compose up -d litellm-proxy
-   
+
    # Then start agents with presets:
    ./scale.sh dev      # 1 of each agent
    ./scale.sh team     # 2 codex, 2 aider, 1 claude, 1 opencode
    ./scale.sh heavy    # 3 codex, 3 aider, 2 claude, 2 opencode
-   
+
    # Or custom configuration:
    ./scale.sh custom --codex 2 --aider 1 --claude 1 --opencode 0
    ```
 
    **Option B: Using docker-compose directly**
+
    ```bash
    # Start LiteLLM proxy and agents with specific counts
    docker-compose up -d litellm-proxy \
@@ -135,25 +150,26 @@ The LLPM Docker environment provides containerized versions of popular AI coding
      --scale openai-codex=2 \
      --scale aider=1 \
      --scale opencode=1
-   
+
    # Or start services individually with scaling
    docker-compose up -d litellm-proxy  # Start proxy first
    docker-compose up -d --scale aider=2 --scale openai-codex=3
    ```
 
-5. **Access scaled instances:**
+7. **Access scaled instances:**
+
    ```bash
    # When you have multiple instances, they're numbered:
    # aider-1, aider-2, openai-codex-1, openai-codex-2, etc.
-   
+
    # Access specific instance by index
    docker-compose exec --index=1 aider bash
    docker-compose exec --index=2 openai-codex bash
-   
+
    # Or by container name
    docker exec -it llpm-docker-aider-1 bash
    docker exec -it llpm-docker-openai-codex-2 bash
-   
+
    # Check which instances are running
    ./scale.sh status
    # Or
@@ -167,6 +183,7 @@ Each agent instance has its own isolated workspace directory to prevent cross-ag
 ### How It Works
 
 When you start agents using `scale.sh`, the system automatically:
+
 1. Generates unique workspace directories for each agent instance
 2. Creates a `docker-compose.override.yml` file with per-agent volume mappings
 3. Mounts each workspace into the appropriate container path
@@ -176,6 +193,7 @@ When you start agents using `scale.sh`, the system automatically:
 **Default workspace root:** `~/.llpm/workspaces/`
 
 **Per-agent paths:**
+
 - `~/.llpm/workspaces/claude-code-1/` → Agent: claude-code-1
 - `~/.llpm/workspaces/claude-code-2/` → Agent: claude-code-2
 - `~/.llpm/workspaces/openai-codex-1/` → Agent: openai-codex-1
@@ -187,18 +205,21 @@ When you start agents using `scale.sh`, the system automatically:
 You can customize the workspace root location:
 
 **Option 1: Environment Variable**
+
 ```bash
 export LLPM_WORKSPACE_ROOT=/custom/path
 ./scale.sh dev
 ```
 
 **Option 2: Global Config File**
+
 ```bash
 # ~/.llpm/config.yaml
 workspace_root: /custom/path
 ```
 
 **Option 3: Use Default**
+
 ```bash
 # No configuration needed - uses ~/.llpm/workspaces/
 ./scale.sh dev
@@ -231,6 +252,7 @@ docker exec -it docker-claude-code-2 bash -c "ls ~/workspace/test.txt"  # Should
 **Problem:** Agent can't write to workspace
 
 **Solution:** Check workspace permissions
+
 ```bash
 ls -ld ~/.llpm/workspaces/claude-code-1/
 # Should be owned by your user with write permissions
@@ -239,6 +261,7 @@ ls -ld ~/.llpm/workspaces/claude-code-1/
 **Problem:** Workspaces not created
 
 **Solution:** Ensure you're using `scale.sh` instead of direct `docker-compose up`:
+
 ```bash
 ./scale.sh dev  # Correct - generates workspaces
 # docker-compose up -d --scale claude-code=2  # Wrong - no workspace isolation
@@ -251,6 +274,7 @@ The `claude-code` container automatically sets up the Anthropic skills repositor
 ### How It Works
 
 On container startup, the `claude-code` service automatically:
+
 1. Creates `/mnt/skills/public` and clones the Anthropic skills repository
 2. Creates `/mnt/skills/user` for custom user-defined skills
 3. Supports both SSH and HTTPS authentication for cloning
@@ -259,12 +283,14 @@ On container startup, the `claude-code` service automatically:
 ### Skills Directory Structure
 
 **Public Skills:**
+
 - Path: `/mnt/skills/public`
 - Contains: Anthropic's official skills repository
 - Cloned automatically on first startup
 - Read-only for standard use
 
 **User Skills:**
+
 - Path: `/mnt/skills/user`
 - Contains: Custom user-defined skills
 - Fully writable
@@ -341,6 +367,7 @@ auth-and-setup.sh
 ```
 
 The `auth-and-setup.sh` script will:
+
 - Guide you through Claude authentication (interactive)
 - Detect when authentication is complete
 - Automatically install the Superpowers marketplace
@@ -349,6 +376,7 @@ The `auth-and-setup.sh` script will:
 - Verify plugin installation
 
 **Features:**
+
 - ✅ Interactive - guides you through each step
 - ✅ Idempotent - safe to run multiple times
 - ✅ Works in both API key and subscription modes
@@ -372,6 +400,7 @@ install-plugins.sh
 ```
 
 The `install-plugins.sh` script:
+
 - Adds the Superpowers marketplace
 - Installs the Superpowers plugin
 - Handles idempotent installation (safe to run multiple times)
@@ -409,6 +438,7 @@ docker exec -it docker-claude-code-1 bash -c "ls -la /mnt/skills/user/"
 Each container includes a comprehensive development environment based on Ubuntu 22.04 LTS:
 
 ### Programming Languages & Runtimes
+
 - **JavaScript/TypeScript**: Node.js 20.x, npm, yarn, pnpm, Bun, NVM
 - **Python**: Python 3.x, pip, pipx, Poetry, virtualenv, uv
 - **Java**: OpenJDK 17, Maven, Gradle
@@ -424,6 +454,7 @@ Each container includes a comprehensive development environment based on Ubuntu 
 - **Dart**: Dart SDK
 
 ### Development Tools
+
 - **Version Control**: git, tig
 - **Build Tools**: make, cmake, build-essential
 - **Package Managers**: npm, yarn, pnpm, pip, cargo, gem, composer, maven, gradle
@@ -434,6 +465,7 @@ Each container includes a comprehensive development environment based on Ubuntu 
 - **Media Tools**: imagemagick, ffmpeg
 
 ### Formatters & Linters
+
 - **JavaScript/TypeScript**: ESLint, Prettier, typescript-language-server
 - **Python**: black, isort, flake8, mypy, pylint, pyright
 - **Go**: gofmt, golangci-lint
@@ -442,6 +474,7 @@ Each container includes a comprehensive development environment based on Ubuntu 
 - **C/C++**: clang-format
 
 ### Language Servers
+
 - pyright (Python)
 - typescript-language-server (TypeScript/JavaScript)
 - rust-analyzer (Rust)
@@ -457,9 +490,9 @@ The Docker setup uses volume mounts to share code between host and containers:
 
 ```yaml
 volumes:
-  - ./workspace:/claude-workspace  # Your project files
-  - ${HOME}/.ssh:/root/.ssh:ro     # SSH keys (read-only)
-  - ${HOME}/.gitconfig:/root/.gitconfig:ro  # Git config (read-only)
+  - ./workspace:/claude-workspace # Your project files
+  - ${HOME}/.ssh:/root/.ssh:ro # SSH keys (read-only)
+  - ${HOME}/.gitconfig:/root/.gitconfig:ro # Git config (read-only)
 ```
 
 Place your project files in the `workspace` directory to access them from containers.
@@ -467,12 +500,14 @@ Place your project files in the `workspace` directory to access them from contai
 ## Health Checks
 
 Each container includes comprehensive health checks that verify:
+
 - All language runtimes are installed and functional
 - Development tools are accessible
 - Package managers are configured
 - Simple smoke tests pass for each language
 
 Run health check manually:
+
 ```bash
 docker-compose exec claude-code /usr/local/bin/healthcheck.sh
 ```
@@ -500,6 +535,7 @@ The LiteLLM proxy acts as a central AI gateway for all agents:
 ### Configuration
 
 1. **Set your API keys** in `docker/.env`:
+
    ```bash
    OPENAI_API_KEY=sk-...
    ANTHROPIC_API_KEY=sk-ant-...
@@ -507,11 +543,13 @@ The LiteLLM proxy acts as a central AI gateway for all agents:
    ```
 
 2. **Set the master key** (used by agents to authenticate):
+
    ```bash
    LITELLM_MASTER_KEY=your-secure-key-here
    ```
 
 3. **Start the proxy**:
+
    ```bash
    docker-compose up -d litellm-proxy
    ```
@@ -537,6 +575,7 @@ model_list:
 ### Testing the Proxy
 
 Test with curl:
+
 ```bash
 curl -X POST http://localhost:4000/v1/chat/completions \
   -H "Authorization: Bearer sk-1234" \
@@ -590,10 +629,12 @@ docker-compose up -d --scale aider=0
 ### Accessing Scaled Instances
 
 When scaled, containers are numbered:
+
 - `docker-aider-1`, `docker-aider-2`, `docker-aider-3`
 - `docker-openai-codex-1`, `docker-openai-codex-2`
 
 Access specific instances:
+
 ```bash
 # Execute command on specific instance
 docker-compose exec --index=2 aider bash
@@ -657,11 +698,13 @@ AGENT_AUTH_TYPE=subscription \
 1. **Start containers in subscription mode** (as shown above)
 
 2. **Connect to the agent container:**
+
    ```bash
    docker exec -it docker-claude-code-1 bash
    ```
 
 3. **Authenticate with the provider:**
+
    ```bash
    # For Claude Code
    claude setup-token
@@ -676,6 +719,7 @@ AGENT_AUTH_TYPE=subscription \
    **Note for OpenAI Codex OAuth**: The codex OAuth server binds to `127.0.0.1:1455` inside the container, which can cause connection issues with Docker port mapping. If `codex login` fails with "connection reset", use the API key method instead: `echo "$OPENAI_API_KEY" | codex login --with-api-key`
 
 4. **Signal authentication to REST broker:**
+
    ```bash
    signal-authenticated
    ```
@@ -689,12 +733,14 @@ AGENT_AUTH_TYPE=subscription \
 OpenAI Codex authentication uses OAuth with a hardcoded callback port (1455). When running multiple OpenAI Codex containers, you need to map different host ports to avoid conflicts:
 
 **Single Instance (default):**
+
 ```bash
 # Uses default port 1455 on both host and container
 AGENT_AUTH_TYPE=subscription docker-compose up -d openai-codex
 ```
 
 **Multiple Instances:**
+
 ```bash
 # First instance uses port 1455
 OPENAI_OAUTH_PORT=1455 docker-compose up -d openai-codex
@@ -707,12 +753,14 @@ OPENAI_OAUTH_PORT=1457 docker-compose up --scale openai-codex=3
 ```
 
 **How it works:**
+
 - The OpenAI CLI inside the container always uses port 1455 for OAuth callbacks
 - `OPENAI_OAUTH_PORT` maps a different host port to the container's port 1455
 - This allows multiple containers to run simultaneously without port conflicts
 - Each container's OAuth flow will redirect to `localhost:<OPENAI_OAUTH_PORT>`
 
 **Example with scaling:**
+
 ```bash
 # Set different ports for each instance in .env or command line
 AGENT_AUTH_TYPE=subscription \
@@ -797,6 +845,7 @@ docker-compose exec aider aider --model claude-3-opus
 ### Adding New Tools
 
 Edit the base Dockerfile to add tools:
+
 ```dockerfile
 # docker/base/Dockerfile
 RUN apt-get update && apt-get install -y your-tool
@@ -805,6 +854,7 @@ RUN apt-get update && apt-get install -y your-tool
 ### Modifying Language Versions
 
 Update specific versions in the Dockerfiles:
+
 ```dockerfile
 # For Node.js
 RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
@@ -820,6 +870,7 @@ See `docker/.env.example` for all available configuration options. The Docker en
 ## Troubleshooting
 
 ### Build Issues
+
 ```bash
 # Clean rebuild
 docker-compose down
@@ -828,6 +879,7 @@ docker-compose build --no-cache [service-name]
 ```
 
 ### Scaling Issues
+
 ```bash
 # Error: "container name already in use"
 # Solution: Remove container_name from service definition (already done for agents)
@@ -847,6 +899,7 @@ docker-compose ps
 ```
 
 ### Permission Issues
+
 ```bash
 # Fix volume permissions
 chmod 600 ~/.ssh/*
@@ -854,6 +907,7 @@ chmod 644 ~/.gitconfig
 ```
 
 ### Resource Constraints
+
 ```bash
 # Check Docker resources
 docker system df
@@ -864,6 +918,7 @@ docker system prune -a  # Clean unused resources
 ```
 
 ### Service Logs
+
 ```bash
 # View logs for all instances of a service
 docker-compose logs -f aider

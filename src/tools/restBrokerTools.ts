@@ -5,6 +5,7 @@
  * job control, health checks, and logs. Enables the assistant to perform agent
  * operations programmatically while maintaining security and auditability.
  */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 
 import { tool } from './instrumentedTool';
 import { z } from 'zod';
@@ -32,8 +33,8 @@ async function brokerRequest<T>(
     const options: RequestInit = {
       method,
       headers: {
-        'Content-Type': 'application/json',
-      },
+        'Content-Type': 'application/json'
+      }
     };
 
     if (body) {
@@ -66,9 +67,13 @@ async function brokerRequest<T>(
  * List all available agents
  */
 export const listAgentsTool = tool({
-  description: 'List all registered agents in the REST broker. Returns agent details including status, health, and authentication state.',
+  description:
+    'List all registered agents in the REST broker. Returns agent details including status, health, and authentication state.',
   inputSchema: z.object({
-    verifyAuth: z.boolean().optional().describe('Whether to trigger authentication verification before listing agents')
+    verifyAuth: z
+      .boolean()
+      .optional()
+      .describe('Whether to trigger authentication verification before listing agents')
   }),
   execute: async ({ verifyAuth }) => {
     const queryParam = verifyAuth ? '?verifyAuth=true' : '';
@@ -83,18 +88,23 @@ export const listAgentsTool = tool({
       return '📋 No agents registered.';
     }
 
-    const agentList = agents.map(agent => {
-      const status = agent.status === 'available' ? '🟢' :
-                    agent.status === 'busy' ? '🟡' : '🔴';
-      const health = agent.health?.status === 'healthy' ? '✅' :
-                    agent.health?.status === 'unhealthy' ? '❌' : '❓';
-      const auth = agent.health?.authenticated ? '🔒' : '🔓';
+    const agentList = agents
+      .map(agent => {
+        const status = agent.status === 'available' ? '🟢' : agent.status === 'busy' ? '🟡' : '🔴';
+        const health =
+          agent.health?.status === 'healthy'
+            ? '✅'
+            : agent.health?.status === 'unhealthy'
+              ? '❌'
+              : '❓';
+        const auth = agent.health?.authenticated ? '🔒' : '🔓';
 
-      return `${status} **${agent.name}** (${agent.id})
+        return `${status} **${agent.name}** (${agent.id})
   Type: ${agent.type} | Status: ${agent.status} | Health: ${health} ${agent.health?.status || 'unknown'}
   Auth: ${auth} ${agent.health?.authenticated ? 'authenticated' : 'not authenticated'}${agent.health?.authExpiresAt ? ` (expires: ${new Date(agent.health.authExpiresAt).toLocaleString()})` : ''}
   ${agent.provider ? `Provider: ${agent.provider}` : ''}${agent.model ? ` | Model: ${agent.model}` : ''}`;
-    }).join('\n\n');
+      })
+      .join('\n\n');
 
     return `📋 **Registered Agents** (${agents.length} total):\n\n${agentList}`;
   }
@@ -104,7 +114,8 @@ export const listAgentsTool = tool({
  * Get details for a specific agent
  */
 export const getAgentTool = tool({
-  description: 'Get detailed information about a specific agent including its configuration, status, health, and authentication state.',
+  description:
+    'Get detailed information about a specific agent including its configuration, status, health, and authentication state.',
   inputSchema: z.object({
     agentId: z.string().describe('The ID of the agent to retrieve')
   }),
@@ -120,10 +131,18 @@ export const getAgentTool = tool({
       return `❌ Agent not found: ${agentId}`;
     }
 
-    const status = agent.status === 'available' ? '🟢 Available' :
-                  agent.status === 'busy' ? '🟡 Busy' : '🔴 Offline';
-    const health = agent.health?.status === 'healthy' ? '✅ Healthy' :
-                  agent.health?.status === 'unhealthy' ? '❌ Unhealthy' : '❓ Unknown';
+    const status =
+      agent.status === 'available'
+        ? '🟢 Available'
+        : agent.status === 'busy'
+          ? '🟡 Busy'
+          : '🔴 Offline';
+    const health =
+      agent.health?.status === 'healthy'
+        ? '✅ Healthy'
+        : agent.health?.status === 'unhealthy'
+          ? '❌ Unhealthy'
+          : '❓ Unknown';
     const auth = agent.health?.authenticated ? '🔒 Authenticated' : '🔓 Not Authenticated';
 
     let details = `📋 **Agent Details: ${agent.name}**
@@ -172,8 +191,7 @@ export const checkAgentHealthTool = tool({
     }
 
     const health = agent.health || {};
-    const status = health.status === 'healthy' ? '✅' :
-                  health.status === 'unhealthy' ? '❌' : '❓';
+    const status = health.status === 'healthy' ? '✅' : health.status === 'unhealthy' ? '❌' : '❓';
 
     return `${status} **Health Check: ${agent.name}**
 
@@ -190,7 +208,10 @@ export const listJobsTool = tool({
   description: 'List jobs for a specific agent with optional filtering by status.',
   inputSchema: z.object({
     agentId: z.string().describe('The ID of the agent'),
-    status: z.enum(['pending', 'running', 'completed', 'failed', 'cancelled']).optional().describe('Filter jobs by status'),
+    status: z
+      .enum(['pending', 'running', 'completed', 'failed', 'cancelled'])
+      .optional()
+      .describe('Filter jobs by status'),
     limit: z.number().optional().default(50).describe('Maximum number of jobs to return (1-100)'),
     offset: z.number().optional().default(0).describe('Number of jobs to skip for pagination')
   }),
@@ -200,7 +221,10 @@ export const listJobsTool = tool({
     params.append('limit', limit.toString());
     params.append('offset', offset.toString());
 
-    const result = await brokerRequest<{ jobs: any[]; total: number }>('GET', `/agents/${agentId}/jobs?${params}`);
+    const result = await brokerRequest<{ jobs: any[]; total: number }>(
+      'GET',
+      `/agents/${agentId}/jobs?${params}`
+    );
 
     if (!result.success) {
       return `❌ Failed to list jobs: ${result.error}`;
@@ -212,15 +236,23 @@ export const listJobsTool = tool({
       return `📋 No jobs found for agent ${agentId}${status ? ` with status ${status}` : ''}.`;
     }
 
-    const jobList = jobs.map(job => {
-      const statusIcon = job.status === 'completed' ? '✅' :
-                        job.status === 'failed' ? '❌' :
-                        job.status === 'running' ? '🔄' :
-                        job.status === 'cancelled' ? '🚫' : '⏳';
+    const jobList = jobs
+      .map(job => {
+        const statusIcon =
+          job.status === 'completed'
+            ? '✅'
+            : job.status === 'failed'
+              ? '❌'
+              : job.status === 'running'
+                ? '🔄'
+                : job.status === 'cancelled'
+                  ? '🚫'
+                  : '⏳';
 
-      return `${statusIcon} **Job ${job.id}**
+        return `${statusIcon} **Job ${job.id}**
   Status: ${job.status} | Created: ${new Date(job.createdAt).toLocaleString()}${job.completedAt ? ` | Completed: ${new Date(job.completedAt).toLocaleString()}` : ''}${job.error ? `\n  Error: ${job.error}` : ''}`;
-    }).join('\n\n');
+      })
+      .join('\n\n');
 
     return `📋 **Jobs for Agent ${agentId}** (showing ${jobs.length} of ${total} total):\n\n${jobList}${jobs.length < total ? `\n\n💡 Use offset=${offset + limit} to see more jobs.` : ''}`;
   }
@@ -230,7 +262,8 @@ export const listJobsTool = tool({
  * Get job details
  */
 export const getJobTool = tool({
-  description: 'Get detailed information about a specific job including its status, payload, and results.',
+  description:
+    'Get detailed information about a specific job including its status, payload, and results.',
   inputSchema: z.object({
     agentId: z.string().describe('The ID of the agent'),
     jobId: z.string().describe('The ID of the job')
@@ -247,10 +280,16 @@ export const getJobTool = tool({
       return `❌ Job not found: ${jobId}`;
     }
 
-    const statusIcon = job.status === 'completed' ? '✅' :
-                      job.status === 'failed' ? '❌' :
-                      job.status === 'running' ? '🔄' :
-                      job.status === 'cancelled' ? '🚫' : '⏳';
+    const statusIcon =
+      job.status === 'completed'
+        ? '✅'
+        : job.status === 'failed'
+          ? '❌'
+          : job.status === 'running'
+            ? '🔄'
+            : job.status === 'cancelled'
+              ? '🚫'
+              : '⏳';
 
     let details = `${statusIcon} **Job Details: ${job.id}**
 
@@ -284,7 +323,8 @@ export const getJobTool = tool({
  * Create a new job
  */
 export const createJobTool = tool({
-  description: 'Submit a new job to an agent. The job will be queued and executed by the agent. Returns the job ID for tracking.',
+  description:
+    'Submit a new job to an agent. The job will be queued and executed by the agent. Returns the job ID for tracking.',
   inputSchema: z.object({
     agentId: z.string().describe('The ID of the agent to execute the job'),
     payload: z.any().describe('The job payload containing task details and parameters')
@@ -317,11 +357,15 @@ export const createJobTool = tool({
  * Cancel a job
  */
 export const cancelJobTool = tool({
-  description: 'Cancel a running or pending job. This is a destructive operation that requires confirmation.',
+  description:
+    'Cancel a running or pending job. This is a destructive operation that requires confirmation.',
   inputSchema: z.object({
     agentId: z.string().describe('The ID of the agent'),
     jobId: z.string().describe('The ID of the job to cancel'),
-    confirmed: z.boolean().optional().describe('Set to true to bypass confirmation (only after user explicitly confirms)')
+    confirmed: z
+      .boolean()
+      .optional()
+      .describe('Set to true to bypass confirmation (only after user explicitly confirms)')
   }),
   execute: async ({ agentId, jobId, confirmed }) => {
     const startTime = Date.now();
@@ -335,10 +379,12 @@ export const cancelJobTool = tool({
         return `${prompt}\n\n💡 Once confirmed, call this tool again with \`confirmed: true\``;
       }
 
-      const result = await brokerRequest<{ jobId: string; status: string; cancelled: boolean; message: string }>(
-        'POST',
-        `/agents/${agentId}/jobs/${jobId}/cancel`
-      );
+      const result = await brokerRequest<{
+        jobId: string;
+        status: string;
+        cancelled: boolean;
+        message: string;
+      }>('POST', `/agents/${agentId}/jobs/${jobId}/cancel`);
 
       const duration = Date.now() - startTime;
 
@@ -392,7 +438,8 @@ export const cancelJobTool = tool({
  * Mark agent as authenticated (for subscription agents)
  */
 export const markAgentAuthenticatedTool = tool({
-  description: 'Mark a subscription agent as authenticated after the user completes the OAuth flow. This updates the agent health status.',
+  description:
+    'Mark a subscription agent as authenticated after the user completes the OAuth flow. This updates the agent health status.',
   inputSchema: z.object({
     agentId: z.string().describe('The ID of the subscription agent to mark as authenticated')
   }),
@@ -419,7 +466,8 @@ export const markAgentAuthenticatedTool = tool({
  * Get Docker connect command for an agent
  */
 export const getAgentConnectCommandTool = tool({
-  description: 'Get the Docker exec command to connect to an agent container. Automatically copies the command to the clipboard for easy use.',
+  description:
+    'Get the Docker exec command to connect to an agent container. Automatically copies the command to the clipboard for easy use.',
   inputSchema: z.object({
     agentId: z.string().describe('The ID of the agent to connect to')
   }),
@@ -442,7 +490,9 @@ export const getAgentConnectCommandTool = tool({
     try {
       // Search for containers with names containing the agentId
       // This handles docker-compose prefixes like: docker-claude-code-1, myproject-claude-code-1, etc.
-      const { stdout } = await execAsync(`docker ps --filter "name=${agentId}" --format "{{.Names}}"`);
+      const { stdout } = await execAsync(
+        `docker ps --filter "name=${agentId}" --format "{{.Names}}"`
+      );
       const matchingContainers = stdout.trim().split('\n').filter(Boolean);
 
       if (matchingContainers.length > 0) {
@@ -453,7 +503,9 @@ export const getAgentConnectCommandTool = tool({
         const composeMatch = matchingContainers.find(name => name.endsWith(`-${agentId}`));
 
         containerName = exactMatch || composeSuffixMatch || composeMatch || matchingContainers[0];
-        debug(`Found container for ${agentId}: ${containerName} (from ${matchingContainers.length} matches)`);
+        debug(
+          `Found container for ${agentId}: ${containerName} (from ${matchingContainers.length} matches)`
+        );
       } else {
         debug(`No containers found matching ${agentId}, using agentId as fallback`);
       }
@@ -502,16 +554,52 @@ ${connectCommand}
  * Scale the agent cluster
  */
 export const scaleAgentClusterTool = tool({
-  description: 'Scale the Docker agent cluster by adjusting the number of running instances for each agent type. Use presets (dev, team, heavy, minimal) or specify custom instance counts.',
+  description:
+    'Scale the Docker agent cluster by adjusting the number of running instances for each agent type. Use presets (dev, team, heavy, minimal) or specify custom instance counts.',
   inputSchema: z.object({
-    preset: z.enum(['dev', 'team', 'heavy', 'minimal', 'custom']).optional().describe('Scaling preset: dev (1 each), team (1 claude, 2 codex, 2 aider, 1 opencode), heavy (2 claude, 3 codex, 3 aider, 2 opencode), minimal (1 aider only)'),
-    claudeCode: z.number().min(0).max(10).optional().describe('Number of Claude Code instances (0-10). Only used with preset=custom'),
-    openaiCodex: z.number().min(0).max(10).optional().describe('Number of OpenAI Codex instances (0-10). Only used with preset=custom'),
-    aider: z.number().min(0).max(10).optional().describe('Number of Aider instances (0-10). Only used with preset=custom'),
-    opencode: z.number().min(0).max(10).optional().describe('Number of OpenCode instances (0-10). Only used with preset=custom'),
-    authType: z.enum(['api_key', 'subscription']).default('subscription').describe('Authentication type for agents')
+    preset: z
+      .enum(['dev', 'team', 'heavy', 'minimal', 'custom'])
+      .optional()
+      .describe(
+        'Scaling preset: dev (1 each), team (1 claude, 2 codex, 2 aider, 1 opencode), heavy (2 claude, 3 codex, 3 aider, 2 opencode), minimal (1 aider only)'
+      ),
+    claudeCode: z
+      .number()
+      .min(0)
+      .max(10)
+      .optional()
+      .describe('Number of Claude Code instances (0-10). Only used with preset=custom'),
+    openaiCodex: z
+      .number()
+      .min(0)
+      .max(10)
+      .optional()
+      .describe('Number of OpenAI Codex instances (0-10). Only used with preset=custom'),
+    aider: z
+      .number()
+      .min(0)
+      .max(10)
+      .optional()
+      .describe('Number of Aider instances (0-10). Only used with preset=custom'),
+    opencode: z
+      .number()
+      .min(0)
+      .max(10)
+      .optional()
+      .describe('Number of OpenCode instances (0-10). Only used with preset=custom'),
+    authType: z
+      .enum(['api_key', 'subscription'])
+      .default('subscription')
+      .describe('Authentication type for agents')
   }),
-  execute: async ({ preset, claudeCode, openaiCodex, aider, opencode, authType = 'subscription' }) => {
+  execute: async ({
+    preset,
+    claudeCode,
+    openaiCodex,
+    aider,
+    opencode,
+    authType = 'subscription'
+  }) => {
     const startTime = Date.now();
 
     try {
@@ -521,7 +609,10 @@ export const scaleAgentClusterTool = tool({
 
       const scaleScriptPath = appConfig.docker?.scaleScriptPath || 'docker/scale.sh';
       const composeDir = appConfig.docker?.composeFilePath
-        ? appConfig.docker.composeFilePath.substring(0, appConfig.docker.composeFilePath.lastIndexOf('/'))
+        ? appConfig.docker.composeFilePath.substring(
+            0,
+            appConfig.docker.composeFilePath.lastIndexOf('/')
+          )
         : 'docker';
 
       // Load project-specific agent config
@@ -534,8 +625,11 @@ export const scaleAgentClusterTool = tool({
       let config: { claude: number; codex: number; aider: number; opencode: number };
 
       // Check if any custom counts were provided (even if preset wasn't set to 'custom')
-      const hasCustomCounts = claudeCode !== undefined || openaiCodex !== undefined ||
-                              aider !== undefined || opencode !== undefined;
+      const hasCustomCounts =
+        claudeCode !== undefined ||
+        openaiCodex !== undefined ||
+        aider !== undefined ||
+        opencode !== undefined;
 
       if (preset === 'custom' || hasCustomCounts) {
         // Use custom configuration
@@ -591,7 +685,9 @@ export const scaleAgentClusterTool = tool({
       const scriptName = scaleScriptPath.substring(scaleScriptPath.lastIndexOf('/') + 1);
 
       // Change to compose directory and run scale script
-      const { stdout } = await execAsync(`cd ${composeDir} && ./${scriptName} custom --claude ${config.claude} --codex ${config.codex} --aider ${config.aider} --opencode ${config.opencode} --auth-type ${authType}`);
+      const { stdout } = await execAsync(
+        `cd ${composeDir} && ./${scriptName} custom --claude ${config.claude} --codex ${config.codex} --aider ${config.aider} --opencode ${config.opencode} --auth-type ${authType}`
+      );
       const result = stdout;
 
       const duration = Date.now() - startTime;
@@ -650,12 +746,16 @@ ${result}
  * Register a new agent
  */
 export const registerAgentTool = tool({
-  description: 'Register a new agent with the REST broker. Allows creating new agent instances programmatically.',
+  description:
+    'Register a new agent with the REST broker. Allows creating new agent instances programmatically.',
   inputSchema: z.object({
     agentId: z.string().describe('Unique identifier for the agent'),
     name: z.string().describe('Human-readable name for the agent'),
     type: z.string().describe('Agent type (e.g., "claude-code", "openai-codex", "aider")'),
-    authType: z.enum(['subscription', 'api_key']).optional().describe('Authentication type for the agent'),
+    authType: z
+      .enum(['subscription', 'api_key'])
+      .optional()
+      .describe('Authentication type for the agent'),
     provider: z.string().optional().describe('Provider name (required for subscription auth type)'),
     model: z.string().optional().describe('Model identifier (required for subscription auth type)'),
     host: z.string().optional().describe('Agent host address'),
@@ -679,11 +779,12 @@ export const registerAgentTool = tool({
       if (port) payload.port = port;
       if (metadata) payload.metadata = metadata;
 
-      const result = await brokerRequest<{ status: number; message: string; agentId: string; litellmUrl?: string }>(
-        'POST',
-        '/register',
-        payload
-      );
+      const result = await brokerRequest<{
+        status: number;
+        message: string;
+        agentId: string;
+        litellmUrl?: string;
+      }>('POST', '/register', payload);
 
       const duration = Date.now() - startTime;
 
@@ -749,10 +850,14 @@ ${message}`;
  * Delete (deregister) an agent
  */
 export const deleteAgentTool = tool({
-  description: 'Delete (deregister) an agent from the REST broker. This is a destructive operation that requires confirmation.',
+  description:
+    'Delete (deregister) an agent from the REST broker. This is a destructive operation that requires confirmation.',
   inputSchema: z.object({
     agentId: z.string().describe('The ID of the agent to delete'),
-    confirmed: z.boolean().optional().describe('Set to true to bypass confirmation (only after user explicitly confirms)')
+    confirmed: z
+      .boolean()
+      .optional()
+      .describe('Set to true to bypass confirmation (only after user explicitly confirms)')
   }),
   execute: async ({ agentId, confirmed }) => {
     const startTime = Date.now();
@@ -824,7 +929,8 @@ The agent has been removed from the REST broker.
  * Update agent status and metadata
  */
 export const updateAgentTool = tool({
-  description: 'Update an agent\'s status and metadata via heartbeat. Use this to update agent state programmatically.',
+  description:
+    "Update an agent's status and metadata via heartbeat. Use this to update agent state programmatically.",
   inputSchema: z.object({
     agentId: z.string().describe('The ID of the agent to update'),
     status: z.enum(['available', 'busy', 'offline']).optional().describe('New agent status'),
@@ -898,9 +1004,13 @@ The agent has been updated via heartbeat.
  * Trigger authentication verification for all agents
  */
 export const triggerAgentVerifyTool = tool({
-  description: 'Trigger authentication verification for all agents. Useful for checking subscription agent authentication status.',
+  description:
+    'Trigger authentication verification for all agents. Useful for checking subscription agent authentication status.',
   inputSchema: z.object({
-    agentId: z.string().optional().describe('Optional: verify specific agent only (if not provided, verifies all agents)')
+    agentId: z
+      .string()
+      .optional()
+      .describe('Optional: verify specific agent only (if not provided, verifies all agents)')
   }),
   execute: async ({ agentId }) => {
     const startTime = Date.now();
@@ -908,10 +1018,7 @@ export const triggerAgentVerifyTool = tool({
     try {
       if (agentId) {
         // Get specific agent with verification
-        const result = await brokerRequest<{ agent: any }>(
-          'GET',
-          `/agents/${agentId}`
-        );
+        const result = await brokerRequest<{ agent: any }>('GET', `/agents/${agentId}`);
 
         const duration = Date.now() - startTime;
 
@@ -940,7 +1047,9 @@ export const triggerAgentVerifyTool = tool({
           duration
         });
 
-        const authStatus = agent.health?.authenticated ? '✅ Authenticated' : '❌ Not authenticated';
+        const authStatus = agent.health?.authenticated
+          ? '✅ Authenticated'
+          : '❌ Not authenticated';
         const expiry = agent.health?.authExpiresAt
           ? `Expires: ${new Date(agent.health.authExpiresAt).toLocaleString()}`
           : '';
@@ -955,10 +1064,7 @@ ${expiry ? `**${expiry}**` : ''}
 📝 *Verification has been logged for audit purposes.*`;
       } else {
         // Verify all agents
-        const result = await brokerRequest<{ agents: any[] }>(
-          'GET',
-          '/agents?verifyAuth=true'
-        );
+        const result = await brokerRequest<{ agents: any[] }>('GET', '/agents?verifyAuth=true');
 
         const duration = Date.now() - startTime;
 

@@ -1,9 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import {
-  composeWithSalutation,
-  getSalutationConfig,
-  DEFAULT_SALUTATION
-} from './salutation';
+import { composeWithSalutation, getSalutationConfig, DEFAULT_SALUTATION } from './salutation';
 
 describe('composeWithSalutation', () => {
   it('should prepend default salutation to body text', () => {

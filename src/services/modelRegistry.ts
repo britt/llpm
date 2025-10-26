@@ -3,8 +3,13 @@ import { createAnthropic } from '@ai-sdk/anthropic';
 import { createGroq } from '@ai-sdk/groq';
 import { createVertex } from '@ai-sdk/google-vertex';
 import type { LanguageModel } from 'ai';
-import type { ModelProvider, ModelConfig, ModelProviderConfig, ModelState } from '../types/models';
-import { DEFAULT_MODELS as DEFAULT_MODEL_CONFIGS } from '../types/models';
+import {
+  DEFAULT_MODELS as DEFAULT_MODEL_CONFIGS,
+  type ModelProvider,
+  type ModelConfig,
+  type ModelProviderConfig,
+  type ModelState
+} from '../types/models';
 import { debug } from '../utils/logger';
 import { saveCurrentModel, loadCurrentModel } from '../utils/modelStorage';
 import { credentialManager } from '../utils/credentialManager';
@@ -18,7 +23,7 @@ class ModelRegistry {
   constructor() {
     // Default to GPT-4.1 mini, but will be overridden by init()
     this.currentModel = DEFAULT_MODEL_CONFIGS.openai.find(m => m.modelId === 'gpt-4.1-mini')!;
-    
+
     // Provider configs will be populated during init() using credential manager
     this.providerConfigs = {
       openai: { provider: 'openai' },
@@ -30,22 +35,22 @@ class ModelRegistry {
 
   public async init(): Promise<void> {
     if (this.initialized) return;
-    
+
     debug('Initializing model registry');
-    
+
     // Load credentials using credential manager
     await this.loadProviderCredentials();
-    
+
     // Try to load stored model
     const storedModel = await loadCurrentModel();
-    
+
     if (storedModel && this.isProviderConfigured(storedModel.provider)) {
       // Validate the stored model still exists in our configs
       const availableModels = this.getAvailableModels();
-      const foundModel = availableModels.find(m => 
-        m.provider === storedModel.provider && m.modelId === storedModel.modelId
+      const foundModel = availableModels.find(
+        m => m.provider === storedModel.provider && m.modelId === storedModel.modelId
       );
-      
+
       if (foundModel) {
         debug('Loaded stored model:', storedModel.displayName);
         this.currentModel = storedModel;
@@ -60,11 +65,14 @@ class ModelRegistry {
         const models = this.getModelsForProvider(firstProvider);
         if (models.length > 0) {
           this.currentModel = models[0]!;
-          debug('Using default model for first configured provider:', this.currentModel.displayName);
+          debug(
+            'Using default model for first configured provider:',
+            this.currentModel.displayName
+          );
         }
       }
     }
-    
+
     this.initialized = true;
   }
 
@@ -75,7 +83,7 @@ class ModelRegistry {
   public async setCurrentModel(model: ModelConfig): Promise<void> {
     debug('Switching model to:', model.displayName);
     this.currentModel = model;
-    
+
     // Save to storage
     await saveCurrentModel(model);
   }
@@ -103,7 +111,10 @@ class ModelRegistry {
     const providerConfig = this.providerConfigs[config.provider];
 
     debug('Creating language model for provider:', config.provider, 'model:', config.modelId);
-    debug('Provider config:', { hasApiKey: !!providerConfig.apiKey, hasProjectId: !!providerConfig.projectId });
+    debug('Provider config:', {
+      hasApiKey: !!providerConfig.apiKey,
+      hasProjectId: !!providerConfig.projectId
+    });
 
     switch (config.provider) {
       case 'openai': {
@@ -161,7 +172,7 @@ class ModelRegistry {
 
   public isProviderConfigured(provider: ModelProvider): boolean {
     const config = this.providerConfigs[provider];
-    
+
     switch (provider) {
       case 'openai':
       case 'anthropic':
@@ -175,7 +186,7 @@ class ModelRegistry {
   }
 
   public getConfiguredProviders(): ModelProvider[] {
-    return (Object.keys(this.providerConfigs) as ModelProvider[]).filter(provider => 
+    return (Object.keys(this.providerConfigs) as ModelProvider[]).filter(provider =>
       this.isProviderConfigured(provider)
     );
   }

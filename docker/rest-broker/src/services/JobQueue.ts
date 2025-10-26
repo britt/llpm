@@ -42,7 +42,7 @@ export class JobQueue extends EventEmitter {
       options: jobData.options,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
-      progress: 0,
+      progress: 0
     };
 
     this.jobs.set(job.id, job);
@@ -74,7 +74,9 @@ export class JobQueue extends EventEmitter {
     const activeJobs = agentJobs.filter(job => job.status === 'running' || job.status === 'queued');
     const hasActiveJobs = activeJobs.length > 0;
 
-    logger.info(`[STATUS] Agent ${agentId}: current status=${agent.status}, total jobs=${allJobs.length}, agent jobs=${agentJobs.length}, active jobs=${activeJobs.length}`);
+    logger.info(
+      `[STATUS] Agent ${agentId}: current status=${agent.status}, total jobs=${allJobs.length}, agent jobs=${agentJobs.length}, active jobs=${activeJobs.length}`
+    );
 
     // Update agent status based on active jobs
     if (hasActiveJobs && agent.status !== 'busy') {
@@ -105,7 +107,7 @@ export class JobQueue extends EventEmitter {
       const payload: AgentJobPayload = {
         prompt: job.prompt,
         context: job.context,
-        options: job.options,
+        options: job.options
       };
 
       // Execute in Docker container
@@ -119,7 +121,7 @@ export class JobQueue extends EventEmitter {
           output: result.stdout,
           stderr: result.stderr,
           exitCode: result.exitCode,
-          completedAt: new Date().toISOString(),
+          completedAt: new Date().toISOString()
         };
         logger.info(`Job ${job.id} completed successfully`);
       } else {
@@ -127,7 +129,7 @@ export class JobQueue extends EventEmitter {
         job.error = {
           message: 'Container execution failed',
           stderr: result.stderr,
-          exitCode: result.exitCode,
+          exitCode: result.exitCode
         };
         logger.error(`Job ${job.id} failed with exit code ${result.exitCode}`);
       }
@@ -135,7 +137,7 @@ export class JobQueue extends EventEmitter {
       job.status = 'failed';
       job.error = {
         message: error.message,
-        stack: error.stack,
+        stack: error.stack
       };
       logger.error(`Job ${job.id} failed with error:`, error);
     } finally {
@@ -151,32 +153,35 @@ export class JobQueue extends EventEmitter {
     return this.jobs.get(jobId);
   }
 
-  getJobsByAgent(agentId: string, options?: {
-    status?: string;
-    limit?: number;
-    offset?: number;
-  }): { items: Job[]; total: number } {
+  getJobsByAgent(
+    agentId: string,
+    options?: {
+      status?: string;
+      limit?: number;
+      offset?: number;
+    }
+  ): { items: Job[]; total: number } {
     // Get all jobs for the agent
     let agentJobs = Array.from(this.jobs.values()).filter(job => job.agentId === agentId);
-    
+
     // Filter by status if provided
     if (options?.status) {
       agentJobs = agentJobs.filter(job => job.status === options.status);
     }
-    
+
     // Sort by creation date (newest first)
     agentJobs.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-    
+
     const total = agentJobs.length;
-    
+
     // Apply pagination
     const offset = options?.offset || 0;
     const limit = options?.limit || 50;
     const paginatedJobs = agentJobs.slice(offset, offset + limit);
-    
+
     return {
       items: paginatedJobs,
-      total,
+      total
     };
   }
 

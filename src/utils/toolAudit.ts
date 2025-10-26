@@ -65,12 +65,13 @@ function formatAuditEntry(entry: ToolAuditEntry): string {
     parts.push(`**Duration**: ${entry.duration}ms`);
   }
 
-  parts.push(`\n### Parameters\n\n\`\`\`json\n${JSON.stringify(entry.parameters, null, 2)}\n\`\`\``);
+  parts.push(
+    `\n### Parameters\n\n\`\`\`json\n${JSON.stringify(entry.parameters, null, 2)}\n\`\`\``
+  );
 
   if (entry.result !== undefined) {
-    const resultStr = typeof entry.result === 'string'
-      ? entry.result
-      : JSON.stringify(entry.result, null, 2);
+    const resultStr =
+      typeof entry.result === 'string' ? entry.result : JSON.stringify(entry.result, null, 2);
     parts.push(`\n### Result\n\n\`\`\`\n${resultStr}\n\`\`\``);
   }
 
@@ -97,9 +98,7 @@ export async function getAuditLogs(
     }
 
     const notes = db.searchNotes('tool-audit');
-    const filtered = toolName
-      ? notes.filter(note => note.title.includes(toolName))
-      : notes;
+    const filtered = toolName ? notes.filter(note => note.title.includes(toolName)) : notes;
 
     const entries = filtered.slice(0, limit).map(note => {
       // Parse audit entry from note content
@@ -107,7 +106,7 @@ export async function getAuditLogs(
       return {
         timestamp: note.createdAt,
         toolName: note.title.replace('Tool Audit: ', ''),
-        parameters: {},
+        parameters: {}
         // Would parse from content in real implementation
       };
     });

@@ -14,22 +14,24 @@ import { debug } from '../utils/logger';
  */
 const askUserInputSchema = z.object({
   question: z.string().describe('The question to ask the user'),
-  type: z.enum(['text', 'confirm', 'choice', 'number'])
+  type: z
+    .enum(['text', 'confirm', 'choice', 'number'])
     .optional()
     .default('text')
     .describe('Type of question for formatting hints'),
-  options: z.array(z.string())
-    .optional()
-    .describe('Available options for choice type'),
-  context: z.string()
-    .optional()
-    .describe('Additional context about why you need this information')
+  options: z.array(z.string()).optional().describe('Available options for choice type'),
+  context: z.string().optional().describe('Additional context about why you need this information')
 });
 
 /**
  * Format the question based on type
  */
-function formatQuestion(input: { question: string; type?: 'text' | 'confirm' | 'choice' | 'number'; options?: string[]; context?: string }): string {
+function formatQuestion(input: {
+  question: string;
+  type?: 'text' | 'confirm' | 'choice' | 'number';
+  options?: string[];
+  context?: string;
+}): string {
   const parts: string[] = [];
 
   // Add context if provided
@@ -110,7 +112,7 @@ The tool formats the question nicely. You must include it in your response and t
 
   inputSchema: askUserInputSchema,
 
-  execute: async (input) => {
+  execute: async input => {
     // Apply default type if not provided
     const questionType = input.type || 'text';
 

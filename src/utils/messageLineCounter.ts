@@ -62,7 +62,7 @@ export function filterMessagesByLines(
     }
 
     currentLines += messageLines;
-    visibleMessages.unshift(message);  // Add to beginning since we're going backwards
+    visibleMessages.unshift(message); // Add to beginning since we're going backwards
   }
 
   const hiddenLinesCount = totalLines - currentLines;

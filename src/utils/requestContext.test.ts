@@ -68,10 +68,10 @@ describe('RequestContext', () => {
     it('should return undefined when no context exists', () => {
       const context = RequestContext.get();
       expect(context).toBeUndefined();
-      
+
       const requestId = RequestContext.getRequestId();
       expect(requestId).toBeUndefined();
-      
+
       const logger = RequestContext.getLogger();
       expect(logger).toBeUndefined();
     });
@@ -155,9 +155,9 @@ describe('RequestContext', () => {
       await RequestContext.run(async () => {
         const logger = RequestContext.getLogger();
         logger?.on('log', (log: any) => capturedLogs.push(log));
-        
+
         RequestContext.logStep('test_step', 'start', 'info', { data: 'test' });
-        
+
         expect(capturedLogs.length).toBeGreaterThan(0);
         const log = capturedLogs[0];
         expect(log.step).toBe('test_step');
@@ -170,9 +170,9 @@ describe('RequestContext', () => {
       await RequestContext.run(async () => {
         const logger = RequestContext.getLogger();
         logger?.on('log', (log: any) => capturedLogs.push(log));
-        
+
         RequestContext.logLLMCall('start', 'gpt-4', { tokensIn: 100 });
-        
+
         expect(capturedLogs.length).toBeGreaterThan(0);
         const log = capturedLogs[0];
         expect(log.step).toBe('llm_call');
@@ -185,9 +185,9 @@ describe('RequestContext', () => {
       await RequestContext.run(async () => {
         const logger = RequestContext.getLogger();
         logger?.on('log', (log: any) => capturedLogs.push(log));
-        
+
         RequestContext.logToolCall('my_tool', 'start', { param: 'value' });
-        
+
         expect(capturedLogs.length).toBeGreaterThan(0);
         const log = capturedLogs[0];
         expect(log.step).toBe('tool_call');
@@ -199,9 +199,9 @@ describe('RequestContext', () => {
       await RequestContext.run(async () => {
         const logger = RequestContext.getLogger();
         logger?.on('log', (log: any) => capturedLogs.push(log));
-        
+
         RequestContext.logDatabaseOperation('select', 'start', { table: 'users' });
-        
+
         expect(capturedLogs.length).toBeGreaterThan(0);
         const log = capturedLogs[0];
         expect(log.step).toBe('db_select');
@@ -213,12 +213,12 @@ describe('RequestContext', () => {
       await RequestContext.run(async () => {
         const logger = RequestContext.getLogger();
         logger?.on('log', (log: any) => capturedLogs.push(log));
-        
+
         RequestContext.logAPICall('github', 'start', {
           method: 'POST',
           path: '/repos'
         });
-        
+
         expect(capturedLogs.length).toBeGreaterThan(0);
         const log = capturedLogs[0];
         expect(log.step).toBe('api_github');
@@ -231,9 +231,9 @@ describe('RequestContext', () => {
       await RequestContext.run(async () => {
         const logger = RequestContext.getLogger();
         logger?.on('log', (log: any) => capturedLogs.push(log));
-        
+
         RequestContext.logError('processing', new Error('Test error'));
-        
+
         expect(capturedLogs.length).toBeGreaterThan(0);
         const log = capturedLogs[0];
         expect(log.step).toBe('processing');
@@ -250,7 +250,7 @@ describe('RequestContext', () => {
       RequestContext.logDatabaseOperation('insert', 'start');
       RequestContext.logAPICall('service', 'start');
       RequestContext.logError('step', 'error');
-      
+
       // No logs should be produced since no logger is attached
       expect(capturedLogs.length).toBe(0);
     });
@@ -259,22 +259,19 @@ describe('RequestContext', () => {
   describe('Custom Request ID', () => {
     it('should use provided request ID', async () => {
       const customId = 'custom-id-123';
-      
-      await RequestContext.run(
-        async () => {
-          const requestId = RequestContext.getRequestId();
-          expect(requestId).toBe(customId);
-          
-          const logger = RequestContext.getLogger();
-          logger?.on('log', (log: any) => capturedLogs.push(log));
-          
-          RequestContext.logStep('test', 'start');
-          expect(capturedLogs.length).toBeGreaterThan(0);
-          const log = capturedLogs[0];
-          expect(log.requestId).toBe(customId);
-        },
-        customId
-      );
+
+      await RequestContext.run(async () => {
+        const requestId = RequestContext.getRequestId();
+        expect(requestId).toBe(customId);
+
+        const logger = RequestContext.getLogger();
+        logger?.on('log', (log: any) => capturedLogs.push(log));
+
+        RequestContext.logStep('test', 'start');
+        expect(capturedLogs.length).toBeGreaterThan(0);
+        const log = capturedLogs[0];
+        expect(log.requestId).toBe(customId);
+      }, customId);
     });
   });
 
@@ -282,7 +279,7 @@ describe('RequestContext', () => {
     it('should maintain context across async boundaries', async () => {
       await RequestContext.run(async () => {
         const requestId = RequestContext.getRequestId();
-        
+
         // Test with setTimeout
         await new Promise<void>(resolve => {
           setTimeout(() => {
@@ -291,19 +288,19 @@ describe('RequestContext', () => {
             resolve();
           }, 10);
         });
-        
+
         // Test with Promise.resolve
         await Promise.resolve().then(() => {
           const promiseRequestId = RequestContext.getRequestId();
           expect(promiseRequestId).toBe(requestId);
         });
-        
+
         // Test with async/await
         const asyncFunction = async () => {
           await new Promise(resolve => setTimeout(resolve, 5));
           return RequestContext.getRequestId();
         };
-        
+
         const asyncRequestId = await asyncFunction();
         expect(asyncRequestId).toBe(requestId);
       });
@@ -315,18 +312,18 @@ describe('RequestContext', () => {
           await new Promise(resolve => setTimeout(resolve, 10));
           return RequestContext.getRequestId();
         }, 'context-1'),
-        
+
         RequestContext.run(async () => {
           await new Promise(resolve => setTimeout(resolve, 5));
           return RequestContext.getRequestId();
         }, 'context-2'),
-        
+
         RequestContext.run(async () => {
           await new Promise(resolve => setTimeout(resolve, 15));
           return RequestContext.getRequestId();
         }, 'context-3')
       ]);
-      
+
       expect(results[0]).toBe('context-1');
       expect(results[1]).toBe('context-2');
       expect(results[2]).toBe('context-3');

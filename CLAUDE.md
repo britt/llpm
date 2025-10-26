@@ -122,6 +122,7 @@ For more information, read the Bun API docs in `node_modules/bun-types/docs/**.m
 ### Docker Container Management
 
 **When to Rebuild vs Restart:**
+
 - **Code changes in `src/`**: Rebuild + restart
 - **New files added**: Rebuild with `--no-cache` + restart
 - **Dockerfile changes**: Rebuild with `--no-cache` + restart
@@ -131,6 +132,7 @@ For more information, read the Bun API docs in `node_modules/bun-types/docs/**.m
 **Standard Rebuild Workflow:**
 
 Use this for most code changes:
+
 ```bash
 docker-compose build <service-name> && docker-compose restart <service-name>
 docker logs <service-name> --tail 20
@@ -139,6 +141,7 @@ docker logs <service-name> --tail 20
 **Force Rebuild Workflow (when caching causes issues):**
 
 Use this when new files aren't being included or changes aren't appearing:
+
 ```bash
 docker-compose stop <service-name>
 docker-compose rm -f <service-name>
@@ -151,11 +154,13 @@ docker logs <service-name> --tail 20
 **CRITICAL: Always Test Docker Container Changes:**
 
 After making changes to Docker containers (Dockerfiles, entrypoint scripts, etc.), you MUST:
+
 1. **Rebuild and restart** the affected container
 2. **Test the changes** by running commands or exercising the modified code path
 3. **Verify success** before committing
 
 Example testing workflow:
+
 ```bash
 # 1. Rebuild and restart
 docker-compose build <service-name> && docker-compose up -d <service-name>
@@ -174,11 +179,13 @@ docker exec <container-name> bash -c 'echo $VARIABLE_NAME'
 ```
 
 **Why this matters:**
+
 - Container changes can't be tested without rebuilding
 - Incorrect paths, permissions, or syntax errors won't surface until runtime
 - Failed changes waste time and create broken commits
 
 **Common Services:**
+
 - `rest-broker` (image: `llpm-rest-broker`)
 - `claude-code` (image: `llpm-claude-code`)
 - `openai-codex` (image: `llpm-openai-codex`)
@@ -186,12 +193,14 @@ docker exec <container-name> bash -c 'echo $VARIABLE_NAME'
 - `opencode` (image: `llpm-opencode`)
 
 **Example: Standard rebuild for rest-broker:**
+
 ```bash
 docker-compose build rest-broker && docker-compose restart rest-broker
 docker logs rest-broker --tail 20
 ```
 
 **Example: Force rebuild for rest-broker:**
+
 ```bash
 docker-compose stop rest-broker
 docker-compose rm -f rest-broker
@@ -202,6 +211,7 @@ docker logs rest-broker --tail 20
 ```
 
 **Verifying Changes Were Applied:**
+
 - Check container logs for startup messages
 - Inspect files inside container: `docker exec <service-name> ls -la /path/to/files`
 - Check TypeScript compilation: Look for "Compilation complete" in logs
@@ -212,11 +222,13 @@ docker logs rest-broker --tail 20
 **IMPORTANT:** Each agent instance has its own isolated workspace directory to prevent cross-agent file conflicts.
 
 **How it works:**
+
 - When using `scale.sh` to start agents, the system auto-generates `docker-compose.override.yml`
 - Each agent gets a unique workspace: `~/.llpm/workspaces/<agent-id>/`
 - Example: `claude-code-1` → `~/.llpm/workspaces/claude-code-1/`
 
 **Rules when working with agents:**
+
 1. **Always use `scale.sh`** instead of direct `docker-compose up --scale`:
    - ✅ Correct: `./scale.sh dev`
    - ❌ Wrong: `docker-compose up -d --scale claude-code=2` (no isolation)
@@ -226,6 +238,7 @@ docker logs rest-broker --tail 20
    - Files created in one agent are NOT visible in other agents
 
 3. **Testing workspace isolation:**
+
    ```bash
    # Verify workspaces exist
    ls -la ~/.llpm/workspaces/
@@ -241,6 +254,7 @@ docker logs rest-broker --tail 20
    - Default: `~/.llpm/workspaces/`
 
 **When modifying workspace behavior:**
+
 - Changes to `workspace-utils.sh` or `generate-compose-override.sh` affect all agents
 - Test with multiple agents to ensure isolation still works
 - Verify workspace directories are created with correct permissions
@@ -270,12 +284,14 @@ docker logs rest-broker --tail 20
 LLPM uses ONLY shot-scraper for screenshots. NEVER use JINA screenshot tools!
 
 **AI Tools for Screenshots (shot-scraper ONLY):**
+
 - `take_screenshot`: Take a screenshot of any web page with customizable options
 - `check_screenshot_setup`: Check if shot-scraper is properly installed and configured
 
 **IMPORTANT: Use only the shot-scraper tools for screenshots!**
 
 **Key Features:**
+
 - **URL Screenshots**: Capture any web page by URL
 - **Custom Dimensions**: Specify browser width/height (default: 1280x720)
 - **Element Selection**: Screenshot specific CSS selectors instead of full page
@@ -284,11 +300,13 @@ LLPM uses ONLY shot-scraper for screenshots. NEVER use JINA screenshot tools!
 - **Temporary Storage**: Screenshots saved to system temp directory
 
 **Setup Requirements:**
+
 1. Install uv: `curl -LsSf https://astral.sh/uv/install.sh | sh`
 2. Install shot-scraper: `uv pip install shot-scraper`
 3. Verify: `uvx shot-scraper --version`
 
 **AI Tool Usage Examples:**
+
 ```
 User: "Take a screenshot of https://example.com"
 Assistant: I'll take a screenshot using shot-scraper.
@@ -361,6 +379,7 @@ The AI automatically uses shot-scraper when requested and provides the file path
 #### Model Configuration
 
 Environment variables (configure at least one):
+
 ```env
 OPENAI_API_KEY=your-openai-key
 ANTHROPIC_API_KEY=your-anthropic-key
@@ -381,11 +400,13 @@ GOOGLE_VERTEX_REGION=us-central1  # optional
 LLPM can upload and attach files when creating or commenting on GitHub issues and pull requests:
 
 **AI Tools with File Attachment Support:**
+
 - `create_github_issue`: Create issues with optional file attachments
-- `comment_on_github_issue`: Add comments with optional file attachments  
+- `comment_on_github_issue`: Add comments with optional file attachments
 - `create_github_pull_request`: Create PRs with optional file attachments
 
 **Key Features:**
+
 - **Automatic Upload**: Files are uploaded to GitHub gists for reliable hosting
 - **Smart Detection**: Images get image markdown syntax, other files get download links
 - **Multiple Files**: Support for attaching multiple files at once
@@ -393,11 +414,13 @@ LLPM can upload and attach files when creating or commenting on GitHub issues an
 - **File Size Info**: Shows file sizes in attachment links
 
 **Supported File Types:**
+
 - **Images**: PNG, JPG, JPEG, GIF, BMP, WEBP (displayed inline)
 - **Text Files**: TXT, MD, JSON, JS, TS, HTML, CSS, LOG, YAML, XML, CSV
 - **Binary Files**: Any other file type (linked for download)
 
 **AI Tool Usage Examples:**
+
 ```
 User: "Create an issue about the login bug and attach the error screenshot"
 Assistant: I'll create the issue and upload your screenshot.
@@ -409,6 +432,7 @@ Assistant: I'll add a comment with the log file attached.
 ```
 
 **Implementation Details:**
+
 - Files are uploaded as private GitHub gists for secure, permanent hosting
 - Attachment markdown is appended to issue/PR/comment body automatically
 - Upload failures are handled gracefully without blocking issue/PR creation
@@ -421,18 +445,21 @@ Assistant: I'll add a comment with the log file attached.
 - Environment variable: `GITHUB_TOKEN` for authentication
 
 #### Project Board Integration
+
 - **Automatic Linking**: Link LLPM projects with GitHub Project Boards for seamless integration
 - **Auto-Assignment**: Newly created issues/PRs are automatically added to the linked project board
 - **AI Tools**: Comprehensive AI tools for setting, viewing, and managing project board configurations
 - **Configuration**: Project board settings are stored in project metadata and persist across sessions
 
 AI Tools for Project Board Management:
+
 - `set_project_board`: Link a GitHub Project Board to current LLPM project
 - `get_project_board_info`: View current project board configuration with optional validation
 - `remove_project_board`: Remove project board link from current project
 - `list_available_project_boards`: List all available project boards for an owner
 
 Example AI Usage:
+
 ```
 User: Link this project to GitHub project board #8 for user 'myorg'
 Assistant: I'll link your current project to the GitHub project board using the set_project_board tool.
@@ -455,6 +482,7 @@ Assistant: I'll link your current project to the GitHub project board using the 
 ### AI Tool Creation Rules
 
 **CRITICAL: Always Use `inputSchema` for AI Tools**
+
 - **ALWAYS use `inputSchema`** when defining tools with our custom `tool()` wrapper
 - **NEVER use `parameters`** - AI SDK v5 expects `inputSchema` directly
 - Check existing tools in the codebase before creating new ones to follow the same pattern
@@ -486,21 +514,25 @@ export const noParamTool = tool({
 ```
 
 **How It Works:**
+
 1. You define tools with `inputSchema` (what AI SDK expects)
 2. Our wrapper (`src/tools/instrumentedTool.ts`) adds logging but passes config through unchanged
 3. The AI SDK receives `inputSchema` directly
 4. Returned tool objects have `.inputSchema` property (use this in tests)
 
 **Why This Matters:**
+
 - AI SDK v5 expects `inputSchema` - using anything else causes JSON Schema conversion errors
 - OpenAI/Anthropic APIs require valid JSON Schema with `type: "object"`
 - Empty schemas `z.object({})` work correctly when passed as `inputSchema`
 
 **CRITICAL SCREENSHOT RULE:**
+
 - **ONLY use shot-scraper tools for screenshots** (`take_screenshot`, `check_screenshot_setup`)
 - **Use built-in web content tools** for web page reading (`read_web_page`, `summarize_web_page`)
 
 **CRITICAL RULE: NEVER MODIFY EXISTING TOOL SCHEMAS ACROSS THE CODEBASE**
+
 - **ONLY modify the specific tools you are asked to work on**
 - **NEVER change `inputSchema` to `parameters` (or vice versa) across existing tool files**
 - **NEVER make sweeping changes to tool definitions across multiple files**
@@ -510,12 +542,14 @@ export const noParamTool = tool({
 - When debugging tool issues, isolate the problem to specific tools - don't touch everything
 
 **Why This Matters:**
+
 - Changing tool schemas across the board breaks existing functionality
 - OpenAI/Anthropic APIs are sensitive to schema format changes
 - You've made this mistake MULTIPLE TIMES - learn from it
 - Most tool issues are in the conversion layer, NOT individual tool definitions
 
 **Examples:**
+
 ```typescript
 // ✅ CORRECT - Adding new tools to existing file
 // In restBrokerTools.ts:
@@ -536,17 +570,20 @@ export const newTool1 = tool({ ... }); // Your new tool
 ### Type System Rules
 
 **Rule 1: Never Create Custom Types When Library Types Exist**
+
 - **ALWAYS use the library's built-in types** instead of creating your own
-- **Check the library documentation first** before defining any custom interfaces  
+- **Check the library documentation first** before defining any custom interfaces
 - **Import and use official types** from the library's type definitions
 
 Examples:
+
 - ✅ `import { Message } from 'ai'`
 - ❌ `interface Message { role: string; content: string; }`
 - ✅ `import { ChatCompletionTool } from 'openai/resources/chat/completions'`
 - ❌ `interface ToolDefinition { name: string; description: string; }`
 
 **Rule 2: Library Types Take Precedence**
+
 - When integrating with external libraries, **their type system is the source of truth**
 - **Don't fight the library's type system** - work with it, not against it
 - If you need to extend a library type, use intersection types or inheritance
@@ -554,16 +591,19 @@ Examples:
 - ❌ Completely redefining what a Message should look like
 
 **Rule 3: Read the Documentation First**
+
 - **Always check the library's TypeScript definitions** before writing code
 - **Look at official examples** to understand the expected data structures
 - **Don't assume** - verify the correct types and formats
 
 **Rule 4: Use Library Utilities and Helpers**
+
 - **Use the library's own utility functions** for creating objects
 - **Don't manually construct complex objects** that the library provides helpers for
 - **Follow the library's patterns and conventions**
 
 Example of proper AI SDK usage:
+
 ```typescript
 // WRONG - Custom types fighting the library
 interface CustomTool {
@@ -584,8 +624,9 @@ const myTool = tool({
 ```
 
 **Why These Rules Matter:**
+
 1. **Prevents Integration Issues**: Using library types ensures compatibility
-2. **Reduces Bugs**: Library types are tested and validated  
+2. **Reduces Bugs**: Library types are tested and validated
 3. **Improves Maintainability**: Changes in library versions are automatically handled
 4. **Follows Best Practices**: Library authors know their system best
 5. **Saves Time**: No need to reverse-engineer or guess at type structures
@@ -595,15 +636,18 @@ const myTool = tool({
 LLPM includes AI tools that allow the model to analyze and understand project structure:
 
 **AI Tools for Project Analysis:**
+
 - `scan_project`: Analyze current project codebase and store results in memory
-- `get_project_scan`: Retrieve previously cached project analysis from memory  
+- `get_project_scan`: Retrieve previously cached project analysis from memory
 - `list_project_scans`: List all cached project scans across multiple projects
 
 **Command Line Interface:**
+
 - `/project-scan` - Analyze the current project and display detailed summary
 - `/project-scan help` - Show help for the project scan command
 
 **Key Features:**
+
 - **Comprehensive Analysis**: File types, languages, directory structure, code metrics
 - **Memory Storage**: Results cached in memory for AI to reference across conversations
 - **Smart Filtering**: Automatically ignores build artifacts, dependencies, hidden files
@@ -611,6 +655,7 @@ LLPM includes AI tools that allow the model to analyze and understand project st
 - **Rich Metrics**: Lines of code, file counts, largest files, language distribution
 
 **Example AI Usage:**
+
 ```
 User: "Analyze the current project structure"
 Assistant: I'll scan the project to understand its structure and composition.
@@ -643,11 +688,13 @@ The AI can now understand project architecture and provide contextually relevant
 This project follows semantic versioning (MAJOR.MINOR.PATCH):
 
 **Version Bump Rules:**
+
 - **PATCH (0.0.x)**: Bug fixes, documentation updates, small improvements, test fixes
 - **MINOR (0.x.0)**: New features, new commands, new tools, API additions that maintain backward compatibility
 - **MAJOR (x.0.0)**: Breaking changes, API removals, significant architecture changes
 
 **When to Bump:**
+
 - **Always bump MINOR** for new features like:
   - New slash commands (e.g., `/credentials`)
   - New AI tools for LLM integration
@@ -667,7 +714,11 @@ This project follows semantic versioning (MAJOR.MINOR.PATCH):
 
 ### Development Workflow
 
-- Always run lint/typecheck commands if available before committing
+- **CRITICAL: Always run lint and typecheck before committing**:
+  - Run `bun run lint` to check for code quality issues
+  - Run `bun run typecheck` to verify TypeScript types
+  - Fix all errors before committing (warnings are acceptable if documented)
+  - Only commit when both checks pass with 0 errors
 - Use TodoWrite tool for complex multi-step tasks to track progress
 - Mark todos as completed immediately after finishing tasks
 - **Commit changes regularly**: After completing 2-3 related tasks or making significant progress, commit changes to maintain good version history
@@ -690,6 +741,7 @@ This project follows semantic versioning (MAJOR.MINOR.PATCH):
   - **Use this to find unused functions, methods, and variables**
 
 **When to use:**
+
 ```bash
 # Before committing (standard checks)
 bun run lint

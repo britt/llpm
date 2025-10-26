@@ -15,7 +15,7 @@ agentsRouter.get('/', async (req: Request, res: Response) => {
   const agents = agentManager.getAgents();
 
   res.json({
-    agents,
+    agents
   });
 });
 
@@ -28,7 +28,7 @@ agentsRouter.get('/:agentId', (req: Request, res: Response) => {
       status: 404,
       code: 'AGENT_NOT_FOUND',
       message: 'Agent not found',
-      agentId: req.params.agentId,
+      agentId: req.params.agentId
     });
   }
 
@@ -47,7 +47,7 @@ agentsRouter.patch('/:agentId/auth', async (req: Request, res: Response) => {
         status: 404,
         code: 'AGENT_NOT_FOUND',
         message: 'Agent not found',
-        agentId,
+        agentId
       });
     }
 
@@ -55,7 +55,7 @@ agentsRouter.patch('/:agentId/auth', async (req: Request, res: Response) => {
     return res.json({
       status: 200,
       message: 'Agent marked as authenticated',
-      agent,
+      agent
     });
   } catch (error: any) {
     if (error.message.includes('Only subscription agents')) {
@@ -63,14 +63,14 @@ agentsRouter.patch('/:agentId/auth', async (req: Request, res: Response) => {
         status: 400,
         code: 'INVALID_AUTH_TYPE',
         message: error.message,
-        agentId,
+        agentId
       });
     }
 
     return res.status(500).json({
       status: 500,
       code: 'AUTHENTICATION_FAILED',
-      message: error.message || 'Failed to mark agent as authenticated',
+      message: error.message || 'Failed to mark agent as authenticated'
     });
   }
 });

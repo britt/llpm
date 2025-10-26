@@ -127,12 +127,13 @@ export class AgentManager extends EventEmitter {
       // Find the workspace mount (look for common workspace paths in the container)
       const workspaceMount = mounts.find((mount: any) => {
         const dest = mount.Destination;
-        return dest && (
-          dest.includes('workspace') ||
-          dest === '/home/claude/workspace' ||
-          dest === '/codex-workspace' ||
-          dest === '/aider-workspace' ||
-          dest === '/opencode-workspace'
+        return (
+          dest &&
+          (dest.includes('workspace') ||
+            dest === '/home/claude/workspace' ||
+            dest === '/codex-workspace' ||
+            dest === '/aider-workspace' ||
+            dest === '/opencode-workspace')
         );
       });
 
@@ -164,32 +165,35 @@ export class AgentManager extends EventEmitter {
       const containers = stdout.trim().split('\n').filter(Boolean);
 
       // Agent type definitions with metadata
-      const agentTypes: Record<string, {
-        name: string;
-        provider?: string;
-        model?: string;
-        baseUrl?: string;
-      }> = {
+      const agentTypes: Record<
+        string,
+        {
+          name: string;
+          provider?: string;
+          model?: string;
+          baseUrl?: string;
+        }
+      > = {
         'claude-code': {
           name: 'Claude Code Assistant',
           provider: 'claude',
           model: process.env.CLAUDE_MODEL || 'claude-sonnet-4-5',
-          baseUrl: authType === 'subscription' ? `${litellmBaseUrl}/claude` : litellmBaseUrl,
+          baseUrl: authType === 'subscription' ? `${litellmBaseUrl}/claude` : litellmBaseUrl
         },
         'openai-codex': {
           name: 'OpenAI Codex',
           provider: 'openai',
           model: process.env.OPENAI_MODEL || 'gpt-4-turbo-preview',
-          baseUrl: authType === 'subscription' ? `${litellmBaseUrl}/codex` : litellmBaseUrl,
+          baseUrl: authType === 'subscription' ? `${litellmBaseUrl}/codex` : litellmBaseUrl
         },
-        'aider': {
+        aider: {
           name: 'Aider Assistant',
-          baseUrl: litellmBaseUrl,
+          baseUrl: litellmBaseUrl
         },
-        'opencode': {
+        opencode: {
           name: 'Open Code Assistant',
-          baseUrl: litellmBaseUrl,
-        },
+          baseUrl: litellmBaseUrl
+        }
       };
 
       const now = new Date().toISOString();
@@ -221,7 +225,7 @@ export class AgentManager extends EventEmitter {
             status: 'unknown',
             lastCheck: now,
             authenticated: needsAuth ? false : undefined,
-            message: needsAuth ? 'Agent initialized - awaiting authentication' : undefined,
+            message: needsAuth ? 'Agent initialized - awaiting authentication' : undefined
           },
           registeredAt: now,
           lastHeartbeat: now,
@@ -230,15 +234,17 @@ export class AgentManager extends EventEmitter {
           model: hasAuthConfig ? agentMetadata.model : undefined,
           baseUrl: agentMetadata.baseUrl,
           metadata: {
-            workspacePath: workspacePath,
-          },
+            workspacePath: workspacePath
+          }
         };
 
         this.agents.set(agent.id, agent);
         logger.info(`Discovered agent: ${agentId} (${containerName})`);
       }
 
-      logger.info(`Discovered ${this.agents.size} running agent containers with auth_type=${authType}`);
+      logger.info(
+        `Discovered ${this.agents.size} running agent containers with auth_type=${authType}`
+      );
     } catch (error) {
       logger.error('Failed to discover agent containers:', error);
     }
@@ -247,7 +253,7 @@ export class AgentManager extends EventEmitter {
   private startHealthChecks(): void {
     // Initial health check
     this.checkAllAgentHealth();
-    
+
     // Schedule periodic health checks
     const interval = parseInt(process.env.HEALTH_CHECK_INTERVAL || '30000'); // 30 seconds
     this.healthCheckInterval = setInterval(() => {
@@ -256,9 +262,7 @@ export class AgentManager extends EventEmitter {
   }
 
   private async checkAllAgentHealth(): Promise<void> {
-    const promises = Array.from(this.agents.values()).map(agent =>
-      this.checkAgentHealth(agent)
-    );
+    const promises = Array.from(this.agents.values()).map(agent => this.checkAgentHealth(agent));
     await Promise.allSettled(promises);
   }
 
@@ -278,7 +282,7 @@ export class AgentManager extends EventEmitter {
       agent.health = {
         status: 'unhealthy',
         lastCheck: new Date().toISOString(),
-        message: error instanceof Error ? error.message : 'Health check failed',
+        message: error instanceof Error ? error.message : 'Health check failed'
       };
     }
   }
@@ -293,19 +297,19 @@ export class AgentManager extends EventEmitter {
           status: 'healthy',
           lastCheck: new Date().toISOString(),
           message: 'Unix socket connected',
-          authenticated: agent.health.authenticated, // Preserve authentication state
+          authenticated: agent.health.authenticated // Preserve authentication state
         };
         socket.end();
         resolve();
       });
 
-      socket.on('error', (err) => {
+      socket.on('error', err => {
         agent.status = 'offline';
         agent.health = {
           status: 'unhealthy',
           lastCheck: new Date().toISOString(),
           message: `Socket error: ${err.message}`,
-          authenticated: agent.health.authenticated, // Preserve authentication state
+          authenticated: agent.health.authenticated // Preserve authentication state
         };
         reject(err);
       });
@@ -329,7 +333,7 @@ export class AgentManager extends EventEmitter {
           status: 'healthy',
           lastCheck: new Date().toISOString(),
           message: 'Docker container is running',
-          authenticated: agent.health.authenticated, // Preserve authentication state
+          authenticated: agent.health.authenticated // Preserve authentication state
         };
       } else {
         agent.status = 'offline';
@@ -337,7 +341,7 @@ export class AgentManager extends EventEmitter {
           status: 'unhealthy',
           lastCheck: new Date().toISOString(),
           message: 'Docker container not found or not running',
-          authenticated: agent.health.authenticated, // Preserve authentication state
+          authenticated: agent.health.authenticated // Preserve authentication state
         };
       }
     } catch (error) {
@@ -347,7 +351,7 @@ export class AgentManager extends EventEmitter {
         status: 'unknown',
         lastCheck: new Date().toISOString(),
         message: error instanceof Error ? error.message : 'Health check failed',
-        authenticated: agent.health.authenticated, // Preserve authentication state
+        authenticated: agent.health.authenticated // Preserve authentication state
       };
     }
   }
@@ -414,9 +418,10 @@ export class AgentManager extends EventEmitter {
     }
 
     // Use provided authType, fallback to env AGENT_AUTH_TYPE, then default to 'api_key'
-    const authType = agentData.authType ||
-                     (process.env.AGENT_AUTH_TYPE as 'subscription' | 'api_key') ||
-                     'api_key';
+    const authType =
+      agentData.authType ||
+      (process.env.AGENT_AUTH_TYPE as 'subscription' | 'api_key') ||
+      'api_key';
 
     // Validate that subscription agents have provider and model
     if (authType === 'subscription') {
@@ -436,8 +441,11 @@ export class AgentManager extends EventEmitter {
       health: {
         status: authType === 'subscription' ? 'healthy' : 'healthy',
         lastCheck: new Date().toISOString(),
-        message: authType === 'subscription' ? 'Agent registered - awaiting authentication' : 'Agent registered',
-        authenticated: authType === 'subscription' ? false : undefined,
+        message:
+          authType === 'subscription'
+            ? 'Agent registered - awaiting authentication'
+            : 'Agent registered',
+        authenticated: authType === 'subscription' ? false : undefined
       },
       host: agentData.host,
       port: agentData.port,
@@ -446,7 +454,7 @@ export class AgentManager extends EventEmitter {
       lastHeartbeat: new Date().toISOString(),
       authType,
       provider: agentData.provider,
-      model: agentData.model,
+      model: agentData.model
     };
 
     this.agents.set(agent.id, agent);
@@ -463,27 +471,27 @@ export class AgentManager extends EventEmitter {
 
     return true;
   }
-  
+
   async deregisterAgent(agentId: string): Promise<boolean> {
     const agent = this.agents.get(agentId);
     if (!agent) {
       return false;
     }
-    
+
     this.agents.delete(agentId);
     logger.info(`Agent ${agentId} deregistered`);
     this.emit('agent:deregistered', agent);
-    
+
     // Close any existing socket connections
     const socket = this.socketConnections.get(agentId);
     if (socket) {
       socket.end();
       this.socketConnections.delete(agentId);
     }
-    
+
     return true;
   }
-  
+
   async updateAgentHeartbeat(
     agentId: string,
     status?: 'available' | 'busy',
@@ -499,7 +507,7 @@ export class AgentManager extends EventEmitter {
       status: 'healthy',
       lastCheck: new Date().toISOString(),
       message: 'Heartbeat received',
-      authenticated: agent.health.authenticated,
+      authenticated: agent.health.authenticated
     };
 
     if (status) {
@@ -529,7 +537,7 @@ export class AgentManager extends EventEmitter {
     agent.health = {
       ...agent.health,
       authenticated: true,
-      message: 'Agent authenticated successfully',
+      message: 'Agent authenticated successfully'
     };
 
     logger.info(`Agent ${agentId} marked as authenticated`);
@@ -547,10 +555,10 @@ export class AgentManager extends EventEmitter {
 
     // Map provider to passthrough path
     const providerPathMap: Record<string, string> = {
-      'claude': '/claude',
-      'codex': '/codex',
-      'openai': '/codex',
-      'anthropic': '/claude',
+      claude: '/claude',
+      codex: '/codex',
+      openai: '/codex',
+      anthropic: '/claude'
     };
 
     const path = providerPathMap[agent.provider.toLowerCase()];
@@ -582,14 +590,17 @@ export class AgentManager extends EventEmitter {
     const interval = parseInt(process.env.CLEANUP_INTERVAL || '120000');
     this.cleanupInterval = setInterval(() => {
       // First rediscover all running containers
-      this.discoverAgentContainers().catch(error => {
-        logger.error('Periodic discovery failed:', error);
-      }).then(() => {
-        // Then cleanup stale agents
-        return this.cleanupStaleAgents();
-      }).catch(error => {
-        logger.error('Periodic cleanup failed:', error);
-      });
+      this.discoverAgentContainers()
+        .catch(error => {
+          logger.error('Periodic discovery failed:', error);
+        })
+        .then(() => {
+          // Then cleanup stale agents
+          return this.cleanupStaleAgents();
+        })
+        .catch(error => {
+          logger.error('Periodic cleanup failed:', error);
+        });
     }, interval);
 
     logger.info(`Started periodic agent discovery and cleanup with interval=${interval}ms`);
@@ -629,15 +640,17 @@ export class AgentManager extends EventEmitter {
 
     // Map provider to auth verifier provider type
     const providerMap: Record<string, 'claude' | 'openai'> = {
-      'claude': 'claude',
-      'anthropic': 'claude',
-      'openai': 'openai',
-      'codex': 'openai',
+      claude: 'claude',
+      anthropic: 'claude',
+      openai: 'openai',
+      codex: 'openai'
     };
 
     const authProvider = providerMap[agent.provider.toLowerCase()];
     if (!authProvider) {
-      logger.debug(`Unknown provider ${agent.provider} for agent ${agent.id}, skipping auth verification`);
+      logger.debug(
+        `Unknown provider ${agent.provider} for agent ${agent.id}, skipping auth verification`
+      );
       return;
     }
 
@@ -650,7 +663,7 @@ export class AgentManager extends EventEmitter {
         authenticated: authResult.authenticated,
         authExpiresAt: authResult.expiresAt,
         authLastVerifiedAt: authResult.lastVerifiedAt,
-        subscriptionType: authResult.subscriptionType,
+        subscriptionType: authResult.subscriptionType
       };
 
       // Update message based on auth state
@@ -671,7 +684,7 @@ export class AgentManager extends EventEmitter {
       logger.error(`Failed to verify authentication for agent ${agent.id}:`, error);
       agent.health = {
         ...agent.health,
-        message: 'Authentication verification failed',
+        message: 'Authentication verification failed'
       };
     }
   }

@@ -38,28 +38,32 @@ app.locals.agentManager = agentManager;
 app.locals.jobQueue = jobQueue;
 
 // Security middleware with relaxed CSP for UI
-app.use(helmet({
-  contentSecurityPolicy: {
-    directives: {
-      defaultSrc: ["'self'"],
-      scriptSrc: ["'self'"],
-      scriptSrcAttr: ["'self'"], // Allow event listeners from same origin
-      styleSrc: ["'self'", "'unsafe-inline'"], // Allow inline styles
-      imgSrc: ["'self'", 'data:', 'https:'],
-      connectSrc: ["'self'"],
-      fontSrc: ["'self'"],
-      objectSrc: ["'none'"],
-      mediaSrc: ["'self'"],
-      frameSrc: ["'none'"],
-    },
-  },
-}));
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'"],
+        scriptSrcAttr: ["'self'"], // Allow event listeners from same origin
+        styleSrc: ["'self'", "'unsafe-inline'"], // Allow inline styles
+        imgSrc: ["'self'", 'data:', 'https:'],
+        connectSrc: ["'self'"],
+        fontSrc: ["'self'"],
+        objectSrc: ["'none'"],
+        mediaSrc: ["'self'"],
+        frameSrc: ["'none'"]
+      }
+    }
+  })
+);
 
 // CORS configuration
-app.use(cors({
-  origin: process.env.CORS_ORIGIN || '*',
-  credentials: true,
-}));
+app.use(
+  cors({
+    origin: process.env.CORS_ORIGIN || '*',
+    credentials: true
+  })
+);
 
 // Compression
 app.use(compression());
@@ -68,7 +72,7 @@ app.use(compression());
 const limiter = rateLimit({
   windowMs: parseInt(process.env.RATE_LIMIT_WINDOW || '60000'), // 1 minute
   max: parseInt(process.env.RATE_LIMIT_MAX || '100'), // limit each IP to 100 requests per windowMs
-  message: 'Too many requests from this IP, please try again later.',
+  message: 'Too many requests from this IP, please try again later.'
 });
 app.use('/agents/*/jobs', limiter);
 
@@ -80,11 +84,15 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(requestLogger);
 
 // API Documentation
-app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument, {
-  customCss: '.swagger-ui .topbar { display: none }',
-  customSiteTitle: 'LLPM REST API Broker',
-  explorer: true,
-}));
+app.use(
+  '/docs',
+  swaggerUi.serve,
+  swaggerUi.setup(swaggerDocument, {
+    customCss: '.swagger-ui .topbar { display: none }',
+    customSiteTitle: 'LLPM REST API Broker',
+    explorer: true
+  })
+);
 
 // Serve OpenAPI spec as JSON
 app.get('/openapi.json', (_req: Request, res: Response) => {
@@ -119,7 +127,7 @@ app.get('/', (_req: Request, res: Response) => {
     documentation: '/docs',
     openapi: '/openapi.json',
     health: '/health',
-    ui: '/ui/agents',
+    ui: '/ui/agents'
   });
 });
 
@@ -128,7 +136,7 @@ app.use((_req: Request, res: Response) => {
   res.status(404).json({
     status: 404,
     code: 'NOT_FOUND',
-    message: 'The requested resource was not found',
+    message: 'The requested resource was not found'
   });
 });
 
@@ -155,7 +163,7 @@ async function startServer() {
   try {
     // Initialize agent connections
     await agentManager.initialize();
-    
+
     app.listen(PORT, () => {
       logger.info(`REST API Broker started on http://${HOST}:${PORT}`);
       logger.info(`API Documentation available at http://${HOST}:${PORT}/docs`);

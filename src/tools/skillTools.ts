@@ -30,10 +30,12 @@ Use this when:
 Skills are injected as additional context and their instructions become part of your working knowledge for this conversation turn.`,
 
   inputSchema: z.object({
-    skill_names: z.array(z.string())
+    skill_names: z
+      .array(z.string())
       .min(1)
       .describe('Array of skill names to load (e.g., ["mermaid-diagrams", "user-story-template"])'),
-    reason: z.string()
+    reason: z
+      .string()
       .optional()
       .describe('Optional explanation of why you are loading these skills')
   }),
@@ -42,7 +44,8 @@ Skills are injected as additional context and their instructions become part of 
     debug('load_skills called with:', { skill_names, reason });
 
     const registry = getSkillRegistry();
-    const results: Array<{ name: string; loaded: boolean; error?: string; description?: string }> = [];
+    const results: Array<{ name: string; loaded: boolean; error?: string; description?: string }> =
+      [];
     const loadedSkills: any[] = [];
 
     for (const skillName of skill_names) {
@@ -137,10 +140,12 @@ Skills are injected as additional context and their instructions become part of 
  */
 export const listAvailableSkillsTool = tool({
   name: 'list_available_skills',
-  description: 'List all available skills that can be loaded, including their descriptions and status.',
+  description:
+    'List all available skills that can be loaded, including their descriptions and status.',
 
   inputSchema: z.object({
-    filter_tags: z.array(z.string())
+    filter_tags: z
+      .array(z.string())
       .optional()
       .describe('Optional: Filter skills by tags (e.g., ["diagram", "documentation"])')
   }),
@@ -164,7 +169,9 @@ export const listAvailableSkillsTool = tool({
     const disabledSkills = skills.filter(s => !s.enabled);
 
     const lines: string[] = [];
-    lines.push(`Found ${skills.length} skill(s)${filter_tags ? ` matching tags: ${filter_tags.join(', ')}` : ''}`);
+    lines.push(
+      `Found ${skills.length} skill(s)${filter_tags ? ` matching tags: ${filter_tags.join(', ')}` : ''}`
+    );
     lines.push('');
 
     if (enabledSkills.length > 0) {

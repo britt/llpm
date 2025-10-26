@@ -16,7 +16,7 @@ describe('AgentManager', () => {
       const registered = await agentManager.registerAgent({
         id: 'test-agent-1',
         name: 'Test Agent 1',
-        type: 'claude-code',
+        type: 'claude-code'
       });
 
       expect(registered).toBe(true);
@@ -33,7 +33,7 @@ describe('AgentManager', () => {
         id: 'test-agent-2',
         name: 'Test Agent 2',
         type: 'openai-codex',
-        authType: 'api_key',
+        authType: 'api_key'
       });
 
       expect(registered).toBe(true);
@@ -53,7 +53,7 @@ describe('AgentManager', () => {
         type: 'claude-code',
         authType: 'subscription',
         provider: 'claude',
-        model: 'claude-3-opus-20240229',
+        model: 'claude-3-opus-20240229'
       });
 
       expect(registered).toBe(true);
@@ -74,7 +74,7 @@ describe('AgentManager', () => {
           name: 'Test Agent 4',
           type: 'claude-code',
           authType: 'subscription',
-          model: 'claude-3-opus-20240229',
+          model: 'claude-3-opus-20240229'
         })
       ).rejects.toThrow('provider is required for subscription auth type');
     });
@@ -86,7 +86,7 @@ describe('AgentManager', () => {
           name: 'Test Agent 5',
           type: 'openai-codex',
           authType: 'subscription',
-          provider: 'openai',
+          provider: 'openai'
         })
       ).rejects.toThrow('model is required for subscription auth type');
     });
@@ -100,7 +100,7 @@ describe('AgentManager', () => {
         type: 'claude-code',
         authType: 'subscription',
         provider: 'claude',
-        model: 'claude-3-opus-20240229',
+        model: 'claude-3-opus-20240229'
       });
 
       const marked = await agentManager.markAgentAuthenticated('test-agent-6');
@@ -121,12 +121,12 @@ describe('AgentManager', () => {
         id: 'test-agent-7',
         name: 'Test Agent 7',
         type: 'claude-code',
-        authType: 'api_key',
+        authType: 'api_key'
       });
 
-      await expect(
-        agentManager.markAgentAuthenticated('test-agent-7')
-      ).rejects.toThrow('Only subscription agents can be marked as authenticated');
+      await expect(agentManager.markAgentAuthenticated('test-agent-7')).rejects.toThrow(
+        'Only subscription agents can be marked as authenticated'
+      );
     });
   });
 
@@ -138,7 +138,7 @@ describe('AgentManager', () => {
         type: 'claude-code',
         authType: 'subscription',
         provider: 'claude',
-        model: 'claude-3-opus-20240229',
+        model: 'claude-3-opus-20240229'
       });
 
       const agent = agentManager.getAgent('test-agent-8');
@@ -154,7 +154,7 @@ describe('AgentManager', () => {
         type: 'openai-codex',
         authType: 'subscription',
         provider: 'openai',
-        model: 'gpt-4',
+        model: 'gpt-4'
       });
 
       const agent = agentManager.getAgent('test-agent-9');
@@ -168,7 +168,7 @@ describe('AgentManager', () => {
         id: 'test-agent-10',
         name: 'Test Agent 10',
         type: 'claude-code',
-        authType: 'api_key',
+        authType: 'api_key'
       });
 
       const agent = agentManager.getAgent('test-agent-10');
@@ -186,10 +186,10 @@ describe('AgentManager', () => {
         status: 'available' as const,
         health: {
           status: 'healthy' as const,
-          lastCheck: new Date().toISOString(),
+          lastCheck: new Date().toISOString()
         },
         authType: 'subscription' as const,
-        registeredAt: new Date().toISOString(),
+        registeredAt: new Date().toISOString()
       };
 
       const url = agentManager.getLiteLLMPassthroughUrl(agent);
@@ -205,7 +205,7 @@ describe('AgentManager', () => {
         type: 'claude-code',
         authType: 'subscription',
         provider: 'claude',
-        model: 'claude-3-opus-20240229',
+        model: 'claude-3-opus-20240229'
       });
 
       // Mark as authenticated
@@ -213,7 +213,7 @@ describe('AgentManager', () => {
 
       // Should not throw
       const jobId = await agentManager.submitJob('test-agent-12', {
-        prompt: 'test prompt',
+        prompt: 'test prompt'
       });
 
       expect(jobId).toBeDefined();
@@ -227,7 +227,7 @@ describe('AgentManager', () => {
         type: 'claude-code',
         authType: 'subscription',
         provider: 'claude',
-        model: 'claude-3-opus-20240229',
+        model: 'claude-3-opus-20240229'
       });
 
       // Don't mark as authenticated
@@ -243,7 +243,7 @@ describe('AgentManager', () => {
         type: 'claude-code',
         authType: 'subscription',
         provider: 'claude',
-        model: 'claude-3-opus-20240229',
+        model: 'claude-3-opus-20240229'
       });
 
       // Manually set expired auth
@@ -252,7 +252,7 @@ describe('AgentManager', () => {
         agent.health = {
           ...agent.health,
           authenticated: true,
-          authExpiresAt: Date.now() - 1000, // Expired 1 second ago
+          authExpiresAt: Date.now() - 1000 // Expired 1 second ago
         };
       }
 
@@ -266,12 +266,12 @@ describe('AgentManager', () => {
         id: 'test-agent-15',
         name: 'Test Agent 15',
         type: 'claude-code',
-        authType: 'api_key',
+        authType: 'api_key'
       });
 
       // Should not throw - api_key agents don't need authentication check
       const jobId = await agentManager.submitJob('test-agent-15', {
-        prompt: 'test prompt',
+        prompt: 'test prompt'
       });
 
       expect(jobId).toBeDefined();

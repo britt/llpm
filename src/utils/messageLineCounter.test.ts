@@ -51,7 +51,11 @@ describe('messageLineCounter', () => {
   });
 
   describe('filterMessagesByLines', () => {
-    const createMessage = (id: string, content: string, role: 'user' | 'assistant' | 'system' = 'user'): Message => ({
+    const createMessage = (
+      id: string,
+      content: string,
+      role: 'user' | 'assistant' | 'system' = 'user'
+    ): Message => ({
       id,
       role,
       content
@@ -73,14 +77,14 @@ describe('messageLineCounter', () => {
 
     it('should filter messages to fit within line limit', () => {
       const messages = [
-        createMessage('1', 'Line 1\nLine 2'),     // 2 lines
-        createMessage('2', 'Line 3\nLine 4'),     // 2 lines
-        createMessage('3', 'Line 5\nLine 6')      // 2 lines
+        createMessage('1', 'Line 1\nLine 2'), // 2 lines
+        createMessage('2', 'Line 3\nLine 4'), // 2 lines
+        createMessage('3', 'Line 5\nLine 6') // 2 lines
       ];
 
       const result = filterMessagesByLines(messages, 4);
 
-      expect(result.visibleMessages).toHaveLength(2);  // Last 2 messages = 4 lines
+      expect(result.visibleMessages).toHaveLength(2); // Last 2 messages = 4 lines
       expect(result.visibleMessages[0].id).toBe('2');
       expect(result.visibleMessages[1].id).toBe('3');
       expect(result.hiddenLinesCount).toBe(2);
@@ -89,9 +93,9 @@ describe('messageLineCounter', () => {
 
     it('should return only messages that completely fit within limit', () => {
       const messages = [
-        createMessage('1', 'Line 1\nLine 2\nLine 3'),  // 3 lines
-        createMessage('2', 'Line 4\nLine 5'),          // 2 lines
-        createMessage('3', 'Line 6')                   // 1 line
+        createMessage('1', 'Line 1\nLine 2\nLine 3'), // 3 lines
+        createMessage('2', 'Line 4\nLine 5'), // 2 lines
+        createMessage('3', 'Line 6') // 1 line
       ];
 
       const result = filterMessagesByLines(messages, 3);
@@ -105,10 +109,7 @@ describe('messageLineCounter', () => {
     });
 
     it('should handle maxLines = 0 by returning all messages', () => {
-      const messages = [
-        createMessage('1', 'Line 1'),
-        createMessage('2', 'Line 2')
-      ];
+      const messages = [createMessage('1', 'Line 1'), createMessage('2', 'Line 2')];
 
       const result = filterMessagesByLines(messages, 0);
 
@@ -117,10 +118,7 @@ describe('messageLineCounter', () => {
     });
 
     it('should handle negative maxLines by returning all messages', () => {
-      const messages = [
-        createMessage('1', 'Line 1'),
-        createMessage('2', 'Line 2')
-      ];
+      const messages = [createMessage('1', 'Line 1'), createMessage('2', 'Line 2')];
 
       const result = filterMessagesByLines(messages, -5);
 
@@ -138,7 +136,7 @@ describe('messageLineCounter', () => {
 
     it('should handle single message exceeding limit', () => {
       const messages = [
-        createMessage('1', 'Line 1\nLine 2\nLine 3\nLine 4\nLine 5')  // 5 lines
+        createMessage('1', 'Line 1\nLine 2\nLine 3\nLine 4\nLine 5') // 5 lines
       ];
 
       const result = filterMessagesByLines(messages, 3);
@@ -151,8 +149,8 @@ describe('messageLineCounter', () => {
 
     it('should calculate correct line counts with mixed line endings', () => {
       const messages = [
-        createMessage('1', 'Line 1\nLine 2\n'),   // 2 lines (trailing newline)
-        createMessage('2', 'Line 3\nLine 4')      // 2 lines (no trailing newline)
+        createMessage('1', 'Line 1\nLine 2\n'), // 2 lines (trailing newline)
+        createMessage('2', 'Line 3\nLine 4') // 2 lines (no trailing newline)
       ];
 
       const result = filterMessagesByLines(messages, 10);

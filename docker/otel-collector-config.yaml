@@ -33,4 +33,4 @@ service:
     traces:
       receivers: [otlp]
       processors: [batch]
-      exporters: [otlp/jaeger, otlp/phoenix, logging]  # Send to both!
+      exporters: [otlp/jaeger, otlp/phoenix, logging] # Send to both!

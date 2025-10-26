@@ -39,13 +39,13 @@ class LoggerRegistry {
     }
 
     this.currentLogger = logger;
-    
+
     if (logger) {
       // Set up new listeners
       logger.on('log', (log: LogEntry) => {
         this.listeners.forEach(listener => listener(log));
       });
-      
+
       logger.on('clear', () => {
         this.clearListeners.forEach(listener => listener());
       });
@@ -127,8 +127,9 @@ export function RequestLogDisplay() {
           };
 
           // Get current entries sorted by order
-          const entries = Array.from(logMapRef.current.entries())
-            .sort((a, b) => a[1].orderIndex - b[1].orderIndex);
+          const entries = Array.from(logMapRef.current.entries()).sort(
+            (a, b) => a[1].orderIndex - b[1].orderIndex
+          );
 
           // If we have a placeholder, replace it
           const placeholderEntry = entries.find(([_, log]) => log.status === 'placeholder');
@@ -171,8 +172,9 @@ export function RequestLogDisplay() {
           };
 
           // Get current entries sorted by order
-          const entries = Array.from(logMapRef.current.entries())
-            .sort((a, b) => a[1].orderIndex - b[1].orderIndex);
+          const entries = Array.from(logMapRef.current.entries()).sort(
+            (a, b) => a[1].orderIndex - b[1].orderIndex
+          );
 
           // If we have a placeholder, replace it
           const placeholderEntry = entries.find(([_, log]) => log.status === 'placeholder');
@@ -213,14 +215,11 @@ export function RequestLogDisplay() {
   });
 
   // Sort logs by insertion order
-  const logs = Array.from(processedLogs.values())
-    .sort((a, b) => a.orderIndex - b.orderIndex);
+  const logs = Array.from(processedLogs.values()).sort((a, b) => a.orderIndex - b.orderIndex);
 
   return (
     <Box flexDirection="column" marginTop={1} paddingLeft={2} height={MAX_VISIBLE_LOGS}>
-      <TaskList>
-        {logs.map((log) => renderProcessedLog(log))}
-      </TaskList>
+      <TaskList>{logs.map(log => renderProcessedLog(log))}</TaskList>
     </Box>
   );
 }
@@ -228,13 +227,7 @@ export function RequestLogDisplay() {
 function renderProcessedLog(log: ProcessedLog) {
   // Handle placeholder entries
   if (log.status === 'placeholder') {
-    return (
-      <Task
-        key={log.key}
-        label="..."
-        state="pending"
-      />
-    );
+    return <Task key={log.key} label="..." state="pending" />;
   }
 
   const parts = [formatStepName(log.step)];
@@ -259,44 +252,19 @@ function renderProcessedLog(log: ProcessedLog) {
 
   // Determine state and status based on log data
   if (log.status === 'running') {
-    return (
-      <Task
-        key={log.key}
-        label={label}
-        state="loading"
-        spinner={staticSpinner}
-      />
-    );
+    return <Task key={log.key} label={label} state="loading" spinner={staticSpinner} />;
   } else if (log.status === 'completed' && log.duration !== undefined) {
     // Render task with custom timing in green
     return (
       <Box key={log.key}>
-        <Task
-          label={label}
-          state="success"
-        />
-        <Text color="#00ff00">
-          {` ${log.duration}ms`}
-        </Text>
+        <Task label={label} state="success" />
+        <Text color="#00ff00">{` ${log.duration}ms`}</Text>
       </Box>
     );
   } else if (log.metadata?.error) {
-    return (
-      <Task
-        key={log.key}
-        label={label}
-        state="error"
-        status={log.metadata.error}
-      />
-    );
+    return <Task key={log.key} label={label} state="error" status={log.metadata.error} />;
   } else {
-    return (
-      <Task
-        key={log.key}
-        label={label}
-        state="pending"
-      />
-    );
+    return <Task key={log.key} label={label} state="pending" />;
   }
 }
 
@@ -304,7 +272,7 @@ function formatStepName(step: string): string {
   // Make step names more readable
   return step
     .replace(/_/g, ' ')
-    .replace(/^(llm|api|db|tool)/, (match) => match.toUpperCase())
+    .replace(/^(llm|api|db|tool)/, match => match.toUpperCase())
     .replace(/call/, '')
     .trim();
 }

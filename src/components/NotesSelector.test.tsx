@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { describe, it, expect } from 'vitest';
 import type React from 'react';
 
@@ -6,9 +7,27 @@ describe('NotesSelector', () => {
   it('should handle search input changes synchronously', () => {
     // Test that search handler updates state immediately
     const allNotes = [
-      { id: 1, title: 'Test Note 1', content: 'Content 1', createdAt: '2025-01-01', updatedAt: '2025-01-01' },
-      { id: 2, title: 'Test Note 2', content: 'Content 2', createdAt: '2025-01-01', updatedAt: '2025-01-01' },
-      { id: 3, title: 'Another Note', content: 'Different content', createdAt: '2025-01-01', updatedAt: '2025-01-01' },
+      {
+        id: 1,
+        title: 'Test Note 1',
+        content: 'Content 1',
+        createdAt: '2025-01-01',
+        updatedAt: '2025-01-01'
+      },
+      {
+        id: 2,
+        title: 'Test Note 2',
+        content: 'Content 2',
+        createdAt: '2025-01-01',
+        updatedAt: '2025-01-01'
+      },
+      {
+        id: 3,
+        title: 'Another Note',
+        content: 'Different content',
+        createdAt: '2025-01-01',
+        updatedAt: '2025-01-01'
+      }
     ];
 
     // Simulate the search logic
@@ -18,9 +37,10 @@ describe('NotesSelector', () => {
       }
 
       const lowerQuery = query.toLowerCase();
-      const filtered = notes.filter(note =>
-        note.title.toLowerCase().includes(lowerQuery) ||
-        note.content.toLowerCase().includes(lowerQuery)
+      const filtered = notes.filter(
+        note =>
+          note.title.toLowerCase().includes(lowerQuery) ||
+          note.content.toLowerCase().includes(lowerQuery)
       );
       return filtered.slice(0, 10);
     };
@@ -53,9 +73,10 @@ describe('NotesSelector', () => {
       }
 
       const lowerQuery = query.toLowerCase();
-      const filtered = notes.filter(note =>
-        note.title.toLowerCase().includes(lowerQuery) ||
-        note.content.toLowerCase().includes(lowerQuery)
+      const filtered = notes.filter(
+        note =>
+          note.title.toLowerCase().includes(lowerQuery) ||
+          note.content.toLowerCase().includes(lowerQuery)
       );
       return filtered.slice(0, 10);
     };
@@ -78,7 +99,10 @@ describe('NotesSelector', () => {
     // Simulate sliding window
     let windowStart = 0;
     const updateWindow = (newStart: number) => {
-      const clampedStart = Math.max(0, Math.min(newStart, Math.max(0, manyNotes.length - WINDOW_SIZE)));
+      const clampedStart = Math.max(
+        0,
+        Math.min(newStart, Math.max(0, manyNotes.length - WINDOW_SIZE))
+      );
       windowStart = clampedStart;
       return manyNotes.slice(clampedStart, clampedStart + WINDOW_SIZE);
     };

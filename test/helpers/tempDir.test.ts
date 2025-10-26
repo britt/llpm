@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { describe, it, expect, afterEach } from 'vitest';
 import { existsSync, mkdirSync, writeFileSync } from 'fs';
 import { createTempDir } from './tempDir';

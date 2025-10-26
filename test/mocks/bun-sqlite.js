@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 // Mock implementation of bun:sqlite for browser/CI compatibility
 export class Database {
   constructor() {

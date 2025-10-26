@@ -54,9 +54,12 @@ describe('useChat - Message State', () => {
       const { result } = renderHook(() => useChat());
 
       // Wait for initialization
-      await waitFor(() => {
-        expect(result.current.messages.length).toBeGreaterThan(0);
-      }, { timeout: 2000 });
+      await waitFor(
+        () => {
+          expect(result.current.messages.length).toBeGreaterThan(0);
+        },
+        { timeout: 2000 }
+      );
 
       // Should have welcome message
       expect(result.current.messages).toHaveLength(1);
@@ -75,9 +78,12 @@ describe('useChat - Message State', () => {
       const { result } = renderHook(() => useChat());
 
       // Wait for history to load
-      await waitFor(() => {
-        expect(result.current.messages.length).toBe(2);
-      }, { timeout: 2000 });
+      await waitFor(
+        () => {
+          expect(result.current.messages.length).toBe(2);
+        },
+        { timeout: 2000 }
+      );
 
       expect(result.current.messages).toEqual(mockHistory);
     });
@@ -88,9 +94,12 @@ describe('useChat - Message State', () => {
       const { result } = renderHook(() => useChat());
 
       // Wait for fallback
-      await waitFor(() => {
-        expect(result.current.messages.length).toBeGreaterThan(0);
-      }, { timeout: 2000 });
+      await waitFor(
+        () => {
+          expect(result.current.messages.length).toBeGreaterThan(0);
+        },
+        { timeout: 2000 }
+      );
 
       // Should have welcome message
       expect(result.current.messages[0].role).toBe('assistant');
@@ -105,9 +114,12 @@ describe('useChat - Message State', () => {
       const { result } = renderHook(() => useChat());
 
       // Wait for initialization
-      await waitFor(() => {
-        expect(result.current.messages.length).toBeGreaterThan(0);
-      }, { timeout: 2000 });
+      await waitFor(
+        () => {
+          expect(result.current.messages.length).toBeGreaterThan(0);
+        },
+        { timeout: 2000 }
+      );
 
       const initialMessageCount = result.current.messages.length;
 
@@ -129,9 +141,12 @@ describe('useChat - Message State', () => {
       const { result } = renderHook(() => useChat());
 
       // Wait for initialization
-      await waitFor(() => {
-        expect(result.current.messages.length).toBeGreaterThan(0);
-      }, { timeout: 2000 });
+      await waitFor(
+        () => {
+          expect(result.current.messages.length).toBeGreaterThan(0);
+        },
+        { timeout: 2000 }
+      );
 
       const initialMessageCount = result.current.messages.length;
 
@@ -152,7 +167,7 @@ describe('useChat - Message State', () => {
 
       // Mock parseCommand to treat as command so we can verify the trimmed content
       let capturedContent = '';
-      vi.mocked(parseCommand).mockImplementation((content) => {
+      vi.mocked(parseCommand).mockImplementation(content => {
         capturedContent = content;
         return { isCommand: false, command: null, args: [] };
       });
@@ -160,9 +175,12 @@ describe('useChat - Message State', () => {
       const { result } = renderHook(() => useChat());
 
       // Wait for initialization
-      await waitFor(() => {
-        expect(result.current.messages.length).toBeGreaterThan(0);
-      }, { timeout: 2000 });
+      await waitFor(
+        () => {
+          expect(result.current.messages.length).toBeGreaterThan(0);
+        },
+        { timeout: 2000 }
+      );
 
       // Send message with whitespace
       await act(async () => {
@@ -193,9 +211,12 @@ describe('useChat - Message State', () => {
       const { result } = renderHook(() => useChat());
 
       // Wait for initialization
-      await waitFor(() => {
-        expect(result.current.messages.length).toBeGreaterThan(0);
-      }, { timeout: 2000 });
+      await waitFor(
+        () => {
+          expect(result.current.messages.length).toBeGreaterThan(0);
+        },
+        { timeout: 2000 }
+      );
 
       // Send command
       await act(async () => {
@@ -203,15 +224,14 @@ describe('useChat - Message State', () => {
       });
 
       // Wait for command execution
-      await waitFor(() => {
-        expect(vi.mocked(executeCommand)).toHaveBeenCalled();
-      }, { timeout: 2000 });
-
-      expect(vi.mocked(executeCommand)).toHaveBeenCalledWith(
-        'help',
-        [],
-        expect.any(Object)
+      await waitFor(
+        () => {
+          expect(vi.mocked(executeCommand)).toHaveBeenCalled();
+        },
+        { timeout: 2000 }
       );
+
+      expect(vi.mocked(executeCommand)).toHaveBeenCalledWith('help', [], expect.any(Object));
     });
 
     it('should set loading state during command execution', async () => {
@@ -231,9 +251,12 @@ describe('useChat - Message State', () => {
       const { result } = renderHook(() => useChat());
 
       // Wait for initialization
-      await waitFor(() => {
-        expect(result.current.messages.length).toBeGreaterThan(0);
-      }, { timeout: 2000 });
+      await waitFor(
+        () => {
+          expect(result.current.messages.length).toBeGreaterThan(0);
+        },
+        { timeout: 2000 }
+      );
 
       // Send command
       act(() => {
@@ -241,14 +264,20 @@ describe('useChat - Message State', () => {
       });
 
       // Should be loading
-      await waitFor(() => {
-        expect(result.current.isLoading).toBe(true);
-      }, { timeout: 2000 });
+      await waitFor(
+        () => {
+          expect(result.current.isLoading).toBe(true);
+        },
+        { timeout: 2000 }
+      );
 
       // Wait for completion
-      await waitFor(() => {
-        expect(result.current.isLoading).toBe(false);
-      }, { timeout: 3000 });
+      await waitFor(
+        () => {
+          expect(result.current.isLoading).toBe(false);
+        },
+        { timeout: 3000 }
+      );
     });
 
     it('should add command result to messages', async () => {
@@ -267,9 +296,12 @@ describe('useChat - Message State', () => {
       const { result } = renderHook(() => useChat());
 
       // Wait for initialization
-      await waitFor(() => {
-        expect(result.current.messages.length).toBeGreaterThan(0);
-      }, { timeout: 2000 });
+      await waitFor(
+        () => {
+          expect(result.current.messages.length).toBeGreaterThan(0);
+        },
+        { timeout: 2000 }
+      );
 
       const initialCount = result.current.messages.length;
 
@@ -279,9 +311,12 @@ describe('useChat - Message State', () => {
       });
 
       // Wait for message to be added
-      await waitFor(() => {
-        expect(result.current.messages.length).toBeGreaterThan(initialCount);
-      }, { timeout: 2000 });
+      await waitFor(
+        () => {
+          expect(result.current.messages.length).toBeGreaterThan(initialCount);
+        },
+        { timeout: 2000 }
+      );
 
       // Should have ui-notification message with command result
       const notificationMessage = result.current.messages.find(
@@ -306,9 +341,12 @@ describe('useChat - Message State', () => {
       const { result } = renderHook(() => useChat());
 
       // Wait for initialization
-      await waitFor(() => {
-        expect(result.current.messages.length).toBeGreaterThan(0);
-      }, { timeout: 2000 });
+      await waitFor(
+        () => {
+          expect(result.current.messages.length).toBeGreaterThan(0);
+        },
+        { timeout: 2000 }
+      );
 
       // Add some messages first
       act(() => {
@@ -316,9 +354,12 @@ describe('useChat - Message State', () => {
         result.current.addSystemMessage('Test message 2');
       });
 
-      await waitFor(() => {
-        expect(result.current.messages.length).toBeGreaterThan(1);
-      }, { timeout: 1000 });
+      await waitFor(
+        () => {
+          expect(result.current.messages.length).toBeGreaterThan(1);
+        },
+        { timeout: 1000 }
+      );
 
       // Execute clear command
       await act(async () => {
@@ -326,9 +367,12 @@ describe('useChat - Message State', () => {
       });
 
       // Should only have welcome message
-      await waitFor(() => {
-        expect(result.current.messages.length).toBe(1);
-      }, { timeout: 2000 });
+      await waitFor(
+        () => {
+          expect(result.current.messages.length).toBe(1);
+        },
+        { timeout: 2000 }
+      );
 
       // Should be the welcome message
       expect(result.current.messages[0].role).toBe('assistant');
@@ -351,9 +395,12 @@ describe('useChat - Message State', () => {
       const { result } = renderHook(() => useChat());
 
       // Wait for initialization
-      await waitFor(() => {
-        expect(result.current.messages.length).toBeGreaterThan(0);
-      }, { timeout: 2000 });
+      await waitFor(
+        () => {
+          expect(result.current.messages.length).toBeGreaterThan(0);
+        },
+        { timeout: 2000 }
+      );
 
       // Execute project switch
       await act(async () => {
@@ -364,12 +411,15 @@ describe('useChat - Message State', () => {
       await new Promise(resolve => setTimeout(resolve, 300));
 
       // Should have project switch message
-      await waitFor(() => {
-        const projectMessage = result.current.messages.find(
-          m => m.role === 'ui-notification' && m.content.includes('test-project')
-        );
-        expect(projectMessage).toBeDefined();
-      }, { timeout: 3000 });
+      await waitFor(
+        () => {
+          const projectMessage = result.current.messages.find(
+            m => m.role === 'ui-notification' && m.content.includes('test-project')
+          );
+          expect(projectMessage).toBeDefined();
+        },
+        { timeout: 3000 }
+      );
     });
   });
 
@@ -386,9 +436,12 @@ describe('useChat - Message State', () => {
       const { result } = renderHook(() => useChat());
 
       // Wait for initialization
-      await waitFor(() => {
-        expect(result.current.messages.length).toBeGreaterThan(0);
-      }, { timeout: 2000 });
+      await waitFor(
+        () => {
+          expect(result.current.messages.length).toBeGreaterThan(0);
+        },
+        { timeout: 2000 }
+      );
 
       // Send non-command message
       await act(async () => {
@@ -396,9 +449,12 @@ describe('useChat - Message State', () => {
       });
 
       // Wait for LLM call
-      await waitFor(() => {
-        expect(vi.mocked(generateResponse)).toHaveBeenCalled();
-      }, { timeout: 3000 });
+      await waitFor(
+        () => {
+          expect(vi.mocked(generateResponse)).toHaveBeenCalled();
+        },
+        { timeout: 3000 }
+      );
     });
 
     it('should add user message before processing', async () => {
@@ -413,9 +469,12 @@ describe('useChat - Message State', () => {
       const { result } = renderHook(() => useChat());
 
       // Wait for initialization
-      await waitFor(() => {
-        expect(result.current.messages.length).toBeGreaterThan(0);
-      }, { timeout: 2000 });
+      await waitFor(
+        () => {
+          expect(result.current.messages.length).toBeGreaterThan(0);
+        },
+        { timeout: 2000 }
+      );
 
       // Send message
       await act(async () => {
@@ -423,10 +482,13 @@ describe('useChat - Message State', () => {
       });
 
       // Wait for user message to appear
-      await waitFor(() => {
-        const userMessages = result.current.messages.filter(m => m.role === 'user');
-        expect(userMessages.length).toBeGreaterThan(0);
-      }, { timeout: 2000 });
+      await waitFor(
+        () => {
+          const userMessages = result.current.messages.filter(m => m.role === 'user');
+          expect(userMessages.length).toBeGreaterThan(0);
+        },
+        { timeout: 2000 }
+      );
 
       const userMessage = result.current.messages.find(
         m => m.role === 'user' && m.content === 'Test message'
@@ -446,9 +508,12 @@ describe('useChat - Message State', () => {
       const { result } = renderHook(() => useChat());
 
       // Wait for initialization
-      await waitFor(() => {
-        expect(result.current.messages.length).toBeGreaterThan(0);
-      }, { timeout: 2000 });
+      await waitFor(
+        () => {
+          expect(result.current.messages.length).toBeGreaterThan(0);
+        },
+        { timeout: 2000 }
+      );
 
       // Send message
       await act(async () => {
@@ -456,12 +521,15 @@ describe('useChat - Message State', () => {
       });
 
       // Wait for assistant response
-      await waitFor(() => {
-        const assistantMessages = result.current.messages.filter(
-          m => m.role === 'assistant' && m.content === 'AI response text'
-        );
-        expect(assistantMessages.length).toBeGreaterThan(0);
-      }, { timeout: 3000 });
+      await waitFor(
+        () => {
+          const assistantMessages = result.current.messages.filter(
+            m => m.role === 'assistant' && m.content === 'AI response text'
+          );
+          expect(assistantMessages.length).toBeGreaterThan(0);
+        },
+        { timeout: 3000 }
+      );
     });
 
     it('should handle LLM errors gracefully', async () => {
@@ -476,9 +544,12 @@ describe('useChat - Message State', () => {
       const { result } = renderHook(() => useChat());
 
       // Wait for initialization
-      await waitFor(() => {
-        expect(result.current.messages.length).toBeGreaterThan(0);
-      }, { timeout: 2000 });
+      await waitFor(
+        () => {
+          expect(result.current.messages.length).toBeGreaterThan(0);
+        },
+        { timeout: 2000 }
+      );
 
       // Send message
       await act(async () => {
@@ -486,12 +557,15 @@ describe('useChat - Message State', () => {
       });
 
       // Wait for error message
-      await waitFor(() => {
-        const errorMessage = result.current.messages.find(
-          m => m.role === 'assistant' && m.content.includes('encountered an error')
-        );
-        expect(errorMessage).toBeDefined();
-      }, { timeout: 3000 });
+      await waitFor(
+        () => {
+          const errorMessage = result.current.messages.find(
+            m => m.role === 'assistant' && m.content.includes('encountered an error')
+          );
+          expect(errorMessage).toBeDefined();
+        },
+        { timeout: 3000 }
+      );
     });
 
     it.skip('should handle empty LLM response', async () => {
@@ -507,9 +581,12 @@ describe('useChat - Message State', () => {
       const { result } = renderHook(() => useChat());
 
       // Wait for initialization
-      await waitFor(() => {
-        expect(result.current.messages.length).toBeGreaterThan(0);
-      }, { timeout: 2000 });
+      await waitFor(
+        () => {
+          expect(result.current.messages.length).toBeGreaterThan(0);
+        },
+        { timeout: 2000 }
+      );
 
       // Send message
       await act(async () => {
@@ -517,12 +594,16 @@ describe('useChat - Message State', () => {
       });
 
       // Wait for fallback message
-      await waitFor(() => {
-        const assistantMessage = result.current.messages.find(
-          m => m.role === 'assistant' && m.content.includes("don't have anything specific to report")
-        );
-        expect(assistantMessage).toBeDefined();
-      }, { timeout: 3000 });
+      await waitFor(
+        () => {
+          const assistantMessage = result.current.messages.find(
+            m =>
+              m.role === 'assistant' && m.content.includes("don't have anything specific to report")
+          );
+          expect(assistantMessage).toBeDefined();
+        },
+        { timeout: 3000 }
+      );
     });
 
     it('should handle command execution errors', async () => {
@@ -537,9 +618,12 @@ describe('useChat - Message State', () => {
       const { result } = renderHook(() => useChat());
 
       // Wait for initialization
-      await waitFor(() => {
-        expect(result.current.messages.length).toBeGreaterThan(0);
-      }, { timeout: 2000 });
+      await waitFor(
+        () => {
+          expect(result.current.messages.length).toBeGreaterThan(0);
+        },
+        { timeout: 2000 }
+      );
 
       // Send command
       await act(async () => {
@@ -547,12 +631,15 @@ describe('useChat - Message State', () => {
       });
 
       // Wait for error message
-      await waitFor(() => {
-        const errorMessage = result.current.messages.find(
-          m => m.role === 'ui-notification' && m.content.includes('Failed to execute command')
-        );
-        expect(errorMessage).toBeDefined();
-      }, { timeout: 2000 });
+      await waitFor(
+        () => {
+          const errorMessage = result.current.messages.find(
+            m => m.role === 'ui-notification' && m.content.includes('Failed to execute command')
+          );
+          expect(errorMessage).toBeDefined();
+        },
+        { timeout: 2000 }
+      );
     });
   });
 
@@ -580,9 +667,12 @@ describe('useChat - Message State', () => {
       const { result } = renderHook(() => useChat());
 
       // Wait for initialization
-      await waitFor(() => {
-        expect(result.current.messages.length).toBeGreaterThan(0);
-      }, { timeout: 2000 });
+      await waitFor(
+        () => {
+          expect(result.current.messages.length).toBeGreaterThan(0);
+        },
+        { timeout: 2000 }
+      );
 
       // Send message
       act(() => {
@@ -590,14 +680,20 @@ describe('useChat - Message State', () => {
       });
 
       // Should be processing
-      await waitFor(() => {
-        expect(result.current.isProcessing).toBe(true);
-      }, { timeout: 2000 });
+      await waitFor(
+        () => {
+          expect(result.current.isProcessing).toBe(true);
+        },
+        { timeout: 2000 }
+      );
 
       // Wait for completion
-      await waitFor(() => {
-        expect(result.current.isProcessing).toBe(false);
-      }, { timeout: 3000 });
+      await waitFor(
+        () => {
+          expect(result.current.isProcessing).toBe(false);
+        },
+        { timeout: 3000 }
+      );
     });
   });
 
@@ -613,9 +709,12 @@ describe('useChat - Message State', () => {
       const { result } = renderHook(() => useChat());
 
       // Wait for initialization
-      await waitFor(() => {
-        expect(result.current.messages.length).toBeGreaterThan(0);
-      }, { timeout: 2000 });
+      await waitFor(
+        () => {
+          expect(result.current.messages.length).toBeGreaterThan(0);
+        },
+        { timeout: 2000 }
+      );
 
       // Trigger model selection
       await act(async () => {
@@ -623,18 +722,18 @@ describe('useChat - Message State', () => {
       });
 
       // Should call executeCommand with model switch
-      expect(vi.mocked(executeCommand)).toHaveBeenCalledWith(
-        'model',
-        ['switch', 'openai/gpt-4']
-      );
+      expect(vi.mocked(executeCommand)).toHaveBeenCalledWith('model', ['switch', 'openai/gpt-4']);
 
       // Wait for notification message
-      await waitFor(() => {
-        const notification = result.current.messages.find(
-          m => m.role === 'ui-notification' && m.content.includes('gpt-4')
-        );
-        expect(notification).toBeDefined();
-      }, { timeout: 2000 });
+      await waitFor(
+        () => {
+          const notification = result.current.messages.find(
+            m => m.role === 'ui-notification' && m.content.includes('gpt-4')
+          );
+          expect(notification).toBeDefined();
+        },
+        { timeout: 2000 }
+      );
     });
 
     it('should handle model selection error', async () => {
@@ -644,9 +743,12 @@ describe('useChat - Message State', () => {
       const { result } = renderHook(() => useChat());
 
       // Wait for initialization
-      await waitFor(() => {
-        expect(result.current.messages.length).toBeGreaterThan(0);
-      }, { timeout: 2000 });
+      await waitFor(
+        () => {
+          expect(result.current.messages.length).toBeGreaterThan(0);
+        },
+        { timeout: 2000 }
+      );
 
       // Trigger model selection with error
       await act(async () => {
@@ -654,12 +756,15 @@ describe('useChat - Message State', () => {
       });
 
       // Wait for error message
-      await waitFor(() => {
-        const errorMessage = result.current.messages.find(
-          m => m.role === 'ui-notification' && m.content.includes('Failed to switch model')
-        );
-        expect(errorMessage).toBeDefined();
-      }, { timeout: 2000 });
+      await waitFor(
+        () => {
+          const errorMessage = result.current.messages.find(
+            m => m.role === 'ui-notification' && m.content.includes('Failed to switch model')
+          );
+          expect(errorMessage).toBeDefined();
+        },
+        { timeout: 2000 }
+      );
     });
 
     it('should cancel model selection', async () => {
@@ -668,9 +773,12 @@ describe('useChat - Message State', () => {
       const { result } = renderHook(() => useChat());
 
       // Wait for initialization
-      await waitFor(() => {
-        expect(result.current.messages.length).toBeGreaterThan(0);
-      }, { timeout: 2000 });
+      await waitFor(
+        () => {
+          expect(result.current.messages.length).toBeGreaterThan(0);
+        },
+        { timeout: 2000 }
+      );
 
       // Manually set model selector models (simulating it being open)
       act(() => {
@@ -691,18 +799,19 @@ describe('useChat - Message State', () => {
         success: true,
         interactive: {
           type: 'model-select',
-          models: [
-            { id: 'gpt-4', name: 'GPT-4', provider: 'openai' }
-          ]
+          models: [{ id: 'gpt-4', name: 'GPT-4', provider: 'openai' }]
         }
       });
 
       const { result } = renderHook(() => useChat());
 
       // Wait for initialization
-      await waitFor(() => {
-        expect(result.current.messages.length).toBeGreaterThan(0);
-      }, { timeout: 2000 });
+      await waitFor(
+        () => {
+          expect(result.current.messages.length).toBeGreaterThan(0);
+        },
+        { timeout: 2000 }
+      );
 
       // Trigger model selector
       await act(async () => {
@@ -710,10 +819,13 @@ describe('useChat - Message State', () => {
       });
 
       // Wait for model selector to be set
-      await waitFor(() => {
-        expect(result.current.modelSelectorModels).toBeDefined();
-        expect(result.current.modelSelectorModels?.length).toBe(1);
-      }, { timeout: 2000 });
+      await waitFor(
+        () => {
+          expect(result.current.modelSelectorModels).toBeDefined();
+          expect(result.current.modelSelectorModels?.length).toBe(1);
+        },
+        { timeout: 2000 }
+      );
     });
 
     it('should trigger model selector with error', async () => {
@@ -723,9 +835,12 @@ describe('useChat - Message State', () => {
       const { result } = renderHook(() => useChat());
 
       // Wait for initialization
-      await waitFor(() => {
-        expect(result.current.messages.length).toBeGreaterThan(0);
-      }, { timeout: 2000 });
+      await waitFor(
+        () => {
+          expect(result.current.messages.length).toBeGreaterThan(0);
+        },
+        { timeout: 2000 }
+      );
 
       // Trigger model selector with error
       await act(async () => {
@@ -733,12 +848,15 @@ describe('useChat - Message State', () => {
       });
 
       // Wait for error message
-      await waitFor(() => {
-        const errorMessage = result.current.messages.find(
-          m => m.role === 'ui-notification' && m.content.includes('Failed to open model selector')
-        );
-        expect(errorMessage).toBeDefined();
-      }, { timeout: 2000 });
+      await waitFor(
+        () => {
+          const errorMessage = result.current.messages.find(
+            m => m.role === 'ui-notification' && m.content.includes('Failed to open model selector')
+          );
+          expect(errorMessage).toBeDefined();
+        },
+        { timeout: 2000 }
+      );
     });
 
     it('should handle non-interactive model selector result', async () => {
@@ -753,9 +871,12 @@ describe('useChat - Message State', () => {
       const { result } = renderHook(() => useChat());
 
       // Wait for initialization
-      await waitFor(() => {
-        expect(result.current.messages.length).toBeGreaterThan(0);
-      }, { timeout: 2000 });
+      await waitFor(
+        () => {
+          expect(result.current.messages.length).toBeGreaterThan(0);
+        },
+        { timeout: 2000 }
+      );
 
       const initialCount = result.current.messages.length;
 
@@ -765,9 +886,12 @@ describe('useChat - Message State', () => {
       });
 
       // Wait for ui-notification message to be added
-      await waitFor(() => {
-        expect(result.current.messages.length).toBe(initialCount + 1);
-      }, { timeout: 2000 });
+      await waitFor(
+        () => {
+          expect(result.current.messages.length).toBe(initialCount + 1);
+        },
+        { timeout: 2000 }
+      );
 
       // Should have ui-notification message (not interactive selector)
       const notification = result.current.messages.find(
@@ -787,9 +911,12 @@ describe('useChat - Message State', () => {
       const { result } = renderHook(() => useChat());
 
       // Wait for initialization
-      await waitFor(() => {
-        expect(result.current.messages.length).toBeGreaterThan(0);
-      }, { timeout: 2000 });
+      await waitFor(
+        () => {
+          expect(result.current.messages.length).toBeGreaterThan(0);
+        },
+        { timeout: 2000 }
+      );
 
       // Trigger project switch
       await act(async () => {
@@ -808,9 +935,12 @@ describe('useChat - Message State', () => {
       const { result } = renderHook(() => useChat());
 
       // Wait for initialization
-      await waitFor(() => {
-        expect(result.current.messages.length).toBeGreaterThan(0);
-      }, { timeout: 2000 });
+      await waitFor(
+        () => {
+          expect(result.current.messages.length).toBeGreaterThan(0);
+        },
+        { timeout: 2000 }
+      );
 
       const initialCount = result.current.messages.length;
 
@@ -820,9 +950,12 @@ describe('useChat - Message State', () => {
       });
 
       // Wait for message to be added
-      await waitFor(() => {
-        expect(result.current.messages.length).toBe(initialCount + 1);
-      }, { timeout: 1000 });
+      await waitFor(
+        () => {
+          expect(result.current.messages.length).toBe(initialCount + 1);
+        },
+        { timeout: 1000 }
+      );
 
       const notification = result.current.messages.find(
         m => m.role === 'ui-notification' && m.content === 'Test notification'
@@ -845,9 +978,12 @@ describe('useChat - Message State', () => {
       const { result } = renderHook(() => useChat());
 
       // Wait for initialization
-      await waitFor(() => {
-        expect(result.current.messages.length).toBeGreaterThan(0);
-      }, { timeout: 2000 });
+      await waitFor(
+        () => {
+          expect(result.current.messages.length).toBeGreaterThan(0);
+        },
+        { timeout: 2000 }
+      );
 
       // Send message that will fail during processing
       await act(async () => {
@@ -855,12 +991,15 @@ describe('useChat - Message State', () => {
       });
 
       // Should have gracefully handled the error and added error message
-      await waitFor(() => {
-        const errorMessage = result.current.messages.find(
-          m => m.role === 'assistant' && m.content.includes('encountered an error')
-        );
-        expect(errorMessage).toBeDefined();
-      }, { timeout: 2000 });
+      await waitFor(
+        () => {
+          const errorMessage = result.current.messages.find(
+            m => m.role === 'assistant' && m.content.includes('encountered an error')
+          );
+          expect(errorMessage).toBeDefined();
+        },
+        { timeout: 2000 }
+      );
 
       // Should no longer be processing
       expect(result.current.isProcessing).toBe(false);
@@ -878,9 +1017,12 @@ describe('useChat - Message State', () => {
       const { result } = renderHook(() => useChat());
 
       // Wait for initialization
-      await waitFor(() => {
-        expect(result.current.messages.length).toBeGreaterThan(0);
-      }, { timeout: 2000 });
+      await waitFor(
+        () => {
+          expect(result.current.messages.length).toBeGreaterThan(0);
+        },
+        { timeout: 2000 }
+      );
 
       // Trigger a project switch
       await act(async () => {
@@ -893,12 +1035,15 @@ describe('useChat - Message State', () => {
       });
 
       // Should eventually process the message
-      await waitFor(() => {
-        const response = result.current.messages.find(
-          m => m.content === 'Response after project switch'
-        );
-        expect(response).toBeDefined();
-      }, { timeout: 3000 });
+      await waitFor(
+        () => {
+          const response = result.current.messages.find(
+            m => m.content === 'Response after project switch'
+          );
+          expect(response).toBeDefined();
+        },
+        { timeout: 3000 }
+      );
     });
 
     it('should handle command result without interactive flag', async () => {
@@ -919,21 +1064,27 @@ describe('useChat - Message State', () => {
       const { result } = renderHook(() => useChat());
 
       // Wait for initialization
-      await waitFor(() => {
-        expect(result.current.messages.length).toBeGreaterThan(0);
-      }, { timeout: 2000 });
+      await waitFor(
+        () => {
+          expect(result.current.messages.length).toBeGreaterThan(0);
+        },
+        { timeout: 2000 }
+      );
 
       await act(async () => {
         await result.current.sendMessage('/test');
       });
 
       // Should add as ui-notification, not trigger model selector
-      await waitFor(() => {
-        const notification = result.current.messages.find(
-          m => m.role === 'ui-notification' && m.content === 'Command executed'
-        );
-        expect(notification).toBeDefined();
-      }, { timeout: 2000 });
+      await waitFor(
+        () => {
+          const notification = result.current.messages.find(
+            m => m.role === 'ui-notification' && m.content === 'Command executed'
+          );
+          expect(notification).toBeDefined();
+        },
+        { timeout: 2000 }
+      );
 
       expect(result.current.modelSelectorModels).toBeNull();
     });
@@ -946,9 +1097,12 @@ describe('useChat - Message State', () => {
       const { result } = renderHook(() => useChat());
 
       // Wait for initialization
-      await waitFor(() => {
-        expect(result.current.messages.length).toBeGreaterThan(0);
-      }, { timeout: 2000 });
+      await waitFor(
+        () => {
+          expect(result.current.messages.length).toBeGreaterThan(0);
+        },
+        { timeout: 2000 }
+      );
 
       // Queue should be empty initially
       expect(result.current.queueLength).toBe(0);
@@ -976,9 +1130,12 @@ describe('useChat - Message State', () => {
       const { result } = renderHook(() => useChat());
 
       // Wait for initialization
-      await waitFor(() => {
-        expect(result.current.messages.length).toBeGreaterThan(0);
-      }, { timeout: 2000 });
+      await waitFor(
+        () => {
+          expect(result.current.messages.length).toBeGreaterThan(0);
+        },
+        { timeout: 2000 }
+      );
 
       // Send two messages quickly
       act(() => {
@@ -993,9 +1150,12 @@ describe('useChat - Message State', () => {
       });
 
       // Eventually both should be processed
-      await waitFor(() => {
-        expect(callCount).toBe(2);
-      }, { timeout: 5000 });
+      await waitFor(
+        () => {
+          expect(callCount).toBe(2);
+        },
+        { timeout: 5000 }
+      );
 
       expect(result.current.isProcessing).toBe(false);
       expect(result.current.queueLength).toBe(0);
@@ -1026,9 +1186,12 @@ describe('useChat - Message State', () => {
       const { result } = renderHook(() => useChat());
 
       // Wait for initialization
-      await waitFor(() => {
-        expect(result.current.messages.length).toBeGreaterThan(0);
-      }, { timeout: 2000 });
+      await waitFor(
+        () => {
+          expect(result.current.messages.length).toBeGreaterThan(0);
+        },
+        { timeout: 2000 }
+      );
 
       // Send model switch command
       await act(async () => {
@@ -1036,10 +1199,13 @@ describe('useChat - Message State', () => {
       });
 
       // Should trigger interactive model selector
-      await waitFor(() => {
-        expect(result.current.modelSelectorModels).toBeDefined();
-        expect(result.current.modelSelectorModels?.length).toBe(2);
-      }, { timeout: 2000 });
+      await waitFor(
+        () => {
+          expect(result.current.modelSelectorModels).toBeDefined();
+          expect(result.current.modelSelectorModels?.length).toBe(2);
+        },
+        { timeout: 2000 }
+      );
     });
 
     it('should handle non-successful command result', async () => {
@@ -1052,27 +1218,33 @@ describe('useChat - Message State', () => {
       vi.mocked(executeCommand).mockResolvedValue({
         content: 'Command failed',
         shouldAddToHistory: true,
-        success: false  // Not successful
+        success: false // Not successful
       });
 
       const { result } = renderHook(() => useChat());
 
       // Wait for initialization
-      await waitFor(() => {
-        expect(result.current.messages.length).toBeGreaterThan(0);
-      }, { timeout: 2000 });
+      await waitFor(
+        () => {
+          expect(result.current.messages.length).toBeGreaterThan(0);
+        },
+        { timeout: 2000 }
+      );
 
       await act(async () => {
         await result.current.sendMessage('/test');
       });
 
       // Should still add the message
-      await waitFor(() => {
-        const notification = result.current.messages.find(
-          m => m.role === 'ui-notification' && m.content === 'Command failed'
-        );
-        expect(notification).toBeDefined();
-      }, { timeout: 2000 });
+      await waitFor(
+        () => {
+          const notification = result.current.messages.find(
+            m => m.role === 'ui-notification' && m.content === 'Command failed'
+          );
+          expect(notification).toBeDefined();
+        },
+        { timeout: 2000 }
+      );
     });
 
     it.skip('should handle project set command with success', async () => {
@@ -1091,9 +1263,12 @@ describe('useChat - Message State', () => {
       const { result } = renderHook(() => useChat());
 
       // Wait for initialization
-      await waitFor(() => {
-        expect(result.current.messages.length).toBeGreaterThan(0);
-      }, { timeout: 2000 });
+      await waitFor(
+        () => {
+          expect(result.current.messages.length).toBeGreaterThan(0);
+        },
+        { timeout: 2000 }
+      );
 
       await act(async () => {
         await result.current.sendMessage('/project set my-project');
@@ -1103,12 +1278,15 @@ describe('useChat - Message State', () => {
       await new Promise(resolve => setTimeout(resolve, 250));
 
       // Should have notification
-      await waitFor(() => {
-        const notification = result.current.messages.find(
-          m => m.role === 'ui-notification' && m.content.includes('my-project')
-        );
-        expect(notification).toBeDefined();
-      }, { timeout: 2000 });
+      await waitFor(
+        () => {
+          const notification = result.current.messages.find(
+            m => m.role === 'ui-notification' && m.content.includes('my-project')
+          );
+          expect(notification).toBeDefined();
+        },
+        { timeout: 2000 }
+      );
     });
 
     it.skip('should handle empty response from LLM', async () => {
@@ -1124,21 +1302,28 @@ describe('useChat - Message State', () => {
       const { result } = renderHook(() => useChat());
 
       // Wait for initialization
-      await waitFor(() => {
-        expect(result.current.messages.length).toBeGreaterThan(0);
-      }, { timeout: 2000 });
+      await waitFor(
+        () => {
+          expect(result.current.messages.length).toBeGreaterThan(0);
+        },
+        { timeout: 2000 }
+      );
 
       await act(async () => {
         await result.current.sendMessage('Question');
       });
 
       // Should have fallback message
-      await waitFor(() => {
-        const fallback = result.current.messages.find(
-          m => m.role === 'assistant' && m.content.includes("don't have anything specific to report")
-        );
-        expect(fallback).toBeDefined();
-      }, { timeout: 2000 });
+      await waitFor(
+        () => {
+          const fallback = result.current.messages.find(
+            m =>
+              m.role === 'assistant' && m.content.includes("don't have anything specific to report")
+          );
+          expect(fallback).toBeDefined();
+        },
+        { timeout: 2000 }
+      );
     });
 
     it.skip('should handle null response from LLM', async () => {
@@ -1154,21 +1339,28 @@ describe('useChat - Message State', () => {
       const { result } = renderHook(() => useChat());
 
       // Wait for initialization
-      await waitFor(() => {
-        expect(result.current.messages.length).toBeGreaterThan(0);
-      }, { timeout: 2000 });
+      await waitFor(
+        () => {
+          expect(result.current.messages.length).toBeGreaterThan(0);
+        },
+        { timeout: 2000 }
+      );
 
       await act(async () => {
         await result.current.sendMessage('Question');
       });
 
       // Should have fallback message
-      await waitFor(() => {
-        const fallback = result.current.messages.find(
-          m => m.role === 'assistant' && m.content.includes("don't have anything specific to report")
-        );
-        expect(fallback).toBeDefined();
-      }, { timeout: 2000 });
+      await waitFor(
+        () => {
+          const fallback = result.current.messages.find(
+            m =>
+              m.role === 'assistant' && m.content.includes("don't have anything specific to report")
+          );
+          expect(fallback).toBeDefined();
+        },
+        { timeout: 2000 }
+      );
     });
   });
 });

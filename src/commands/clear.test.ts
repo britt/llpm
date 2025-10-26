@@ -14,7 +14,9 @@ describe('clearCommand', () => {
   });
 
   it('should successfully clear session', async () => {
-    const mockClearChatHistory = vi.spyOn(chatHistory, 'clearChatHistory').mockResolvedValue(undefined);
+    const mockClearChatHistory = vi
+      .spyOn(chatHistory, 'clearChatHistory')
+      .mockResolvedValue(undefined);
 
     const result = await clearCommand.execute([]);
 
@@ -27,7 +29,8 @@ describe('clearCommand', () => {
   });
 
   it('should handle clearChatHistory failure gracefully', async () => {
-    const mockClearChatHistory = vi.spyOn(chatHistory, 'clearChatHistory')
+    const mockClearChatHistory = vi
+      .spyOn(chatHistory, 'clearChatHistory')
       .mockRejectedValue(new Error('Failed to clear history'));
 
     const result = await clearCommand.execute([]);
@@ -38,7 +41,9 @@ describe('clearCommand', () => {
   });
 
   it('should ignore command arguments', async () => {
-    const mockClearChatHistory = vi.spyOn(chatHistory, 'clearChatHistory').mockResolvedValue(undefined);
+    const mockClearChatHistory = vi
+      .spyOn(chatHistory, 'clearChatHistory')
+      .mockResolvedValue(undefined);
 
     const result = await clearCommand.execute(['arg1', 'arg2', 'arg3']);
 
@@ -49,7 +54,8 @@ describe('clearCommand', () => {
 
   it('should handle different types of errors', async () => {
     // Test with a non-Error object
-    const mockClearChatHistory = vi.spyOn(chatHistory, 'clearChatHistory')
+    const mockClearChatHistory = vi
+      .spyOn(chatHistory, 'clearChatHistory')
       .mockRejectedValue('String error');
 
     const result = await clearCommand.execute([]);

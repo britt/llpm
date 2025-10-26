@@ -18,17 +18,16 @@ export interface CredentialConfig {
     projectId?: string;
     region?: string;
   };
-  
+
   // GitHub Integration
   github?: {
     token?: string;
   };
-  
+
   // Web Search
   arcade?: {
     apiKey?: string;
   };
-  
 }
 
 export interface ProfileConfig {
@@ -104,11 +103,11 @@ export class CredentialManager {
     await this.loadProfileConfig();
 
     const currentProfile = this.getCurrentProfileName();
-    
+
     // Check current/active profile
     const activeProfileConfig = this.profileConfig?.profiles[currentProfile];
     const activeCredential = (activeProfileConfig?.[provider] as any)?.[key];
-    
+
     if (activeCredential) {
       debug(`Using credential from profile '${currentProfile}' for ${provider}.${key}`);
       return activeCredential;
@@ -118,7 +117,7 @@ export class CredentialManager {
     if (currentProfile !== this.DEFAULT_PROFILE) {
       const defaultProfileConfig = this.profileConfig?.profiles[this.DEFAULT_PROFILE];
       const defaultCredential = (defaultProfileConfig?.[provider] as any)?.[key];
-      
+
       if (defaultCredential) {
         debug(`Using credential from default profile for ${provider}.${key}`);
         return defaultCredential;
@@ -181,11 +180,11 @@ export class CredentialManager {
 
     // Fallback to profile config
     await this.loadProfileConfig();
-    
+
     const currentProfile = this.getCurrentProfileName();
     const activeProfileConfig = this.profileConfig?.profiles[currentProfile];
     const token = activeProfileConfig?.github?.token;
-    
+
     if (token) {
       debug(`Using GitHub token from profile '${currentProfile}'`);
       return token;
@@ -210,7 +209,6 @@ export class CredentialManager {
   public async getArcadeAPIKey(): Promise<string | undefined> {
     return this.getCredential('arcade', 'apiKey', 'ARCADE_API_KEY');
   }
-
 
   /**
    * Set a credential in the specified profile (or current profile)
@@ -339,7 +337,9 @@ export class CredentialManager {
       if (profileName === this.DEFAULT_PROFILE) {
         this.profileConfig.profiles[profileName] = {};
       } else {
-        throw new Error(`Profile '${profileName}' does not exist. Create it first with: /credentials profile create ${profileName}`);
+        throw new Error(
+          `Profile '${profileName}' does not exist. Create it first with: /credentials profile create ${profileName}`
+        );
       }
     }
 
@@ -354,7 +354,7 @@ export class CredentialManager {
   public async listProfiles(): Promise<{ profiles: string[]; current: string; active: string }> {
     await this.loadProfileConfig();
 
-    const profiles = this.profileConfig?.profiles 
+    const profiles = this.profileConfig?.profiles
       ? Object.keys(this.profileConfig.profiles)
       : [this.DEFAULT_PROFILE];
 
@@ -386,7 +386,7 @@ export class CredentialManager {
     status.openai = { apiKey: !!openaiKey };
     status.anthropic = { apiKey: !!anthropicKey };
     status.groq = { apiKey: !!groqKey };
-    status.googleVertex = { 
+    status.googleVertex = {
       projectId: !!vertexProjectId,
       region: true // Region always has default value
     };
@@ -484,16 +484,16 @@ export class CredentialManager {
       await fs.mkdir(dir, { recursive: true });
 
       // Save with secure permissions (readable only by owner)
-      await fs.writeFile(
-        this.configPath,
-        JSON.stringify(this.profileConfig, null, 2),
-        { mode: 0o600 }
-      );
-      
+      await fs.writeFile(this.configPath, JSON.stringify(this.profileConfig, null, 2), {
+        mode: 0o600
+      });
+
       debug('Saved profile configuration');
     } catch (error) {
       debug('Error saving profile config:', error);
-      throw new Error(`Failed to save profile configuration: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Failed to save profile configuration: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
   }
 

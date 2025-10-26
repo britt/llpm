@@ -110,7 +110,7 @@ rest-broker:
     context: ./rest-broker
     dockerfile: Dockerfile
   ports:
-    - "3000:3000"
+    - '3000:3000'
   depends_on:
     - claude-code
     - openai-codex

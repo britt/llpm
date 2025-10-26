@@ -1,5 +1,5 @@
 import { tool } from './instrumentedTool';
-import * as z from "zod";
+import * as z from 'zod';
 import { getCurrentProject, loadProjectConfig } from '../utils/projectConfig';
 import {
   createIssue,
@@ -34,12 +34,16 @@ async function getProjectRepoInfo() {
 }
 
 export const createGitHubIssueTool = tool({
-  description: "Create a new GitHub issue in the active project's repository with optional file attachments",
+  description:
+    "Create a new GitHub issue in the active project's repository with optional file attachments",
   inputSchema: z.object({
     title: z.string().describe('The issue title'),
     body: z.string().optional().describe('The issue body/description'),
     labels: z.array(z.string()).optional().describe('Array of label names to assign to the issue'),
-    attachments: z.array(z.string()).optional().describe('Array of file paths to upload and attach to the issue')
+    attachments: z
+      .array(z.string())
+      .optional()
+      .describe('Array of file paths to upload and attach to the issue')
   }),
   execute: async ({ title, body, labels, attachments }) => {
     try {
@@ -59,7 +63,8 @@ export const createGitHubIssueTool = tool({
             .join('\n\n');
 
           if (attachmentMarkdown) {
-            finalBody += (finalBody ? '\n\n---\n\n' : '') + '**Attachments:**\n\n' + attachmentMarkdown;
+            finalBody +=
+              (finalBody ? '\n\n---\n\n' : '') + '**Attachments:**\n\n' + attachmentMarkdown;
           }
         } catch (uploadError) {
           debug('Failed to upload some attachments:', uploadError);
@@ -195,11 +200,15 @@ export const updateGitHubIssueTool = tool({
 });
 
 export const commentOnGitHubIssueTool = tool({
-  description: "Add a comment to a GitHub issue in the active project's repository with optional file attachments",
+  description:
+    "Add a comment to a GitHub issue in the active project's repository with optional file attachments",
   inputSchema: z.object({
     issueNumber: z.number().describe('The issue number to comment on'),
     body: z.string().describe('The comment body/text'),
-    attachments: z.array(z.string()).optional().describe('Array of file paths to upload and attach to the comment')
+    attachments: z
+      .array(z.string())
+      .optional()
+      .describe('Array of file paths to upload and attach to the comment')
   }),
   execute: async ({ issueNumber, body, attachments }) => {
     try {
@@ -305,17 +314,32 @@ export const searchGitHubIssuesTool = tool({
 });
 
 export const getGitHubIssueWithCommentsTool = tool({
-  description: "Get a GitHub issue with all its comments from the active project's repository. Returns full issue details including metadata, body, and all comments with pagination support.",
+  description:
+    "Get a GitHub issue with all its comments from the active project's repository. Returns full issue details including metadata, body, and all comments with pagination support.",
   inputSchema: z.object({
     issueNumber: z.number().describe('The issue number to fetch'),
-    includeComments: z.boolean().optional().default(true).describe('Whether to include comments (default: true)'),
-    commentsPerPage: z.number().optional().default(100).describe('Number of comments per page (default: 100, max: 100)'),
-    page: z.number().optional().default(1).describe('Page number for comment pagination (default: 1)')
+    includeComments: z
+      .boolean()
+      .optional()
+      .default(true)
+      .describe('Whether to include comments (default: true)'),
+    commentsPerPage: z
+      .number()
+      .optional()
+      .default(100)
+      .describe('Number of comments per page (default: 100, max: 100)'),
+    page: z
+      .number()
+      .optional()
+      .default(1)
+      .describe('Page number for comment pagination (default: 1)')
   }),
   execute: async ({ issueNumber, includeComments, commentsPerPage, page }) => {
     try {
       const { owner, repo, projectName } = await getProjectRepoInfo();
-      debug(`Fetching issue #${issueNumber} with comments from ${owner}/${repo} for project ${projectName}`);
+      debug(
+        `Fetching issue #${issueNumber} with comments from ${owner}/${repo} for project ${projectName}`
+      );
 
       const result = await getIssueWithComments(owner, repo, issueNumber, {
         includeComments,

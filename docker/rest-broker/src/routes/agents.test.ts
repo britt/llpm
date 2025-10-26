@@ -33,7 +33,7 @@ describe('Agents API', () => {
       await agentManager.registerAgent({
         id: 'test-agent-1',
         name: 'Test Agent 1',
-        type: 'claude-code',
+        type: 'claude-code'
       });
 
       const response = await request(app).get('/agents');
@@ -61,7 +61,7 @@ describe('Agents API', () => {
         type: 'openai-codex',
         authType: 'subscription',
         provider: 'openai',
-        model: 'gpt-4',
+        model: 'gpt-4'
       });
 
       const response = await request(app).get('/agents/test-agent-2');
@@ -83,7 +83,7 @@ describe('Agents API', () => {
         type: 'claude-code',
         authType: 'subscription',
         provider: 'claude',
-        model: 'claude-3-opus-20240229',
+        model: 'claude-3-opus-20240229'
       });
 
       const response = await request(app).patch('/agents/test-agent-3/auth');
@@ -105,7 +105,7 @@ describe('Agents API', () => {
         id: 'test-agent-4',
         name: 'Test Agent 4',
         type: 'aider',
-        authType: 'api_key',
+        authType: 'api_key'
       });
 
       const response = await request(app).patch('/agents/test-agent-4/auth');
@@ -122,7 +122,7 @@ describe('Agents API', () => {
         type: 'claude-code',
         authType: 'subscription',
         provider: 'anthropic',
-        model: 'claude-3-sonnet-20240229',
+        model: 'claude-3-sonnet-20240229'
       });
 
       await request(app).patch('/agents/test-agent-5/auth');

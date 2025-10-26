@@ -16,7 +16,10 @@ async function brokerRequest(method: string, path: string, body?: any) {
     const data = await response.json();
 
     if (!response.ok) {
-      return { success: false, error: data.message || `Request failed with status ${response.status}` };
+      return {
+        success: false,
+        error: data.message || `Request failed with status ${response.status}`
+      };
     }
 
     return { success: true, data };
@@ -37,7 +40,8 @@ export const jobsCommand: Command = {
       case 'list': {
         if (args.length < 2) {
           return {
-            content: '❌ Usage: /jobs list <agent-id> [status]\n\nExample: /jobs list claude-code\nExample: /jobs list claude-code completed',
+            content:
+              '❌ Usage: /jobs list <agent-id> [status]\n\nExample: /jobs list claude-code\nExample: /jobs list claude-code completed',
             success: false
           };
         }
@@ -68,15 +72,23 @@ export const jobsCommand: Command = {
           };
         }
 
-        const jobList = jobs.map((job: any) => {
-          const statusIcon = job.status === 'completed' ? '✅' :
-                            job.status === 'failed' ? '❌' :
-                            job.status === 'running' ? '🔄' :
-                            job.status === 'cancelled' ? '🚫' : '⏳';
+        const jobList = jobs
+          .map((job: any) => {
+            const statusIcon =
+              job.status === 'completed'
+                ? '✅'
+                : job.status === 'failed'
+                  ? '❌'
+                  : job.status === 'running'
+                    ? '🔄'
+                    : job.status === 'cancelled'
+                      ? '🚫'
+                      : '⏳';
 
-          return `${statusIcon} **Job ${job.id}**
+            return `${statusIcon} **Job ${job.id}**
   Status: ${job.status} | Created: ${new Date(job.createdAt).toLocaleString()}${job.completedAt ? ` | Completed: ${new Date(job.completedAt).toLocaleString()}` : ''}${job.error ? `\n  Error: ${job.error}` : ''}`;
-        }).join('\n\n');
+          })
+          .join('\n\n');
 
         return {
           content: `📋 **Jobs for Agent ${agentId}** (showing ${jobs.length} of ${total} total):\n\n${jobList}`,
@@ -87,7 +99,8 @@ export const jobsCommand: Command = {
       case 'get': {
         if (args.length < 3) {
           return {
-            content: '❌ Usage: /jobs get <agent-id> <job-id>\n\nExample: /jobs get claude-code job-123',
+            content:
+              '❌ Usage: /jobs get <agent-id> <job-id>\n\nExample: /jobs get claude-code job-123',
             success: false
           };
         }
@@ -111,10 +124,16 @@ export const jobsCommand: Command = {
           };
         }
 
-        const statusIcon = job.status === 'completed' ? '✅' :
-                          job.status === 'failed' ? '❌' :
-                          job.status === 'running' ? '🔄' :
-                          job.status === 'cancelled' ? '🚫' : '⏳';
+        const statusIcon =
+          job.status === 'completed'
+            ? '✅'
+            : job.status === 'failed'
+              ? '❌'
+              : job.status === 'running'
+                ? '🔄'
+                : job.status === 'cancelled'
+                  ? '🚫'
+                  : '⏳';
 
         let details = `${statusIcon} **Job Details: ${job.id}**
 
@@ -149,7 +168,8 @@ export const jobsCommand: Command = {
       case 'create': {
         if (args.length < 3) {
           return {
-            content: '❌ Usage: /jobs create <agent-id> <payload-json>\n\nExample: /jobs create claude-code \'{"task":"hello"}\'',
+            content:
+              '❌ Usage: /jobs create <agent-id> <payload-json>\n\nExample: /jobs create claude-code \'{"task":"hello"}\'',
             success: false
           };
         }
@@ -194,7 +214,8 @@ export const jobsCommand: Command = {
       case 'cancel': {
         if (args.length < 3) {
           return {
-            content: '❌ Usage: /jobs cancel <agent-id> <job-id>\n\nExample: /jobs cancel claude-code job-123\n\n⚠️  This is a destructive operation!',
+            content:
+              '❌ Usage: /jobs cancel <agent-id> <job-id>\n\nExample: /jobs cancel claude-code job-123\n\n⚠️  This is a destructive operation!',
             success: false
           };
         }

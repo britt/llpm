@@ -15,6 +15,7 @@ llpm -p personal
 ## Profile Management
 
 ### Create Profiles
+
 ```bash
 /credentials profile create work
 /credentials profile create personal
@@ -22,10 +23,13 @@ llpm -p personal
 ```
 
 ### List Profiles
+
 ```bash
 /credentials profile list
 ```
+
 Output:
+
 ```
 📋 Available Profiles
 
@@ -34,11 +38,12 @@ Output:
    personal
 
 💡 Profile Priority:
-• Active: default 
+• Active: default
 • Current: default (stored)
 ```
 
 ### Switch Profiles
+
 ```bash
 # Switch permanently (persisted across sessions)
 /credentials profile switch work
@@ -50,6 +55,7 @@ llpm --profile personal
 ## Managing Credentials in Profiles
 
 ### Set Credentials
+
 ```bash
 # Set in current active profile
 /credentials set openai apiKey sk-your-work-key
@@ -59,6 +65,7 @@ llpm --profile personal
 ```
 
 ### View Credentials
+
 ```bash
 # Show status for active profile
 /credentials status
@@ -68,11 +75,12 @@ llpm --profile personal
 ```
 
 ### Remove Credentials
+
 ```bash
 # Remove from active profile
 /credentials remove openai apiKey
 
-# Remove from specific profile  
+# Remove from specific profile
 /credentials remove github token --profile work
 ```
 
@@ -101,13 +109,14 @@ llpm --profile work  # Uses "profile-key"
 ## Profile Use Cases
 
 ### Work vs Personal
+
 ```bash
 # Work profile
 /credentials profile create work
 /credentials set openai apiKey sk-work-key --profile work
 /credentials set github token ghp_work_token --profile work
 
-# Personal profile  
+# Personal profile
 /credentials profile create personal
 /credentials set openai apiKey sk-personal-key --profile personal
 /credentials set github token ghp_personal_token --profile personal
@@ -117,6 +126,7 @@ llpm --profile work
 ```
 
 ### Project-Specific Credentials
+
 ```bash
 # Client project with specific API limits
 /credentials profile create client-acme
@@ -128,6 +138,7 @@ llpm --profile client-acme
 ```
 
 ### Development vs Production
+
 ```bash
 # Development credentials
 /credentials profile create dev
@@ -160,7 +171,7 @@ Profiles are stored in `~/.llpm/credentials.json`:
   },
   "currentProfile": "work",
   "metadata": {
-    "version": "2.0.0", 
+    "version": "2.0.0",
     "lastUpdated": "2025-08-28T21:00:00.000Z"
   }
 }
@@ -171,6 +182,7 @@ Profiles are stored in `~/.llpm/credentials.json`:
 LLPM automatically migrates old credential files to the new profile format:
 
 **Old format:**
+
 ```json
 {
   "openai": { "apiKey": "sk-key" },
@@ -179,6 +191,7 @@ LLPM automatically migrates old credential files to the new profile format:
 ```
 
 **Migrated to:**
+
 ```json
 {
   "profiles": {
@@ -201,15 +214,15 @@ LLPM automatically migrates old credential files to the new profile format:
 
 ## Command Reference
 
-| Command | Description |
-|---------|-------------|
-| `llpm --profile <name>` | Start with specific profile |
-| `/credentials profile list` | List all profiles |
-| `/credentials profile current` | Show current profile info |
-| `/credentials profile create <name>` | Create new profile |
-| `/credentials profile switch <name>` | Switch to profile (persistent) |
-| `/credentials profile delete <name>` | Delete profile |
-| `/credentials set <provider> <key> <value>` | Set credential in active profile |
-| `/credentials set <provider> <key> <value> --profile <name>` | Set credential in specific profile |
-| `/credentials status` | Show credential status for active profile |
-| `/credentials clear` | Clear all credentials from active profile |
+| Command                                                      | Description                               |
+| ------------------------------------------------------------ | ----------------------------------------- |
+| `llpm --profile <name>`                                      | Start with specific profile               |
+| `/credentials profile list`                                  | List all profiles                         |
+| `/credentials profile current`                               | Show current profile info                 |
+| `/credentials profile create <name>`                         | Create new profile                        |
+| `/credentials profile switch <name>`                         | Switch to profile (persistent)            |
+| `/credentials profile delete <name>`                         | Delete profile                            |
+| `/credentials set <provider> <key> <value>`                  | Set credential in active profile          |
+| `/credentials set <provider> <key> <value> --profile <name>` | Set credential in specific profile        |
+| `/credentials status`                                        | Show credential status for active profile |
+| `/credentials clear`                                         | Clear all credentials from active profile |

@@ -1,5 +1,5 @@
 import { tool } from 'ai';
-import * as z from "zod";
+import * as z from 'zod';
 import axios from 'axios';
 
 const REST_BROKER_URL = process.env.REST_BROKER_URL || 'http://localhost:3010';
@@ -28,24 +28,26 @@ export const listDockerAgentsTool = tool({
 export const submitDockerAgentJobTool = tool({
   description: 'Submit a coding job to a specific Docker agent for processing',
   inputSchema: z.object({
-    agentId: z.string().describe('The ID of the agent (e.g., claude-code, openai-codex, aider, opencode)'),
+    agentId: z
+      .string()
+      .describe('The ID of the agent (e.g., claude-code, openai-codex, aider, opencode)'),
     prompt: z.string().describe('The task or prompt for the agent to process'),
-    context: z.object({
-      files: z.array(z.string()).optional().describe('File paths to include as context'),
-      workspace: z.string().optional().describe('Workspace directory path')
-    }).optional().describe('Optional context for the job'),
+    context: z
+      .object({
+        files: z.array(z.string()).optional().describe('File paths to include as context'),
+        workspace: z.string().optional().describe('Workspace directory path')
+      })
+      .optional()
+      .describe('Optional context for the job'),
     options: z.record(z.any(), z.any()).optional().describe('Agent-specific options')
   }),
   execute: async ({ agentId, prompt, context, options }) => {
     try {
-      const response = await axios.post(
-        `${REST_BROKER_URL}/agents/${agentId}/jobs`,
-        {
-          prompt,
-          context,
-          options
-        }
-      );
+      const response = await axios.post(`${REST_BROKER_URL}/agents/${agentId}/jobs`, {
+        prompt,
+        context,
+        options
+      });
       return {
         success: true,
         jobId: response.data.jobId,
@@ -70,9 +72,7 @@ export const getDockerAgentJobStatusTool = tool({
   }),
   execute: async ({ agentId, jobId }) => {
     try {
-      const response = await axios.get(
-        `${REST_BROKER_URL}/agents/${agentId}/jobs/${jobId}`
-      );
+      const response = await axios.get(`${REST_BROKER_URL}/agents/${agentId}/jobs/${jobId}`);
       return {
         success: true,
         job: response.data
@@ -91,11 +91,23 @@ export const listDockerAgentJobsTool = tool({
   description: 'List all jobs submitted to a specific Docker agent',
   inputSchema: z.object({
     agentId: z.string().describe('The ID of the agent'),
-    status: z.enum(['queued', 'running', 'completed', 'failed', 'cancelled'])
+    status: z
+      .enum(['queued', 'running', 'completed', 'failed', 'cancelled'])
       .optional()
       .describe('Filter jobs by status'),
-    limit: z.number().min(1).max(100).default(50).optional().describe('Maximum number of jobs to return'),
-    offset: z.number().min(0).default(0).optional().describe('Number of jobs to skip for pagination')
+    limit: z
+      .number()
+      .min(1)
+      .max(100)
+      .default(50)
+      .optional()
+      .describe('Maximum number of jobs to return'),
+    offset: z
+      .number()
+      .min(0)
+      .default(0)
+      .optional()
+      .describe('Number of jobs to skip for pagination')
   }),
   execute: async ({ agentId, status, limit, offset }) => {
     try {
@@ -103,7 +115,7 @@ export const listDockerAgentJobsTool = tool({
       if (status) params.append('status', status);
       if (limit) params.append('limit', limit.toString());
       if (offset) params.append('offset', offset.toString());
-      
+
       const response = await axios.get(
         `${REST_BROKER_URL}/agents/${agentId}/jobs?${params.toString()}`
       );

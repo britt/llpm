@@ -1,19 +1,51 @@
 import { tool } from './instrumentedTool';
 import { z } from 'zod';
-import { loadProjectConfig, loadProjectAgentConfig, saveProjectAgentConfig, removeProjectAgentConfig as removeProjectAgentConfigFile } from '../utils/projectConfig';
+import {
+  loadProjectConfig,
+  loadProjectAgentConfig,
+  saveProjectAgentConfig,
+  removeProjectAgentConfig as removeProjectAgentConfigFile
+} from '../utils/projectConfig';
 
 /**
  * Set project-specific agent configuration
  */
 export const setProjectAgentConfigTool = tool({
-  description: 'Set agent configuration for the current project. This allows you to define default agent scaling preferences per project.',
+  description:
+    'Set agent configuration for the current project. This allows you to define default agent scaling preferences per project.',
   inputSchema: z.object({
-    defaultPreset: z.enum(['dev', 'team', 'heavy', 'minimal']).optional().describe('Default scaling preset for this project'),
-    claudeCode: z.number().min(0).max(10).optional().describe('Default number of Claude Code instances (0-10)'),
-    openaiCodex: z.number().min(0).max(10).optional().describe('Default number of OpenAI Codex instances (0-10)'),
-    aider: z.number().min(0).max(10).optional().describe('Default number of Aider instances (0-10)'),
-    opencode: z.number().min(0).max(10).optional().describe('Default number of OpenCode instances (0-10)'),
-    authType: z.enum(['api_key', 'subscription']).optional().describe('Default authentication type for agents')
+    defaultPreset: z
+      .enum(['dev', 'team', 'heavy', 'minimal'])
+      .optional()
+      .describe('Default scaling preset for this project'),
+    claudeCode: z
+      .number()
+      .min(0)
+      .max(10)
+      .optional()
+      .describe('Default number of Claude Code instances (0-10)'),
+    openaiCodex: z
+      .number()
+      .min(0)
+      .max(10)
+      .optional()
+      .describe('Default number of OpenAI Codex instances (0-10)'),
+    aider: z
+      .number()
+      .min(0)
+      .max(10)
+      .optional()
+      .describe('Default number of Aider instances (0-10)'),
+    opencode: z
+      .number()
+      .min(0)
+      .max(10)
+      .optional()
+      .describe('Default number of OpenCode instances (0-10)'),
+    authType: z
+      .enum(['api_key', 'subscription'])
+      .optional()
+      .describe('Default authentication type for agents')
   }),
   execute: async ({ defaultPreset, claudeCode, openaiCodex, aider, opencode, authType }) => {
     try {
@@ -42,8 +74,11 @@ export const setProjectAgentConfigTool = tool({
       }
 
       // Update custom counts if any are provided
-      const hasCustomCounts = claudeCode !== undefined || openaiCodex !== undefined ||
-                              aider !== undefined || opencode !== undefined;
+      const hasCustomCounts =
+        claudeCode !== undefined ||
+        openaiCodex !== undefined ||
+        aider !== undefined ||
+        opencode !== undefined;
 
       if (hasCustomCounts) {
         if (!agentConfig.customCounts) {
@@ -168,7 +203,8 @@ export const getProjectAgentConfigTool = tool({
  * Remove project-specific agent configuration
  */
 export const removeProjectAgentConfigTool = tool({
-  description: 'Remove the agent configuration from the current project, reverting to global defaults.',
+  description:
+    'Remove the agent configuration from the current project, reverting to global defaults.',
   inputSchema: z.object({}),
   execute: async () => {
     try {

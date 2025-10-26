@@ -26,7 +26,7 @@ export async function traced<T>(
   // Start span with current context (automatically uses active span as parent)
   const span = tracer.startSpan(operationName, {
     kind: options.kind ?? SpanKind.INTERNAL,
-    attributes,
+    attributes
   });
 
   // Set this span as active in context for nested operations
@@ -38,7 +38,7 @@ export async function traced<T>(
     } catch (error) {
       span.setStatus({
         code: SpanStatusCode.ERROR,
-        message: error instanceof Error ? error.message : String(error),
+        message: error instanceof Error ? error.message : String(error)
       });
       span.recordException(error instanceof Error ? error : new Error(String(error)));
       throw error;
@@ -65,7 +65,7 @@ export function tracedSync<T>(
   // Start span with current context (automatically uses active span as parent)
   const span = tracer.startSpan(operationName, {
     kind: options.kind ?? SpanKind.INTERNAL,
-    attributes,
+    attributes
   });
 
   // Set this span as active in context for nested operations
@@ -77,7 +77,7 @@ export function tracedSync<T>(
     } catch (error) {
       span.setStatus({
         code: SpanStatusCode.ERROR,
-        message: error instanceof Error ? error.message : String(error),
+        message: error instanceof Error ? error.message : String(error)
       });
       span.recordException(error instanceof Error ? error : new Error(String(error)));
       throw error;

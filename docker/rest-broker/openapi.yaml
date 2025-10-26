@@ -500,8 +500,8 @@ components:
           additionalProperties: true
           description: Additional agent-specific metadata
           example:
-            version: "1.0.0"
-            capabilities: ["code-generation", "refactoring"]
+            version: '1.0.0'
+            capabilities: ['code-generation', 'refactoring']
 
     JobRequest:
       type: object
@@ -729,8 +729,8 @@ components:
       description: Optional JWT token for authenticated endpoints
 
 security:
-  - {}  # No auth required by default
-  - BearerAuth: []  # Optional auth
+  - {} # No auth required by default
+  - BearerAuth: [] # Optional auth
 
 tags:
   - name: Agents

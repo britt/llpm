@@ -1,7 +1,7 @@
 ---
 name: stakeholder-updates
-description: "Craft clear, concise stakeholder communications with appropriate context and framing"
-instructions: "When writing status updates, communicating delays, sharing launch announcements, or crafting stakeholder communications"
+description: 'Craft clear, concise stakeholder communications with appropriate context and framing'
+instructions: 'When writing status updates, communicating delays, sharing launch announcements, or crafting stakeholder communications'
 tags:
   - communication
   - stakeholders
@@ -20,6 +20,7 @@ This skill helps craft effective communications for stakeholders at various leve
 ## When to Use
 
 Activate this skill when:
+
 - Writing status updates or progress reports
 - Communicating delays or blockers
 - Sharing launch announcements
@@ -31,6 +32,7 @@ Activate this skill when:
 ### Know Your Audience
 
 **Executives (C-level):**
+
 - Lead with business impact
 - Be concise (3-5 sentences)
 - Include metrics and outcomes
@@ -38,6 +40,7 @@ Activate this skill when:
 - Focus on "what" and "why", not "how"
 
 **Management (Directors, VPs):**
+
 - Balance detail with brevity
 - Include both progress and blockers
 - Provide context for decisions
@@ -45,6 +48,7 @@ Activate this skill when:
 - Highlight risks and mitigation
 
 **Peers (Other PMs, Team Leads):**
+
 - Can be more detailed
 - Include tactical information
 - Share lessons learned
@@ -52,6 +56,7 @@ Activate this skill when:
 - Be transparent about challenges
 
 **Team Members:**
+
 - Provide full context
 - Explain "why" behind decisions
 - Share timelines and expectations
@@ -68,23 +73,28 @@ Activate this skill when:
 Current status in plain language with key takeaway
 
 **Progress This Week:**
+
 - Completed: [specific accomplishments]
 - In Progress: [active work with % complete]
 - Planned Next: [upcoming priorities]
 
 **Metrics/Impact:**
+
 - [Quantifiable results or leading indicators]
 - [Usage stats, customer feedback, etc.]
 
 **Blockers/Risks:**
+
 - [Issue]: Impact and proposed resolution
 - [Risk]: Likelihood, impact, mitigation plan
 
 **Decisions Needed:**
+
 - [Decision 1]: Context, options, recommendation, deadline
 - [Decision 2]: ...
 
 **Next Milestones:**
+
 - [Date]: [Milestone and success criteria]
 
 ### Example: Executive Update (After Feature Launch)
@@ -94,6 +104,7 @@ Current status in plain language with key takeaway
 **TL;DR:** New checkout launched Tuesday. Conversion up 23%, support tickets down 15%. Monitoring for issues.
 
 **Impact:**
+
 - 23% increase in purchase conversion (baseline: 12% → current: 14.7%)
 - 15% reduction in payment-related support tickets
 - $47K additional revenue (3 days post-launch)
@@ -113,6 +124,7 @@ Rolling out to mobile apps next week. Full metrics report Friday.
 We've hit an integration blocker with the third-party payment SDK that requires vendor support.
 
 **Impact:**
+
 - Original ship date: May 15
 - Revised ship date: May 29 (2-week delay)
 - Affects: iOS and Android apps
@@ -122,12 +134,14 @@ We've hit an integration blocker with the third-party payment SDK that requires 
 The SDK update (required for PCI compliance) introduced breaking changes to the refund flow. Vendor confirmed this is a known issue and they're releasing a patch.
 
 **Mitigation:**
+
 - Vendor committed to patch by May 22
 - QA time reduced by reusing web test scenarios
 - Stakeholder communications sent
 - Customer impact: None (no existing feature affected)
 
 **What I Need:**
+
 - Your approval to adjust the milestone in Jira
 - Communication to sales team (I've drafted a message)
 
@@ -139,28 +153,34 @@ Adding "SDK update review" step to our release checklist to catch this earlier n
 ## Communication Best Practices
 
 ### Lead with the Punchline
+
 ❌ "We've been working on improving the checkout flow and after several iterations and testing..."
 ✅ "Checkout conversion is up 23% since Tuesday's launch."
 
 ### Use the "So What?" Test
+
 Every statement should answer: "Why does this matter?"
 
 ❌ "We added a progress indicator"
 ✅ "We added a progress indicator, reducing checkout abandonment by 12%"
 
 ### Be Specific with Numbers
+
 ❌ "Most users are happy"
 ✅ "NPS increased from 42 to 58 (n=247 responses)"
 
 ### Own Problems, Share Credit
+
 When things go wrong: "I underestimated the integration complexity"
 When things go right: "The engineering team delivered this ahead of schedule"
 
 ### Provide Context for Decisions
+
 Don't just state what you decided—explain why:
 "We're prioritizing mobile over tablet because 87% of our traffic is mobile, and tablet usage is trending down (15% decrease QoQ)."
 
 ### Signal Confidence Levels
+
 - "We will ship May 15" (high confidence, committed)
 - "We expect to ship around May 15" (medium confidence, estimate)
 - "We're targeting mid-May" (lower confidence, subject to change)

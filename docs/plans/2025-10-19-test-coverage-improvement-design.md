@@ -12,11 +12,13 @@ This plan improves LLPM's test coverage from 31.61% to 80%+ overall statement co
 ## Current State
 
 **Coverage Metrics:**
+
 - Statements: 31.61%
 - Branches: 73.78%
 - Functions: 43.78%
 
 **Key Observations:**
+
 - Branch coverage is already good (73.78%)
 - Many critical files have 0% coverage (useChat.ts, ChatInterface.tsx, github.ts)
 - Some files have partial coverage (systemPrompt.ts: 94.95%, chatHistory.ts: 70.37%)
@@ -24,6 +26,7 @@ This plan improves LLPM's test coverage from 31.61% to 80%+ overall statement co
 ## Goals & Success Criteria
 
 ### Quantitative Goals
+
 - ✅ Overall statement coverage: 31.61% → 80%+
 - ✅ Tier 1 files (critical core): 0-5% → 85%+
 - ✅ Tier 2 files (high-value services): <40% → 80%+
@@ -33,6 +36,7 @@ This plan improves LLPM's test coverage from 31.61% to 80%+ overall statement co
 - ✅ Test suite runs in <5 minutes
 
 ### Qualitative Goals
+
 - Tests document expected behavior
 - Mocks are minimal and realistic
 - Tests catch real bugs (not just for coverage)
@@ -84,47 +88,54 @@ This plan improves LLPM's test coverage from 31.61% to 80%+ overall statement co
 **Priority:** Medium - Ship third
 
 7-10. **Command handlers:**
-   - src/commands/model.ts (2.96% → 75%)
-   - src/commands/project.ts (15.4% → 75%)
-   - src/commands/credentials.ts (2.25% → 75%)
-   - src/commands/notes.ts (3.44% → 75%)
+
+- src/commands/model.ts (2.96% → 75%)
+- src/commands/project.ts (15.4% → 75%)
+- src/commands/credentials.ts (2.25% → 75%)
+- src/commands/notes.ts (3.44% → 75%)
 
 11-15. **Tool definitions:**
-   - src/tools/projectTools.ts (24.86% → 75%)
-   - src/tools/notesTools.ts (20.22% → 75%)
-   - src/tools/githubTools.ts (31.96% → 75%)
-   - src/tools/githubIssueTools.ts (56.46% → 75%)
-   - src/tools/githubPullRequestTools.ts (52.83% → 75%)
+
+- src/tools/projectTools.ts (24.86% → 75%)
+- src/tools/notesTools.ts (20.22% → 75%)
+- src/tools/githubTools.ts (31.96% → 75%)
+- src/tools/githubIssueTools.ts (56.46% → 75%)
+- src/tools/githubPullRequestTools.ts (52.83% → 75%)
 
 ### Tier 4 - Supporting Components (Target: 70%+ coverage)
 
 **Priority:** Lower - Ship last
 
 16-20. **UI components:**
-   - src/components/HybridInput.tsx (0% → 70%)
-   - src/components/ModelSelector.tsx (0% → 70%)
-   - src/components/ProjectSelector.tsx (0% → 70%)
-   - src/components/NotesSelector.tsx (0% → 70%)
-   - src/components/RequestLogDisplay.tsx (0% → 70%)
+
+- src/components/HybridInput.tsx (0% → 70%)
+- src/components/ModelSelector.tsx (0% → 70%)
+- src/components/ProjectSelector.tsx (0% → 70%)
+- src/components/NotesSelector.tsx (0% → 70%)
+- src/components/RequestLogDisplay.tsx (0% → 70%)
 
 ## Testing Strategy by File Type
 
 ### Hooks (useChat.ts)
 
 **Mock:**
+
 - AI SDK functions (generateText, streamText)
 - Tool registry
 
 **Real:**
+
 - Message state management
 - Queue logic
 - History trimming
 
 **Test Approach:**
+
 - State machine testing - verify transitions between idle/loading/processing states
 - Focus on message flow, lifecycle events, error recovery
 
 **Key Scenarios:**
+
 - Tool calls and execution
 - Streaming responses
 - Error recovery
@@ -134,18 +145,22 @@ This plan improves LLPM's test coverage from 31.61% to 80%+ overall statement co
 ### Services (llm.ts, github.ts)
 
 **Mock:**
+
 - Only external HTTP calls (OpenAI, Anthropic, GitHub REST APIs)
 
 **Real:**
+
 - Request formatting
 - Response parsing
 - Error handling logic
 
 **Test Approach:**
+
 - Contract testing with mocked HTTP responses
 - Verify correct API interaction patterns
 
 **Key Scenarios:**
+
 - Success cases with various response formats
 - API errors (404, 500, rate limiting)
 - Timeout handling
@@ -155,18 +170,22 @@ This plan improves LLPM's test coverage from 31.61% to 80%+ overall statement co
 ### Components (ChatInterface.tsx, HybridInput.tsx)
 
 **Mock:**
+
 - Only external service calls
 
 **Real:**
+
 - Ink rendering
 - Event handling
 - State management
 
 **Test Approach:**
+
 - React Testing Library with ink-testing-library
 - Focus on user interactions and visual output
 
 **Key Scenarios:**
+
 - User interactions (typing, shortcuts)
 - Loading states
 - Error displays
@@ -176,19 +195,23 @@ This plan improves LLPM's test coverage from 31.61% to 80%+ overall statement co
 ### Commands (project.ts, model.ts, etc.)
 
 **Mock:**
+
 - External APIs (GitHub, LLM services)
 - External services
 
 **Real:**
+
 - Filesystem operations (use `/tmp/llpm-test-<uuid>/`)
 - All command logic
 - Argument parsing
 
 **Test Approach:**
+
 - Integration testing with real filesystem, mocked external calls
 - Create temp dir in beforeEach, clean up in afterEach
 
 **Key Scenarios:**
+
 - Valid command execution
 - Invalid arguments
 - Help text generation
@@ -197,24 +220,29 @@ This plan improves LLPM's test coverage from 31.61% to 80%+ overall statement co
 - Error messages
 
 **Cleanup:**
+
 - `rm -rf` temp directory after each test
 - Ensure no test pollution
 
 ### Tools (projectTools.ts, githubTools.ts, etc.)
 
 **Mock:**
+
 - Only external APIs (GitHub, web services, LLM providers)
 
 **Real:**
+
 - Zod validation
 - Tool execution logic
 - Filesystem operations (with /tmp)
 
 **Test Approach:**
+
 - Contract tests ensuring AI SDK compatibility
 - Real filesystem for file operations
 
 **Key Scenarios:**
+
 - Valid inputs matching Zod schema
 - Schema violations (invalid inputs)
 - Execution errors
@@ -223,19 +251,23 @@ This plan improves LLPM's test coverage from 31.61% to 80%+ overall statement co
 ### Utils (projectConfig.ts, chatHistory.ts, etc.)
 
 **Mock:**
+
 - Database connections if needed
 - External APIs
 
 **Real:**
+
 - Business logic
 - Data transformations
 - Filesystem operations (with /tmp)
 
 **Test Approach:**
+
 - Pure function testing where possible
 - Focus on edge cases and error conditions
 
 **Key Scenarios:**
+
 - Valid inputs
 - Edge cases (empty, null, undefined, boundary values)
 - Error conditions
@@ -318,6 +350,7 @@ Extend existing mocks:
 ### Critical Error Scenarios
 
 **useChat.ts:**
+
 - AI SDK stream failures mid-response
 - Tool execution throwing errors
 - Database write failures during message save
@@ -325,6 +358,7 @@ Extend existing mocks:
 - Race conditions (multiple tools called simultaneously)
 
 **Service Layer:**
+
 - Network timeouts and retries
 - Rate limiting responses (429)
 - Invalid API responses (malformed JSON)
@@ -332,6 +366,7 @@ Extend existing mocks:
 - Partial data from streaming APIs
 
 **Commands:**
+
 - Invalid arguments / missing required params
 - Filesystem permission errors
 - Concurrent file access
@@ -339,6 +374,7 @@ Extend existing mocks:
 - Missing dependencies
 
 **Components:**
+
 - Empty message lists
 - Very long messages (truncation)
 - Rapid user input (debouncing)
@@ -348,6 +384,7 @@ Extend existing mocks:
 ### Edge Case Coverage Strategy
 
 Test boundary values and edge cases:
+
 - Boundary values (0, -1, MAX_INT)
 - Empty/null/undefined inputs
 - Malformed data structures
@@ -379,6 +416,7 @@ Update GitHub Actions workflow:
    - Track coverage trends over time
 
 3. **Per-File Thresholds (vitest.config.ts):**
+
 ```typescript
 thresholds: {
   global: {
@@ -436,6 +474,7 @@ thresholds: {
 ### Quality Gates
 
 All PRs must pass:
+
 - ✅ All tests passing
 - ✅ No skipped tests in Tier 1/2 files
 - ✅ Coverage thresholds met
@@ -445,6 +484,7 @@ All PRs must pass:
 ## Work Breakdown & Timeline
 
 ### Week 1: Tier 1 + Infrastructure
+
 **Goal:** 85%+ coverage for critical core
 
 - **Day 1-2:** Test infrastructure setup
@@ -472,6 +512,7 @@ All PRs must pass:
 **Deliverable:** PR #1 - Tier 1 Coverage + Test Infrastructure
 
 ### Week 2: Tier 2
+
 **Goal:** 80%+ coverage for high-value services
 
 - **Day 1-3:** github.ts comprehensive tests
@@ -492,6 +533,7 @@ All PRs must pass:
 **Deliverable:** PR #2 - Tier 2 Coverage
 
 ### Week 3: Tier 3
+
 **Goal:** 75%+ coverage for commands & tools
 
 - **Day 1-2:** Command tests (model, project, credentials, notes)
@@ -509,6 +551,7 @@ All PRs must pass:
 **Deliverable:** PR #3 - Tier 3 Coverage
 
 ### Week 4: Tier 4 + Cleanup
+
 **Goal:** 70%+ coverage for supporting components
 
 - **Day 1-3:** UI component tests
@@ -563,6 +606,7 @@ All PRs must pass:
 ### Risk: Test Suite Becomes Too Slow
 
 **Mitigation:**
+
 - Monitor test execution time
 - Parallelize where possible
 - Keep integration tests minimal
@@ -571,6 +615,7 @@ All PRs must pass:
 ### Risk: Over-Mocking Creates False Confidence
 
 **Mitigation:**
+
 - Minimal mocking strategy (already planned)
 - Use real filesystem with /tmp
 - Integration tests for critical paths
@@ -579,6 +624,7 @@ All PRs must pass:
 ### Risk: Tests Become Maintenance Burden
 
 **Mitigation:**
+
 - Clear, readable test code
 - Good test helpers reduce duplication
 - Regular refactoring of test code
@@ -587,6 +633,7 @@ All PRs must pass:
 ### Risk: Coverage Without Quality
 
 **Mitigation:**
+
 - Focus on meaningful scenarios, not just coverage %
 - Code review emphasizes test quality
 - Tests should catch real bugs
@@ -597,6 +644,7 @@ All PRs must pass:
 This plan systematically improves LLPM's test coverage from 31.61% to 80%+ through four tiers of work delivered incrementally over 4 weeks. The approach prioritizes critical business logic, uses minimal mocking with real filesystem operations, and establishes sustainable testing practices for ongoing development.
 
 **Key Success Factors:**
+
 - Critical path first (highest value delivered early)
 - Minimal mocking (tests catch real bugs)
 - Real filesystem operations (with /tmp cleanup)
@@ -604,6 +652,7 @@ This plan systematically improves LLPM's test coverage from 31.61% to 80%+ throu
 - Sustainable practices (documented patterns, maintainable tests)
 
 **Next Steps:**
+
 1. Approve this design document
 2. Set up git worktree for implementation
 3. Create detailed implementation plan

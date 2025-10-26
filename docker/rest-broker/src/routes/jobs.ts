@@ -16,25 +16,25 @@ jobsRouter.get('/', (req: Request, res: Response): void => {
     res.status(404).json({
       status: 404,
       code: 'AGENT_NOT_FOUND',
-      message: `Agent ${agentId} not found`,
+      message: `Agent ${agentId} not found`
     });
     return;
   }
 
   const limitNum = Math.min(100, Math.max(1, parseInt(limit as string, 10)));
   const offsetNum = Math.max(0, parseInt(offset as string, 10));
-  
+
   const jobs = jobQueue.getJobsByAgent(agentId, {
     status: status as string | undefined,
     limit: limitNum,
-    offset: offsetNum,
+    offset: offsetNum
   });
 
   res.json({
     jobs: jobs.items,
     total: jobs.total,
     offset: offsetNum,
-    limit: limitNum,
+    limit: limitNum
   });
 });
 
@@ -49,7 +49,7 @@ jobsRouter.post('/', async (req: Request, res: Response): Promise<void> => {
     res.status(404).json({
       status: 404,
       code: 'AGENT_NOT_FOUND',
-      message: `Agent ${agentId} not found`,
+      message: `Agent ${agentId} not found`
     });
     return;
   }
@@ -58,27 +58,25 @@ jobsRouter.post('/', async (req: Request, res: Response): Promise<void> => {
     res.status(503).json({
       status: 503,
       code: 'AGENT_OFFLINE',
-      message: `Agent ${agentId} is currently offline`,
+      message: `Agent ${agentId} is currently offline`
     });
     return;
   }
 
   try {
     const job = jobQueue.createJob(agentId, req.body);
-    
-    res.status(202)
-      .header('Location', `/agents/${agentId}/jobs/${job.id}`)
-      .json({
-        jobId: job.id,
-        status: job.status,
-        createdAt: job.createdAt,
-      });
+
+    res.status(202).header('Location', `/agents/${agentId}/jobs/${job.id}`).json({
+      jobId: job.id,
+      status: job.status,
+      createdAt: job.createdAt
+    });
   } catch (error) {
     res.status(500).json({
       status: 500,
       code: 'JOB_CREATION_FAILED',
       message: 'Failed to create job',
-      details: error instanceof Error ? error.message : undefined,
+      details: error instanceof Error ? error.message : undefined
     });
   }
 });
@@ -93,7 +91,7 @@ jobsRouter.get('/:jobId', (req: Request, res: Response): void => {
     res.status(404).json({
       status: 404,
       code: 'JOB_NOT_FOUND',
-      message: `Job ${jobId} not found`,
+      message: `Job ${jobId} not found`
     });
     return;
   }
@@ -111,7 +109,7 @@ jobsRouter.post('/:jobId/cancel', async (req: Request, res: Response): Promise<v
     res.status(404).json({
       status: 404,
       code: 'JOB_NOT_FOUND',
-      message: `Job ${jobId} not found`,
+      message: `Job ${jobId} not found`
     });
     return;
   }
@@ -122,13 +120,13 @@ jobsRouter.post('/:jobId/cancel', async (req: Request, res: Response): Promise<v
       jobId,
       status: 'cancelled',
       cancelled: true,
-      message: 'Job cancellation initiated',
+      message: 'Job cancellation initiated'
     });
   } else {
     res.status(409).json({
       status: 409,
       code: 'JOB_NOT_CANCELLABLE',
-      message: `Job ${jobId} cannot be cancelled (already ${job.status})`,
+      message: `Job ${jobId} cannot be cancelled (already ${job.status})`
     });
   }
 });

@@ -7,17 +7,21 @@ LLPM includes OpenTelemetry support for distributed tracing across CLI and Docke
 ### 1. Start Tracing Backend
 
 **Option A: Jaeger (General-purpose tracing)**
+
 ```bash
 cd docker
 docker-compose up -d jaeger
 ```
+
 Jaeger UI: http://localhost:16686
 
 **Option B: Phoenix (LLM-focused tracing)**
+
 ```bash
 cd docker/phoenix
 docker-compose up -d
 ```
+
 Phoenix UI: http://localhost:6006
 
 ### 2. Enable Telemetry in CLI
@@ -43,6 +47,7 @@ bun run index.ts --verbose
 ```
 
 Look for telemetry initialization messages:
+
 ```
 [DEBUG] Initializing OpenTelemetry SDK for llpm@0.13.0
 [DEBUG] OTLP endpoint: http://localhost:4318
@@ -55,6 +60,7 @@ Look for telemetry initialization messages:
 **OpenTelemetry's auto-instrumentations do not work with Bun.** They are designed for Node.js internals.
 
 This means:
+
 - ❌ HTTP requests are NOT automatically traced
 - ❌ File system operations are NOT automatically traced
 - ✅ Manual tracing works perfectly
@@ -65,6 +71,7 @@ This means:
 LLPM has comprehensive tracing built into the following operations:
 
 ### User Request Flow
+
 - **user.request** (root span) - Traces entire user message processing:
   - Message length and count
   - Response length
@@ -73,6 +80,7 @@ LLPM has comprehensive tracing built into the following operations:
 ### LLM Interactions
 
 **Manual Tracing:**
+
 - **llm.generateResponse** - Traces AI model calls with:
   - Model provider and name
   - Token usage (prompt, completion, total)
@@ -108,6 +116,7 @@ LLPM enables Vercel AI SDK's experimental OpenTelemetry support for automatic tr
 All AI SDK spans automatically nest under their parent spans (e.g., `llm.generateResponse`) for complete visibility in Jaeger flame graphs.
 
 ### Tool Executions
+
 - **tool.[tool_name]** - Every tool execution is traced with:
   - Tool name and description
   - Input arguments (truncated to 500 chars)
@@ -119,6 +128,7 @@ All AI SDK spans automatically nest under their parent spans (e.g., `llm.generat
 ### File System Operations
 
 **Chat History:**
+
 - **fs.loadChatHistory** - Traces chat history loading with:
   - File path and size
   - Message counts
@@ -130,6 +140,7 @@ All AI SDK spans automatically nest under their parent spans (e.g., `llm.generat
   - Project context
 
 **System Prompt:**
+
 - **fs.getSystemPrompt** - Traces system prompt loading with:
   - File path and size
   - Source (custom/default)
@@ -140,6 +151,7 @@ All AI SDK spans automatically nest under their parent spans (e.g., `llm.generat
   - File path and size
 
 **Project Configuration:**
+
 - **fs.loadProjectConfig** - Traces config loading with:
   - File path and size
   - Project count
@@ -159,6 +171,7 @@ All AI SDK spans automatically nest under their parent spans (e.g., `llm.generat
   - File size
 
 ### Database Operations
+
 - **db.addNote** - Traces note insertion with:
   - Project ID
   - Embedding generation
@@ -172,6 +185,7 @@ All AI SDK spans automatically nest under their parent spans (e.g., `llm.generat
   - Top similarity score
 
 ### Network Operations
+
 - **github.getUserRepos** - Traces GitHub repository listing with:
   - API endpoint
   - Request parameters
@@ -194,25 +208,33 @@ To add tracing to additional operations, use the `traced()` utility:
 import { traced } from './src/utils/tracing';
 
 // Async operation
-await traced('operation.name', {
-  attributes: {
-    'user.id': '123',
-    'operation.type': 'query'
+await traced(
+  'operation.name',
+  {
+    attributes: {
+      'user.id': '123',
+      'operation.type': 'query'
+    }
+  },
+  async span => {
+    // Your code here
+    const result = await someOperation();
+    span.setAttribute('result.count', result.length);
+    return result;
   }
-}, async (span) => {
-  // Your code here
-  const result = await someOperation();
-  span.setAttribute('result.count', result.length);
-  return result;
-});
+);
 
 // Sync operation
-tracedSync('operation.name', {
-  attributes: { 'key': 'value' }
-}, (span) => {
-  // Your code here
-  return result;
-});
+tracedSync(
+  'operation.name',
+  {
+    attributes: { key: 'value' }
+  },
+  span => {
+    // Your code here
+    return result;
+  }
+);
 ```
 
 ## Adding Tracing to Existing Code
@@ -222,22 +244,26 @@ Example: Trace AI model calls in `useChat.ts`:
 ```typescript
 import { traced } from '../utils/tracing';
 
-const response = await traced('ai.generateText', {
-  attributes: {
-    'model': selectedModel,
-    'provider': provider,
-    'message.length': userMessage.length
-  }
-}, async (span) => {
-  const result = await generateText({
-    model: modelInstance,
-    messages: messagesToSend,
-    tools: allTools,
-  });
+const response = await traced(
+  'ai.generateText',
+  {
+    attributes: {
+      model: selectedModel,
+      provider: provider,
+      'message.length': userMessage.length
+    }
+  },
+  async span => {
+    const result = await generateText({
+      model: modelInstance,
+      messages: messagesToSend,
+      tools: allTools
+    });
 
-  span.setAttribute('response.usage.tokens', result.usage.totalTokens);
-  return result;
-});
+    span.setAttribute('response.usage.tokens', result.usage.totalTokens);
+    return result;
+  }
+);
 ```
 
 ## Verifying Traces
@@ -388,16 +414,19 @@ export LLPM_TELEMETRY_ENABLED=0
 ### No traces appearing in Jaeger
 
 1. **Check Jaeger is running:**
+
    ```bash
    curl http://localhost:16686
    ```
 
 2. **Check OTLP endpoint is accessible:**
+
    ```bash
    curl http://localhost:4318/v1/traces
    ```
 
 3. **Enable verbose logging:**
+
    ```bash
    bun run index.ts --verbose
    ```

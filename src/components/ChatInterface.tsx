@@ -35,25 +35,26 @@ interface ChatInterfaceProps {
   selectedSkills?: string[];
 }
 
-const ThinkingIndicator = memo(({ isVisible, selectedSkills }: { isVisible: boolean; selectedSkills?: string[] }) => {
-  if (!isVisible) return null;
+const ThinkingIndicator = memo(
+  ({ isVisible, selectedSkills }: { isVisible: boolean; selectedSkills?: string[] }) => {
+    if (!isVisible) return null;
 
-  return (
-    <Box flexDirection="column" paddingX={1} paddingY={1} height={8}>
-      <Box>
-        <Text color="red">
-          PM is thinking...
-        </Text>
-        {selectedSkills && selectedSkills.length > 0 && (
-          <Text color="cyan" dimColor>
-            {' '}(using skill{selectedSkills.length > 1 ? 's' : ''}: {selectedSkills.join(', ')})
-          </Text>
-        )}
+    return (
+      <Box flexDirection="column" paddingX={1} paddingY={1} height={8}>
+        <Box>
+          <Text color="red">PM is thinking...</Text>
+          {selectedSkills && selectedSkills.length > 0 && (
+            <Text color="cyan" dimColor>
+              {' '}
+              (using skill{selectedSkills.length > 1 ? 's' : ''}: {selectedSkills.join(', ')})
+            </Text>
+          )}
+        </Box>
+        <RequestLogDisplay />
       </Box>
-      <RequestLogDisplay />
-    </Box>
-  );
-});
+    );
+  }
+);
 
 const QueuedMessageItem = memo(({ message }: { message: QueuedMessage }) => {
   return (
@@ -101,8 +102,7 @@ const CollapseIndicator = memo(
           ) : (
             <>
               Showing last {visibleLines} lines ({hiddenLinesCount} hidden) —{' '}
-              <Text color="cyan">/history all</Text> |{' '}
-              <Text color="cyan">/history export</Text>
+              <Text color="cyan">/history all</Text> | <Text color="cyan">/history export</Text>
             </>
           )}
         </Text>

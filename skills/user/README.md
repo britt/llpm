@@ -13,8 +13,8 @@ This directory is for your personal custom skills. Skills are reusable instructi
 ```markdown
 ---
 name: my-skill-name
-description: "Brief description of what this skill does (max 1024 chars)"
-instructions: "When asked to [action], [what to do]"  # REQUIRED!
+description: 'Brief description of what this skill does (max 1024 chars)'
+instructions: 'When asked to [action], [what to do]' # REQUIRED!
 tags:
   - tag1
   - tag2
@@ -47,7 +47,6 @@ More guidance...
 - **`instructions`**: Single-line guidance on when to use this skill. **MANDATORY - Skills without instructions will not be loaded!**
 
   **CRITICAL FORMAT REQUIREMENT**: Must start with "When" and follow the pattern: `"When asked to [action], [guidance]"`
-
   - ✅ Good: `"When asked to create diagrams, use this skill for Mermaid syntax"`
   - ✅ Good: `"When writing API documentation, follow REST conventions"`
   - ❌ Bad: `"Use this skill for diagrams"` (doesn't start with "When")
@@ -57,6 +56,7 @@ More guidance...
 ### Optional Fields
 
 - **`tags`**: Array of tags for filtering and discovery
+
   ```yaml
   tags:
     - api
@@ -65,6 +65,7 @@ More guidance...
   ```
 
 - **`allowed_tools`**: Restrict tool usage when this skill is active (optional)
+
   ```yaml
   allowed_tools:
     - github
@@ -73,10 +74,11 @@ More guidance...
   ```
 
 - **`vars`**: Variables for content substitution using `{{varName}}` syntax
+
   ```yaml
   vars:
-    project_name: "My Project"
-    api_version: "v2"
+    project_name: 'My Project'
+    api_version: 'v2'
   ```
 
 - **`resources`**: Additional files to load from the skill directory
@@ -98,6 +100,7 @@ The `instructions` field appears in the system prompt to guide the AI on when to
 ### Examples
 
 **Good Instructions:**
+
 - `"When asked to create API documentation, follow RESTful conventions"`
 - `"When designing database schemas, use this skill for normalization guidance"`
 - `"When writing test cases, follow the Given-When-Then pattern"`
@@ -105,6 +108,7 @@ The `instructions` field appears in the system prompt to guide the AI on when to
 - `"When planning sprints, use this skill for estimation and prioritization"`
 
 **Bad Instructions:**
+
 - `"Use this for APIs"` - Not specific, doesn't start with "When"
 - `"API documentation skill"` - Just a title, not guidance
 - `"This helps with database design"` - Doesn't start with "When"
@@ -122,8 +126,8 @@ The `instructions` field appears in the system prompt to guide the AI on when to
 ```markdown
 ---
 name: api-docs
-description: "Guide for writing clear API documentation following industry best practices"
-instructions: "When asked to write API documentation, use REST conventions and OpenAPI standards"
+description: 'Guide for writing clear API documentation following industry best practices'
+instructions: 'When asked to write API documentation, use REST conventions and OpenAPI standards'
 tags:
   - api
   - documentation
@@ -142,6 +146,7 @@ This skill provides guidance for writing clear, comprehensive API documentation.
 
 ### Endpoint Format
 ```
+
 ### POST /api/v1/users
 
 Create a new user account.
@@ -151,25 +156,27 @@ Create a new user account.
 **Request Body:**
 \`\`\`json
 {
-  "email": "user@example.com",
-  "name": "John Doe",
-  "role": "admin"
+"email": "user@example.com",
+"name": "John Doe",
+"role": "admin"
 }
 \`\`\`
 
 **Response (201 Created):**
 \`\`\`json
 {
-  "id": "usr_123",
-  "email": "user@example.com",
-  "name": "John Doe",
-  "created_at": "2024-01-15T10:30:00Z"
+"id": "usr_123",
+"email": "user@example.com",
+"name": "John Doe",
+"created_at": "2024-01-15T10:30:00Z"
 }
 \`\`\`
 
 **Error Responses:**
+
 - 400 Bad Request - Invalid input
 - 409 Conflict - Email already exists
+
 ```
 
 ## Best Practices
@@ -205,6 +212,7 @@ The AI can use these tools to work with skills:
 ### Natural Language
 
 You can also ask the AI naturally:
+
 - "Load the api-docs skill"
 - "What skills are available for testing?"
 - "Show me the content of the database-design skill"

@@ -66,7 +66,11 @@ export function parseCommand(input: string): {
   };
 }
 
-export async function executeCommand(command: string, args: string[] = [], context?: import('./types').CommandContext) {
+export async function executeCommand(
+  command: string,
+  args: string[] = [],
+  context?: import('./types').CommandContext
+) {
   debug('Executing command:', command, 'with args:', args);
 
   const registry = getCommandRegistry();

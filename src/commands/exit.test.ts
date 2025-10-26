@@ -4,7 +4,9 @@ import { exitCommand } from './exit';
 import type { CommandResult } from './types';
 
 // Helper to resolve command results (handles both sync and async)
-async function resolveCommandResult(result: CommandResult | Promise<CommandResult>): Promise<CommandResult> {
+async function resolveCommandResult(
+  result: CommandResult | Promise<CommandResult>
+): Promise<CommandResult> {
   return Promise.resolve(result);
 }
 
@@ -13,7 +15,7 @@ describe('exitCommand', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    
+
     // Mock process.exit to prevent actual exit during tests
     originalExit = process.exit;
     process.exit = vi.fn() as any;
@@ -37,7 +39,7 @@ describe('exitCommand', () => {
   });
 
   it('should not call process.exit in test environment', () => {
-    return new Promise<void>((resolve) => {
+    return new Promise<void>(resolve => {
       exitCommand.execute([]);
 
       // process.exit should not be called in test environment

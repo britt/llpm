@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { useState, useCallback, useEffect, useRef } from 'react';
 import type { Message } from '../types';
 import { generateResponse } from '../services/llm';
@@ -18,7 +19,7 @@ export interface QueuedMessage {
 }
 
 function trimMessages(messages: Message[]): Message[] {
-  return messages.slice(-1*DEFAULT_HISTORY_SIZE);
+  return messages.slice(-1 * DEFAULT_HISTORY_SIZE);
 }
 
 export function useChat() {
@@ -49,7 +50,6 @@ export function useChat() {
     processingRef.current = isProcessing;
   }, [isProcessing]);
 
-
   // Load chat history on component mount and when project changes
   useEffect(() => {
     const initializeChatHistory = async () => {
@@ -70,7 +70,7 @@ export function useChat() {
           const welcomeMessage: Message = {
             role: 'assistant',
             content:
-              "Hello! I'm LLPM, your AI-powered project manager. How can I help you today?\n\n💡 Type /help to see available commands.",
+              "Hello! I'm LLPM, your AI-powered project manager. How can I help you today?\n\n💡 Type /help to see available commands."
           };
           setMessages([welcomeMessage]);
           shouldSaveRef.current = true; // Mark that we need to save the welcome message
@@ -84,7 +84,7 @@ export function useChat() {
         const welcomeMessage: Message = {
           role: 'assistant',
           content:
-            "Hello! I'm LLPM, your AI-powered project manager. How can I help you today?\n\n💡 Type /help to see available commands.",
+            "Hello! I'm LLPM, your AI-powered project manager. How can I help you today?\n\n💡 Type /help to see available commands."
         };
         setMessages([welcomeMessage]);
         shouldSaveRef.current = true; // Mark that we need to save the fallback message
@@ -95,7 +95,6 @@ export function useChat() {
 
     initializeChatHistory();
   }, [currentProjectId, projectSwitchTrigger]);
-
 
   // Save messages whenever they change (after history is loaded)
   useEffect(() => {
@@ -136,7 +135,6 @@ export function useChat() {
   // Process a message immediately (internal function)
   const processMessageImmediate = useCallback(
     async (content: string) => {
-      
       // If we're in the middle of a project switch, wait for it to complete
       if (isProjectSwitching) {
         debug('Waiting for project switch to complete before processing message');
@@ -151,11 +149,9 @@ export function useChat() {
         setIsLoading(true);
 
         try {
-          const result = await executeCommand(
-            parsed.command as string,
-            parsed.args as string[],
-            { messageCount: messagesRef.current.length }
-          );
+          const result = await executeCommand(parsed.command as string, parsed.args as string[], {
+            messageCount: messagesRef.current.length
+          });
 
           // Check for interactive command results
           if (result.interactive && result.interactive.type === 'model-select') {
@@ -165,9 +161,11 @@ export function useChat() {
           }
 
           // Special handling for project switch command
-          if (parsed.command === 'project' && 
-              (parsed.args?.[0] === 'switch' || parsed.args?.[0] === 'set') && 
-              result.success) {
+          if (
+            parsed.command === 'project' &&
+            (parsed.args?.[0] === 'switch' || parsed.args?.[0] === 'set') &&
+            result.success
+          ) {
             debug('Project switch command executed, triggering context refresh');
             setIsProjectSwitching(true);
             setProjectSwitchTrigger(prev => prev + 1);
@@ -182,7 +180,7 @@ export function useChat() {
             const welcomeMessage: Message = {
               role: 'assistant',
               content:
-                "Hello! I'm LLPM, your AI-powered project manager. How can I help you today?\n\n💡 Type /help to see available commands.",
+                "Hello! I'm LLPM, your AI-powered project manager. How can I help you today?\n\n💡 Type /help to see available commands."
             };
             setMessages([welcomeMessage]);
             shouldSaveRef.current = true; // Mark for saving
@@ -190,7 +188,7 @@ export function useChat() {
           } else {
             const responseMessage: Message = {
               role: 'ui-notification',
-              content: result.content,
+              content: result.content
             };
             setMessages(prev => trimMessages([...prev, responseMessage]));
             shouldSaveRef.current = true; // Mark for saving
@@ -210,7 +208,7 @@ export function useChat() {
 
           const errorMessage: Message = {
             role: 'ui-notification',
-            content: errorContent,
+            content: errorContent
           };
           setMessages(prev => trimMessages([...prev, errorMessage]));
           shouldSaveRef.current = true; // Mark for saving
@@ -244,19 +242,23 @@ export function useChat() {
           }
 
           // Trace the request flow (inner wrapper)
-          return await traced('user.request', {
-            attributes: {
-              'message.length': content.length,
-              'message.count': allMessages.length
+          return await traced(
+            'user.request',
+            {
+              attributes: {
+                'message.length': content.length,
+                'message.count': allMessages.length
+              },
+              openInferenceKind: 'CHAIN' // Phoenix UI span kind for request flow
             },
-            openInferenceKind: 'CHAIN',  // Phoenix UI span kind for request flow
-          }, async (span) => {
-            RequestContext.logStep('prompt_assembly', 'start');
-            RequestContext.logStep('prompt_assembly', 'end');
-            const result = await generateResponse(allMessages);
-            span.setAttribute('response.length', result?.response?.length || 0);
-            return result;
-          });
+            async span => {
+              RequestContext.logStep('prompt_assembly', 'start');
+              RequestContext.logStep('prompt_assembly', 'end');
+              const result = await generateResponse(allMessages);
+              span.setAttribute('response.length', result?.response?.length || 0);
+              return result;
+            }
+          );
         });
 
         debug('Received response from LLM, length:', response?.response?.length || 0);
@@ -274,7 +276,7 @@ export function useChat() {
 
         const assistantMessage: Message = {
           role: 'assistant',
-          content: responseContent,
+          content: responseContent
         };
         setMessages(prev => trimMessages([...prev, assistantMessage]));
         shouldSaveRef.current = true; // Mark for saving
@@ -293,7 +295,7 @@ export function useChat() {
 
         const errorMessage: Message = {
           role: 'assistant',
-          content: errorContent,
+          content: errorContent
         };
         setMessages(prev => trimMessages([...prev, errorMessage]));
         shouldSaveRef.current = true; // Mark for saving
@@ -322,7 +324,12 @@ export function useChat() {
       // Process next message from queue inline
       (async () => {
         if (processingRef.current || messageQueue.length === 0) {
-          debug('processNextMessage: skipping - processing:', processingRef.current, 'queue length:', messageQueue.length);
+          debug(
+            'processNextMessage: skipping - processing:',
+            processingRef.current,
+            'queue length:',
+            messageQueue.length
+          );
           return;
         }
 
@@ -388,7 +395,7 @@ export function useChat() {
   const addUINotification = useCallback((content: string) => {
     const notification: Message = {
       role: 'ui-notification',
-      content,
+      content
     };
     setMessages(prev => trimMessages([...prev, notification]));
     shouldSaveRef.current = true; // Mark for saving
@@ -405,7 +412,7 @@ export function useChat() {
 
       const responseMessage: Message = {
         role: 'ui-notification',
-        content: result.content,
+        content: result.content
       };
       setMessages(prev => trimMessages([...prev, responseMessage]));
       shouldSaveRef.current = true; // Mark for saving
@@ -415,7 +422,7 @@ export function useChat() {
 
       const errorMessage: Message = {
         role: 'ui-notification',
-        content: '❌ Failed to switch model. Please try again.',
+        content: '❌ Failed to switch model. Please try again.'
       };
       setMessages(prev => trimMessages([...prev, errorMessage]));
       shouldSaveRef.current = true; // Mark for saving
@@ -444,7 +451,7 @@ export function useChat() {
         // If not interactive, show the result as a system message
         const responseMessage: Message = {
           role: 'ui-notification',
-          content: result.content,
+          content: result.content
         };
         setMessages(prev => trimMessages([...prev, responseMessage]));
         shouldSaveRef.current = true; // Mark for saving
@@ -454,7 +461,7 @@ export function useChat() {
 
       const errorMessage: Message = {
         role: 'ui-notification',
-        content: '❌ Failed to open model selector. Please try again.',
+        content: '❌ Failed to open model selector. Please try again.'
       };
       setMessages(prev => trimMessages([...prev, errorMessage]));
       shouldSaveRef.current = true; // Mark for saving

@@ -29,10 +29,12 @@ This command is an alias for /quit.
 
     // Exit after ensuring chat history is saved
     // Skip process.exit in test environments or when vitest is running
-    if (process.env.NODE_ENV !== 'test' &&
-        process.env.CI !== 'true' &&
-        typeof global !== 'undefined' &&
-        !('__vitest_worker__' in global)) {
+    if (
+      process.env.NODE_ENV !== 'test' &&
+      process.env.CI !== 'true' &&
+      typeof global !== 'undefined' &&
+      !('__vitest_worker__' in global)
+    ) {
       // Wait for any pending saves to complete before exiting
       setTimeout(async () => {
         debug('Flushing chat history before exit');

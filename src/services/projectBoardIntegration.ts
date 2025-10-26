@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import type { Project } from '../types/project';
 import { getCurrentProject, setProjectBoard, getProjectBoard } from '../utils/projectConfig';
 import { getProjectV2, listProjectsV2, addProjectV2Item } from './githubProjects';
@@ -30,11 +31,17 @@ export async function autoLinkProjectBoard(
     if (!githubOwner) {
       return {
         success: false,
-        message: 'Could not determine GitHub owner. Either provide an owner parameter or ensure the project has a valid github_repo configured.'
+        message:
+          'Could not determine GitHub owner. Either provide an owner parameter or ensure the project has a valid github_repo configured.'
       };
     }
 
-    debug('Auto-linking project board for:', currentProject.name, 'with GitHub owner:', githubOwner);
+    debug(
+      'Auto-linking project board for:',
+      currentProject.name,
+      'with GitHub owner:',
+      githubOwner
+    );
 
     let targetProject;
 
@@ -45,17 +52,18 @@ export async function autoLinkProjectBoard(
     } else {
       // Auto-detect by name matching
       const projects = await listProjectsV2(githubOwner);
-      
+
       // Try exact match first
-      targetProject = projects.find(p => 
-        p.title.toLowerCase() === currentProject.name.toLowerCase()
+      targetProject = projects.find(
+        p => p.title.toLowerCase() === currentProject.name.toLowerCase()
       );
 
       // If no exact match, try partial match
       if (!targetProject) {
-        targetProject = projects.find(p => 
-          p.title.toLowerCase().includes(currentProject.name.toLowerCase()) ||
-          currentProject.name.toLowerCase().includes(p.title.toLowerCase())
+        targetProject = projects.find(
+          p =>
+            p.title.toLowerCase().includes(currentProject.name.toLowerCase()) ||
+            currentProject.name.toLowerCase().includes(p.title.toLowerCase())
         );
       }
 
@@ -78,7 +86,6 @@ export async function autoLinkProjectBoard(
       message: `✅ Successfully linked project "${currentProject.name}" to GitHub Project "${targetProject.title}" (#${targetProject.number})`,
       project: targetProject
     };
-
   } catch (error) {
     debug('Error auto-linking project board:', error);
     return {
@@ -117,7 +124,6 @@ export async function autoAddToProjectBoard(
       success: true,
       message: `✅ Automatically added ${itemType} to project board "${currentProject.name}"`
     };
-
   } catch (error) {
     debug('Error auto-adding to project board:', error);
     return {
@@ -160,7 +166,6 @@ export async function getCurrentProjectBoard(): Promise<{
         projectBoardNumber: projectBoard.projectBoardNumber
       }
     };
-
   } catch (error) {
     debug('Error getting current project board:', error);
     return {
@@ -197,7 +202,7 @@ export async function validateProjectBoardIntegration(): Promise<{
 
     // Try to access the project board to validate the configuration
     const projectDetails = await getProjectV2ById(projectBoard.projectBoardId);
-    
+
     return {
       success: true,
       message: `✅ Project board integration is working correctly`,
@@ -208,7 +213,6 @@ export async function validateProjectBoardIntegration(): Promise<{
         boardUrl: projectDetails.url
       }
     };
-
   } catch (error) {
     debug('Error validating project board integration:', error);
     return {
@@ -224,10 +228,10 @@ export async function validateProjectBoardIntegration(): Promise<{
 async function getProjectV2ById(projectId: string): Promise<any> {
   const { Octokit } = await import('@octokit/rest');
   const { execSync } = await import('child_process');
-  
+
   // Get token using credential manager
   let token = await credentialManager.getGitHubToken();
-  
+
   if (!token) {
     try {
       const rawToken = execSync('gh auth token', {

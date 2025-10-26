@@ -26,8 +26,5 @@
     "noUnusedParameters": false,
     "noPropertyAccessFromIndexSignature": false
   },
-  "exclude": [
-    "test-*.ts",
-    "docker/**/*"
-  ]
+  "exclude": ["test-*.ts", "docker/**/*"]
 }

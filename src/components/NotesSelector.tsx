@@ -14,14 +14,11 @@ interface ProjectNote {
 export type NotesSelectorProps = {
   onClose?: () => void;
   onInsertNote?: (noteContent: string, noteId: number) => void;
-}
+};
 
 type ViewMode = 'list' | 'detail';
 
-export default function NotesSelector({
-  onClose,
-  onInsertNote
-}: NotesSelectorProps) {
+export default function NotesSelector({ onClose, onInsertNote }: NotesSelectorProps) {
   const [notes, setNotes] = useState<ProjectNote[]>([]);
   const [allNotes, setAllNotes] = useState<ProjectNote[]>([]);
   const [filteredNotes, setFilteredNotes] = useState<ProjectNote[]>([]);
@@ -72,10 +69,11 @@ export default function NotesSelector({
     }
 
     const lowerQuery = query.toLowerCase();
-    const filtered = allNotes.filter(note =>
-      note.title.toLowerCase().includes(lowerQuery) ||
-      note.content.toLowerCase().includes(lowerQuery) ||
-      note.tags?.toLowerCase().includes(lowerQuery)
+    const filtered = allNotes.filter(
+      note =>
+        note.title.toLowerCase().includes(lowerQuery) ||
+        note.content.toLowerCase().includes(lowerQuery) ||
+        note.tags?.toLowerCase().includes(lowerQuery)
     );
     setFilteredNotes(filtered);
     setWindowStart(0);
@@ -84,11 +82,13 @@ export default function NotesSelector({
 
   // Update visible window of notes
   const updateWindow = (newStart: number) => {
-    const clampedStart = Math.max(0, Math.min(newStart, Math.max(0, filteredNotes.length - WINDOW_SIZE)));
+    const clampedStart = Math.max(
+      0,
+      Math.min(newStart, Math.max(0, filteredNotes.length - WINDOW_SIZE))
+    );
     setWindowStart(clampedStart);
     setNotes(filteredNotes.slice(clampedStart, clampedStart + WINDOW_SIZE));
   };
-
 
   const handleSelectNote = () => {
     if (notes[selectedIndex]) {
@@ -175,9 +175,17 @@ export default function NotesSelector({
 
   if (error) {
     return (
-      <Box paddingX={1} borderStyle="single" borderColor="magenta" borderLeft={false} borderRight={false}>
+      <Box
+        paddingX={1}
+        borderStyle="single"
+        borderColor="magenta"
+        borderLeft={false}
+        borderRight={false}
+      >
         <Box flexDirection="column">
-          <Text color="red" bold>Error loading notes</Text>
+          <Text color="red" bold>
+            Error loading notes
+          </Text>
           <Text color="red">{error}</Text>
           <Box marginTop={1}>
             <Text color="gray">Press ESC to close</Text>
@@ -189,16 +197,18 @@ export default function NotesSelector({
 
   if (viewMode === 'detail' && selectedNote) {
     return (
-      <Box paddingX={1} borderStyle="single" borderColor="magenta" borderLeft={false} borderRight={false}>
+      <Box
+        paddingX={1}
+        borderStyle="single"
+        borderColor="magenta"
+        borderLeft={false}
+        borderRight={false}
+      >
         <Box flexDirection="column">
           <Text color="cyan" bold>
             📝 Note #{selectedNote.id}: {selectedNote.title}
           </Text>
-          {selectedNote.tags && (
-            <Text color="yellow">
-              🏷️  {selectedNote.tags}
-            </Text>
-          )}
+          {selectedNote.tags && <Text color="yellow">🏷️ {selectedNote.tags}</Text>}
           <Box marginTop={1}>
             <Text color="gray">
               📅 Created: {new Date(selectedNote.createdAt).toLocaleString()}
@@ -214,9 +224,9 @@ export default function NotesSelector({
           </Box>
           <Box marginTop={1}>
             <Text color="green">i</Text>
-            <Text> = Insert into chat  </Text>
+            <Text> = Insert into chat </Text>
             <Text color="green">c</Text>
-            <Text> = Copy  </Text>
+            <Text> = Copy </Text>
             <Text color="yellow">ESC</Text>
             <Text> = Back</Text>
           </Box>
@@ -226,22 +236,45 @@ export default function NotesSelector({
   }
 
   return (
-    <Box paddingX={1} borderStyle="single" borderColor="magenta" borderLeft={false} borderRight={false}>
+    <Box
+      paddingX={1}
+      borderStyle="single"
+      borderColor="magenta"
+      borderLeft={false}
+      borderRight={false}
+    >
       <Box flexDirection="column">
         <Text color="cyan" bold>
-          📝 Notes ({filteredNotes.length > WINDOW_SIZE ? `${windowStart + 1}-${windowStart + notes.length}/${filteredNotes.length}` : filteredNotes.length} {searchQuery ? 'matching' : 'total'})
+          📝 Notes (
+          {filteredNotes.length > WINDOW_SIZE
+            ? `${windowStart + 1}-${windowStart + notes.length}/${filteredNotes.length}`
+            : filteredNotes.length}{' '}
+          {searchQuery ? 'matching' : 'total'})
         </Text>
         <Box marginTop={1}>
           <Text>
             <Text color="cyan">Search: </Text>
-            {searchQuery || (isSearchFocused ? <Text color="gray" dimColor>Type to search...</Text> : '')}
-            {isSearchFocused && <Text backgroundColor="white" color="black"> </Text>}
+            {searchQuery ||
+              (isSearchFocused ? (
+                <Text color="gray" dimColor>
+                  Type to search...
+                </Text>
+              ) : (
+                ''
+              ))}
+            {isSearchFocused && (
+              <Text backgroundColor="white" color="black">
+                {' '}
+              </Text>
+            )}
           </Text>
         </Box>
         {!isSearchFocused && notes.length === 0 && (
           <Box marginTop={1}>
             <Text color="gray">
-              {searchQuery ? `No notes found matching "${searchQuery}"` : 'No notes found. Use /notes add to create one.'}
+              {searchQuery
+                ? `No notes found matching "${searchQuery}"`
+                : 'No notes found. Use /notes add to create one.'}
             </Text>
           </Box>
         )}
@@ -249,29 +282,27 @@ export default function NotesSelector({
           <Box marginTop={1} flexDirection="column">
             {notes.map((note, index) => {
               const isSelected = index === selectedIndex;
-              const preview = note.content.length > 50
-                ? note.content.substring(0, 50) + '...'
-                : note.content;
+              const preview =
+                note.content.length > 50 ? note.content.substring(0, 50) + '...' : note.content;
               const tags = note.tags ? ` [${note.tags}]` : '';
 
               // Limit title length to prevent overflow
               const maxTitleLength = 60;
               const titleText = `${note.id}: ${note.title}${tags}`;
-              const displayTitle = titleText.length > maxTitleLength
-                ? titleText.substring(0, maxTitleLength) + '...'
-                : titleText;
+              const displayTitle =
+                titleText.length > maxTitleLength
+                  ? titleText.substring(0, maxTitleLength) + '...'
+                  : titleText;
 
               return (
                 <React.Fragment key={note.id}>
-                  <Text
-                    color={isSelected ? 'green' : undefined}
-                    bold={isSelected}
-                  >
+                  <Text color={isSelected ? 'green' : undefined} bold={isSelected}>
                     {isSelected ? '▶ ' : '  '}
                     {displayTitle}
                   </Text>
                   <Text color="gray" dimColor>
-                    {'  '}{preview}
+                    {'  '}
+                    {preview}
                   </Text>
                 </React.Fragment>
               );
@@ -280,11 +311,9 @@ export default function NotesSelector({
         )}
         <Box marginTop={1}>
           <Text color="gray" dimColor>
-            {isSearchFocused ? (
-              'Press ENTER to start navigating'
-            ) : (
-              '↑↓ = Navigate  ENTER = View  / = Search  ESC = Close'
-            )}
+            {isSearchFocused
+              ? 'Press ENTER to start navigating'
+              : '↑↓ = Navigate  ENTER = View  / = Search  ESC = Close'}
           </Text>
         </Box>
       </Box>

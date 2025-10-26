@@ -5,19 +5,22 @@ import SelectInput from 'ink-select-input';
 export type ModelSelectorProps = {
   models: Model[];
   onModelSelect?: (modelValue: string) => void;
-}
+};
 
-export default function ModelSelector({
-  models,
-  onModelSelect
-}: ModelSelectorProps) {
+export default function ModelSelector({ models, onModelSelect }: ModelSelectorProps) {
   const items = models.map(model => ({
     label: model.label,
     value: model.value
   }));
 
   return (
-    <Box borderStyle="single" borderColor="green" borderLeft={false} borderRight={false} paddingX={1}>
+    <Box
+      borderStyle="single"
+      borderColor="green"
+      borderLeft={false}
+      borderRight={false}
+      paddingX={1}
+    >
       <Box flexDirection="column">
         <Text color="green" bold>
           Select Model (ESC to cancel):

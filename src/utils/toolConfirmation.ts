@@ -99,11 +99,7 @@ function getOperationRisks(toolName: string): string[] {
         'Agent may be left in inconsistent state'
       ];
     case 'delete_agent':
-      return [
-        'Permanent deletion',
-        'Configuration cannot be recovered',
-        'Active jobs will fail'
-      ];
+      return ['Permanent deletion', 'Configuration cannot be recovered', 'Active jobs will fail'];
     case 'update_agent':
       return [
         'May break existing workflows',
@@ -117,11 +113,7 @@ function getOperationRisks(toolName: string): string[] {
         'Cannot be undone'
       ];
     case 'force_push':
-      return [
-        'Rewrites history',
-        'Other developers lose work',
-        'May break CI/CD pipelines'
-      ];
+      return ['Rewrites history', 'Other developers lose work', 'May break CI/CD pipelines'];
     default:
       return ['Operation may be irreversible'];
   }
@@ -149,13 +141,7 @@ ${check.risks.map(risk => `- ${risk}`).join('\n')}
  */
 export function isConfirmed(userResponse: string): boolean {
   const normalized = userResponse.toLowerCase().trim();
-  const confirmPhrases = [
-    'yes, proceed',
-    'yes proceed',
-    'proceed',
-    'confirm',
-    'yes'
-  ];
+  const confirmPhrases = ['yes, proceed', 'yes proceed', 'proceed', 'confirm', 'yes'];
 
   return confirmPhrases.some(phrase => normalized === phrase);
 }
@@ -165,13 +151,7 @@ export function isConfirmed(userResponse: string): boolean {
  */
 export function isCancelled(userResponse: string): boolean {
   const normalized = userResponse.toLowerCase().trim();
-  const cancelPhrases = [
-    'cancel',
-    'no',
-    'abort',
-    'stop',
-    'no, cancel'
-  ];
+  const cancelPhrases = ['cancel', 'no', 'abort', 'stop', 'no, cancel'];
 
   return cancelPhrases.some(phrase => normalized === phrase);
 }

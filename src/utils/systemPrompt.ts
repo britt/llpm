@@ -156,49 +156,53 @@ export function getSystemPromptPath(): string {
 }
 
 export async function getSystemPrompt(): Promise<string> {
-  return traced('fs.getSystemPrompt', {
-    attributes: {},
-    kind: SpanKind.INTERNAL,
-  }, async (span) => {
-    try {
-      await ensureConfigDir();
-      const promptPath = getSystemPromptPath();
-      span.setAttribute('file.path', promptPath);
+  return traced(
+    'fs.getSystemPrompt',
+    {
+      attributes: {},
+      kind: SpanKind.INTERNAL
+    },
+    async span => {
+      try {
+        await ensureConfigDir();
+        const promptPath = getSystemPromptPath();
+        span.setAttribute('file.path', promptPath);
 
-      let basePrompt: string;
-      const fileExists = existsSync(promptPath);
-      span.setAttribute('file.exists', fileExists);
+        let basePrompt: string;
+        const fileExists = existsSync(promptPath);
+        span.setAttribute('file.exists', fileExists);
 
-      if (fileExists) {
-        try {
-          const stats = statSync(promptPath);
-          span.setAttribute('file.size_kb', Math.round(stats.size / 1024 * 100) / 100);
-        } catch (statsError) {
-          debug('Error getting file stats:', statsError);
+        if (fileExists) {
+          try {
+            const stats = statSync(promptPath);
+            span.setAttribute('file.size_kb', Math.round((stats.size / 1024) * 100) / 100);
+          } catch (statsError) {
+            debug('Error getting file stats:', statsError);
+          }
+          const customPrompt = await readFile(promptPath, 'utf-8');
+          basePrompt = customPrompt.trim();
+          span.setAttribute('prompt.source', 'custom');
+        } else {
+          basePrompt = DEFAULT_SYSTEM_PROMPT;
+          span.setAttribute('prompt.source', 'default');
         }
-        const customPrompt = await readFile(promptPath, 'utf-8');
-        basePrompt = customPrompt.trim();
-        span.setAttribute('prompt.source', 'custom');
-      } else {
-        basePrompt = DEFAULT_SYSTEM_PROMPT;
-        span.setAttribute('prompt.source', 'default');
+
+        // Inject current project context
+        let promptWithContext = await injectProjectContext(basePrompt);
+        span.setAttribute('project.context_injected', promptWithContext !== basePrompt);
+
+        // Inject skills context
+        promptWithContext = injectSkillsContext(promptWithContext);
+        span.setAttribute('prompt.final_length', promptWithContext.length);
+
+        return promptWithContext;
+      } catch (error) {
+        debug('Error loading system prompt:', error);
+        span.setAttribute('error', true);
+        return DEFAULT_SYSTEM_PROMPT;
       }
-
-      // Inject current project context
-      let promptWithContext = await injectProjectContext(basePrompt);
-      span.setAttribute('project.context_injected', promptWithContext !== basePrompt);
-
-      // Inject skills context
-      promptWithContext = injectSkillsContext(promptWithContext);
-      span.setAttribute('prompt.final_length', promptWithContext.length);
-
-      return promptWithContext;
-    } catch (error) {
-      debug('Error loading system prompt:', error);
-      span.setAttribute('error', true);
-      return DEFAULT_SYSTEM_PROMPT;
     }
-  });
+  );
 }
 
 function formatProjectContext(project: Project): string {
@@ -214,7 +218,7 @@ function formatProjectContext(project: Project): string {
       '**Project Details:**',
       `- **Name**: ${projectName}`,
       `- **ID**: ${projectId}`,
-      `- **Description**: ${projectDescription}`,
+      `- **Description**: ${projectDescription}`
     ];
 
     // Safely handle repository information
@@ -222,13 +226,13 @@ function formatProjectContext(project: Project): string {
       const repository = project.repository || project.github_repo;
       if (repository && repository.trim()) {
         // Handle both full URLs and owner/repo format
-        const repoDisplay = repository.startsWith('https://') 
+        const repoDisplay = repository.startsWith('https://')
           ? repository.replace('https://github.com/', '')
           : repository;
-        const repoUrl = repository.startsWith('https://') 
-          ? repository 
+        const repoUrl = repository.startsWith('https://')
+          ? repository
           : `https://github.com/${repository}`;
-        
+
         contextLines.push(
           `- **GitHub Repository**: ${repoDisplay}`,
           `- **Repository URL**: ${repoUrl}`
@@ -249,10 +253,12 @@ function formatProjectContext(project: Project): string {
       // Continue without path info
     }
 
-    // Safely handle project board information  
+    // Safely handle project board information
     try {
       if (project.projectBoardId && project.projectBoardNumber) {
-        contextLines.push(`- **GitHub Project Board**: #${project.projectBoardNumber} (${project.projectBoardId})`);
+        contextLines.push(
+          `- **GitHub Project Board**: #${project.projectBoardNumber} (${project.projectBoardId})`
+        );
       }
     } catch (boardError) {
       debug('Error processing project board information:', boardError);
@@ -263,10 +269,10 @@ function formatProjectContext(project: Project): string {
     contextLines.push(
       '',
       '**Context Instructions:**',
-      '- All GitHub operations (issues, PRs, repository interactions) should default to this project\'s repository',
-      '- File operations and project analysis should target this project\'s directory',
+      "- All GitHub operations (issues, PRs, repository interactions) should default to this project's repository",
+      "- File operations and project analysis should target this project's directory",
       '- Notes and knowledge management are scoped to this specific project',
-      '- When suggesting workflows or best practices, consider this project\'s context and setup',
+      "- When suggesting workflows or best practices, consider this project's context and setup",
       '- Maintain awareness of this project throughout the entire conversation',
       ''
     );
@@ -319,14 +325,22 @@ async function injectProjectContext(basePrompt: string): Promise<string> {
         debug('Inserting project context before Core Context section at line:', insertIndex);
       } else {
         // Fallback: Find Active Project Context section
-        const activeProjectIndex = lines.findIndex(line => line.includes('## 🎯 Active Project Context'));
+        const activeProjectIndex = lines.findIndex(line =>
+          line.includes('## 🎯 Active Project Context')
+        );
         if (activeProjectIndex > 0) {
           // Insert after the Active Project Context section
-          const nextSectionIndex = lines.findIndex((line, index) =>
-            index > activeProjectIndex && line.startsWith('##') && !line.includes('🎯 Active Project Context')
+          const nextSectionIndex = lines.findIndex(
+            (line, index) =>
+              index > activeProjectIndex &&
+              line.startsWith('##') &&
+              !line.includes('🎯 Active Project Context')
           );
           insertIndex = nextSectionIndex > 0 ? nextSectionIndex : activeProjectIndex + 15; // Rough estimate after section
-          debug('Inserting project context after Active Project Context section at line:', insertIndex);
+          debug(
+            'Inserting project context after Active Project Context section at line:',
+            insertIndex
+          );
         } else {
           // Final fallback: Insert after first empty line
           const firstEmptyIndex = lines.findIndex(line => line.trim() === '');
@@ -338,12 +352,10 @@ async function injectProjectContext(basePrompt: string): Promise<string> {
       // Insert the project context
       lines.splice(insertIndex, 0, projectContext);
       return lines.join('\n');
-
     } catch (insertError) {
       debug('Failed to insert project context into prompt:', insertError);
       return basePrompt; // Graceful fallback
     }
-
   } catch (error) {
     debug('Unexpected error in project context injection:', error);
     return basePrompt; // Always graceful fallback
@@ -359,15 +371,19 @@ function injectSkillsContext(basePrompt: string): string {
     const skills = registry.getAllSkills();
 
     debug(`Total skills in registry: ${skills.length}`);
-    debug('All skills:', skills.map(s => `${s.name} (enabled: ${s.enabled}, has instructions: ${!!s.instructions})`));
-
-    // Filter to enabled skills with instructions
-    const skillsWithInstructions = skills.filter(skill =>
-      skill.enabled && skill.instructions
+    debug(
+      'All skills:',
+      skills.map(s => `${s.name} (enabled: ${s.enabled}, has instructions: ${!!s.instructions})`)
     );
 
+    // Filter to enabled skills with instructions
+    const skillsWithInstructions = skills.filter(skill => skill.enabled && skill.instructions);
+
     debug(`Skills with instructions and enabled: ${skillsWithInstructions.length}`);
-    debug('Filtered skills:', skillsWithInstructions.map(s => s.name));
+    debug(
+      'Filtered skills:',
+      skillsWithInstructions.map(s => s.name)
+    );
 
     if (skillsWithInstructions.length === 0) {
       debug('No enabled skills with instructions to inject');
@@ -411,50 +427,51 @@ function injectSkillsContext(basePrompt: string): string {
         debug('Could not find </Tools> section, appending skills to end');
         return basePrompt + '\n\n' + skillsContent;
       }
-
     } catch (insertError) {
       debug('Failed to insert skills context into prompt:', insertError);
       return basePrompt;
     }
-
   } catch (error) {
     debug('Unexpected error in skills context injection:', error);
     return basePrompt;
   }
 }
 
-
 export async function saveSystemPrompt(prompt: string): Promise<void> {
-  return traced('fs.saveSystemPrompt', {
-    attributes: {
-      'prompt.length': prompt.length
+  return traced(
+    'fs.saveSystemPrompt',
+    {
+      attributes: {
+        'prompt.length': prompt.length
+      },
+      kind: SpanKind.INTERNAL
     },
-    kind: SpanKind.INTERNAL,
-  }, async (span) => {
-    debug('Saving custom system prompt');
-    try {
-      await ensureConfigDir();
-      const promptPath = getSystemPromptPath();
-      span.setAttribute('file.path', promptPath);
-
-      const trimmedPrompt = prompt.trim();
-      await writeFile(promptPath, trimmedPrompt, 'utf-8');
-
-      // Get file size after write
+    async span => {
+      debug('Saving custom system prompt');
       try {
-        const stats = statSync(promptPath);
-        span.setAttribute('file.size_kb', Math.round(stats.size / 1024 * 100) / 100);
-      } catch (statsError) {
-        debug('Error getting file stats after write:', statsError);
-      }
+        await ensureConfigDir();
+        const promptPath = getSystemPromptPath();
+        span.setAttribute('file.path', promptPath);
 
-      debug('System prompt saved successfully');
-    } catch (error) {
-      debug('Error saving system prompt:', error);
-      span.setAttribute('error', true);
-      throw error;
+        const trimmedPrompt = prompt.trim();
+        await writeFile(promptPath, trimmedPrompt, 'utf-8');
+
+        // Get file size after write
+        try {
+          const stats = statSync(promptPath);
+          span.setAttribute('file.size_kb', Math.round((stats.size / 1024) * 100) / 100);
+        } catch (statsError) {
+          debug('Error getting file stats after write:', statsError);
+        }
+
+        debug('System prompt saved successfully');
+      } catch (error) {
+        debug('Error saving system prompt:', error);
+        span.setAttribute('error', true);
+        throw error;
+      }
     }
-  });
+  );
 }
 
 export function getDefaultSystemPrompt(): string {
@@ -489,7 +506,7 @@ export async function ensureDefaultSystemPromptFile(): Promise<void> {
       debug('Creating default system prompt file');
       await writeFile(promptPath, DEFAULT_SYSTEM_PROMPT, 'utf-8');
       debug('Default system prompt file created successfully');
-    } 
+    }
   } catch (error) {
     debug('Error ensuring default system prompt file:', error);
     throw error;

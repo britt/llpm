@@ -16,7 +16,10 @@ const packageInfo = {
 export const infoCommand: Command = {
   name: 'info',
   description: 'Show information about the application',
-  execute: async (args: string[] = [], context?: import('./types').CommandContext): Promise<CommandResult> => {
+  execute: async (
+    args: string[] = [],
+    context?: import('./types').CommandContext
+  ): Promise<CommandResult> => {
     debug('Executing /info command with args:', args);
 
     // Handle sub-commands
@@ -70,17 +73,17 @@ export const infoCommand: Command = {
 
       if (subCommand === 'prompt') {
         debug('Executing /info prompt sub-command');
-        
+
         try {
           const systemPrompt = await getSystemPrompt();
-          
+
           // Apply markdown syntax highlighting
           const highlightedPrompt = highlightMarkdown(systemPrompt);
-          
+
           const formattedPrompt = `📋 Current System Prompt:
 
 ${highlightedPrompt}`;
-          
+
           return {
             content: formattedPrompt,
             success: true

@@ -76,14 +76,17 @@ async function getGitHubToken(): Promise<string> {
       timeout: 5000,
       stdio: ['ignore', 'pipe', 'ignore']
     });
-    
+
     const token = rawToken.trim();
     if (token && token.length > 0) {
       debug('Successfully retrieved GitHub token from gh CLI');
       return token;
     }
   } catch (error) {
-    debug('Failed to get token from gh CLI:', error instanceof Error ? error.message : 'Unknown error');
+    debug(
+      'Failed to get token from gh CLI:',
+      error instanceof Error ? error.message : 'Unknown error'
+    );
   }
 
   throw new Error(
@@ -126,12 +129,15 @@ export async function getOwnerId(login: string): Promise<string> {
       }
     `;
 
-    const orgResult = await octokitInstance.graphql<{ organization: { id: string } | null }>(orgQuery, {
-      login,
-      headers: {
-        'X-Github-Next-Global-ID': '1'
+    const orgResult = await octokitInstance.graphql<{ organization: { id: string } | null }>(
+      orgQuery,
+      {
+        login,
+        headers: {
+          'X-Github-Next-Global-ID': '1'
+        }
       }
-    });
+    );
 
     if (orgResult.organization) {
       debug('Found organization ID:', orgResult.organization.id);
@@ -231,7 +237,7 @@ export async function listProjectsV2(owner: string): Promise<GitHubProjectV2[]> 
       }
     } catch (orgError) {
       debug('Not an organization, trying as user:', orgError);
-      
+
       // Try as user
       const userQuery = `
         query($login: String!) {
@@ -284,7 +290,10 @@ export async function listProjectsV2(owner: string): Promise<GitHubProjectV2[]> 
     debug('Retrieved', projects.length, 'projects v2');
     return projects;
   } catch (error) {
-    debug('Error listing GitHub Projects v2:', error instanceof Error ? error.message : 'Unknown error');
+    debug(
+      'Error listing GitHub Projects v2:',
+      error instanceof Error ? error.message : 'Unknown error'
+    );
     if (error instanceof Error) {
       throw new Error(`Failed to list GitHub Projects v2: ${error.message}`);
     }
@@ -356,7 +365,10 @@ export async function createProjectV2(
     debug('Created project v2:', project.title);
     return project;
   } catch (error) {
-    debug('Error creating GitHub Project v2:', error instanceof Error ? error.message : 'Unknown error');
+    debug(
+      'Error creating GitHub Project v2:',
+      error instanceof Error ? error.message : 'Unknown error'
+    );
     if (error instanceof Error) {
       throw new Error(`Failed to create GitHub Project v2: ${error.message}`);
     }
@@ -416,7 +428,7 @@ export async function getProjectV2(owner: string, number: number): Promise<GitHu
       project = result.organization.projectV2;
     } catch (orgError) {
       debug('Not an organization, trying as user:', orgError);
-      
+
       // Try as user
       const userQuery = `
         query($login: String!, $number: Int!) {
@@ -468,7 +480,10 @@ export async function getProjectV2(owner: string, number: number): Promise<GitHu
     debug('Retrieved project v2:', project.title);
     return project;
   } catch (error) {
-    debug('Error getting GitHub Project v2:', error instanceof Error ? error.message : 'Unknown error');
+    debug(
+      'Error getting GitHub Project v2:',
+      error instanceof Error ? error.message : 'Unknown error'
+    );
     if (error instanceof Error) {
       throw new Error(`Failed to get GitHub Project v2: ${error.message}`);
     }
@@ -541,7 +556,10 @@ export async function updateProjectV2(
     debug('Updated project v2:', project.title);
     return project;
   } catch (error) {
-    debug('Error updating GitHub Project v2:', error instanceof Error ? error.message : 'Unknown error');
+    debug(
+      'Error updating GitHub Project v2:',
+      error instanceof Error ? error.message : 'Unknown error'
+    );
     if (error instanceof Error) {
       throw new Error(`Failed to update GitHub Project v2: ${error.message}`);
     }
@@ -584,7 +602,10 @@ export async function deleteProjectV2(projectId: string): Promise<void> {
 
     debug('Deleted project v2:', projectId);
   } catch (error) {
-    debug('Error deleting GitHub Project v2:', error instanceof Error ? error.message : 'Unknown error');
+    debug(
+      'Error deleting GitHub Project v2:',
+      error instanceof Error ? error.message : 'Unknown error'
+    );
     if (error instanceof Error) {
       throw new Error(`Failed to delete GitHub Project v2: ${error.message}`);
     }
@@ -737,7 +758,10 @@ export async function listProjectV2Items(projectId: string): Promise<GitHubProje
     debug('Retrieved', items.length, 'project v2 items');
     return items;
   } catch (error) {
-    debug('Error listing GitHub Project v2 items:', error instanceof Error ? error.message : 'Unknown error');
+    debug(
+      'Error listing GitHub Project v2 items:',
+      error instanceof Error ? error.message : 'Unknown error'
+    );
     if (error instanceof Error) {
       throw new Error(`Failed to list GitHub Project v2 items: ${error.message}`);
     }
@@ -883,7 +907,10 @@ export async function addProjectV2Item(
     debug('Added project v2 item:', item.id);
     return item;
   } catch (error) {
-    debug('Error adding GitHub Project v2 item:', error instanceof Error ? error.message : 'Unknown error');
+    debug(
+      'Error adding GitHub Project v2 item:',
+      error instanceof Error ? error.message : 'Unknown error'
+    );
     if (error instanceof Error) {
       throw new Error(`Failed to add GitHub Project v2 item: ${error.message}`);
     }
@@ -928,7 +955,10 @@ export async function removeProjectV2Item(projectId: string, itemId: string): Pr
 
     debug('Removed project v2 item:', itemId);
   } catch (error) {
-    debug('Error removing GitHub Project v2 item:', error instanceof Error ? error.message : 'Unknown error');
+    debug(
+      'Error removing GitHub Project v2 item:',
+      error instanceof Error ? error.message : 'Unknown error'
+    );
     if (error instanceof Error) {
       throw new Error(`Failed to remove GitHub Project v2 item: ${error.message}`);
     }
@@ -1122,7 +1152,10 @@ export async function listProjectV2Fields(projectId: string): Promise<GitHubProj
     debug('Retrieved', fields.length, 'project v2 fields');
     return fields;
   } catch (error) {
-    debug('Error listing GitHub Project v2 fields:', error instanceof Error ? error.message : 'Unknown error');
+    debug(
+      'Error listing GitHub Project v2 fields:',
+      error instanceof Error ? error.message : 'Unknown error'
+    );
     if (error instanceof Error) {
       throw new Error(`Failed to list GitHub Project v2 fields: ${error.message}`);
     }

@@ -80,7 +80,9 @@ export class EmbeddingsProviderFactory {
         debug('Local provider not available (Python not installed), falling back to OpenAI');
         return this.getOpenAIProvider();
       } else {
-        throw new Error('Local embeddings not available (Python not installed) and fallback disabled');
+        throw new Error(
+          'Local embeddings not available (Python not installed) and fallback disabled'
+        );
       }
     }
 

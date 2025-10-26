@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import '../../test/setup';
 import { describe, it, expect } from 'vitest';
 import type { ProjectConfig, Project } from '../types/project';
@@ -13,7 +14,7 @@ import {
 } from './projectConfig';
 
 describe('Project Board Configuration', () => {
-  const _mockProject: Project = {
+  const ___mockProject: Project = {
     id: 'test-project',
     name: 'Test Project',
     description: 'A test project',
@@ -83,7 +84,7 @@ describe('Project Config Caching', () => {
     await saveProjectConfig(config1);
 
     // Next load should be a cache miss (cache was invalidated)
-    const _config2 = await loadProjectConfig();
+    const ___config2 = await loadProjectConfig();
     const stats2 = getProjectConfigCacheStats();
 
     expect(stats2.misses).toBeGreaterThan(initialMisses);
@@ -113,11 +114,7 @@ describe('Project Config Caching', () => {
 
   it('should deduplicate concurrent loads', async () => {
     // Start multiple concurrent loads
-    const promises = [
-      loadProjectConfig(),
-      loadProjectConfig(),
-      loadProjectConfig()
-    ];
+    const promises = [loadProjectConfig(), loadProjectConfig(), loadProjectConfig()];
 
     const results = await Promise.all(promises);
 

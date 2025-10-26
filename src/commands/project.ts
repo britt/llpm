@@ -21,17 +21,17 @@ function normalizeRepository(repository: string): string {
   if (repository.startsWith('http://') || repository.startsWith('https://')) {
     return repository;
   }
-  
+
   // If it's in owner/repo format, convert to GitHub URL
   if (repository.includes('/') && !repository.includes('.')) {
     return `https://github.com/${repository}`;
   }
-  
+
   // If it doesn't look like a URL or owner/repo, assume it's owner/repo
   if (!repository.includes('://')) {
     return `https://github.com/${repository}`;
   }
-  
+
   return repository;
 }
 
@@ -117,7 +117,7 @@ const IGNORE_PATTERNS = [
 async function shouldIgnoreFile(filePath: string): Promise<boolean> {
   const fileName = filePath.split('/').pop() || '';
   const dirName = filePath.split('/').slice(-2, -1)[0] || '';
-  
+
   return IGNORE_PATTERNS.some(pattern => {
     if (pattern.includes('*')) {
       const regex = new RegExp(pattern.replace('*', '.*'));
@@ -137,7 +137,10 @@ async function countLines(filePath: string): Promise<number> {
   }
 }
 
-async function analyzeDirectory(projectPath: string, maxFiles: number = 1000): Promise<ProjectAnalysis> {
+async function analyzeDirectory(
+  projectPath: string,
+  maxFiles: number = 1000
+): Promise<ProjectAnalysis> {
   const analysis: ProjectAnalysis = {
     totalFiles: 0,
     totalSize: 0,
@@ -157,26 +160,45 @@ async function analyzeDirectory(projectPath: string, maxFiles: number = 1000): P
 
     try {
       const entries = await readdir(dirPath);
-      
+
       for (const entry of entries) {
         if (analysis.totalFiles >= maxFiles) break;
-        
+
         const fullPath = join(dirPath, entry);
         const relativePath = relative(projectPath, fullPath);
-        
+
         if (await shouldIgnoreFile(relativePath)) continue;
 
         const stats = await stat(fullPath);
-        
+
         if (stats.isDirectory()) {
           structureMap.set(relativePath, true);
           await scanDirectory(fullPath, depth + 1);
         } else if (stats.isFile()) {
           const ext = extname(entry).toLowerCase();
           const language = LANGUAGE_EXTENSIONS[ext as keyof typeof LANGUAGE_EXTENSIONS] || 'Other';
-          
+
           let lines = 0;
-          if (['.ts', '.tsx', '.js', '.jsx', '.py', '.go', '.rs', '.java', '.kt', '.swift', '.cpp', '.c', '.h', '.cs', '.php', '.rb'].includes(ext)) {
+          if (
+            [
+              '.ts',
+              '.tsx',
+              '.js',
+              '.jsx',
+              '.py',
+              '.go',
+              '.rs',
+              '.java',
+              '.kt',
+              '.swift',
+              '.cpp',
+              '.c',
+              '.h',
+              '.cs',
+              '.php',
+              '.rb'
+            ].includes(ext)
+          ) {
             lines = await countLines(fullPath);
             analysis.totalLines += lines;
           }
@@ -192,8 +214,9 @@ async function analyzeDirectory(projectPath: string, maxFiles: number = 1000): P
           files.push(fileAnalysis);
           analysis.totalFiles++;
           analysis.totalSize += stats.size;
-          
-          analysis.filesByType[ext || 'no extension'] = (analysis.filesByType[ext || 'no extension'] || 0) + 1;
+
+          analysis.filesByType[ext || 'no extension'] =
+            (analysis.filesByType[ext || 'no extension'] || 0) + 1;
           analysis.filesByLanguage[language] = (analysis.filesByLanguage[language] || 0) + 1;
         }
       }
@@ -205,14 +228,10 @@ async function analyzeDirectory(projectPath: string, maxFiles: number = 1000): P
   await scanDirectory(projectPath);
 
   // Get largest files
-  analysis.largestFiles = files
-    .sort((a, b) => b.size - a.size)
-    .slice(0, 10);
+  analysis.largestFiles = files.sort((a, b) => b.size - a.size).slice(0, 10);
 
   // Build structure representation
-  const sortedStructure = Array.from(structureMap.keys())
-    .sort()
-    .slice(0, 50); // Limit structure output
+  const sortedStructure = Array.from(structureMap.keys()).sort().slice(0, 50); // Limit structure output
 
   analysis.structure = sortedStructure.map(path => `📁 ${path}/`);
 
@@ -242,12 +261,13 @@ function formatAnalysisResult(analysis: ProjectAnalysis, projectName: string): s
 
   const largestFiles = analysis.largestFiles
     .slice(0, 5)
-    .map(file => `  📄 ${file.path} (${formatBytes(file.size)})${file.lines ? ` - ${file.lines} lines` : ''}`)
+    .map(
+      file =>
+        `  📄 ${file.path} (${formatBytes(file.size)})${file.lines ? ` - ${file.lines} lines` : ''}`
+    )
     .join('\n');
 
-  const structure = analysis.structure
-    .slice(0, 20)
-    .join('\n');
+  const structure = analysis.structure.slice(0, 20).join('\n');
 
   return `🔍 **Project Analysis: ${projectName}**
 
@@ -285,7 +305,7 @@ export const projectCommand: Command = {
       if (currentProject) {
         // Check if project has a linked board
         const projectBoard = await getProjectBoard(currentProject.id);
-        const boardInfo = projectBoard 
+        const boardInfo = projectBoard
           ? `\n📋 Project Board: Linked (ID: ${projectBoard.projectBoardId}${projectBoard.projectBoardNumber ? `, #${projectBoard.projectBoardNumber}` : ''})`
           : '\n📋 Project Board: Not linked';
 
@@ -360,13 +380,13 @@ export const projectCommand: Command = {
               success: false
             };
           }
-          
+
           // Normalize repository format (convert owner/repo to full GitHub URL)
           const normalizedRepository = normalizeRepository(repository);
-          
-          const projectData: Omit<Project, 'id' | 'createdAt' | 'updatedAt'> = { 
-            name, 
-            repository: normalizedRepository, 
+
+          const projectData: Omit<Project, 'id' | 'createdAt' | 'updatedAt'> = {
+            name,
+            repository: normalizedRepository,
             path,
             ...(description && { description })
           };
@@ -441,22 +461,25 @@ export const projectCommand: Command = {
             };
           }
 
-          const projectList = await Promise.all(projects.map(async project => {
-            const isCurrent = currentProject?.id === project.id;
-            const indicator = isCurrent ? '👉 ' : '   ';
-            const description = project.description ? `\n    📝 ${project.description}` : '';
-            
-            // Check project board status
-            const projectBoard = await getProjectBoard(project.id);
-            const boardStatus = projectBoard 
-              ? `\n    📋 Project Board: Linked (#${projectBoard.projectBoardNumber || 'Unknown'})`
-              : `\n    📋 Project Board: Not linked`;
-            
-            return `${indicator}${project.name} (${project.id})\n    📂 ${project.repository}\n    📍 ${project.path}${description}${boardStatus}`;
-          }));
+          const projectList = await Promise.all(
+            projects.map(async project => {
+              const isCurrent = currentProject?.id === project.id;
+              const indicator = isCurrent ? '👉 ' : '   ';
+              const description = project.description ? `\n    📝 ${project.description}` : '';
+
+              // Check project board status
+              const projectBoard = await getProjectBoard(project.id);
+              const boardStatus = projectBoard
+                ? `\n    📋 Project Board: Linked (#${projectBoard.projectBoardNumber || 'Unknown'})`
+                : `\n    📋 Project Board: Not linked`;
+
+              return `${indicator}${project.name} (${project.id})\n    📂 ${project.repository}\n    📍 ${project.path}${description}${boardStatus}`;
+            })
+          );
 
           const header = `📂 Available Projects (${projects.length}):\n\n`;
-          const footer = '\n\n💡 Use /project set <project-id> to switch projects\n💡 Or press shift+tab for interactive project selector';
+          const footer =
+            '\n\n💡 Use /project set <project-id> to switch projects\n💡 Or press shift+tab for interactive project selector';
 
           return {
             content: header + projectList.join('\n\n') + footer,
@@ -548,10 +571,11 @@ export const projectCommand: Command = {
       case 'scan': {
         try {
           const currentProject = await getCurrentProject();
-          
+
           if (!currentProject) {
             return {
-              content: '❌ No active project set. Use `/project switch <project-id>` to set an active project first.',
+              content:
+                '❌ No active project set. Use `/project switch <project-id>` to set an active project first.',
               success: false
             };
           }
@@ -564,10 +588,10 @@ export const projectCommand: Command = {
           }
 
           debug('Analyzing project:', currentProject.name, 'at path:', currentProject.path);
-          
+
           const analysis = await analyzeDirectory(currentProject.path);
           const result = formatAnalysisResult(analysis, currentProject.name);
-          
+
           return {
             content: result,
             success: true

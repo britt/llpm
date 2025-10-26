@@ -54,9 +54,7 @@ export class SkillRegistry extends EventEmitter {
       const expandedPath = configPath.replace(/^~/, homedir());
 
       // Determine source type based on path
-      const source = expandedPath.includes('.llpm/skills')
-        ? 'project'
-        : 'personal';
+      const source = expandedPath.includes('.llpm/skills') ? 'project' : 'personal';
 
       if (!existsSync(expandedPath)) {
         continue; // Skip non-existent paths
@@ -81,10 +79,7 @@ export class SkillRegistry extends EventEmitter {
   /**
    * Load a single skill from a directory
    */
-  private async loadSkill(
-    skillPath: string,
-    source: 'personal' | 'project'
-  ): Promise<void> {
+  private async loadSkill(skillPath: string, source: 'personal' | 'project'): Promise<void> {
     // Check if SKILL.md exists - if not, skip silently (allows organizational directories)
     const skillFilePath = join(skillPath, 'SKILL.md');
     if (!existsSync(skillFilePath)) {
@@ -148,10 +143,7 @@ export class SkillRegistry extends EventEmitter {
   /**
    * Check if a skill matches the context (binary yes/no)
    */
-  private checkMatch(
-    skill: Skill,
-    context: SkillActivationContext
-  ): { reason: string } | null {
+  private checkMatch(skill: Skill, context: SkillActivationContext): { reason: string } | null {
     const userMessageLower = context.userMessage.toLowerCase();
 
     // Check 1: Skill name in message
@@ -182,7 +174,6 @@ export class SkillRegistry extends EventEmitter {
 
     return null;
   }
-
 
   /**
    * Get all discovered skills

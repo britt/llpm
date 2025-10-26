@@ -1,7 +1,12 @@
 import { readFile, writeFile } from 'fs/promises';
 import { existsSync, statSync } from 'fs';
 import type { Project, ProjectConfig, AgentConfig } from '../types/project';
-import { getConfigFilePath, ensureConfigDir, getProjectAgentsYamlPath, ensureProjectDir } from './config';
+import {
+  getConfigFilePath,
+  ensureConfigDir,
+  getProjectAgentsYamlPath,
+  ensureProjectDir
+} from './config';
 import { debug } from './logger';
 import { URL } from 'url';
 import * as yaml from 'js-yaml';
@@ -52,70 +57,74 @@ export async function loadProjectConfig(): Promise<ProjectConfig> {
 
   // Start a new load and cache the promise for in-flight deduplication
   cacheMisses++;
-  projectConfigPromise = traced('fs.loadProjectConfig', {
-    attributes: {
-      'cache.hit': false
+  projectConfigPromise = traced(
+    'fs.loadProjectConfig',
+    {
+      attributes: {
+        'cache.hit': false
+      },
+      kind: SpanKind.INTERNAL
     },
-    kind: SpanKind.INTERNAL,
-  }, async (span) => {
-    try {
-      await ensureConfigDir();
-      const configPath = getConfigFilePath();
-      span.setAttribute('file.path', configPath);
+    async span => {
+      try {
+        await ensureConfigDir();
+        const configPath = getConfigFilePath();
+        span.setAttribute('file.path', configPath);
 
-      const fileExists = existsSync(configPath);
-      span.setAttribute('file.exists', fileExists);
+        const fileExists = existsSync(configPath);
+        span.setAttribute('file.exists', fileExists);
 
-      if (!fileExists) {
-        debug('No project config file found, creating default');
-        span.setAttribute('config.source', 'default');
-        const defaultConfig: ProjectConfig = {
+        if (!fileExists) {
+          debug('No project config file found, creating default');
+          span.setAttribute('config.source', 'default');
+          const defaultConfig: ProjectConfig = {
+            projects: {},
+            docker: {
+              scaleScriptPath: 'docker/scale.sh',
+              composeFilePath: 'docker/docker-compose.yml'
+            }
+          };
+          await saveProjectConfig(defaultConfig);
+          span.setAttribute('projects.count', 0);
+          return defaultConfig;
+        }
+
+        try {
+          const stats = statSync(configPath);
+          span.setAttribute('file.size_kb', Math.round((stats.size / 1024) * 100) / 100);
+        } catch (statsError) {
+          debug('Error getting file stats:', statsError);
+        }
+
+        const data = await readFile(configPath, 'utf-8');
+        const config: ProjectConfig = JSON.parse(data);
+        span.setAttribute('config.source', 'file');
+        span.setAttribute('projects.count', Object.keys(config.projects || {}).length);
+        span.setAttribute('has_current_project', !!config.currentProject);
+
+        // Ensure docker config exists with defaults
+        if (!config.docker) {
+          config.docker = {
+            scaleScriptPath: 'docker/scale.sh',
+            composeFilePath: 'docker/docker-compose.yml'
+          };
+          await saveProjectConfig(config);
+        }
+
+        return config;
+      } catch (error) {
+        debug('Error loading project config:', error);
+        span.setAttribute('error', true);
+        return {
           projects: {},
           docker: {
             scaleScriptPath: 'docker/scale.sh',
             composeFilePath: 'docker/docker-compose.yml'
           }
         };
-        await saveProjectConfig(defaultConfig);
-        span.setAttribute('projects.count', 0);
-        return defaultConfig;
       }
-
-      try {
-        const stats = statSync(configPath);
-        span.setAttribute('file.size_kb', Math.round(stats.size / 1024 * 100) / 100);
-      } catch (statsError) {
-        debug('Error getting file stats:', statsError);
-      }
-
-      const data = await readFile(configPath, 'utf-8');
-      const config: ProjectConfig = JSON.parse(data);
-      span.setAttribute('config.source', 'file');
-      span.setAttribute('projects.count', Object.keys(config.projects || {}).length);
-      span.setAttribute('has_current_project', !!config.currentProject);
-
-      // Ensure docker config exists with defaults
-      if (!config.docker) {
-        config.docker = {
-          scaleScriptPath: 'docker/scale.sh',
-          composeFilePath: 'docker/docker-compose.yml'
-        };
-        await saveProjectConfig(config);
-      }
-
-      return config;
-    } catch (error) {
-      debug('Error loading project config:', error);
-      span.setAttribute('error', true);
-      return {
-        projects: {},
-        docker: {
-          scaleScriptPath: 'docker/scale.sh',
-          composeFilePath: 'docker/docker-compose.yml'
-        }
-      };
     }
-  });
+  );
 
   try {
     // Wait for the promise to complete
@@ -130,40 +139,44 @@ export async function loadProjectConfig(): Promise<ProjectConfig> {
 }
 
 export async function saveProjectConfig(config: ProjectConfig): Promise<void> {
-  return traced('fs.saveProjectConfig', {
-    attributes: {
-      'projects.count': Object.keys(config.projects || {}).length,
-      'has_current_project': !!config.currentProject
+  return traced(
+    'fs.saveProjectConfig',
+    {
+      attributes: {
+        'projects.count': Object.keys(config.projects || {}).length,
+        has_current_project: !!config.currentProject
+      },
+      kind: SpanKind.INTERNAL
     },
-    kind: SpanKind.INTERNAL,
-  }, async (span) => {
-    debug('Saving project configuration');
+    async span => {
+      debug('Saving project configuration');
 
-    // Invalidate cache since we're writing new data
-    invalidateProjectConfigCache();
+      // Invalidate cache since we're writing new data
+      invalidateProjectConfigCache();
 
-    try {
-      await ensureConfigDir();
-      const configPath = getConfigFilePath();
-      span.setAttribute('file.path', configPath);
-
-      await writeFile(configPath, JSON.stringify(config, null, 2), 'utf-8');
-
-      // Get file size after write
       try {
-        const stats = statSync(configPath);
-        span.setAttribute('file.size_kb', Math.round(stats.size / 1024 * 100) / 100);
-      } catch (statsError) {
-        debug('Error getting file stats after write:', statsError);
-      }
+        await ensureConfigDir();
+        const configPath = getConfigFilePath();
+        span.setAttribute('file.path', configPath);
 
-      debug('Project config saved successfully');
-    } catch (error) {
-      debug('Error saving project config:', error);
-      span.setAttribute('error', true);
-      throw error;
+        await writeFile(configPath, JSON.stringify(config, null, 2), 'utf-8');
+
+        // Get file size after write
+        try {
+          const stats = statSync(configPath);
+          span.setAttribute('file.size_kb', Math.round((stats.size / 1024) * 100) / 100);
+        } catch (statsError) {
+          debug('Error getting file stats after write:', statsError);
+        }
+
+        debug('Project config saved successfully');
+      } catch (error) {
+        debug('Error saving project config:', error);
+        span.setAttribute('error', true);
+        throw error;
+      }
     }
-  });
+  );
 }
 
 export async function getCurrentProject(): Promise<Project | null> {
@@ -344,7 +357,9 @@ export async function removeProjectBoard(projectId: string): Promise<Project> {
   return updatedProject;
 }
 
-export async function getProjectBoard(projectId: string): Promise<{ projectBoardId?: string; projectBoardNumber?: number } | null> {
+export async function getProjectBoard(
+  projectId: string
+): Promise<{ projectBoardId?: string; projectBoardNumber?: number } | null> {
   const config = await loadProjectConfig();
   const project = config.projects[projectId];
 
@@ -366,88 +381,99 @@ export async function getProjectBoard(projectId: string): Promise<{ projectBoard
  * Load agent configuration from project's agents.yaml file
  */
 export async function loadProjectAgentConfig(projectId: string): Promise<AgentConfig | null> {
-  return traced('fs.loadProjectAgentConfig', {
-    attributes: {
-      'project.id': projectId
+  return traced(
+    'fs.loadProjectAgentConfig',
+    {
+      attributes: {
+        'project.id': projectId
+      },
+      kind: SpanKind.INTERNAL
     },
-    kind: SpanKind.INTERNAL,
-  }, async (span) => {
-    try {
-      const yamlPath = getProjectAgentsYamlPath(projectId);
-      span.setAttribute('file.path', yamlPath);
+    async span => {
+      try {
+        const yamlPath = getProjectAgentsYamlPath(projectId);
+        span.setAttribute('file.path', yamlPath);
 
-      const fileExists = existsSync(yamlPath);
-      span.setAttribute('file.exists', fileExists);
+        const fileExists = existsSync(yamlPath);
+        span.setAttribute('file.exists', fileExists);
 
-      if (!fileExists) {
-        debug('No agents.yaml found for project:', projectId);
+        if (!fileExists) {
+          debug('No agents.yaml found for project:', projectId);
+          return null;
+        }
+
+        try {
+          const stats = statSync(yamlPath);
+          span.setAttribute('file.size_kb', Math.round((stats.size / 1024) * 100) / 100);
+        } catch (statsError) {
+          debug('Error getting file stats:', statsError);
+        }
+
+        const yamlContent = await readFile(yamlPath, 'utf-8');
+        const agentConfig = yaml.load(yamlContent) as AgentConfig;
+
+        if (agentConfig?.agents) {
+          span.setAttribute('agents.count', Object.keys(agentConfig.agents).length);
+        }
+
+        debug('Loaded agent config from agents.yaml for:', projectId);
+        return agentConfig;
+      } catch (error) {
+        debug('Error loading agents.yaml:', error);
+        span.setAttribute('error', true);
         return null;
       }
-
-      try {
-        const stats = statSync(yamlPath);
-        span.setAttribute('file.size_kb', Math.round(stats.size / 1024 * 100) / 100);
-      } catch (statsError) {
-        debug('Error getting file stats:', statsError);
-      }
-
-      const yamlContent = await readFile(yamlPath, 'utf-8');
-      const agentConfig = yaml.load(yamlContent) as AgentConfig;
-
-      if (agentConfig?.agents) {
-        span.setAttribute('agents.count', Object.keys(agentConfig.agents).length);
-      }
-
-      debug('Loaded agent config from agents.yaml for:', projectId);
-      return agentConfig;
-    } catch (error) {
-      debug('Error loading agents.yaml:', error);
-      span.setAttribute('error', true);
-      return null;
     }
-  });
+  );
 }
 
 /**
  * Save agent configuration to project's agents.yaml file
  */
-export async function saveProjectAgentConfig(projectId: string, agentConfig: AgentConfig): Promise<void> {
-  return traced('fs.saveProjectAgentConfig', {
-    attributes: {
-      'project.id': projectId,
-      'agents.count': agentConfig?.agents ? Object.keys(agentConfig.agents).length : 0
+export async function saveProjectAgentConfig(
+  projectId: string,
+  agentConfig: AgentConfig
+): Promise<void> {
+  return traced(
+    'fs.saveProjectAgentConfig',
+    {
+      attributes: {
+        'project.id': projectId,
+        'agents.count': agentConfig?.agents ? Object.keys(agentConfig.agents).length : 0
+      },
+      kind: SpanKind.INTERNAL
     },
-    kind: SpanKind.INTERNAL,
-  }, async (span) => {
-    try {
-      await ensureProjectDir(projectId);
-      const yamlPath = getProjectAgentsYamlPath(projectId);
-      span.setAttribute('file.path', yamlPath);
-
-      const yamlContent = yaml.dump(agentConfig, {
-        indent: 2,
-        lineWidth: -1,
-        noRefs: true,
-        sortKeys: false
-      });
-
-      await writeFile(yamlPath, yamlContent, 'utf-8');
-
-      // Get file size after write
+    async span => {
       try {
-        const stats = statSync(yamlPath);
-        span.setAttribute('file.size_kb', Math.round(stats.size / 1024 * 100) / 100);
-      } catch (statsError) {
-        debug('Error getting file stats after write:', statsError);
-      }
+        await ensureProjectDir(projectId);
+        const yamlPath = getProjectAgentsYamlPath(projectId);
+        span.setAttribute('file.path', yamlPath);
 
-      debug('Saved agent config to agents.yaml for:', projectId);
-    } catch (error) {
-      debug('Error saving agents.yaml:', error);
-      span.setAttribute('error', true);
-      throw error;
+        const yamlContent = yaml.dump(agentConfig, {
+          indent: 2,
+          lineWidth: -1,
+          noRefs: true,
+          sortKeys: false
+        });
+
+        await writeFile(yamlPath, yamlContent, 'utf-8');
+
+        // Get file size after write
+        try {
+          const stats = statSync(yamlPath);
+          span.setAttribute('file.size_kb', Math.round((stats.size / 1024) * 100) / 100);
+        } catch (statsError) {
+          debug('Error getting file stats after write:', statsError);
+        }
+
+        debug('Saved agent config to agents.yaml for:', projectId);
+      } catch (error) {
+        debug('Error saving agents.yaml:', error);
+        span.setAttribute('error', true);
+        throw error;
+      }
     }
-  });
+  );
 }
 
 /**

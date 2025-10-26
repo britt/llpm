@@ -59,17 +59,15 @@ export const credentialsCommand: Command = {
 
       // Handle credential commands with optional --profile flag
       const profileFlagIndex = args.findIndex(arg => arg === '--profile');
-      const targetProfile = profileFlagIndex !== -1 && profileFlagIndex + 1 < args.length 
-        ? args[profileFlagIndex + 1] 
-        : undefined;
+      const targetProfile =
+        profileFlagIndex !== -1 && profileFlagIndex + 1 < args.length
+          ? args[profileFlagIndex + 1]
+          : undefined;
 
       // Remove --profile and profile name from args for processing
       let cleanArgs = args;
       if (profileFlagIndex !== -1) {
-        cleanArgs = [
-          ...args.slice(0, profileFlagIndex),
-          ...args.slice(profileFlagIndex + 2)
-        ];
+        cleanArgs = [...args.slice(0, profileFlagIndex), ...args.slice(profileFlagIndex + 2)];
       }
 
       const [cleanAction, provider, key, ...valueParts] = cleanArgs;
@@ -132,13 +130,13 @@ Actions:
 
 async function handleProfileList(): Promise<CommandResult> {
   const { profiles, current, active } = await credentialManager.listProfiles();
-  
+
   let content = '📋 Available Profiles\n\n';
-  
+
   for (const profile of profiles.sort()) {
     let indicator = '  ';
     let suffix = '';
-    
+
     if (profile === active && profile === current) {
       indicator = '👉'; // Both active and current
       suffix = ' (active & current)';
@@ -146,43 +144,45 @@ async function handleProfileList(): Promise<CommandResult> {
       indicator = '🔸'; // Active (via CLI override)
       suffix = ' (active)';
     } else if (profile === current) {
-      indicator = '📌'; // Current (stored)  
+      indicator = '📌'; // Current (stored)
       suffix = ' (current)';
     }
-    
+
     content += `${indicator} ${profile}${suffix}\n`;
   }
-  
+
   content += `\n💡 **Profile Priority:**\n`;
   content += `• Active: ${active} ${active !== current ? '(CLI override)' : ''}\n`;
   content += `• Current: ${current} (stored)\n\n`;
   content += `Use '/credentials profile switch <name>' to change current profile\n`;
   content += `Use 'llpm --profile <name>' to override active profile temporarily`;
-  
+
   return { success: true, content };
 }
 
 async function handleProfileCurrent(): Promise<CommandResult> {
   const { current, active } = await credentialManager.listProfiles();
-  
+
   let content = '📍 Profile Information\n\n';
   content += `**Active Profile:** ${active}\n`;
   content += `**Current Profile:** ${current}\n\n`;
-  
+
   if (active !== current) {
     content += `ℹ️  Active profile is overridden by CLI flag (--profile ${active})\n`;
     content += `💾 Stored current profile is: ${current}\n\n`;
   } else {
     content += `✅ Active and current profiles match\n\n`;
   }
-  
+
   content += `**Credential Status for '${active}':**\n`;
   const status = await credentialManager.getCredentialStatus();
-  
+
   for (const [provider, credentials] of Object.entries(status)) {
     const providerName = formatProviderName(provider);
     content += `• ${providerName}: `;
-    const configuredKeys = Object.entries(credentials).filter(([, isSet]) => isSet).map(([key]) => key);
+    const configuredKeys = Object.entries(credentials)
+      .filter(([, isSet]) => isSet)
+      .map(([key]) => key);
     if (configuredKeys.length > 0) {
       content += `✅ ${configuredKeys.join(', ')}`;
     } else {
@@ -190,7 +190,7 @@ async function handleProfileCurrent(): Promise<CommandResult> {
     }
     content += '\n';
   }
-  
+
   return { success: true, content };
 }
 
@@ -203,7 +203,7 @@ async function handleProfileCreate(profileName?: string): Promise<CommandResult>
   }
 
   await credentialManager.createProfile(profileName);
-  
+
   return {
     success: true,
     content: `✅ Created profile '${profileName}'\n\n💡 Use '/credentials profile switch ${profileName}' to make it active`
@@ -219,7 +219,7 @@ async function handleProfileSwitch(profileName?: string): Promise<CommandResult>
   }
 
   await credentialManager.switchProfile(profileName);
-  
+
   return {
     success: true,
     content: `✅ Switched to profile '${profileName}'\n\n🔄 This change is persistent until you switch again`
@@ -235,7 +235,7 @@ async function handleProfileDelete(profileName?: string): Promise<CommandResult>
   }
 
   await credentialManager.deleteProfile(profileName);
-  
+
   return {
     success: true,
     content: `🗑️  Deleted profile '${profileName}'`
@@ -244,9 +244,9 @@ async function handleProfileDelete(profileName?: string): Promise<CommandResult>
 
 async function handleProfileClear(profileName?: string): Promise<CommandResult> {
   const targetProfile = profileName || credentialManager.getCurrentProfileName();
-  
+
   await credentialManager.clearProfile(targetProfile);
-  
+
   return {
     success: true,
     content: `🧹 Cleared all credentials from profile '${targetProfile}'`
@@ -256,27 +256,32 @@ async function handleProfileClear(profileName?: string): Promise<CommandResult> 
 async function handleStatus(): Promise<CommandResult> {
   const status = await credentialManager.getCredentialStatus();
   const currentProfile = credentialManager.getCurrentProfileName();
-  
+
   let content = `🔐 Credential Status (Profile: ${currentProfile})\n\n`;
-  
+
   for (const [provider, credentials] of Object.entries(status)) {
     const providerName = formatProviderName(provider);
     content += `**${providerName}**\n`;
-    
+
     for (const [key, isSet] of Object.entries(credentials)) {
       const indicator = isSet ? '✅' : '❌';
       content += `  ${indicator} ${key}: ${isSet ? 'configured' : 'not configured'}\n`;
     }
     content += '\n';
   }
-  
+
   content += '💡 **Priority**: Environment variables → active profile → default profile\n';
   content += 'Use `/credentials set <provider> <key> <value>` to configure credentials.';
-  
+
   return { success: true, content };
 }
 
-async function handleSet(provider?: string, key?: string, value?: string, profileName?: string): Promise<CommandResult> {
+async function handleSet(
+  provider?: string,
+  key?: string,
+  value?: string,
+  profileName?: string
+): Promise<CommandResult> {
   if (!provider || !key || !value) {
     return {
       success: false,
@@ -295,14 +300,18 @@ async function handleSet(provider?: string, key?: string, value?: string, profil
   const targetProfile = profileName || credentialManager.getCurrentProfileName();
 
   await credentialManager.setCredential(provider as any, key, value, profileName);
-  
+
   return {
     success: true,
     content: `✅ Set ${formatProviderName(provider)}.${key} in profile '${targetProfile}'\n\n💡 Stored securely in ~/.llpm/credentials.json`
   };
 }
 
-async function handleGet(provider?: string, key?: string, _profileName?: string): Promise<CommandResult> {
+async function handleGet(
+  provider?: string,
+  key?: string,
+  _profileName?: string
+): Promise<CommandResult> {
   if (!provider || !key) {
     return {
       success: false,
@@ -313,7 +322,7 @@ async function handleGet(provider?: string, key?: string, _profileName?: string)
   // For get operations, we use the profile-aware credential manager
   const credential = await credentialManager.getCredential(provider as any, key);
   const activeProfile = credentialManager.getCurrentProfileName();
-  
+
   if (!credential) {
     return {
       success: true,
@@ -322,9 +331,12 @@ async function handleGet(provider?: string, key?: string, _profileName?: string)
   }
 
   // Mask the credential for security
-  const masked = credential.length <= 8 
-    ? '*'.repeat(credential.length)
-    : credential.substring(0, 4) + '*'.repeat(credential.length - 8) + credential.substring(credential.length - 4);
+  const masked =
+    credential.length <= 8
+      ? '*'.repeat(credential.length)
+      : credential.substring(0, 4) +
+        '*'.repeat(credential.length - 8) +
+        credential.substring(credential.length - 4);
 
   return {
     success: true,
@@ -332,7 +344,11 @@ async function handleGet(provider?: string, key?: string, _profileName?: string)
   };
 }
 
-async function handleRemove(provider?: string, key?: string, profileName?: string): Promise<CommandResult> {
+async function handleRemove(
+  provider?: string,
+  key?: string,
+  profileName?: string
+): Promise<CommandResult> {
   if (!provider || !key) {
     return {
       success: false,
@@ -343,7 +359,7 @@ async function handleRemove(provider?: string, key?: string, profileName?: strin
   const targetProfile = profileName || credentialManager.getCurrentProfileName();
 
   await credentialManager.removeCredential(provider as any, key, profileName);
-  
+
   return {
     success: true,
     content: `✅ Removed ${formatProviderName(provider)}.${key} from profile '${targetProfile}'`
@@ -352,9 +368,9 @@ async function handleRemove(provider?: string, key?: string, profileName?: strin
 
 async function handleClear(profileName?: string): Promise<CommandResult> {
   const targetProfile = profileName || credentialManager.getCurrentProfileName();
-  
+
   await credentialManager.clearProfile(targetProfile);
-  
+
   return {
     success: true,
     content: `🗑️  Cleared all credentials from profile '${targetProfile}'\n\n⚠️  Environment variables are not affected.`
@@ -370,6 +386,6 @@ function formatProviderName(provider: string): string {
     github: 'GitHub',
     arcade: 'Arcade'
   };
-  
+
   return nameMap[provider] || provider;
 }

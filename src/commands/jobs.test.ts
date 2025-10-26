@@ -321,11 +321,13 @@ describe('jobsCommand', () => {
 
   describe('status indicators', () => {
     it('should use correct emoji for completed status', async () => {
-      const mockJobs = [{
-        id: 'job-1',
-        status: 'completed',
-        createdAt: '2024-01-01T10:00:00Z'
-      }];
+      const mockJobs = [
+        {
+          id: 'job-1',
+          status: 'completed',
+          createdAt: '2024-01-01T10:00:00Z'
+        }
+      ];
 
       (global.fetch as any).mockResolvedValue({
         ok: true,
@@ -337,11 +339,13 @@ describe('jobsCommand', () => {
     });
 
     it('should use correct emoji for failed status', async () => {
-      const mockJobs = [{
-        id: 'job-1',
-        status: 'failed',
-        createdAt: '2024-01-01T10:00:00Z'
-      }];
+      const mockJobs = [
+        {
+          id: 'job-1',
+          status: 'failed',
+          createdAt: '2024-01-01T10:00:00Z'
+        }
+      ];
 
       (global.fetch as any).mockResolvedValue({
         ok: true,
@@ -353,11 +357,13 @@ describe('jobsCommand', () => {
     });
 
     it('should use correct emoji for running status', async () => {
-      const mockJobs = [{
-        id: 'job-1',
-        status: 'running',
-        createdAt: '2024-01-01T10:00:00Z'
-      }];
+      const mockJobs = [
+        {
+          id: 'job-1',
+          status: 'running',
+          createdAt: '2024-01-01T10:00:00Z'
+        }
+      ];
 
       (global.fetch as any).mockResolvedValue({
         ok: true,
@@ -369,11 +375,13 @@ describe('jobsCommand', () => {
     });
 
     it('should use correct emoji for cancelled status', async () => {
-      const mockJobs = [{
-        id: 'job-1',
-        status: 'cancelled',
-        createdAt: '2024-01-01T10:00:00Z'
-      }];
+      const mockJobs = [
+        {
+          id: 'job-1',
+          status: 'cancelled',
+          createdAt: '2024-01-01T10:00:00Z'
+        }
+      ];
 
       (global.fetch as any).mockResolvedValue({
         ok: true,
@@ -385,11 +393,13 @@ describe('jobsCommand', () => {
     });
 
     it('should use correct emoji for pending status', async () => {
-      const mockJobs = [{
-        id: 'job-1',
-        status: 'pending',
-        createdAt: '2024-01-01T10:00:00Z'
-      }];
+      const mockJobs = [
+        {
+          id: 'job-1',
+          status: 'pending',
+          createdAt: '2024-01-01T10:00:00Z'
+        }
+      ];
 
       (global.fetch as any).mockResolvedValue({
         ok: true,

@@ -3,7 +3,7 @@ import { debug, getVerbose } from '../utils/logger';
 import { execSync } from 'child_process';
 import { getUserReposViaGhCli, searchReposViaGhCli, getRepoViaGhCli } from './githubCli';
 import { credentialManager } from '../utils/credentialManager';
-import { RequestContext } from '../utils/requestContext';
+// import { RequestContext } /* unused */ from '../utils/requestContext';
 import { traced } from '../utils/tracing';
 import { SpanKind } from '@opentelemetry/api';
 
@@ -154,89 +154,93 @@ export async function getUserRepos(
     per_page?: number;
   } = {}
 ): Promise<GitHubRepo[]> {
-  return traced('github.getUserRepos', {
-    attributes: {
-      'github.api': 'repos.listForAuthenticatedUser',
-      'github.type': options.type || 'owner',
-      'github.per_page': options.per_page || 100
+  return traced(
+    'github.getUserRepos',
+    {
+      attributes: {
+        'github.api': 'repos.listForAuthenticatedUser',
+        'github.type': options.type || 'owner',
+        'github.per_page': options.per_page || 100
+      },
+      kind: SpanKind.CLIENT
     },
-    kind: SpanKind.CLIENT,
-  }, async (span) => {
-    debug('Getting user repositories with options:', options);
+    async span => {
+      debug('Getting user repositories with options:', options);
 
-    try {
-      await initializeOctokit();
-      const octokit = getOctokit();
-
-      const apiParams = {
-        type: options.type || 'owner',
-        sort: options.sort || 'updated',
-        direction: options.direction || 'desc',
-        per_page: options.per_page || 100
-      };
-
-      if (getVerbose()) {
-        debug('🌐 GitHub API Call: GET /user/repos');
-        debug('📋 Parameters:', JSON.stringify(apiParams, null, 2));
-      }
-
-      const { data } = await octokit.rest.repos.listForAuthenticatedUser(apiParams);
-      span.setAttribute('github.response.count', data.length);
-
-      if (getVerbose()) {
-        debug('✅ GitHub API Response: received', data.length, 'repositories');
-        debug(
-          '📊 Response data preview:',
-          JSON.stringify(
-            data.slice(0, 2).map(repo => ({
-              name: repo.name,
-              full_name: repo.full_name,
-              private: repo.private,
-              language: repo.language
-            })),
-            null,
-            2
-          )
-        );
-      }
-
-      const repos: GitHubRepo[] = data.map(repo => ({
-        id: repo.id,
-        name: repo.name,
-        full_name: repo.full_name,
-        description: repo.description,
-        html_url: repo.html_url,
-        clone_url: repo.clone_url,
-        ssh_url: repo.ssh_url,
-        private: repo.private,
-        language: repo.language,
-        updated_at: repo.updated_at || ''
-      }));
-
-      debug('Retrieved', repos.length, 'repositories');
-      return repos;
-    } catch (error) {
-      span.setAttribute('github.fallback', 'gh_cli');
-      debug(
-        'Octokit failed, trying gh CLI fallback:',
-        error instanceof Error ? error.message : 'Unknown error'
-      );
-
-      // Try gh CLI as fallback
       try {
-        const repos = await getUserReposViaGhCli(options);
-        span.setAttribute('github.fallback.success', true);
-        return repos;
-      } catch (ghError) {
-        span.setAttribute('github.fallback.success', false);
-        debug('gh CLI fallback also failed:', ghError);
-        if (error instanceof Error) {
-          throw new Error(`Failed to retrieve GitHub repositories: ${error.message}`);
+        await initializeOctokit();
+        const octokit = getOctokit();
+
+        const apiParams = {
+          type: options.type || 'owner',
+          sort: options.sort || 'updated',
+          direction: options.direction || 'desc',
+          per_page: options.per_page || 100
+        };
+
+        if (getVerbose()) {
+          debug('🌐 GitHub API Call: GET /user/repos');
+          debug('📋 Parameters:', JSON.stringify(apiParams, null, 2));
         }
-        throw new Error('Failed to retrieve GitHub repositories: Unknown error');
+
+        const { data } = await octokit.rest.repos.listForAuthenticatedUser(apiParams);
+        span.setAttribute('github.response.count', data.length);
+
+        if (getVerbose()) {
+          debug('✅ GitHub API Response: received', data.length, 'repositories');
+          debug(
+            '📊 Response data preview:',
+            JSON.stringify(
+              data.slice(0, 2).map(repo => ({
+                name: repo.name,
+                full_name: repo.full_name,
+                private: repo.private,
+                language: repo.language
+              })),
+              null,
+              2
+            )
+          );
+        }
+
+        const repos: GitHubRepo[] = data.map(repo => ({
+          id: repo.id,
+          name: repo.name,
+          full_name: repo.full_name,
+          description: repo.description,
+          html_url: repo.html_url,
+          clone_url: repo.clone_url,
+          ssh_url: repo.ssh_url,
+          private: repo.private,
+          language: repo.language,
+          updated_at: repo.updated_at || ''
+        }));
+
+        debug('Retrieved', repos.length, 'repositories');
+        return repos;
+      } catch (error) {
+        span.setAttribute('github.fallback', 'gh_cli');
+        debug(
+          'Octokit failed, trying gh CLI fallback:',
+          error instanceof Error ? error.message : 'Unknown error'
+        );
+
+        // Try gh CLI as fallback
+        try {
+          const repos = await getUserReposViaGhCli(options);
+          span.setAttribute('github.fallback.success', true);
+          return repos;
+        } catch (ghError) {
+          span.setAttribute('github.fallback.success', false);
+          debug('gh CLI fallback also failed:', ghError);
+          if (error instanceof Error) {
+            throw new Error(`Failed to retrieve GitHub repositories: ${error.message}`);
+          }
+          throw new Error('Failed to retrieve GitHub repositories: Unknown error');
+        }
       }
     }
-  });
+  );
 }
 
 export async function getRepo(owner: string, repo: string): Promise<GitHubRepo> {
@@ -397,91 +401,98 @@ export async function createIssue(
   body?: string,
   labels?: string[]
 ): Promise<GitHubIssue> {
-  return traced('github.createIssue', {
-    attributes: {
-      'github.api': 'issues.create',
-      'github.owner': owner,
-      'github.repo': repo,
-      'github.issue.title': title.substring(0, 100),
-      'github.issue.has_body': !!body,
-      'github.issue.labels_count': labels?.length || 0
+  return traced(
+    'github.createIssue',
+    {
+      attributes: {
+        'github.api': 'issues.create',
+        'github.owner': owner,
+        'github.repo': repo,
+        'github.issue.title': title.substring(0, 100),
+        'github.issue.has_body': !!body,
+        'github.issue.labels_count': labels?.length || 0
+      },
+      kind: SpanKind.CLIENT
     },
-    kind: SpanKind.CLIENT,
-  }, async (span) => {
-    debug('Creating GitHub issue:', owner, repo, title);
+    async span => {
+      debug('Creating GitHub issue:', owner, repo, title);
 
-    try {
-      await initializeOctokit();
-      const octokit = getOctokit();
+      try {
+        await initializeOctokit();
+        const octokit = getOctokit();
 
-      const apiParams = {
-        owner,
-        repo,
-        title,
-        ...(body && { body }),
-        ...(labels && labels.length > 0 && { labels })
-      };
+        const apiParams = {
+          owner,
+          repo,
+          title,
+          ...(body && { body }),
+          ...(labels && labels.length > 0 && { labels })
+        };
 
-      if (getVerbose()) {
-        debug('🌐 GitHub API Call: POST /repos/:owner/:repo/issues');
-        debug('📋 Parameters:', JSON.stringify(apiParams, null, 2));
-      }
+        if (getVerbose()) {
+          debug('🌐 GitHub API Call: POST /repos/:owner/:repo/issues');
+          debug('📋 Parameters:', JSON.stringify(apiParams, null, 2));
+        }
 
-      const { data } = await octokit.rest.issues.create(apiParams);
+        const { data } = await octokit.rest.issues.create(apiParams);
 
-      span.setAttribute('github.issue.number', data.number);
-      span.setAttribute('github.issue.state', data.state);
-      span.setAttribute('github.issue.url', data.html_url);
+        span.setAttribute('github.issue.number', data.number);
+        span.setAttribute('github.issue.state', data.state);
+        span.setAttribute('github.issue.url', data.html_url);
 
-      if (getVerbose()) {
-        debug('✅ GitHub API Response: issue created');
+        if (getVerbose()) {
+          debug('✅ GitHub API Response: issue created');
+          debug(
+            '📊 Response data:',
+            JSON.stringify(
+              {
+                number: data.number,
+                title: data.title,
+                state: data.state,
+                html_url: data.html_url,
+                user: data.user?.login
+              },
+              null,
+              2
+            )
+          );
+        }
+
+        const issue: GitHubIssue = {
+          id: data.id,
+          node_id: data.node_id,
+          number: data.number,
+          title: data.title,
+          body: data.body || null,
+          state: data.state as 'open' | 'closed',
+          html_url: data.html_url,
+          user: {
+            login: data.user?.login || 'unknown',
+            html_url: data.user?.html_url || ''
+          },
+          labels:
+            data.labels?.map(label => ({
+              name: typeof label === 'string' ? label : label.name || '',
+              color: typeof label === 'string' ? '' : label.color || ''
+            })) || [],
+          created_at: data.created_at,
+          updated_at: data.updated_at
+        };
+
+        debug('Created issue #' + issue.number + ':', issue.title);
+        return issue;
+      } catch (error) {
         debug(
-          '📊 Response data:',
-          JSON.stringify(
-            {
-              number: data.number,
-              title: data.title,
-              state: data.state,
-              html_url: data.html_url,
-              user: data.user?.login
-            },
-            null,
-            2
-          )
+          'Error creating GitHub issue:',
+          error instanceof Error ? error.message : 'Unknown error'
         );
+        if (error instanceof Error) {
+          throw new Error(`Failed to create GitHub issue: ${error.message}`);
+        }
+        throw new Error('Failed to create GitHub issue: Unknown error');
       }
-
-      const issue: GitHubIssue = {
-        id: data.id,
-        node_id: data.node_id,
-        number: data.number,
-        title: data.title,
-        body: data.body || null,
-        state: data.state as 'open' | 'closed',
-        html_url: data.html_url,
-        user: {
-          login: data.user?.login || 'unknown',
-          html_url: data.user?.html_url || ''
-        },
-        labels:
-          data.labels?.map(label => ({
-            name: typeof label === 'string' ? label : label.name || '',
-            color: typeof label === 'string' ? '' : label.color || ''
-          })) || [],
-        created_at: data.created_at,
-        updated_at: data.updated_at
-      };
-
-      debug('Created issue #' + issue.number + ':', issue.title);
-      return issue;
-    } catch (error) {
-      debug('Error creating GitHub issue:', error instanceof Error ? error.message : 'Unknown error');
-      if (error instanceof Error) {
-        throw new Error(`Failed to create GitHub issue: ${error.message}`);
-      }
-      throw new Error('Failed to create GitHub issue: Unknown error');
     }
-  });
+  );
 }
 
 export async function listIssues(
@@ -652,74 +663,78 @@ export async function commentOnIssue(
   issueNumber: number,
   body: string
 ): Promise<{ id: number; html_url: string; created_at: string }> {
-  return traced('github.commentOnIssue', {
-    attributes: {
-      'github.api': 'issues.createComment',
-      'github.owner': owner,
-      'github.repo': repo,
-      'github.issue.number': issueNumber,
-      'github.comment.length': body.length
+  return traced(
+    'github.commentOnIssue',
+    {
+      attributes: {
+        'github.api': 'issues.createComment',
+        'github.owner': owner,
+        'github.repo': repo,
+        'github.issue.number': issueNumber,
+        'github.comment.length': body.length
+      },
+      kind: SpanKind.CLIENT
     },
-    kind: SpanKind.CLIENT,
-  }, async (span) => {
-    debug('Adding comment to GitHub issue:', owner, repo, issueNumber);
+    async span => {
+      debug('Adding comment to GitHub issue:', owner, repo, issueNumber);
 
-    try {
-      await initializeOctokit();
-      const octokit = getOctokit();
+      try {
+        await initializeOctokit();
+        const octokit = getOctokit();
 
-      const apiParams = {
-        owner,
-        repo,
-        issue_number: issueNumber,
-        body
-      };
+        const apiParams = {
+          owner,
+          repo,
+          issue_number: issueNumber,
+          body
+        };
 
-      if (getVerbose()) {
-        debug('🌐 GitHub API Call: POST /repos/:owner/:repo/issues/:issue_number/comments');
-        debug('📋 Parameters:', JSON.stringify(apiParams, null, 2));
-      }
+        if (getVerbose()) {
+          debug('🌐 GitHub API Call: POST /repos/:owner/:repo/issues/:issue_number/comments');
+          debug('📋 Parameters:', JSON.stringify(apiParams, null, 2));
+        }
 
-      const { data } = await octokit.rest.issues.createComment(apiParams);
+        const { data } = await octokit.rest.issues.createComment(apiParams);
 
-      span.setAttribute('github.comment.id', data.id);
-      span.setAttribute('github.comment.url', data.html_url);
+        span.setAttribute('github.comment.id', data.id);
+        span.setAttribute('github.comment.url', data.html_url);
 
-      if (getVerbose()) {
-        debug('✅ GitHub API Response: comment created');
+        if (getVerbose()) {
+          debug('✅ GitHub API Response: comment created');
+          debug(
+            '📊 Response data:',
+            JSON.stringify(
+              {
+                id: data.id,
+                html_url: data.html_url,
+                body_preview: data.body?.substring(0, 100) + '...'
+              },
+              null,
+              2
+            )
+          );
+        }
+
+        const comment = {
+          id: data.id,
+          html_url: data.html_url,
+          created_at: data.created_at
+        };
+
+        debug('Created comment #' + comment.id + ' on issue #' + issueNumber);
+        return comment;
+      } catch (error) {
         debug(
-          '📊 Response data:',
-          JSON.stringify(
-            {
-              id: data.id,
-              html_url: data.html_url,
-              body_preview: data.body?.substring(0, 100) + '...'
-            },
-            null,
-            2
-          )
+          'Error commenting on GitHub issue:',
+          error instanceof Error ? error.message : 'Unknown error'
         );
+        if (error instanceof Error) {
+          throw new Error(`Failed to comment on GitHub issue: ${error.message}`);
+        }
+        throw new Error('Failed to comment on GitHub issue: Unknown error');
       }
-
-      const comment = {
-        id: data.id,
-      html_url: data.html_url,
-      created_at: data.created_at
-    };
-
-      debug('Created comment #' + comment.id + ' on issue #' + issueNumber);
-      return comment;
-    } catch (error) {
-      debug(
-        'Error commenting on GitHub issue:',
-        error instanceof Error ? error.message : 'Unknown error'
-      );
-      if (error instanceof Error) {
-        throw new Error(`Failed to comment on GitHub issue: ${error.message}`);
-      }
-      throw new Error('Failed to comment on GitHub issue: Unknown error');
     }
-  });
+  );
 }
 
 export async function getIssueWithComments(
@@ -818,16 +833,15 @@ export async function getIssueWithComments(
         debug('📋 Parameters:', JSON.stringify(commentsParams, null, 2));
       }
 
-      const { data: commentsData, headers } = await octokit.rest.issues.listComments(
-        commentsParams
-      );
+      const { data: commentsData, headers } =
+        await octokit.rest.issues.listComments(commentsParams);
 
       if (getVerbose()) {
         debug('✅ GitHub API Response: comments fetched');
         debug('📊 Response data:', JSON.stringify({ count: commentsData.length }, null, 2));
       }
 
-      comments = commentsData.map((comment) => ({
+      comments = commentsData.map(comment => ({
         id: comment.id,
         node_id: comment.node_id,
         body: comment.body || '',
@@ -1048,7 +1062,10 @@ export async function listPullRequests(
     debug('Retrieved', pullRequests.length, 'pull requests');
     return pullRequests;
   } catch (error) {
-    debug('Error listing GitHub pull requests:', error instanceof Error ? error.message : 'Unknown error');
+    debug(
+      'Error listing GitHub pull requests:',
+      error instanceof Error ? error.message : 'Unknown error'
+    );
     if (error instanceof Error) {
       throw new Error(`Failed to list GitHub pull requests: ${error.message}`);
     }
@@ -1138,7 +1155,10 @@ export async function createPullRequest(
     debug('Created pull request #' + pullRequest.number + ':', pullRequest.title);
     return pullRequest;
   } catch (error) {
-    debug('Error creating GitHub pull request:', error instanceof Error ? error.message : 'Unknown error');
+    debug(
+      'Error creating GitHub pull request:',
+      error instanceof Error ? error.message : 'Unknown error'
+    );
     if (error instanceof Error) {
       throw new Error(`Failed to create GitHub pull request: ${error.message}`);
     }

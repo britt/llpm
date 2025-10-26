@@ -9,7 +9,7 @@ vi.mock('../utils/projectConfig');
 describe('getGitHubIssueWithCommentsTool', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    
+
     // Mock project config
     vi.mocked(projectConfig.getCurrentProject).mockResolvedValue({
       name: 'test-project',
@@ -145,9 +145,7 @@ describe('getGitHubIssueWithCommentsTool', () => {
   });
 
   it('should handle errors gracefully', async () => {
-    vi.mocked(github.getIssueWithComments).mockRejectedValue(
-      new Error('API rate limit exceeded')
-    );
+    vi.mocked(github.getIssueWithComments).mockRejectedValue(new Error('API rate limit exceeded'));
 
     const result = await getGitHubIssueWithCommentsTool.execute({
       issueNumber: 123

@@ -3,8 +3,6 @@ import { mkdir, cp, readdir } from 'fs/promises';
 import { join } from 'path';
 import { homedir, tmpdir } from 'os';
 import { debug } from './logger';
-import { ensureDefaultSystemPromptFile } from './systemPrompt';
-import { loadProjectConfig } from './projectConfig';
 
 // Allow override for testing
 function getBaseConfigDir(): string {
@@ -12,21 +10,23 @@ function getBaseConfigDir(): string {
   if (process.env.LLPM_CONFIG_DIR) {
     return process.env.LLPM_CONFIG_DIR;
   }
-  
+
   // In test environment, use temporary directory
   // Check for various test environment indicators
-  const isTest = process.env.NODE_ENV === 'test' || 
-                 process.env.BUN_TEST === 'true' ||
-                 (process.argv.includes('test') || process.argv.some(arg => arg.endsWith('.test.ts') || arg.endsWith('.test.js'))) ||
-                 process.title?.includes('bun test');
-                 
+  const isTest =
+    process.env.NODE_ENV === 'test' ||
+    process.env.BUN_TEST === 'true' ||
+    process.argv.includes('test') ||
+    process.argv.some(arg => arg.endsWith('.test.ts') || arg.endsWith('.test.js')) ||
+    process.title?.includes('bun test');
+
   if (isTest && !process.env.LLPM_USE_REAL_CONFIG) {
     // Create a unique temp dir for this test session
     const testDir = join(tmpdir(), `llpm-test-${process.pid}-${Date.now()}`);
     debug('Using temporary config directory for tests:', testDir);
     return testDir;
   }
-  
+
   return join(homedir(), '.llpm');
 }
 

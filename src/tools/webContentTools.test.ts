@@ -26,31 +26,29 @@ And should be handled properly.`;
 // Mock fetch for testing
 global.fetch = async (url: RequestInfo | URL): Promise<Response> => {
   const urlString = url.toString();
-  
+
   if (urlString.includes('html-test')) {
     return new Response(MOCK_HTML_CONTENT, {
       status: 200,
       headers: { 'content-type': 'text/html' }
     });
   }
-  
+
   if (urlString.includes('text-test')) {
     return new Response(MOCK_TEXT_CONTENT, {
       status: 200,
       headers: { 'content-type': 'text/plain' }
     });
   }
-  
+
   if (urlString.includes('error-test')) {
     return new Response('Not Found', { status: 404 });
   }
-  
+
   if (urlString.includes('timeout-test')) {
-    return new Promise((_, reject) => 
-      setTimeout(() => reject(new Error('Network timeout')), 200)
-    );
+    return new Promise((_, reject) => setTimeout(() => reject(new Error('Network timeout')), 200));
   }
-  
+
   return new Response('Default content', {
     status: 200,
     headers: { 'content-type': 'text/html' }
@@ -60,11 +58,11 @@ global.fetch = async (url: RequestInfo | URL): Promise<Response> => {
 describe('WebContentTools', () => {
   describe('readWebPageTool', () => {
     it('should successfully read HTML content', async () => {
-      const result = await readWebPageTool.execute({ 
+      const result = await readWebPageTool.execute({
         url: 'https://example.com/html-test',
-        maxLength: 1000 
+        maxLength: 1000
       });
-      
+
       expect(result.success).toBe(true);
       expect(result.title).toBe('Test Page');
       expect(result.description).toBe('This is a test page for web content extraction');
@@ -76,12 +74,12 @@ describe('WebContentTools', () => {
       expect(result.wordCount).toBeGreaterThan(0);
       expect(result.readingTime).toBeGreaterThan(0);
     });
-    
+
     it('should successfully read plain text content', async () => {
-      const result = await readWebPageTool.execute({ 
-        url: 'https://example.com/text-test' 
+      const result = await readWebPageTool.execute({
+        url: 'https://example.com/text-test'
       });
-      
+
       expect(result.success).toBe(true);
       expect(result.content).toContain('plain text content');
       expect(result.content).toContain('multiple lines');
@@ -89,63 +87,63 @@ describe('WebContentTools', () => {
       expect(result.title).toBeUndefined();
       expect(result.description).toBeUndefined();
     });
-    
+
     it('should handle content truncation', async () => {
-      const result = await readWebPageTool.execute({ 
+      const result = await readWebPageTool.execute({
         url: 'https://example.com/html-test',
-        maxLength: 50 
+        maxLength: 50
       });
-      
+
       expect(result.success).toBe(true);
       expect(result.content.length).toBeLessThanOrEqual(50 + 25); // Account for truncation message
       expect(result.content).toContain('[Content truncated]');
       expect(result.truncated).toBe(true);
     });
-    
+
     it('should handle HTTP errors', async () => {
-      const result = await readWebPageTool.execute({ 
-        url: 'https://example.com/error-test' 
+      const result = await readWebPageTool.execute({
+        url: 'https://example.com/error-test'
       });
-      
+
       expect(result.success).toBe(false);
       expect(result.error).toContain('404');
     });
-    
+
     it('should handle invalid URLs', async () => {
-      const result = await readWebPageTool.execute({ 
-        url: 'not-a-valid-url-with-spaces and special chars!' 
+      const result = await readWebPageTool.execute({
+        url: 'not-a-valid-url-with-spaces and special chars!'
       });
-      
+
       expect(result.success).toBe(false);
       expect(result.error).toContain('Invalid');
     });
-    
+
     it('should normalize URLs by adding protocol', async () => {
-      const result = await readWebPageTool.execute({ 
-        url: 'example.com/html-test' 
+      const result = await readWebPageTool.execute({
+        url: 'example.com/html-test'
       });
-      
+
       expect(result.success).toBe(true);
       expect(result.url).toBe('https://example.com/html-test');
     });
-    
+
     it('should handle timeout', async () => {
-      const result = await readWebPageTool.execute({ 
+      const result = await readWebPageTool.execute({
         url: 'https://example.com/timeout-test',
-        timeout: 50 
+        timeout: 50
       });
-      
+
       expect(result.success).toBe(false);
       expect(result.error).toContain('Network timeout');
     }, 1000);
   });
-  
+
   describe('summarizeWebPageTool', () => {
     it('should summarize web page content', async () => {
-      const result = await summarizeWebPageTool.execute({ 
-        url: 'https://example.com/html-test' 
+      const result = await summarizeWebPageTool.execute({
+        url: 'https://example.com/html-test'
       });
-      
+
       expect(result.success).toBe(true);
       expect(result.title).toBe('Test Page');
       expect(result.keyPoints).toBeDefined();
@@ -154,25 +152,25 @@ describe('WebContentTools', () => {
       expect(result.readingTime).toBeGreaterThan(0);
       expect(result.fullContent).toBeDefined();
     });
-    
+
     it('should find focus areas when specified', async () => {
-      const result = await summarizeWebPageTool.execute({ 
+      const result = await summarizeWebPageTool.execute({
         url: 'https://example.com/html-test',
-        focusAreas: ['paragraph', 'content', 'nonexistent'] 
+        focusAreas: ['paragraph', 'content', 'nonexistent']
       });
-      
+
       expect(result.success).toBe(true);
       expect(result.focusAreaFindings).toBeDefined();
       expect(result.focusAreaFindings.paragraph).toBeDefined();
       expect(result.focusAreaFindings.content).toBeDefined();
       expect(result.focusAreaFindings.nonexistent).toBeUndefined();
     });
-    
+
     it('should handle errors from readWebPageTool', async () => {
-      const result = await summarizeWebPageTool.execute({ 
-        url: 'https://example.com/error-test' 
+      const result = await summarizeWebPageTool.execute({
+        url: 'https://example.com/error-test'
       });
-      
+
       expect(result.success).toBe(false);
       expect(result.error).toContain('Failed to read web page');
     });
@@ -182,7 +180,7 @@ describe('WebContentTools', () => {
     it('should have valid Zod schemas for all web content tools', () => {
       const tools = [readWebPageTool, summarizeWebPageTool];
 
-      tools.forEach((tool) => {
+      tools.forEach(tool => {
         expect(tool.inputSchema).toBeDefined();
         expect(typeof tool.inputSchema.parse).toBe('function');
         expect(typeof tool.inputSchema.safeParse).toBe('function');

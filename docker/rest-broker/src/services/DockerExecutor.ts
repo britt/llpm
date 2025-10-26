@@ -26,28 +26,26 @@ export class DockerExecutor {
     // Use printf %q for safe shell escaping
     return `'${str.replace(/'/g, "'\\''")}'`;
   }
-  
-  async executeInContainer(
-    agentId: string, 
-    payload: AgentJobPayload
-  ): Promise<DockerExecResult> {
+
+  async executeInContainer(agentId: string, payload: AgentJobPayload): Promise<DockerExecResult> {
     const containerName = await this.findContainer(agentId);
-    
+
     if (!containerName) {
       throw new Error(`No running container found for agent ${agentId}`);
     }
 
     logger.info(`Executing job in container ${containerName}`, { agentId, prompt: payload.prompt });
-    
+
     try {
       // Extract agent type from agentId (e.g., "claude-code-2" -> "claude-code")
       const agentType = agentId.match(/^(.+)-\d+$/)?.[1] || agentId;
 
       // For claude-code and openai-codex, pipe prompt via stdin to avoid sh -c issues
       if (agentType === 'claude-code' || agentType === 'openai-codex') {
-        const cmdBase = agentType === 'claude-code'
-          ? 'claude --print --dangerously-skip-permissions'
-          : 'codex exec --dangerously-bypass-approvals-and-sandbox';
+        const cmdBase =
+          agentType === 'claude-code'
+            ? 'claude --print --dangerously-skip-permissions'
+            : 'codex exec --dangerously-bypass-approvals-and-sandbox';
 
         const execCommand = `echo ${this.escapeForShell(payload.prompt)} | docker exec -i ${containerName} ${cmdBase}`;
 
@@ -55,13 +53,13 @@ export class DockerExecutor {
 
         const { stdout, stderr } = await execAsync(execCommand, {
           maxBuffer: 10 * 1024 * 1024, // 10MB buffer
-          timeout: 5 * 60 * 1000, // 5 minute timeout
+          timeout: 5 * 60 * 1000 // 5 minute timeout
         });
 
         return {
           stdout: stdout.trim(),
           stderr: stderr.trim(),
-          exitCode: 0,
+          exitCode: 0
         };
       }
 
@@ -73,25 +71,25 @@ export class DockerExecutor {
 
       const { stdout, stderr } = await execAsync(execCommand, {
         maxBuffer: 10 * 1024 * 1024, // 10MB buffer
-        timeout: 5 * 60 * 1000, // 5 minute timeout
+        timeout: 5 * 60 * 1000 // 5 minute timeout
       });
 
       return {
         stdout: stdout.trim(),
         stderr: stderr.trim(),
-        exitCode: 0,
+        exitCode: 0
       };
     } catch (error: any) {
       logger.error(`Docker execution failed: ${error.message}`, { agentId, error });
-      
+
       return {
         stdout: error.stdout || '',
         stderr: error.stderr || error.message,
-        exitCode: error.code || 1,
+        exitCode: error.code || 1
       };
     }
   }
-  
+
   private async findContainer(agentId: string): Promise<string | null> {
     try {
       // agentId now includes instance number (e.g., claude-code-1)
@@ -141,12 +139,16 @@ export class DockerExecutor {
         }
 
         // Add workspace if specified
-        if (context?.workspace && typeof context.workspace === 'string' && context.workspace !== 'string') {
+        if (
+          context?.workspace &&
+          typeof context.workspace === 'string' &&
+          context.workspace !== 'string'
+        ) {
           claudeCmd = `cd ${context.workspace} && ${claudeCmd}`;
         }
 
         return claudeCmd;
-        
+
       case 'openai-codex':
         // Use Codex exec for non-interactive execution
         let codexCmd = `codex exec --dangerously-bypass-approvals-and-sandbox "${escapedPrompt}"`;
@@ -161,12 +163,16 @@ export class DockerExecutor {
           codexCmd = `codex exec --dangerously-bypass-approvals-and-sandbox ${options.cliOptions} "${escapedPrompt}"`;
         }
 
-        if (context?.workspace && typeof context.workspace === 'string' && context.workspace !== 'string') {
+        if (
+          context?.workspace &&
+          typeof context.workspace === 'string' &&
+          context.workspace !== 'string'
+        ) {
           codexCmd = `cd ${context.workspace} && ${codexCmd}`;
         }
 
         return codexCmd;
-        
+
       case 'aider':
         // Aider is real and configured to use LiteLLM proxy already
         let aiderCmd = `aider --yes --no-auto-commits`;
@@ -176,41 +182,49 @@ export class DockerExecutor {
         if (context?.files && context.files.length > 0) {
           aiderCmd += ` ${context.files.join(' ')}`;
         }
-        if (context?.workspace && typeof context.workspace === 'string' && context.workspace !== 'string') {
+        if (
+          context?.workspace &&
+          typeof context.workspace === 'string' &&
+          context.workspace !== 'string'
+        ) {
           aiderCmd = `cd ${context.workspace} && ${aiderCmd}`;
         }
         // Aider expects message via --message flag
         return `${aiderCmd} --message "${escapedPrompt}"`;
-        
+
       case 'opencode':
         // Use Ollama which should be installed in the container
         let opencodeCmd = 'ollama run';
-        
+
         // Add model if specified
         if (options?.model) {
           opencodeCmd += ` ${options.model}`;
         } else {
           opencodeCmd += ' codellama'; // Default to codellama for Ollama
         }
-        
-        if (context?.workspace && typeof context.workspace === 'string' && context.workspace !== 'string') {
+
+        if (
+          context?.workspace &&
+          typeof context.workspace === 'string' &&
+          context.workspace !== 'string'
+        ) {
           opencodeCmd = `cd ${context.workspace} && ${opencodeCmd}`;
         }
-        
+
         return `echo '${escapedPrompt}' | ${opencodeCmd}`;
-        
+
       default:
         throw new Error(`Unknown agent type: ${agentType} (from agentId: ${agentId})`);
     }
   }
-  
+
   async checkContainerHealth(agentId: string): Promise<boolean> {
     const containerName = await this.findContainer(agentId);
-    
+
     if (!containerName) {
       return false;
     }
-    
+
     try {
       const { stdout } = await execAsync(
         `docker inspect ${containerName} --format='{{.State.Running}}'`

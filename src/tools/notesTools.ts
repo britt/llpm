@@ -1,5 +1,5 @@
 import { tool } from './instrumentedTool';
-import * as z from "zod";
+import * as z from 'zod';
 import { getCurrentProjectDatabase } from '../utils/projectDatabase';
 import { debug } from '../utils/logger';
 
@@ -12,7 +12,7 @@ export const addNoteTool = tool({
   }),
   execute: async ({ title, content, tags }) => {
     debug('Adding note via AI tool:', { title, tags });
-    
+
     const db = await getCurrentProjectDatabase();
     if (!db) {
       return {
@@ -57,7 +57,7 @@ export const updateNoteTool = tool({
   }),
   execute: async ({ id, title, content, tags }) => {
     debug('Updating note via AI tool:', { id, title, tags });
-    
+
     const db = await getCurrentProjectDatabase();
     if (!db) {
       return {
@@ -100,15 +100,20 @@ export const updateNoteTool = tool({
 });
 
 export const searchNotesTool = tool({
-  description: 'Search notes in the current project database using vector-based semantic search with cosine similarity',
+  description:
+    'Search notes in the current project database using vector-based semantic search with cosine similarity',
   inputSchema: z.object({
     query: z.string().describe('The search query to find relevant notes'),
     limit: z.number().optional().default(10).describe('Maximum number of results to return'),
-    useSemanticSearch: z.boolean().optional().default(true).describe('Whether to use vector-based semantic search')
+    useSemanticSearch: z
+      .boolean()
+      .optional()
+      .default(true)
+      .describe('Whether to use vector-based semantic search')
   }),
   execute: async ({ query, limit = 10, useSemanticSearch = true }) => {
     debug('Searching notes via AI tool:', { query, limit, useSemanticSearch });
-    
+
     const db = await getCurrentProjectDatabase();
     if (!db) {
       return {
@@ -119,7 +124,7 @@ export const searchNotesTool = tool({
 
     try {
       let results;
-      
+
       if (useSemanticSearch) {
         // Use vector-based semantic search
         results = await db.searchNotesSemantica(query, limit);
@@ -128,7 +133,7 @@ export const searchNotesTool = tool({
         const textResults = db.searchNotes(query);
         results = textResults.slice(0, limit).map(note => ({ ...note, similarity: 0 }));
       }
-      
+
       db.close();
 
       return {
@@ -164,7 +169,7 @@ export const listNotesTool = tool({
   }),
   execute: async ({ limit }) => {
     debug('Listing notes via AI tool:', { limit });
-    
+
     const db = await getCurrentProjectDatabase();
     if (!db) {
       return {
@@ -209,7 +214,7 @@ export const getNoteTool = tool({
   }),
   execute: async ({ id }) => {
     debug('Getting note via AI tool:', { id });
-    
+
     const db = await getCurrentProjectDatabase();
     if (!db) {
       return {
@@ -258,7 +263,7 @@ export const deleteNoteTool = tool({
   }),
   execute: async ({ id }) => {
     debug('Deleting note via AI tool:', { id });
-    
+
     const db = await getCurrentProjectDatabase();
     if (!db) {
       return {

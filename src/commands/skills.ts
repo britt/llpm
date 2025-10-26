@@ -105,7 +105,8 @@ async function testSkill(args: string[]): Promise<CommandResult> {
   if (args.length === 0) {
     return {
       success: false,
-      content: 'Usage: /skills test <skill-name>\n\nShows how the skill would alter context and tooling without activating it.'
+      content:
+        'Usage: /skills test <skill-name>\n\nShows how the skill would alter context and tooling without activating it.'
     };
   }
 

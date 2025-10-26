@@ -19,7 +19,7 @@ export async function loadInputHistory(): Promise<string[]> {
     const history = JSON.parse(data);
 
     if (Array.isArray(history)) {
-      return history.slice(0,100);
+      return history.slice(0, 100);
     } else {
       return [];
     }
@@ -38,7 +38,7 @@ export async function saveInputHistory(history: string[]): Promise<void> {
     const limitedHistory = history.slice(0, 100);
 
     await writeFile(historyPath, JSON.stringify(limitedHistory, null, 2), 'utf-8');
-  } catch (_error) {
+  } catch {
     // Don't throw error as this is not critical functionality
   }
 }

@@ -40,7 +40,7 @@ function checkCommandExists(command) {
 
 function installMacOSDependencies() {
   log('Installing macOS dependencies for sqlite-vss...');
-  
+
   // Check if Homebrew is installed
   if (!checkCommandExists('brew')) {
     error('Homebrew is required for installing sqlite-vss dependencies on macOS');
@@ -50,9 +50,9 @@ function installMacOSDependencies() {
 
   // Install required system packages
   const packages = [
-    'sqlite',          // Latest SQLite with extension support
-    'llvm',           // For compilation (if needed)
-    'libomp'          // OpenMP support (required by FAISS) - correct name for macOS
+    'sqlite', // Latest SQLite with extension support
+    'llvm', // For compilation (if needed)
+    'libomp' // OpenMP support (required by FAISS) - correct name for macOS
   ];
 
   for (const pkg of packages) {
@@ -68,17 +68,17 @@ function installMacOSDependencies() {
   // Set environment variables for compilation
   const llvmPath = execSync('brew --prefix llvm', { encoding: 'utf-8' }).trim();
   log(`LLVM installed at: ${llvmPath}`);
-  
+
   // Export compiler environment variables
   process.env.CC = `${llvmPath}/bin/clang`;
   process.env.CXX = `${llvmPath}/bin/clang++`;
-  
+
   log('✅ macOS system dependencies installed successfully');
 }
 
 function installLinuxDependencies() {
   log('Installing Linux dependencies for sqlite-vss...');
-  
+
   // Detect package manager
   let packageManager = null;
   if (checkCommandExists('apt-get')) {
@@ -124,7 +124,7 @@ function installLinuxDependencies() {
 
 function installWindowsDependencies() {
   log('Windows sqlite-vss setup...');
-  
+
   // Check if we're running in WSL
   if (fs.existsSync('/proc/version')) {
     const version = fs.readFileSync('/proc/version', 'utf-8');
@@ -139,12 +139,15 @@ function installWindowsDependencies() {
   error('1. Use WSL (Windows Subsystem for Linux) for better compatibility');
   error('2. Install Visual Studio Build Tools');
   error('3. Consider using Docker for consistent environment');
-  
+
   // For native Windows, we can try to install build tools
   if (checkCommandExists('choco')) {
     log('Chocolatey detected, installing build tools...');
     try {
-      runCommand('choco install visualstudio2022buildtools -y', 'Installing Visual Studio Build Tools');
+      runCommand(
+        'choco install visualstudio2022buildtools -y',
+        'Installing Visual Studio Build Tools'
+      );
       runCommand('choco install sqlite -y', 'Installing SQLite');
     } catch (err) {
       error('Failed to install Windows dependencies via Chocolatey');
@@ -172,24 +175,30 @@ Node.js: ${process.version}
 
 ### Platform-Specific Requirements
 
-${os.platform() === 'darwin' ? `
+${
+  os.platform() === 'darwin'
+    ? `
 **macOS:**
 - Homebrew packages: sqlite, llvm, libgomp
 - Compiler: LLVM Clang
 - Extensions support: Enabled via Homebrew SQLite
 
-` : os.platform() === 'linux' ? `
+`
+    : os.platform() === 'linux'
+      ? `
 **Linux:**
 - Packages: libgomp1, libatlas-base-dev, liblapack-dev, build-essential
 - SQLite: System package with extension support
 - OpenMP: Available for FAISS acceleration
 
-` : `
+`
+      : `
 **Windows:**
 - Visual Studio Build Tools 2022
 - SQLite with extension support
 - Note: Consider using WSL for better compatibility
-`}
+`
+}
 
 ## sqlite-vss Integration Notes
 
@@ -272,7 +281,6 @@ async function main() {
     log('2. Use better-sqlite3 instead of bun:sqlite for vector search');
     log('3. Load sqlite-vss extension: sqlite_vss.load(db)');
     log('4. Create virtual tables using vss0()');
-    
   } catch (err) {
     error(`Installation failed: ${err.message}`);
     error('');

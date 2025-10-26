@@ -1,5 +1,6 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { tool } from './instrumentedTool';
-import * as z from "zod";
+import * as z from 'zod';
 import { getCurrentProjectDatabase } from '../utils/projectDatabase';
 import { debug } from '../utils/logger';
 import type { Project } from '../types/project';
@@ -15,16 +16,30 @@ import { glob } from 'glob';
  */
 
 export const indexProjectFiles = tool({
-  description: 'Index project files for semantic vector search. This scans the project directory and creates vector embeddings for searchable files.',
+  description:
+    'Index project files for semantic vector search. This scans the project directory and creates vector embeddings for searchable files.',
   inputSchema: z.object({
-    patterns: z.array(z.string()).optional().describe('Glob patterns for files to index (default: common code files)'),
-    maxFileSize: z.number().optional().describe('Maximum file size in bytes to index (default: 100KB)'),
-    forceReindex: z.boolean().optional().describe('Force re-indexing of all files even if already indexed')
+    patterns: z
+      .array(z.string())
+      .optional()
+      .describe('Glob patterns for files to index (default: common code files)'),
+    maxFileSize: z
+      .number()
+      .optional()
+      .describe('Maximum file size in bytes to index (default: 100KB)'),
+    forceReindex: z
+      .boolean()
+      .optional()
+      .describe('Force re-indexing of all files even if already indexed')
   }),
-  execute: async ({ patterns = ['**/*.{ts,tsx,js,jsx,py,md,txt,json}'], maxFileSize = 100000, forceReindex = false }) => {
+  execute: async ({
+    patterns = ['**/*.{ts,tsx,js,jsx,py,md,txt,json}'],
+    maxFileSize = 100000,
+    forceReindex = false
+  }) => {
     try {
       debug('Starting project file indexing with patterns:', patterns);
-      
+
       const db = await getCurrentProjectDatabase();
       if (!db) {
         return { success: false, error: 'No current project database available' };
@@ -36,7 +51,7 @@ export const indexProjectFiles = tool({
 
       // Get current working directory as project root
       const projectRoot = process.cwd();
-      
+
       for (const pattern of patterns) {
         try {
           const files = await glob(pattern, {
@@ -58,7 +73,7 @@ export const indexProjectFiles = tool({
             try {
               const fullPath = join(projectRoot, filePath);
               const relativePath = relative(projectRoot, fullPath);
-              
+
               // Check file size
               const stats = await import('fs/promises').then(fs => fs.stat(fullPath));
               if (stats.size > maxFileSize) {
@@ -84,7 +99,7 @@ export const indexProjectFiles = tool({
               // Add to database with vector embedding
               await db.addFile(relativePath, content, fileType);
               indexedCount++;
-              
+
               debug(`Indexed file: ${relativePath}`);
             } catch (error) {
               debug(`Error indexing file ${filePath}:`, error);
@@ -98,7 +113,7 @@ export const indexProjectFiles = tool({
       }
 
       const stats = db.getStats();
-      
+
       return {
         success: true,
         indexed: indexedCount,
@@ -115,18 +130,37 @@ export const indexProjectFiles = tool({
 });
 
 export const semanticSearchProject = tool({
-  description: 'Perform semantic search across project files and notes using vector embeddings. This finds content similar in meaning to the query, not just keyword matches.',
+  description:
+    'Perform semantic search across project files and notes using vector embeddings. This finds content similar in meaning to the query, not just keyword matches.',
   inputSchema: z.object({
     query: z.string().describe('The search query to find semantically similar content'),
     limit: z.number().optional().default(10).describe('Maximum number of results to return'),
-    includeFiles: z.boolean().optional().default(true).describe('Include project files in search results'),
-    includeNotes: z.boolean().optional().default(true).describe('Include project notes in search results'),
-    minSimilarity: z.number().optional().default(0.1).describe('Minimum similarity score (0-1) for results')
+    includeFiles: z
+      .boolean()
+      .optional()
+      .default(true)
+      .describe('Include project files in search results'),
+    includeNotes: z
+      .boolean()
+      .optional()
+      .default(true)
+      .describe('Include project notes in search results'),
+    minSimilarity: z
+      .number()
+      .optional()
+      .default(0.1)
+      .describe('Minimum similarity score (0-1) for results')
   }),
-  execute: async ({ query, limit = 10, includeFiles = true, includeNotes = true, minSimilarity = 0.1 }) => {
+  execute: async ({
+    query,
+    limit = 10,
+    includeFiles = true,
+    includeNotes = true,
+    minSimilarity = 0.1
+  }) => {
     try {
       debug('Starting semantic search for query:', query);
-      
+
       const db = await getCurrentProjectDatabase();
       if (!db) {
         return { success: false, error: 'No current project database available' };
@@ -176,7 +210,7 @@ export const semanticSearchProject = tool({
 
       // Sort all results by similarity
       results.sort((a, b) => b.similarity - a.similarity);
-      
+
       // Limit final results
       const finalResults = results.slice(0, limit);
 
@@ -208,7 +242,7 @@ export const addProjectNote = tool({
       }
 
       const note = await db.addNote(title, content, tags);
-      
+
       return {
         success: true,
         note: {
@@ -240,7 +274,7 @@ export const searchProjectNotes = tool({
       }
 
       const results = await db.searchNotesSemantica(query, limit);
-      
+
       return {
         success: true,
         query,
@@ -262,7 +296,8 @@ export const searchProjectNotes = tool({
 });
 
 export const getProjectVectorStats = tool({
-  description: 'Get statistics about the project vector database including indexed files, notes, and search capabilities.',
+  description:
+    'Get statistics about the project vector database including indexed files, notes, and search capabilities.',
   inputSchema: z.object({}),
   execute: async () => {
     try {
@@ -272,11 +307,11 @@ export const getProjectVectorStats = tool({
       }
 
       const stats = db.getStats();
-      
+
       // Get sample files to show what's indexed
       const sampleFiles = db.getFiles().slice(0, 5);
       const sampleNotes = db.getNotes().slice(0, 5);
-      
+
       return {
         success: true,
         stats: {

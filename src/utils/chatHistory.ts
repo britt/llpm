@@ -63,75 +63,82 @@ export async function flushChatHistory(): Promise<void> {
 export async function loadChatHistory(): Promise<Message[]> {
   RequestContext.logStep('chat_history_load', 'start', 'debug');
 
-  return traced('fs.loadChatHistory', {
-    attributes: {},
-    kind: SpanKind.INTERNAL,
-  }, async (span) => {
-    try {
-      await ensureConfigDir();
+  return traced(
+    'fs.loadChatHistory',
+    {
+      attributes: {},
+      kind: SpanKind.INTERNAL
+    },
+    async span => {
+      try {
+        await ensureConfigDir();
 
-      // Check if we have a current project and ensure its directory exists
-      const currentProject = await getCurrentProject();
-      if (currentProject) {
-        await ensureProjectDir(currentProject.id);
-        span.setAttribute('project.id', currentProject.id);
-      }
-      const historyPath = await getChatHistoryPath();
-      span.setAttribute('file.path', historyPath);
+        // Check if we have a current project and ensure its directory exists
+        const currentProject = await getCurrentProject();
+        if (currentProject) {
+          await ensureProjectDir(currentProject.id);
+          span.setAttribute('project.id', currentProject.id);
+        }
+        const historyPath = await getChatHistoryPath();
+        span.setAttribute('file.path', historyPath);
 
-      if (!existsSync(historyPath)) {
-        span.setAttribute('file.exists', false);
+        if (!existsSync(historyPath)) {
+          span.setAttribute('file.exists', false);
+          RequestContext.logStep('chat_history_load', 'end', 'debug', {
+            messageCount: 0,
+            historyPath,
+            fileExists: false
+          });
+          return [];
+        }
+
+        span.setAttribute('file.exists', true);
+        const data = await readFile(historyPath, 'utf-8');
+        const fileSizeKB = Math.round(Buffer.byteLength(data, 'utf-8') / 1024);
+        span.setAttribute('file.size_kb', fileSizeKB);
+
+        // Split by delimiter instead of newlines
+        const history: Message[] = data
+          .split(MESSAGE_DELIMITER)
+          .filter(line => line.trim()) // Remove empty lines
+          .map(LogStringToMessage);
+
+        // If no current session, get the most recent one
+        if (history.length > 0) {
+          const slicedHistory = history.slice(-1 * DEFAULT_HISTORY_SIZE);
+
+          span.setAttribute('messages.total', history.length);
+          span.setAttribute('messages.loaded', slicedHistory.length);
+          span.setAttribute('messages.truncated', history.length > DEFAULT_HISTORY_SIZE);
+
+          RequestContext.logStep('chat_history_load', 'end', 'debug', {
+            totalMessages: history.length,
+            loadedMessages: slicedHistory.length,
+            historyPath,
+            fileSizeKB,
+            truncated: history.length > DEFAULT_HISTORY_SIZE
+          });
+
+          return slicedHistory;
+        }
+
+        span.setAttribute('messages.total', 0);
         RequestContext.logStep('chat_history_load', 'end', 'debug', {
           messageCount: 0,
           historyPath,
-          fileExists: false
+          fileSizeKB
         });
+
         return [];
+      } catch (error) {
+        RequestContext.logError(
+          'chat_history_load',
+          error instanceof Error ? error : String(error)
+        );
+        throw error; // Re-throw for traced() to record
       }
-
-      span.setAttribute('file.exists', true);
-      const data = await readFile(historyPath, 'utf-8');
-      const fileSizeKB = Math.round(Buffer.byteLength(data, 'utf-8') / 1024);
-      span.setAttribute('file.size_kb', fileSizeKB);
-
-      // Split by delimiter instead of newlines
-      const history: Message[] = data
-        .split(MESSAGE_DELIMITER)
-        .filter(line => line.trim()) // Remove empty lines
-        .map(LogStringToMessage);
-
-      // If no current session, get the most recent one
-      if (history.length > 0) {
-        const slicedHistory = history.slice(-1*DEFAULT_HISTORY_SIZE);
-
-        span.setAttribute('messages.total', history.length);
-        span.setAttribute('messages.loaded', slicedHistory.length);
-        span.setAttribute('messages.truncated', history.length > DEFAULT_HISTORY_SIZE);
-
-        RequestContext.logStep('chat_history_load', 'end', 'debug', {
-          totalMessages: history.length,
-          loadedMessages: slicedHistory.length,
-          historyPath,
-          fileSizeKB,
-          truncated: history.length > DEFAULT_HISTORY_SIZE
-        });
-
-        return slicedHistory;
-      }
-
-      span.setAttribute('messages.total', 0);
-      RequestContext.logStep('chat_history_load', 'end', 'debug', {
-        messageCount: 0,
-        historyPath,
-        fileSizeKB
-      });
-
-      return [];
-    } catch (error) {
-      RequestContext.logError('chat_history_load', error instanceof Error ? error : String(error));
-      throw error; // Re-throw for traced() to record
     }
-  });
+  );
 }
 
 export async function saveChatHistory(messages: Message[]): Promise<void> {
@@ -146,62 +153,69 @@ export async function saveChatHistory(messages: Message[]): Promise<void> {
   });
 
   // Track this save operation so it can be awaited before exit
-  const saveOperation = traced('fs.saveChatHistory', {
-    attributes: {
-      'messages.count': messages.length
+  const saveOperation = traced(
+    'fs.saveChatHistory',
+    {
+      attributes: {
+        'messages.count': messages.length
+      },
+      kind: SpanKind.INTERNAL
     },
-    kind: SpanKind.INTERNAL,
-  }, async (span) => {
-    try {
-      await ensureConfigDir();
+    async span => {
+      try {
+        await ensureConfigDir();
 
-      // Check if we have a current project and ensure its directory exists
-      const currentProject = await getCurrentProject();
-      if (currentProject) {
-        await ensureProjectDir(currentProject.id);
-        span.setAttribute('project.id', currentProject.id);
-      }
+        // Check if we have a current project and ensure its directory exists
+        const currentProject = await getCurrentProject();
+        if (currentProject) {
+          await ensureProjectDir(currentProject.id);
+          span.setAttribute('project.id', currentProject.id);
+        }
 
-      const historyPath = await getChatHistoryPath();
-      span.setAttribute('file.path', historyPath);
+        const historyPath = await getChatHistoryPath();
+        span.setAttribute('file.path', historyPath);
 
-      if (messages.length === 0) {
-        // Clear the history file for empty messages array
-        await writeFile(historyPath, '', 'utf-8');
-        span.setAttribute('action', 'clear');
+        if (messages.length === 0) {
+          // Clear the history file for empty messages array
+          await writeFile(historyPath, '', 'utf-8');
+          span.setAttribute('action', 'clear');
+          RequestContext.logStep('chat_history_save', 'end', 'debug', {
+            messageCount: 0,
+            historyPath,
+            action: 'clear'
+          });
+          return;
+        }
+
+        // Limit messages to prevent excessive file sizes
+        const messagesToSave = messages.slice(-1 * DEFAULT_HISTORY_SIZE);
+
+        span.setAttribute('messages.saved', messagesToSave.length);
+        span.setAttribute('messages.truncated', messages.length > DEFAULT_HISTORY_SIZE);
+
+        // Join messages with delimiter to preserve structure
+        const content = messagesToSave.map(MessageToLogString).join(MESSAGE_DELIMITER);
+        const fileSizeKB = Math.round(Buffer.byteLength(content, 'utf-8') / 1024);
+        span.setAttribute('file.size_kb', fileSizeKB);
+
+        await writeFile(historyPath, content + MESSAGE_DELIMITER, 'utf-8');
+
         RequestContext.logStep('chat_history_save', 'end', 'debug', {
-          messageCount: 0,
+          totalMessages: messages.length,
+          savedMessages: messagesToSave.length,
           historyPath,
-          action: 'clear'
+          fileSizeKB,
+          truncated: messages.length > DEFAULT_HISTORY_SIZE
         });
-        return;
+      } catch (error) {
+        RequestContext.logError(
+          'chat_history_save',
+          error instanceof Error ? error : String(error)
+        );
+        throw error; // Re-throw for traced() to record
       }
-
-      // Limit messages to prevent excessive file sizes
-      const messagesToSave = messages.slice(-1 * DEFAULT_HISTORY_SIZE);
-
-      span.setAttribute('messages.saved', messagesToSave.length);
-      span.setAttribute('messages.truncated', messages.length > DEFAULT_HISTORY_SIZE);
-
-      // Join messages with delimiter to preserve structure
-      const content = messagesToSave.map(MessageToLogString).join(MESSAGE_DELIMITER);
-      const fileSizeKB = Math.round(Buffer.byteLength(content, 'utf-8') / 1024);
-      span.setAttribute('file.size_kb', fileSizeKB);
-
-      await writeFile(historyPath, content + MESSAGE_DELIMITER, 'utf-8');
-
-      RequestContext.logStep('chat_history_save', 'end', 'debug', {
-        totalMessages: messages.length,
-        savedMessages: messagesToSave.length,
-        historyPath,
-        fileSizeKB,
-        truncated: messages.length > DEFAULT_HISTORY_SIZE
-      });
-    } catch (error) {
-      RequestContext.logError('chat_history_save', error instanceof Error ? error : String(error));
-      throw error; // Re-throw for traced() to record
     }
-  });
+  );
 
   // Track the pending save operation
   pendingSave = saveOperation;

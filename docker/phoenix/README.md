@@ -36,11 +36,11 @@ curl http://localhost:6006
 
 ## Ports
 
-| Port | Purpose |
-|------|---------|
-| 6006 | Phoenix Web UI |
+| Port | Purpose                                                         |
+| ---- | --------------------------------------------------------------- |
+| 6006 | Phoenix Web UI                                                  |
 | 4319 | gRPC endpoint for OTEL traces (mapped from container port 4317) |
-| 9090 | Prometheus metrics (optional) |
+| 9090 | Prometheus metrics (optional)                                   |
 
 ## Configuration
 
@@ -73,6 +73,7 @@ docker-compose -f docker-compose-postgres.yml up -d
 ```
 
 This variant includes:
+
 - Phoenix container
 - PostgreSQL database with persistent storage
 - Automatic database initialization
@@ -81,6 +82,7 @@ This variant includes:
 ### Option 2: External PostgreSQL Database
 
 1. Set `PHOENIX_SQL_DATABASE_URL` in your `.env`:
+
    ```
    PHOENIX_SQL_DATABASE_URL=postgresql://user:password@postgres-host:5432/phoenix
    ```
@@ -115,7 +117,7 @@ Add the following to your `otel-collector-config.yaml`:
 ```yaml
 exporters:
   otlp/phoenix:
-    endpoint: "http://localhost:4319"  # Use localhost:4319 from host, or phoenix:4317 within Docker network
+    endpoint: 'http://localhost:4319' # Use localhost:4319 from host, or phoenix:4317 within Docker network
     tls:
       insecure: true
 
@@ -124,7 +126,7 @@ service:
     traces:
       receivers: [otlp]
       processors: [batch]
-      exporters: [otlp/phoenix, jaeger]  # Send to both Phoenix and Jaeger
+      exporters: [otlp/phoenix, jaeger] # Send to both Phoenix and Jaeger
 ```
 
 ### Docker Compose Integration
@@ -138,7 +140,7 @@ services:
     depends_on:
       - phoenix
     environment:
-      - PHOENIX_ENDPOINT=http://phoenix:4317  # Use port 4317 within Docker network
+      - PHOENIX_ENDPOINT=http://phoenix:4317 # Use port 4317 within Docker network
 ```
 
 ## Security & Operations
@@ -148,6 +150,7 @@ services:
 For production deployments, enable authentication:
 
 1. **Local Admin Users**:
+
    ```bash
    PHOENIX_ADMINS=admin=admin@company.com;user2=user2@company.com
    ```
@@ -170,9 +173,9 @@ For production, run Phoenix behind a reverse proxy (nginx, Traefik, etc.) with T
 ```yaml
 # Example nginx config
 location /phoenix/ {
-    proxy_pass http://phoenix:6006/;
-    proxy_set_header Host $host;
-    proxy_set_header X-Real-IP $remote_addr;
+proxy_pass http://phoenix:6006/;
+proxy_set_header Host $host;
+proxy_set_header X-Real-IP $remote_addr;
 }
 ```
 
@@ -181,10 +184,12 @@ Set `PHOENIX_HOST_ROOT_PATH=/phoenix` in your environment.
 ### Data Retention & Backups
 
 #### SQLite Mode
+
 - Data stored in Docker volume `phoenix-data`
 - Backup: `docker run --rm -v phoenix-data:/data -v $(pwd):/backup ubuntu tar czf /backup/phoenix-backup.tar.gz /data`
 
 #### PostgreSQL Mode
+
 - Use standard PostgreSQL backup tools (`pg_dump`, `pg_basebackup`)
 - Configure retention policies based on your requirements
 - Example backup script:
@@ -214,6 +219,7 @@ Adjust based on your trace volume and workload.
 ## Kubernetes Deployment
 
 For Kubernetes/Helm deployments, see:
+
 - [Arize Phoenix Kubernetes Documentation](https://arize.com/docs/phoenix/self-hosting/deployment-options/kubernetes-helm)
 - Official Helm chart: [phoenix-helm-chart](https://github.com/Arize-ai/phoenix/tree/main/charts)
 
@@ -222,6 +228,7 @@ Example kustomize resources are available in `k8s/` (if applicable).
 ## Troubleshooting
 
 ### Container won't start
+
 ```bash
 # Check logs
 docker-compose logs phoenix
@@ -232,17 +239,20 @@ lsof -i :4319
 ```
 
 ### UI not accessible
+
 - Verify container is running: `docker-compose ps`
 - Check firewall rules
 - Verify port mapping in `docker-compose.yml`
 
 ### Traces not appearing
+
 - Verify OTEL collector is sending to correct endpoint (localhost:4319 from host, phoenix:4317 within Docker)
 - Check Phoenix logs for ingestion errors
 - Verify gRPC port 4319 is accessible from host
 - Test with: `grpcurl -plaintext localhost:4319 list`
 
 ### Data persistence issues
+
 - Check volume mounts: `docker volume inspect phoenix-data`
 - Verify `PHOENIX_WORKING_DIR` permissions
 - For PostgreSQL: verify database connectivity
@@ -267,6 +277,7 @@ If you're migrating from Jaeger:
 ## Support
 
 For issues and questions:
+
 - GitHub Issues: [Arize Phoenix Issues](https://github.com/Arize-ai/phoenix/issues)
 - Documentation: [Arize Phoenix Docs](https://arize.com/docs/phoenix)
 - Community: [Arize Community Slack](https://join.slack.com/t/arize-ai/shared_invite/)

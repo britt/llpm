@@ -16,53 +16,62 @@ app.get('/health', (req, res) => {
 
 // OpenAI proxy
 if (process.env.OPENAI_API_KEY) {
-  app.use('/openai', createProxyMiddleware({
-    target: 'https://api.openai.com',
-    changeOrigin: true,
-    pathRewrite: { '^/openai': '' },
-    onProxyReq: (proxyReq) => {
-      proxyReq.setHeader('Authorization', `Bearer ${process.env.OPENAI_API_KEY}`);
-    },
-    onError: (err, req, res) => {
-      console.error('OpenAI Proxy Error:', err);
-      res.status(500).json({ error: 'Proxy error' });
-    }
-  }));
+  app.use(
+    '/openai',
+    createProxyMiddleware({
+      target: 'https://api.openai.com',
+      changeOrigin: true,
+      pathRewrite: { '^/openai': '' },
+      onProxyReq: proxyReq => {
+        proxyReq.setHeader('Authorization', `Bearer ${process.env.OPENAI_API_KEY}`);
+      },
+      onError: (err, req, res) => {
+        console.error('OpenAI Proxy Error:', err);
+        res.status(500).json({ error: 'Proxy error' });
+      }
+    })
+  );
   console.log('OpenAI proxy configured at /openai');
 }
 
 // Anthropic proxy
 if (process.env.ANTHROPIC_API_KEY) {
-  app.use('/anthropic', createProxyMiddleware({
-    target: 'https://api.anthropic.com',
-    changeOrigin: true,
-    pathRewrite: { '^/anthropic': '' },
-    onProxyReq: (proxyReq) => {
-      proxyReq.setHeader('x-api-key', process.env.ANTHROPIC_API_KEY);
-      proxyReq.setHeader('anthropic-version', '2023-06-01');
-    },
-    onError: (err, req, res) => {
-      console.error('Anthropic Proxy Error:', err);
-      res.status(500).json({ error: 'Proxy error' });
-    }
-  }));
+  app.use(
+    '/anthropic',
+    createProxyMiddleware({
+      target: 'https://api.anthropic.com',
+      changeOrigin: true,
+      pathRewrite: { '^/anthropic': '' },
+      onProxyReq: proxyReq => {
+        proxyReq.setHeader('x-api-key', process.env.ANTHROPIC_API_KEY);
+        proxyReq.setHeader('anthropic-version', '2023-06-01');
+      },
+      onError: (err, req, res) => {
+        console.error('Anthropic Proxy Error:', err);
+        res.status(500).json({ error: 'Proxy error' });
+      }
+    })
+  );
   console.log('Anthropic proxy configured at /anthropic');
 }
 
 // HuggingFace proxy
 if (process.env.HUGGINGFACE_TOKEN) {
-  app.use('/huggingface', createProxyMiddleware({
-    target: 'https://api-inference.huggingface.co',
-    changeOrigin: true,
-    pathRewrite: { '^/huggingface': '' },
-    onProxyReq: (proxyReq) => {
-      proxyReq.setHeader('Authorization', `Bearer ${process.env.HUGGINGFACE_TOKEN}`);
-    },
-    onError: (err, req, res) => {
-      console.error('HuggingFace Proxy Error:', err);
-      res.status(500).json({ error: 'Proxy error' });
-    }
-  }));
+  app.use(
+    '/huggingface',
+    createProxyMiddleware({
+      target: 'https://api-inference.huggingface.co',
+      changeOrigin: true,
+      pathRewrite: { '^/huggingface': '' },
+      onProxyReq: proxyReq => {
+        proxyReq.setHeader('Authorization', `Bearer ${process.env.HUGGINGFACE_TOKEN}`);
+      },
+      onError: (err, req, res) => {
+        console.error('HuggingFace Proxy Error:', err);
+        res.status(500).json({ error: 'Proxy error' });
+      }
+    })
+  );
   console.log('HuggingFace proxy configured at /huggingface');
 }
 

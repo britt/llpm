@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { promises as fs } from 'node:fs';
 import { basename } from 'node:path';
 import { debug } from '../utils/logger';
@@ -28,10 +29,10 @@ export async function uploadFileToGitHub(
     const actualFilename = filename || basename(filePath);
     const fileContent = await fs.readFile(filePath);
     const fileStats = await fs.stat(filePath);
-    
+
     // Determine if it's an image file
     const isImage = /\.(png|jpg|jpeg|gif|bmp|webp)$/i.test(actualFilename);
-    
+
     // Get GitHub token
     const token = await credentialManager.getGitHubToken();
     if (!token) {
@@ -65,7 +66,9 @@ export async function uploadFileToGitHub(
     }
   } catch (error) {
     debug('Failed to upload file to GitHub:', error);
-    throw new Error(`Failed to upload file: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    throw new Error(
+      `Failed to upload file: ${error instanceof Error ? error.message : 'Unknown error'}`
+    );
   }
 }
 
@@ -79,10 +82,10 @@ async function createGistWithFile(
 ): Promise<string> {
   const isImage = /\.(png|jpg|jpeg|gif|bmp|webp)$/i.test(filename);
   const isTextFile = /\.(txt|md|json|js|ts|html|css|log|yml|yaml|xml|csv)$/i.test(filename);
-  
+
   let content: string;
   let actualFilename = filename;
-  
+
   if (isImage) {
     // For images, upload as base64 encoded content directly
     // GitHub will serve the raw file properly when accessed via the raw URL
@@ -94,13 +97,13 @@ async function createGistWithFile(
     // For other binary files, encode as base64
     content = fileContent.toString('base64');
   }
-  
+
   const response = await fetch('https://api.github.com/gists', {
     method: 'POST',
     headers: {
-      'Authorization': `Bearer ${token}`,
+      Authorization: `Bearer ${token}`,
       'Content-Type': 'application/json',
-      'Accept': 'application/vnd.github.v3+json'
+      Accept: 'application/vnd.github.v3+json'
     },
     body: JSON.stringify({
       description: `File attachment: ${filename}`,
@@ -118,9 +121,9 @@ async function createGistWithFile(
     throw new Error(`Failed to create gist: ${response.status} ${errorText}`);
   }
 
-  const gist = await response.json() as any;
+  const gist = (await response.json()) as any;
   const fileUrl = gist.files[actualFilename]?.raw_url;
-  
+
   if (!fileUrl) {
     throw new Error('Failed to get gist raw URL');
   }
@@ -139,54 +142,58 @@ async function uploadImageToRepository(
 ): Promise<string> {
   const assetsRepoName = 'llpm-assets';
   const base64Content = imageContent.toString('base64');
-  
+
   // Generate unique filename to avoid conflicts
   const timestamp = Date.now();
   const uniqueFilename = `${timestamp}-${filename}`;
   const filePath = `images/${uniqueFilename}`;
-  
+
   try {
     // First, get the authenticated user info to know the owner
     const userResponse = await fetch('https://api.github.com/user', {
       headers: {
-        'Authorization': `Bearer ${token}`,
-        'Accept': 'application/vnd.github.v3+json'
+        Authorization: `Bearer ${token}`,
+        Accept: 'application/vnd.github.v3+json'
       }
     });
-    
+
     if (!userResponse.ok) {
       throw new Error(`Failed to get user info: ${userResponse.status}`);
     }
-    
-    const user = await userResponse.json() as any;
+
+    const user = (await userResponse.json()) as any;
     const username = user.login as string;
-    
+
     // Check if assets repository exists, create if not
     await ensureAssetsRepository(username, assetsRepoName, token);
-    
+
     // Upload the file to the repository
-    const uploadResponse = await fetch(`https://api.github.com/repos/${username}/${assetsRepoName}/contents/${filePath}`, {
-      method: 'PUT',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
-        'Accept': 'application/vnd.github.v3+json'
-      },
-      body: JSON.stringify({
-        message: `Add image: ${filename}`,
-        content: base64Content,
-        branch: 'main'
-      })
-    });
-    
+    const uploadResponse = await fetch(
+      `https://api.github.com/repos/${username}/${assetsRepoName}/contents/${filePath}`,
+      {
+        method: 'PUT',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+          Accept: 'application/vnd.github.v3+json'
+        },
+        body: JSON.stringify({
+          message: `Add image: ${filename}`,
+          content: base64Content,
+          branch: 'main'
+        })
+      }
+    );
+
     if (!uploadResponse.ok) {
       const errorText = await uploadResponse.text();
-      throw new Error(`Failed to upload image to repository: ${uploadResponse.status} ${errorText}`);
+      throw new Error(
+        `Failed to upload image to repository: ${uploadResponse.status} ${errorText}`
+      );
     }
-    
+
     // Return the raw.githubusercontent.com URL for direct image access
     return `https://raw.githubusercontent.com/${username}/${assetsRepoName}/main/${filePath}`;
-    
   } catch (error) {
     debug('Error uploading image to repository:', error);
     throw error;
@@ -205,27 +212,27 @@ async function ensureAssetsRepository(
     // Check if repository exists
     const checkResponse = await fetch(`https://api.github.com/repos/${username}/${repoName}`, {
       headers: {
-        'Authorization': `Bearer ${token}`,
-        'Accept': 'application/vnd.github.v3+json'
+        Authorization: `Bearer ${token}`,
+        Accept: 'application/vnd.github.v3+json'
       }
     });
-    
+
     if (checkResponse.ok) {
       // Repository exists
       debug(`Assets repository ${username}/${repoName} already exists`);
       return;
     }
-    
+
     if (checkResponse.status === 404) {
       // Repository doesn't exist, create it
       debug(`Creating assets repository ${username}/${repoName}`);
-      
+
       const createResponse = await fetch('https://api.github.com/user/repos', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
-          'Accept': 'application/vnd.github.v3+json'
+          Accept: 'application/vnd.github.v3+json'
         },
         body: JSON.stringify({
           name: repoName,
@@ -237,12 +244,14 @@ async function ensureAssetsRepository(
           has_wiki: false
         })
       });
-      
+
       if (!createResponse.ok) {
         const errorText = await createResponse.text();
-        throw new Error(`Failed to create assets repository: ${createResponse.status} ${errorText}`);
+        throw new Error(
+          `Failed to create assets repository: ${createResponse.status} ${errorText}`
+        );
       }
-      
+
       debug(`Successfully created assets repository ${username}/${repoName}`);
     } else {
       throw new Error(`Unexpected response checking repository: ${checkResponse.status}`);
@@ -260,7 +269,7 @@ export async function uploadFilesToGitHub(
   filePaths: string[]
 ): Promise<Array<{ url: string; markdown: string; filename: string }>> {
   const results = [];
-  
+
   for (const filePath of filePaths) {
     try {
       const result = await uploadFileToGitHub(filePath);
@@ -278,22 +287,28 @@ export async function uploadFilesToGitHub(
       });
     }
   }
-  
+
   return results;
 }
 
 /**
  * Get MIME type for common image formats
  */
-function __getMimeType(filename: string): string {
+function ___getMimeType(filename: string): string {
   const ext = filename.toLowerCase().split('.').pop();
   switch (ext) {
-    case 'png': return 'image/png';
+    case 'png':
+      return 'image/png';
     case 'jpg':
-    case 'jpeg': return 'image/jpeg';
-    case 'gif': return 'image/gif';
-    case 'bmp': return 'image/bmp';
-    case 'webp': return 'image/webp';
-    default: return 'application/octet-stream';
+    case 'jpeg':
+      return 'image/jpeg';
+    case 'gif':
+      return 'image/gif';
+    case 'bmp':
+      return 'image/bmp';
+    case 'webp':
+      return 'image/webp';
+    default:
+      return 'application/octet-stream';
   }
 }

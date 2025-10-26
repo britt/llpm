@@ -34,7 +34,7 @@ describe('CredentialManager Profile Integration Tests', () => {
 
     // Create temporary directory for config
     tempDir = await fs.mkdtemp(join(tmpdir(), 'llpm-profile-test-'));
-    
+
     // Create a new credential manager instance for testing
     credManager = new (CredentialManager as any)();
     (credManager as any).configPath = join(tempDir, 'credentials.json');
@@ -55,7 +55,7 @@ describe('CredentialManager Profile Integration Tests', () => {
     // Clean up temp directory
     try {
       await fs.rm(tempDir, { recursive: true, force: true });
-    } catch (error) {
+    } catch {
       // Ignore cleanup errors
     }
   });
@@ -71,7 +71,7 @@ describe('CredentialManager Profile Integration Tests', () => {
       await credManager.createProfile('personal');
 
       const { profiles, current } = await credManager.listProfiles();
-      
+
       expect(profiles).toContain('default');
       expect(profiles).toContain('work');
       expect(profiles).toContain('personal');
@@ -80,10 +80,10 @@ describe('CredentialManager Profile Integration Tests', () => {
 
     test('should switch between profiles', async () => {
       await credManager.createProfile('work');
-      
+
       // Initially on default
       expect(credManager.getCurrentProfileName()).toBe('default');
-      
+
       // Switch to work
       await credManager.switchProfile('work');
       const { current } = await credManager.listProfiles();
@@ -93,10 +93,10 @@ describe('CredentialManager Profile Integration Tests', () => {
     test('should handle profile override', async () => {
       await credManager.createProfile('work');
       await credManager.switchProfile('work');
-      
+
       // Current should be work
       expect(credManager.getCurrentProfileName()).toBe('work');
-      
+
       // Override with 'personal'
       credManager.setProfileOverride('personal');
       expect(credManager.getCurrentProfileName()).toBe('personal');
@@ -113,9 +113,9 @@ describe('CredentialManager Profile Integration Tests', () => {
     });
 
     test('should not allow deleting default profile', async () => {
-      await expect(
-        credManager.deleteProfile('default')
-      ).rejects.toThrow('Cannot delete default profile');
+      await expect(credManager.deleteProfile('default')).rejects.toThrow(
+        'Cannot delete default profile'
+      );
     });
   });
 
@@ -159,21 +159,21 @@ describe('CredentialManager Profile Integration Tests', () => {
     test('should fall back to default profile when credential not in active profile', async () => {
       // Set credential only in default profile
       await credManager.setCredential('openai', 'apiKey', 'default-key-123', 'default');
-      
+
       // Create work profile but don't set OpenAI credential
       await credManager.createProfile('work');
-      
+
       // Switch to work profile and try to get OpenAI key
       credManager.setProfileOverride('work');
       const key = await credManager.getOpenAIAPIKey();
-      
+
       // Should get key from default profile
       expect(key).toBe('default-key-123');
     });
 
     test('should remove credentials from specific profiles', async () => {
       await credManager.createProfile('work');
-      
+
       // Set credentials in both profiles
       await credManager.setCredential('openai', 'apiKey', 'work-key', 'work');
       await credManager.setCredential('openai', 'apiKey', 'default-key', 'default');
@@ -194,19 +194,19 @@ describe('CredentialManager Profile Integration Tests', () => {
 
     test('should clear all credentials from specific profile', async () => {
       await credManager.createProfile('work');
-      
+
       // Set multiple credentials in work profile
       await credManager.setCredential('openai', 'apiKey', 'work-openai', 'work');
       await credManager.setCredential('github', 'token', 'work-github', 'work');
-      
+
       // Clear work profile
       await credManager.clearProfile('work');
-      
+
       // Should not have any credentials
       credManager.setProfileOverride('work');
       const openaiKey = await credManager.getOpenAIAPIKey();
       const githubToken = await credManager.getGitHubToken();
-      
+
       expect(openaiKey).toBeUndefined();
       expect(githubToken).toBeUndefined();
     });
@@ -216,10 +216,10 @@ describe('CredentialManager Profile Integration Tests', () => {
     test('should prioritize environment variables over profile credentials', async () => {
       // Set credential in profile
       await credManager.setCredential('openai', 'apiKey', 'profile-key-123', 'default');
-      
+
       // Set environment variable
       process.env.OPENAI_API_KEY = 'env-key-456';
-      
+
       // Should get env var value
       const key = await credManager.getOpenAIAPIKey();
       expect(key).toBe('env-key-456');
@@ -228,10 +228,10 @@ describe('CredentialManager Profile Integration Tests', () => {
     test('should use profile when no environment variable', async () => {
       // Ensure no environment variable
       delete process.env.OPENAI_API_KEY;
-      
+
       // Set credential in profile
       await credManager.setCredential('openai', 'apiKey', 'profile-key-123', 'default');
-      
+
       // Should get profile value
       const key = await credManager.getOpenAIAPIKey();
       expect(key).toBe('profile-key-123');
@@ -241,18 +241,18 @@ describe('CredentialManager Profile Integration Tests', () => {
   describe('Credential Status', () => {
     test('should show status for active profile', async () => {
       await credManager.createProfile('work');
-      
+
       // Set some credentials in work profile
       await credManager.setCredential('openai', 'apiKey', 'work-openai', 'work');
       await credManager.setCredential('github', 'token', 'work-github', 'work');
-      
+
       // Set different credentials in default
       await credManager.setCredential('anthropic', 'apiKey', 'default-anthropic', 'default');
-      
+
       // Check status for work profile
       credManager.setProfileOverride('work');
       const status = await credManager.getCredentialStatus();
-      
+
       expect(status.openai.apiKey).toBe(true);
       expect(status.github.token).toBe(true);
       expect(status.anthropic.apiKey).toBe(true); // Falls back to default
@@ -267,11 +267,8 @@ describe('CredentialManager Profile Integration Tests', () => {
         openai: { apiKey: 'old-key-123' },
         github: { token: 'old-token-456' }
       };
-      
-      await fs.writeFile(
-        (credManager as any).configPath,
-        JSON.stringify(oldFormat, null, 2)
-      );
+
+      await fs.writeFile((credManager as any).configPath, JSON.stringify(oldFormat, null, 2));
 
       // Access credential manager - should trigger migration
       const key = await credManager.getOpenAIAPIKey();
@@ -280,7 +277,7 @@ describe('CredentialManager Profile Integration Tests', () => {
       // Check that file was migrated to new format
       const configContent = await fs.readFile((credManager as any).configPath, 'utf-8');
       const newConfig = JSON.parse(configContent);
-      
+
       expect(newConfig.profiles).toBeDefined();
       expect(newConfig.profiles.default.openai.apiKey).toBe('old-key-123');
       expect(newConfig.profiles.default.github.token).toBe('old-token-456');
@@ -291,23 +288,23 @@ describe('CredentialManager Profile Integration Tests', () => {
 
   describe('Error Handling', () => {
     test('should handle switching to non-existent profile', async () => {
-      await expect(
-        credManager.switchProfile('nonexistent')
-      ).rejects.toThrow("Profile 'nonexistent' does not exist");
+      await expect(credManager.switchProfile('nonexistent')).rejects.toThrow(
+        "Profile 'nonexistent' does not exist"
+      );
     });
 
     test('should handle creating duplicate profile', async () => {
       await credManager.createProfile('duplicate');
-      
-      await expect(
-        credManager.createProfile('duplicate')
-      ).rejects.toThrow("Profile 'duplicate' already exists");
+
+      await expect(credManager.createProfile('duplicate')).rejects.toThrow(
+        "Profile 'duplicate' already exists"
+      );
     });
 
     test('should not allow creating default profile explicitly', async () => {
-      await expect(
-        credManager.createProfile('default')
-      ).rejects.toThrow('Cannot explicitly create default profile');
+      await expect(credManager.createProfile('default')).rejects.toThrow(
+        'Cannot explicitly create default profile'
+      );
     });
   });
 });

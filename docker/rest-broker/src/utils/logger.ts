@@ -15,19 +15,20 @@ export const logger = winston.createLogger({
       format: winston.format.combine(
         winston.format.colorize(),
         winston.format.printf(({ level, message, timestamp, ...meta }) => {
-          const metaString = Object.keys(meta).filter(k => k !== 'service').length > 0
-            ? ` ${JSON.stringify(meta, null, 2)}`
-            : '';
+          const metaString =
+            Object.keys(meta).filter(k => k !== 'service').length > 0
+              ? ` ${JSON.stringify(meta, null, 2)}`
+              : '';
           return `${level}: ${message}${metaString}`;
         })
-      ),
-    }),
-  ],
+      )
+    })
+  ]
 });
 
 // Create a stream object for Morgan
 export const stream = {
   write: (message: string) => {
     logger.info(message.trim());
-  },
+  }
 };

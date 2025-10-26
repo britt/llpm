@@ -13,6 +13,7 @@
 ## Task 1: Test Infrastructure - createTempDir Helper
 
 **Files:**
+
 - Create: `test/helpers/tempDir.ts`
 - Create: `test/helpers/index.ts`
 - Test: `test/helpers/tempDir.test.ts`
@@ -135,6 +136,7 @@ git commit -m "test: add createTempDir helper for filesystem testing"
 ## Task 2: Test Infrastructure - AI SDK Mocks
 
 **Files:**
+
 - Create: `test/mocks/ai-sdk.ts`
 - Test: `test/mocks/ai-sdk.test.ts`
 
@@ -159,11 +161,13 @@ describe('AI SDK Mocks', () => {
 
     it('should support tool calls in response', async () => {
       const generateText = mockGenerateText('Response', {
-        toolCalls: [{
-          toolCallId: 'call-1',
-          toolName: 'test_tool',
-          args: { foo: 'bar' }
-        }]
+        toolCalls: [
+          {
+            toolCallId: 'call-1',
+            toolName: 'test_tool',
+            args: { foo: 'bar' }
+          }
+        ]
       });
 
       const result = await generateText({
@@ -255,6 +259,7 @@ git commit -m "test: add AI SDK mock utilities"
 ## Task 3: Test Fixtures - Messages
 
 **Files:**
+
 - Create: `test/fixtures/messages.ts`
 - Create: `test/fixtures/index.ts`
 
@@ -286,12 +291,14 @@ export const messageWithToolCall: Message = {
   id: 'msg-tool-1',
   role: 'assistant',
   content: '',
-  toolInvocations: [{
-    state: 'call',
-    toolCallId: 'call-1',
-    toolName: 'get_weather',
-    args: { city: 'San Francisco' }
-  }]
+  toolInvocations: [
+    {
+      state: 'call',
+      toolCallId: 'call-1',
+      toolName: 'get_weather',
+      args: { city: 'San Francisco' }
+    }
+  ]
 };
 
 export const longMessage: Message = {
@@ -344,6 +351,7 @@ git commit -m "test: add message fixtures for testing"
 ## Task 4: Test Infrastructure - waitForState Helper
 
 **Files:**
+
 - Modify: `test/helpers/index.ts`
 - Create: `test/helpers/waitForState.ts`
 - Test: `test/helpers/waitForState.test.ts`
@@ -358,24 +366,24 @@ import { waitForState } from './waitForState';
 describe('waitForState', () => {
   it('should resolve when condition becomes true', async () => {
     let value = false;
-    setTimeout(() => { value = true; }, 100);
+    setTimeout(() => {
+      value = true;
+    }, 100);
 
     await waitForState(() => value === true, { timeout: 500 });
     expect(value).toBe(true);
   });
 
   it('should timeout if condition never becomes true', async () => {
-    await expect(
-      waitForState(() => false, { timeout: 100 })
-    ).rejects.toThrow('Timeout waiting for state condition');
+    await expect(waitForState(() => false, { timeout: 100 })).rejects.toThrow(
+      'Timeout waiting for state condition'
+    );
   });
 
   it('should use default timeout if not specified', async () => {
     const start = Date.now();
 
-    await expect(
-      waitForState(() => false)
-    ).rejects.toThrow();
+    await expect(waitForState(() => false)).rejects.toThrow();
 
     const elapsed = Date.now() - start;
     expect(elapsed).toBeGreaterThanOrEqual(3000);
@@ -441,6 +449,7 @@ git commit -m "test: add waitForState helper for async state testing"
 ## Task 5: useChat.ts Tests - Message State Management
 
 **Files:**
+
 - Create: `src/hooks/useChat.test.ts`
 
 **Step 1: Write the failing test**
@@ -550,6 +559,7 @@ git commit -m "test: add useChat message state management tests"
 ## Task 6: useChat.ts Tests - Loading State
 
 **Files:**
+
 - Modify: `src/hooks/useChat.test.ts`
 
 **Step 1: Add loading state tests**
@@ -617,6 +627,7 @@ git commit -m "test: add useChat loading state tests"
 ## Task 7: useChat.ts Tests - Message Queue
 
 **Files:**
+
 - Modify: `src/hooks/useChat.test.ts`
 
 **Step 1: Add message queue tests**

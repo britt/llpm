@@ -16,10 +16,7 @@ import {
   searchGitHubIssuesTool,
   getGitHubIssueWithCommentsTool
 } from './githubIssueTools';
-import {
-  listGitHubPullRequestsTool,
-  createGitHubPullRequestTool
-} from './githubPullRequestTools';
+import { listGitHubPullRequestsTool, createGitHubPullRequestTool } from './githubPullRequestTools';
 import { getSystemPromptTool } from './systemTools';
 import { webSearchTool } from './webSearchTools';
 import { readWebPageTool, summarizeWebPageTool } from './webContentTools';
@@ -43,11 +40,7 @@ import {
   removeProjectBoardTool,
   listAvailableProjectBoardsTool
 } from './projectConfigTools';
-import {
-  scanProjectTool,
-  getProjectScanTool,
-  listProjectScansTool
-} from './projectScanTools';
+import { scanProjectTool, getProjectScanTool, listProjectScansTool } from './projectScanTools';
 import {
   indexProjectFiles,
   semanticSearchProject,

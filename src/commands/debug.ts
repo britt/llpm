@@ -46,7 +46,7 @@ export const debugCommand: Command = {
     }
 
     const logs = getRecentDebugLogs(count);
-    
+
     if (logs.length === 0) {
       return {
         content: '📝 No debug logs available yet.',
