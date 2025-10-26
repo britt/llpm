@@ -109,6 +109,26 @@ export function useChat() {
     }
   }, [messages, historyLoaded]);
 
+  // Listen for skill selection events to update thinking indicator in real-time
+  useEffect(() => {
+    const skillRegistry = getSkillRegistry();
+    const selectedSkillNames: string[] = [];
+
+    const handleSkillSelected = (event: any) => {
+      if (!selectedSkillNames.includes(event.skillName)) {
+        selectedSkillNames.push(event.skillName);
+        setSelectedSkills([...selectedSkillNames]);
+      }
+    };
+
+    // Listen to skill selection events
+    skillRegistry.on('skill.selected', handleSkillSelected);
+
+    return () => {
+      skillRegistry.removeListener('skill.selected', handleSkillSelected);
+    };
+  }, []);
+
   // Process a message immediately (internal function)
   const processMessageImmediate = useCallback(
     async (content: string) => {
