@@ -201,16 +201,19 @@ export async function validateProjectBoardIntegration(): Promise<{
     }
 
     // Try to access the project board to validate the configuration
-    const projectDetails = await getProjectV2ById(projectBoard.projectBoardId);
+    const projectDetails = (await getProjectV2ById(projectBoard.projectBoardId)) as Record<
+      string,
+      unknown
+    >;
 
     return {
       success: true,
       message: `✅ Project board integration is working correctly`,
       details: {
         project: currentProject.name,
-        board: projectDetails.title,
-        boardNumber: projectDetails.number,
-        boardUrl: projectDetails.url
+        board: projectDetails.title as string,
+        boardNumber: projectDetails.number as number,
+        boardUrl: projectDetails.url as string
       }
     };
   } catch (error) {
