@@ -184,7 +184,6 @@ export async function listProjectsV2(owner: string): Promise<GitHubProjectV2[]> 
     const octokitInstance = getOctokit();
 
     // Try as organization first, then fallback to user
-    let result: unknown;
     let projects: GitHubProjectV2[] = [];
 
     try {
@@ -215,7 +214,7 @@ export async function listProjectsV2(owner: string): Promise<GitHubProjectV2[]> 
         debug('📋 Variables:', { login: owner });
       }
 
-      result = await octokitInstance.graphql<{
+      const orgResult = await octokitInstance.graphql<{
         organization: {
           projectsV2: {
             nodes: GitHubProjectV2[];
@@ -229,8 +228,8 @@ export async function listProjectsV2(owner: string): Promise<GitHubProjectV2[]> 
       });
 
       // Check if organization exists (GraphQL returns null for not found, not an error)
-      if (result.organization && result.organization.projectsV2) {
-        projects = result.organization.projectsV2.nodes;
+      if (orgResult.organization && orgResult.organization.projectsV2) {
+        projects = orgResult.organization.projectsV2.nodes;
         debug('Found organization projects:', projects.length);
       } else {
         throw new Error('Organization not found');
@@ -266,7 +265,7 @@ export async function listProjectsV2(owner: string): Promise<GitHubProjectV2[]> 
         debug('📋 Variables:', { login: owner });
       }
 
-      result = await octokitInstance.graphql<{
+      const userResult = await octokitInstance.graphql<{
         user: {
           projectsV2: {
             nodes: GitHubProjectV2[];
@@ -279,7 +278,7 @@ export async function listProjectsV2(owner: string): Promise<GitHubProjectV2[]> 
         }
       });
 
-      projects = result.user.projectsV2.nodes;
+      projects = userResult.user.projectsV2.nodes;
       debug('Found user projects:', projects.length);
     }
 
@@ -384,7 +383,6 @@ export async function getProjectV2(owner: string, number: number): Promise<GitHu
     const octokitInstance = getOctokit();
 
     // Try as organization first, then fallback to user
-    let result: unknown;
     let project: GitHubProjectV2 | null = null;
 
     try {
@@ -413,7 +411,7 @@ export async function getProjectV2(owner: string, number: number): Promise<GitHu
         debug('📋 Variables:', { login: owner, number });
       }
 
-      result = await octokitInstance.graphql<{
+      const orgResult = await octokitInstance.graphql<{
         organization: {
           projectV2: GitHubProjectV2 | null;
         };
@@ -425,7 +423,7 @@ export async function getProjectV2(owner: string, number: number): Promise<GitHu
         }
       });
 
-      project = result.organization.projectV2;
+      project = orgResult.organization.projectV2;
     } catch (orgError) {
       debug('Not an organization, trying as user:', orgError);
 
@@ -455,7 +453,7 @@ export async function getProjectV2(owner: string, number: number): Promise<GitHu
         debug('📋 Variables:', { login: owner, number });
       }
 
-      result = await octokitInstance.graphql<{
+      const userResult = await octokitInstance.graphql<{
         user: {
           projectV2: GitHubProjectV2 | null;
         };
@@ -467,7 +465,7 @@ export async function getProjectV2(owner: string, number: number): Promise<GitHu
         }
       });
 
-      project = result.user.projectV2;
+      project = userResult.user.projectV2;
     }
     if (!project) {
       throw new Error(`Project #${number} not found for ${owner}`);
