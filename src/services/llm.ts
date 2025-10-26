@@ -95,16 +95,15 @@ export async function generateResponse(
         const metadata: Record<string, unknown> = { status: 200 };
         if (result.usage) {
           const usage = result.usage as { promptTokens?: number; totalTokens?: number; completionTokens?: number };
-          metadata.tokensIn = usage.promptTokens || usage.totalTokens;
-          metadata.tokensOut = usage.completionTokens;
+          const tokensIn = usage.promptTokens || usage.totalTokens || 0;
+          const tokensOut = usage.completionTokens || 0;
+          metadata.tokensIn = tokensIn;
+          metadata.tokensOut = tokensOut;
 
           // Add token counts to span
-          span.setAttribute('llm.usage.prompt_tokens', metadata.tokensIn || 0);
-          span.setAttribute('llm.usage.completion_tokens', metadata.tokensOut || 0);
-          span.setAttribute(
-            'llm.usage.total_tokens',
-            (metadata.tokensIn || 0) + (metadata.tokensOut || 0)
-          );
+          span.setAttribute('llm.usage.prompt_tokens', tokensIn);
+          span.setAttribute('llm.usage.completion_tokens', tokensOut);
+          span.setAttribute('llm.usage.total_tokens', tokensIn + tokensOut);
         }
         RequestContext.logLLMCall(
           'end',
