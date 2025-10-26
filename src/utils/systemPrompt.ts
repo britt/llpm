@@ -6,6 +6,7 @@ import { getCurrentProject } from './projectConfig';
 import type { Project } from '../types/project';
 import { traced } from './tracing';
 import { SpanKind } from '@opentelemetry/api';
+import { getSkillRegistry } from '../services/SkillRegistry';
 
 const DEFAULT_SYSTEM_PROMPT = `You are LLPM (Large Language Model Product Manager), an AI-powered project management assistant that operates within an interactive terminal interface. You help users manage multiple projects, interact with GitHub repositories, and coordinate development workflows through natural language conversation.
 
@@ -186,6 +187,9 @@ export async function getSystemPrompt(): Promise<string> {
       // Inject current project context
       let promptWithContext = await injectProjectContext(basePrompt);
       span.setAttribute('project.context_injected', promptWithContext !== basePrompt);
+
+      // Inject skills context
+      promptWithContext = injectSkillsContext(promptWithContext);
       span.setAttribute('prompt.final_length', promptWithContext.length);
 
       return promptWithContext;
@@ -279,21 +283,21 @@ async function injectProjectContext(basePrompt: string): Promise<string> {
   try {
     // Attempt to get current project with additional error handling
     let currentProject: Project | null = null;
-    
+
     try {
       currentProject = await getCurrentProject();
     } catch (projectError) {
       debug('Failed to get current project for context injection:', projectError);
       return basePrompt; // Graceful fallback
     }
-    
+
     if (!currentProject) {
       debug('No active project to inject into system prompt - using base prompt');
       return basePrompt;
     }
 
     debug('Injecting project context for:', currentProject.name);
-    
+
     // Safely format project context with error handling
     let projectContext: string;
     try {
@@ -302,12 +306,12 @@ async function injectProjectContext(basePrompt: string): Promise<string> {
       debug('Failed to format project context:', formatError);
       return basePrompt; // Graceful fallback
     }
-    
+
     // Insert project context with robust positioning logic
     try {
       const lines = basePrompt.split('\n');
       let insertIndex = -1;
-      
+
       // Try to find Core Context section first
       const coreContextIndex = lines.findIndex(line => line.includes('## Core Context'));
       if (coreContextIndex > 0) {
@@ -318,7 +322,7 @@ async function injectProjectContext(basePrompt: string): Promise<string> {
         const activeProjectIndex = lines.findIndex(line => line.includes('## 🎯 Active Project Context'));
         if (activeProjectIndex > 0) {
           // Insert after the Active Project Context section
-          const nextSectionIndex = lines.findIndex((line, index) => 
+          const nextSectionIndex = lines.findIndex((line, index) =>
             index > activeProjectIndex && line.startsWith('##') && !line.includes('🎯 Active Project Context')
           );
           insertIndex = nextSectionIndex > 0 ? nextSectionIndex : activeProjectIndex + 15; // Rough estimate after section
@@ -330,19 +334,85 @@ async function injectProjectContext(basePrompt: string): Promise<string> {
           debug('Using fallback insertion point at line:', insertIndex);
         }
       }
-      
+
       // Insert the project context
       lines.splice(insertIndex, 0, projectContext);
       return lines.join('\n');
-      
+
     } catch (insertError) {
       debug('Failed to insert project context into prompt:', insertError);
       return basePrompt; // Graceful fallback
     }
-    
+
   } catch (error) {
     debug('Unexpected error in project context injection:', error);
     return basePrompt; // Always graceful fallback
+  }
+}
+
+/**
+ * Inject available skills section into system prompt
+ */
+function injectSkillsContext(basePrompt: string): string {
+  try {
+    const registry = getSkillRegistry();
+    const skills = registry.getAllSkills();
+
+    // Filter to enabled skills with instructions
+    const skillsWithInstructions = skills.filter(skill =>
+      skill.enabled && skill.instructions
+    );
+
+    if (skillsWithInstructions.length === 0) {
+      debug('No enabled skills with instructions to inject');
+      return basePrompt;
+    }
+
+    debug(`Injecting ${skillsWithInstructions.length} skills into system prompt`);
+
+    // Format skills section
+    const skillsLines: string[] = [
+      '<Skills>',
+      '## Available Skills',
+      '',
+      'When you need specialized guidance, you can load skills using the load_skills tool:',
+      ''
+    ];
+
+    for (const skill of skillsWithInstructions) {
+      skillsLines.push(`- ${skill.instructions} load the \`${skill.name}\` skill`);
+    }
+
+    skillsLines.push('</Skills>');
+    skillsLines.push('');
+
+    const skillsContent = skillsLines.join('\n');
+
+    // Insert after </Tools> section, before <Responses> section
+    try {
+      const lines = basePrompt.split('\n');
+
+      // Find </Tools> closing tag
+      const toolsEndIndex = lines.findIndex(line => line.includes('</Tools>'));
+
+      if (toolsEndIndex >= 0) {
+        // Insert after </Tools> and add a blank line
+        lines.splice(toolsEndIndex + 1, 0, '', skillsContent);
+        debug('Skills section inserted after </Tools> at line:', toolsEndIndex);
+        return lines.join('\n');
+      } else {
+        debug('Could not find </Tools> section, appending skills to end');
+        return basePrompt + '\n\n' + skillsContent;
+      }
+
+    } catch (insertError) {
+      debug('Failed to insert skills context into prompt:', insertError);
+      return basePrompt;
+    }
+
+  } catch (error) {
+    debug('Unexpected error in skills context injection:', error);
+    return basePrompt;
   }
 }
 

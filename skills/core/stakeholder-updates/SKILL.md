@@ -1,7 +1,7 @@
 ---
 name: stakeholder-updates
 description: "Craft clear, concise stakeholder communications with appropriate context and framing"
-instructions: "Use when writing status updates, communicating delays, sharing launch announcements, or crafting stakeholder communications"
+instructions: "When writing status updates, communicating delays, sharing launch announcements, or crafting stakeholder communications"
 tags:
   - communication
   - stakeholders

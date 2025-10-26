@@ -1,7 +1,7 @@
 ---
 name: user-story-template
 description: "Guide writing well-formed user stories with acceptance criteria following best practices"
-instructions: "Use when creating new features, writing GitHub issues for product work, or documenting user requirements"
+instructions: "When creating new features, writing GitHub issues for product work, or documenting user requirements"
 tags:
   - user-story
   - requirements

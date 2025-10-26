@@ -1,7 +1,7 @@
 ---
 name: mermaid-diagrams
 description: "Guide for creating syntactically correct Mermaid diagrams that render properly on GitHub"
-instructions: "Use when creating flowcharts, sequence diagrams, class diagrams, or any visual diagrams in markdown"
+instructions: "When creating flowcharts, sequence diagrams, class diagrams, or any visual diagrams in markdown"
 tags:
   - diagram
   - visualization
