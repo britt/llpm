@@ -15,7 +15,7 @@ export const listDockerAgentsTool = tool({
         success: true,
         agents: response.data.agents
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       return {
         success: false,
         error: error.response?.data?.message || error.message
@@ -54,7 +54,7 @@ export const submitDockerAgentJobTool = tool({
         status: response.data.status,
         createdAt: response.data.createdAt
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       return {
         success: false,
         error: error.response?.data?.message || error.message
@@ -77,7 +77,7 @@ export const getDockerAgentJobStatusTool = tool({
         success: true,
         job: response.data
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       return {
         success: false,
         error: error.response?.data?.message || error.message
@@ -126,7 +126,7 @@ export const listDockerAgentJobsTool = tool({
         offset: response.data.offset,
         limit: response.data.limit
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       return {
         success: false,
         error: error.response?.data?.message || error.message
@@ -154,7 +154,7 @@ export const cancelDockerAgentJobTool = tool({
         cancelled: response.data.cancelled,
         message: response.data.message
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       return {
         success: false,
         error: error.response?.data?.message || error.message
@@ -176,7 +176,7 @@ export const checkDockerBrokerHealthTool = tool({
         timestamp: response.data.timestamp,
         services: response.data.services
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       return {
         success: false,
         error: error.response?.data?.message || error.message
