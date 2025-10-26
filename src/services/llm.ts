@@ -47,10 +47,13 @@ export async function generateResponse(messages: Message[]): Promise<{ response:
       if (lastUserMessage) {
         try {
           const skillRegistry = getSkillRegistry();
+          debug('Looking for relevant skills for message:', lastUserMessage.substring(0, 50));
           const matchedSkills = skillRegistry.findRelevant({ userMessage: lastUserMessage });
+          debug(`Found ${matchedSkills.length} matching skills`);
 
           if (matchedSkills.length > 0) {
             debug(`Injecting ${matchedSkills.length} skill(s) as assistant message`);
+            debug('Matched skill names:', matchedSkills.map(r => r.skill.name).join(', '));
             const skills = matchedSkills.map(r => r.skill);
             const skillsContent = await skillRegistry.generatePromptAugmentation(skills);
 
@@ -62,9 +65,11 @@ export async function generateResponse(messages: Message[]): Promise<{ response:
 
               // Collect selected skill names for UI display
               selectedSkillNames.push(...matchedSkills.map(r => r.skill.name));
+              debug('Selected skill names for UI:', selectedSkillNames);
 
               // Emit selection events
               for (const result of matchedSkills) {
+                debug('Emitting skill.selected event for:', result.skill.name);
                 skillRegistry.emit('skill.selected', {
                   type: 'skill.selected',
                   skillName: result.skill.name,
