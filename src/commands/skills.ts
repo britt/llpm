@@ -38,7 +38,7 @@ export const skillsCommand: Command = {
 /**
  * List all discovered skills
  */
-async function listSkills(args: string[]): Promise<CommandResult> {
+async function listSkills(_args: string[]): Promise<CommandResult> {
   const registry = getSkillRegistry();
   const skills = registry.getAllSkills();
 

@@ -28,7 +28,7 @@ function getDefaultPythonPath(): string {
     if (fs.existsSync(venvPython)) {
       return venvPython;
     }
-  } catch (e) {
+  } catch {
     // Fall through to system python
   }
 
@@ -173,7 +173,7 @@ export class LocalEmbeddingsProvider implements EmbeddingsProvider {
                     } else {
                       resolve(response);
                     }
-                  } catch (e) {
+                  } catch {
                     reject(new Error(`Failed to parse Python output: ${stdout}`));
                   }
                 }

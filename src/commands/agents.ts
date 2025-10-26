@@ -244,7 +244,7 @@ ${connectCommand}
 **Note**: If the container name doesn't match, run \`docker ps\` to see available containers.`,
             success: true
           };
-        } catch (error) {
+        } catch (_error) {
           return {
             content: `🔗 **Docker Connect Command**
 

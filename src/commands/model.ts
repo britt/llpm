@@ -85,9 +85,10 @@ export const modelCommand: Command = {
       }
 
       case 'list':
-      case 'ls':
+      case 'ls': {
         const showAll = args.includes('--all') || args.includes('-a');
         return listAvailableModels(showAll);
+      }
       
       case 'current':
         return showCurrentModel();

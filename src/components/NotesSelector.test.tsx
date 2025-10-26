@@ -1,5 +1,5 @@
-import { describe, it, expect, vi } from 'vitest';
-import React from 'react';
+import { describe, it, expect } from 'vitest';
+import type React from 'react';
 
 // Skip rendering tests due to Ink terminal rendering complexity
 describe('NotesSelector', () => {

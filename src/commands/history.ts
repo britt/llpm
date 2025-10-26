@@ -106,7 +106,7 @@ The collapse/expand functionality is available through the UI indicator:
           success: false
         };
 
-      case 'tail':
+      case 'tail': {
         if (args.length < 2) {
           return {
             content: '❌ Usage: /history tail <number>\n\nExample: /history tail 500',
@@ -133,6 +133,7 @@ You can override this with the environment variable:
   LLPM_CHAT_MAX_RENDER_LINES=${tailSize}`,
           success: false
         };
+      }
 
       default:
         return {

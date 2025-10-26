@@ -271,7 +271,7 @@ export const ChatInterface = memo(function ChatInterface({
   hiddenLinesCount = 0,
   totalLines = 0,
   showAllHistory = false,
-  onToggleHistory,
+  _onToggleHistory,
   onSendMessage,
   isLoading,
   modelSelectorModels,

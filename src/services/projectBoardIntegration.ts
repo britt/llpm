@@ -1,6 +1,6 @@
 import type { Project } from '../types/project';
 import { getCurrentProject, setProjectBoard, getProjectBoard } from '../utils/projectConfig';
-import { getProjectV2, listProjectsV2, addProjectV2Item, getOwnerId } from './githubProjects';
+import { getProjectV2, listProjectsV2, addProjectV2Item } from './githubProjects';
 import { debug } from '../utils/logger';
 import { credentialManager } from '../utils/credentialManager';
 

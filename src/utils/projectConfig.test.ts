@@ -1,5 +1,5 @@
 import '../../test/setup';
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import type { ProjectConfig, Project } from '../types/project';
 
 // Import functions - use real implementations with temp files

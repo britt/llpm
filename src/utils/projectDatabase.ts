@@ -1,5 +1,4 @@
 import { Database } from 'bun:sqlite';
-import type { Database as DatabaseType } from 'bun:sqlite';
 import { join } from 'path';
 // Note: SQLite VSS extensions not available with bun:sqlite, using simple similarity instead
 import { getConfigDir } from './config';
