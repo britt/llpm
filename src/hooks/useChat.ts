@@ -38,6 +38,7 @@ export function useChat() {
   const messagesRef = useRef<Message[]>([]);
   const processingRef = useRef(false);
   const shouldSaveRef = useRef(false);
+  const selectedSkillsRef = useRef<string[]>([]);
 
   // Keep refs in sync with state
   useEffect(() => {
@@ -112,19 +113,22 @@ export function useChat() {
   // Listen for skill selection events to update thinking indicator in real-time
   useEffect(() => {
     const skillRegistry = getSkillRegistry();
-    const selectedSkillNames: string[] = [];
 
     const handleSkillSelected = (event: any) => {
-      if (!selectedSkillNames.includes(event.skillName)) {
-        selectedSkillNames.push(event.skillName);
-        setSelectedSkills([...selectedSkillNames]);
+      debug('Skill selected event received:', event.skillName);
+      if (!selectedSkillsRef.current.includes(event.skillName)) {
+        selectedSkillsRef.current.push(event.skillName);
+        debug('Updating selectedSkills state:', selectedSkillsRef.current);
+        setSelectedSkills([...selectedSkillsRef.current]);
       }
     };
 
+    debug('Setting up skill.selected event listener');
     // Listen to skill selection events
     skillRegistry.on('skill.selected', handleSkillSelected);
 
     return () => {
+      debug('Removing skill.selected event listener');
       skillRegistry.removeListener('skill.selected', handleSkillSelected);
     };
   }, []);
@@ -223,6 +227,7 @@ export function useChat() {
       debug('Adding user message to state');
       setMessages(prev => trimMessages([...prev, userMessage]));
       shouldSaveRef.current = true; // Mark for saving
+      selectedSkillsRef.current = []; // Clear previous skills
       setSelectedSkills([]); // Clear previous skills
       setIsLoading(true);
       debug('Set loading state to true');
