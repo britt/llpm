@@ -113,10 +113,11 @@ export function useChat() {
   useEffect(() => {
     const skillRegistry = getSkillRegistry();
 
-    const handleSkillSelected = (event: any) => {
-      debug('Skill selected event received:', event.skillName);
-      if (!selectedSkillsRef.current.includes(event.skillName)) {
-        selectedSkillsRef.current.push(event.skillName);
+    const handleSkillSelected = (event: unknown) => {
+      const skillEvent = event as { skillName: string };
+      debug('Skill selected event received:', skillEvent.skillName);
+      if (!selectedSkillsRef.current.includes(skillEvent.skillName)) {
+        selectedSkillsRef.current.push(skillEvent.skillName);
         debug('Updating selectedSkills state:', selectedSkillsRef.current);
         setSelectedSkills([...selectedSkillsRef.current]);
       }

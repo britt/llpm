@@ -299,7 +299,8 @@ async function handleSet(
 
   const targetProfile = profileName || credentialManager.getCurrentProfileName();
 
-  await credentialManager.setCredential(provider as any, key, value, profileName);
+  type ProviderType = 'openai' | 'anthropic' | 'groq' | 'googleVertex' | 'github' | 'arcade';
+  await credentialManager.setCredential(provider as ProviderType, key, value, profileName);
 
   return {
     success: true,
@@ -320,7 +321,8 @@ async function handleGet(
   }
 
   // For get operations, we use the profile-aware credential manager
-  const credential = await credentialManager.getCredential(provider as any, key);
+  type ProviderType = 'openai' | 'anthropic' | 'groq' | 'googleVertex' | 'github' | 'arcade';
+  const credential = await credentialManager.getCredential(provider as ProviderType, key);
   const activeProfile = credentialManager.getCurrentProfileName();
 
   if (!credential) {
@@ -358,7 +360,8 @@ async function handleRemove(
 
   const targetProfile = profileName || credentialManager.getCurrentProfileName();
 
-  await credentialManager.removeCredential(provider as any, key, profileName);
+  type ProviderType = 'openai' | 'anthropic' | 'groq' | 'googleVertex' | 'github' | 'arcade';
+  await credentialManager.removeCredential(provider as ProviderType, key, profileName);
 
   return {
     success: true,

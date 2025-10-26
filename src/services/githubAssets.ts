@@ -121,7 +121,7 @@ async function createGistWithFile(
     throw new Error(`Failed to create gist: ${response.status} ${errorText}`);
   }
 
-  const gist = (await response.json()) as any;
+  const gist = (await response.json()) as { files: Record<string, { raw_url?: string }> };
   const fileUrl = gist.files[actualFilename]?.raw_url;
 
   if (!fileUrl) {
@@ -161,8 +161,8 @@ async function uploadImageToRepository(
       throw new Error(`Failed to get user info: ${userResponse.status}`);
     }
 
-    const user = (await userResponse.json()) as any;
-    const username = user.login as string;
+    const user = (await userResponse.json()) as { login: string };
+    const username = user.login;
 
     // Check if assets repository exists, create if not
     await ensureAssetsRepository(username, assetsRepoName, token);

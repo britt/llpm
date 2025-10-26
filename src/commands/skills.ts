@@ -253,12 +253,14 @@ async function reloadSkills(): Promise<CommandResult> {
   const discoveredSkills: string[] = [];
 
   // Listen for validation errors during scan
-  const errorHandler = (event: any) => {
-    validationErrors.push(`${event.skillName}: ${event.errors.join(', ')}`);
+  const errorHandler = (event: unknown) => {
+    const validationEvent = event as { skillName: string; errors: string[] };
+    validationErrors.push(`${validationEvent.skillName}: ${validationEvent.errors.join(', ')}`);
   };
 
-  const discoveryHandler = (event: any) => {
-    discoveredSkills.push(event.skillName);
+  const discoveryHandler = (event: unknown) => {
+    const discoveryEvent = event as { skillName: string };
+    discoveredSkills.push(discoveryEvent.skillName);
   };
 
   registry.on('skill.validation_error', errorHandler);

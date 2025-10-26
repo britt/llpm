@@ -302,7 +302,7 @@ export const getJobTool = tool({
     jobId: z.string().describe('The ID of the job')
   }),
   execute: async ({ agentId, jobId }) => {
-    const result = await brokerRequest<any>('GET', `/agents/${agentId}/jobs/${jobId}`);
+    const result = await brokerRequest<unknown>('GET', `/agents/${agentId}/jobs/${jobId}`);
 
     if (!result.success) {
       return `❌ Failed to get job: ${result.error}`;

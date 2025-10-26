@@ -184,7 +184,7 @@ export async function listProjectsV2(owner: string): Promise<GitHubProjectV2[]> 
     const octokitInstance = getOctokit();
 
     // Try as organization first, then fallback to user
-    let result: any;
+    let result: unknown;
     let projects: GitHubProjectV2[] = [];
 
     try {
@@ -384,7 +384,7 @@ export async function getProjectV2(owner: string, number: number): Promise<GitHu
     const octokitInstance = getOctokit();
 
     // Try as organization first, then fallback to user
-    let result: any;
+    let result: unknown;
     let project: GitHubProjectV2 | null = null;
 
     try {
@@ -1075,9 +1075,10 @@ export async function updateProjectV2ItemFieldValue(
     debug('Successfully updated project item field value:', item.id);
 
     return item;
-  } catch (error: any) {
+  } catch (error: unknown) {
     debug('Error updating project item field value:', error);
-    throw new Error(`Failed to update project item field value: ${error.message}`);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    throw new Error(`Failed to update project item field value: ${errorMessage}`);
   }
 }
 

@@ -170,7 +170,7 @@ export const updateGitHubIssueTool = tool({
       const { owner, repo, projectName } = await getProjectRepoInfo();
       debug(`Updating issue #${issueNumber} in ${owner}/${repo} for project ${projectName}`);
 
-      const updates: any = {};
+      const updates: Record<string, unknown> = {};
       if (title !== undefined) updates.title = title;
       if (body !== undefined) updates.body = body;
       if (state !== undefined) updates.state = state;

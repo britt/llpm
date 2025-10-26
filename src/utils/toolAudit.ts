@@ -10,8 +10,8 @@ import { getCurrentProjectDatabase } from './projectDatabase';
 export interface ToolAuditEntry {
   timestamp: string;
   toolName: string;
-  parameters: Record<string, any>;
-  result?: any;
+  parameters: Record<string, unknown>;
+  result?: unknown;
   error?: string;
   duration?: number;
   userId?: string;

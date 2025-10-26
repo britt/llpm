@@ -46,7 +46,7 @@ Skills are injected as additional context and their instructions become part of 
     const registry = getSkillRegistry();
     const results: Array<{ name: string; loaded: boolean; error?: string; description?: string }> =
       [];
-    const loadedSkills: any[] = [];
+    const loadedSkills: unknown[] = [];
 
     for (const skillName of skill_names) {
       const skill = registry.getSkill(skillName);
