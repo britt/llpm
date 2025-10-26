@@ -1,6 +1,6 @@
 ---
 name: mermaid-diagrams
-description: "Create visual diagrams using Mermaid syntax for documentation, architecture, workflows, and data models"
+description: "Guide for creating syntactically correct Mermaid diagrams that render properly on GitHub"
 tags:
   - diagram
   - visualization
@@ -9,6 +9,7 @@ tags:
   - sequence
   - architecture
   - documentation
+  - github
 ---
 
 # Mermaid Diagrams Skill
@@ -24,6 +25,53 @@ Use Mermaid syntax to create clear, maintainable diagrams directly in markdown. 
 - **Entity Relationship Diagrams**: Database design
 - **Gantt Charts**: Project timelines, task scheduling
 - **Git Graphs**: Branch strategies, release flows
+
+## IMPORTANT INSTRUCTIONS
+
+### 1. NEVER use parentheses inside a label
+
+**Using parentheses inside a label causes syntax errors when rendering on GitHub.**
+
+**NEVER DO THIS:**
+```mermaid
+flowchart TD
+  Start[Start agent loop (beginning)]
+  Criteria[Define completion criteria checklist 3-5]
+  ShowCriteria[Show criteria to user for approval]
+  CriteriaOK{User approved (causes errors)}
+```
+
+**ALWAYS DO THIS INSTEAD:**
+```mermaid
+flowchart TD
+  Start[Start agent loop - beginning]
+  Criteria[Define completion criteria checklist 3-5]
+  ShowCriteria[Show criteria to user for approval]
+  CriteriaOK{User approved}
+```
+
+### 2. ALWAYS ensure that labels are wrapped in matching brackets
+
+**Labels must have matching opening and closing brackets based on their shape.**
+
+**CORRECT - Matching brackets:**
+```mermaid
+flowchart TD
+  Start[Start agent loop]
+  Criteria[Define completion criteria checklist 3-5]
+  ShowCriteria[Show criteria to user for approval]
+  CriteriaOK{User approved}
+```
+
+**INCORRECT - Mismatched brackets:**
+```mermaid
+flowchart TD
+  Start[Start agent loop]
+  Criteria[Define completion criteria checklist 3-5]
+  ShowCriteria[Show criteria to user for approval]
+  CriteriaOK{User approved]
+```
+Notice that the brackets do not match on the label for CriteriaOK (`{` opens but `]` closes).
 
 ## Basic Syntax Examples
 
@@ -197,7 +245,9 @@ flowchart TD
 
 When asked to create diagrams:
 1. Choose the appropriate Mermaid diagram type
-2. Use clear, descriptive labels
-3. Keep complexity manageable
-4. Add a brief description above the diagram
-5. Verify syntax is correct (no trailing commas, proper formatting)
+2. **NEVER use parentheses inside labels** - use dashes or commas instead
+3. **ALWAYS ensure brackets match** - `[...]`, `{...}`, `(...)`, etc.
+4. Use clear, descriptive labels
+5. Keep complexity manageable
+6. Add a brief description above the diagram
+7. Verify syntax is correct (no trailing commas, proper formatting)
