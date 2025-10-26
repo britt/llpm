@@ -67,16 +67,17 @@ export const setProjectBoardTool = tool({
         result = await autoLinkProjectBoard(owner, projectNumber);
       }
 
+      const project = result.project as Record<string, unknown> | undefined;
       return {
         success: result.success,
         message: result.message,
         projectName: currentProject.name,
-        projectBoard: result.project
+        projectBoard: project
           ? {
-              id: result.project.id,
-              number: result.project.number,
-              title: result.project.title,
-              url: result.project.url
+              id: project.id as string,
+              number: project.number as number,
+              title: project.title as string,
+              url: project.url as string
             }
           : undefined
       };
