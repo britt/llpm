@@ -251,10 +251,10 @@ export class ProjectDatabase {
       `);
 
         const result = stmt.run(title, content, tagsString || null, embeddingBlob, now, now);
+        const resultWithId = result as { lastInsertRowid?: number };
+        const dbWithId = this.db as { lastInsertRowid?: number };
         const noteId =
-          (result as any)?.lastInsertRowid ||
-          (this.db as any).lastInsertRowid ||
-          Math.floor(Math.random() * 100000);
+          resultWithId?.lastInsertRowid || dbWithId.lastInsertRowid || Math.floor(Math.random() * 100000);
 
         span.setAttribute('note.id', noteId);
 
@@ -450,7 +450,8 @@ export class ProjectDatabase {
           if (!note.embedding) continue;
 
           // Convert blob back to Float32Array
-          const embeddingBuffer = Buffer.from(note.embedding as any);
+          const embeddingData = note.embedding as Buffer | Uint8Array;
+          const embeddingBuffer = Buffer.from(embeddingData);
           const noteEmbedding = new Float32Array(embeddingBuffer.buffer);
 
           const similarity = this.cosineSimilarity(queryEmbedding, noteEmbedding);
@@ -488,10 +489,10 @@ export class ProjectDatabase {
     `);
 
     const result = stmt.run(path, content, fileType, size, embeddingBlob, now, now);
+    const resultWithId = result as { lastInsertRowid?: number };
+    const dbWithId = this.db as { lastInsertRowid?: number };
     const fileId =
-      (result as any)?.lastInsertRowid ||
-      (this.db as any).lastInsertRowid ||
-      Math.floor(Math.random() * 100000);
+      resultWithId?.lastInsertRowid || dbWithId.lastInsertRowid || Math.floor(Math.random() * 100000);
 
     // Embedding is stored directly in the files table as a BLOB
     // No need for separate VSS table insertion (issue #58 fix)
@@ -587,7 +588,8 @@ export class ProjectDatabase {
       if (!file.embedding) continue;
 
       // Convert blob back to Float32Array
-      const embeddingBuffer = Buffer.from(file.embedding as any);
+      const embeddingData = file.embedding as Buffer | Uint8Array;
+      const embeddingBuffer = Buffer.from(embeddingData);
       const fileEmbedding = new Float32Array(embeddingBuffer.buffer);
 
       const similarity = this.cosineSimilarity(queryEmbedding, fileEmbedding);
