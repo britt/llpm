@@ -9,7 +9,6 @@ tags:
   - flowchart
   - sequence
   - architecture
-  - documentation
   - github
 ---
 
