@@ -7,6 +7,7 @@ export interface AgentConfig {
     opencode?: number;
   };
   authType?: 'api_key' | 'subscription';
+  agents?: Record<string, unknown>;
 }
 
 export interface Project {
