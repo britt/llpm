@@ -3,7 +3,29 @@ import { debug } from '../utils/logger';
 
 const BROKER_URL = process.env.REST_BROKER_URL || 'http://localhost:3010';
 
-async function brokerRequest(method: string, path: string, body?: unknown) {
+interface BrokerJob {
+  id: string;
+  agentId: string;
+  status: string;
+  createdAt: string;
+  startedAt?: string;
+  completedAt?: string;
+  error?: string;
+  payload?: unknown;
+  result?: unknown;
+}
+
+interface BrokerResponse<T = unknown> {
+  success: boolean;
+  data?: T;
+  error?: string;
+}
+
+async function brokerRequest<T = unknown>(
+  method: string,
+  path: string,
+  body?: unknown
+): Promise<BrokerResponse<T>> {
   try {
     const url = `${BROKER_URL}${path}`;
     const options: RequestInit = {
@@ -22,7 +44,7 @@ async function brokerRequest(method: string, path: string, body?: unknown) {
       };
     }
 
-    return { success: true, data };
+    return { success: true, data: data as T };
   } catch (error) {
     return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
   }
@@ -54,7 +76,10 @@ export const jobsCommand: Command = {
         params.append('limit', '50');
         params.append('offset', '0');
 
-        const result = await brokerRequest('GET', `/agents/${agentId}/jobs?${params}`);
+        const result = await brokerRequest<{ jobs: BrokerJob[]; total: number }>(
+          'GET',
+          `/agents/${agentId}/jobs?${params}`
+        );
 
         if (!result.success) {
           return {
@@ -63,7 +88,7 @@ export const jobsCommand: Command = {
           };
         }
 
-        const { jobs = [], total = 0 } = result.data || {};
+        const { jobs = [], total = 0 } = result.data || { jobs: [], total: 0 };
 
         if (jobs.length === 0) {
           return {
@@ -108,7 +133,7 @@ export const jobsCommand: Command = {
 
         const agentId = args[1];
         const jobId = args[2];
-        const result = await brokerRequest('GET', `/agents/${agentId}/jobs/${jobId}`);
+        const result = await brokerRequest<BrokerJob>('GET', `/agents/${agentId}/jobs/${jobId}`);
 
         if (!result.success) {
           return {
@@ -188,7 +213,11 @@ export const jobsCommand: Command = {
           };
         }
 
-        const result = await brokerRequest('POST', `/agents/${agentId}/jobs`, payload);
+        const result = await brokerRequest<{ jobId: string; status: string; createdAt: string }>(
+          'POST',
+          `/agents/${agentId}/jobs`,
+          payload
+        );
 
         if (!result.success) {
           return {
@@ -197,7 +226,11 @@ export const jobsCommand: Command = {
           };
         }
 
-        const { jobId, status, createdAt } = result.data || {};
+        const { jobId, status, createdAt } = result.data || {
+          jobId: '',
+          status: 'unknown',
+          createdAt: ''
+        };
 
         return {
           content: `✅ **Job Created Successfully**

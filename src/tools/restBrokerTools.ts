@@ -27,6 +27,7 @@ interface BrokerHealth {
   lastCheck?: string;
   authenticated?: boolean;
   authExpiresAt?: string;
+  authLastVerifiedAt?: string;
 }
 
 interface BrokerAgent {
@@ -39,6 +40,11 @@ interface BrokerAgent {
   provider?: string;
   model?: string;
   registeredAt?: string;
+  baseUrl?: string;
+  host?: string;
+  port?: number;
+  lastHeartbeat?: string;
+  metadata?: Record<string, unknown>;
 }
 
 interface BrokerJob {
@@ -78,9 +84,10 @@ async function brokerRequest<T>(
     const data = await response.json();
 
     if (!response.ok) {
+      const errorData = data as { message?: string };
       return {
         success: false,
-        error: data.message || `Request failed with status ${response.status}`
+        error: errorData.message || `Request failed with status ${response.status}`
       };
     }
 
@@ -223,7 +230,7 @@ export const checkAgentHealthTool = tool({
       return `❌ Agent not found: ${agentId}`;
     }
 
-    const health = agent.health || {};
+    const health: BrokerHealth = agent.health || { status: 'unknown' };
     const status = health.status === 'healthy' ? '✅' : health.status === 'unhealthy' ? '❌' : '❓';
 
     return `${status} **Health Check: ${agent.name}**
@@ -302,7 +309,7 @@ export const getJobTool = tool({
     jobId: z.string().describe('The ID of the job')
   }),
   execute: async ({ agentId, jobId }) => {
-    const result = await brokerRequest<unknown>('GET', `/agents/${agentId}/jobs/${jobId}`);
+    const result = await brokerRequest<BrokerJob>('GET', `/agents/${agentId}/jobs/${jobId}`);
 
     if (!result.success) {
       return `❌ Failed to get job: ${result.error}`;
@@ -674,13 +681,13 @@ export const scaleAgentClusterTool = tool({
         };
       } else if (preset) {
         // Use preset configuration
-        const presets = {
+        const presets: Record<string, { claude: number; codex: number; aider: number; opencode: number }> = {
           dev: { claude: 1, codex: 1, aider: 1, opencode: 1 },
           team: { claude: 1, codex: 2, aider: 2, opencode: 1 },
           heavy: { claude: 2, codex: 3, aider: 3, opencode: 2 },
           minimal: { claude: 0, codex: 0, aider: 1, opencode: 0 }
         };
-        config = presets[preset];
+        config = presets[preset as string];
       } else if (projectAgentConfig) {
         // Use project-specific agent config
         if (projectAgentConfig.customCounts) {

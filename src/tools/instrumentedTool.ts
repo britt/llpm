@@ -12,7 +12,8 @@ export function tool<
     description: string;
     inputSchema?: unknown;
     parameters?: unknown;
-    execute: (...args: unknown[]) => unknown;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    execute: (args: any) => any;
   }
 >(config: T): ReturnType<typeof baseTool> {
   // Use the explicit tool name from config, or auto-generate from description if not provided

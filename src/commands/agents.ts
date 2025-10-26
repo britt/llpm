@@ -9,7 +9,35 @@ const execAsync = promisify(exec);
 // Use fetch instead of axios for consistency
 const BROKER_URL = process.env.REST_BROKER_URL || 'http://localhost:3010';
 
-async function brokerRequest(method: string, path: string, body?: unknown) {
+interface BrokerAgent {
+  id: string;
+  name: string;
+  type: string;
+  status: string;
+  authType?: string;
+  provider?: string;
+  model?: string;
+  registeredAt?: string;
+  health?: {
+    status: string;
+    message?: string;
+    lastCheck?: string;
+    authenticated?: boolean;
+    authExpiresAt?: string;
+  };
+}
+
+interface BrokerResponse<T = unknown> {
+  success: boolean;
+  data?: T;
+  error?: string;
+}
+
+async function brokerRequest<T = unknown>(
+  method: string,
+  path: string,
+  body?: unknown
+): Promise<BrokerResponse<T>> {
   try {
     const url = `${BROKER_URL}${path}`;
     const options: RequestInit = {
@@ -28,7 +56,7 @@ async function brokerRequest(method: string, path: string, body?: unknown) {
       };
     }
 
-    return { success: true, data };
+    return { success: true, data: data as T };
   } catch (error) {
     return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
   }
@@ -44,7 +72,7 @@ export const agentsCommand: Command = {
 
     switch (subCommand) {
       case 'list': {
-        const result = await brokerRequest('GET', '/agents');
+        const result = await brokerRequest<{ agents: BrokerAgent[] }>('GET', '/agents');
 
         if (!result.success) {
           return {
@@ -98,7 +126,7 @@ export const agentsCommand: Command = {
         }
 
         const agentId = args[1];
-        const result = await brokerRequest('GET', `/agents/${agentId}`);
+        const result = await brokerRequest<{ agent: BrokerAgent }>('GET', `/agents/${agentId}`);
 
         if (!result.success) {
           return {
@@ -158,7 +186,7 @@ export const agentsCommand: Command = {
         }
 
         const agentId = args[1];
-        const result = await brokerRequest('GET', `/agents/${agentId}`);
+        const result = await brokerRequest<{ agent: BrokerAgent }>('GET', `/agents/${agentId}`);
 
         if (!result.success) {
           return {
@@ -200,7 +228,7 @@ export const agentsCommand: Command = {
         const agentId = args[1];
 
         // Get agent details to find container name
-        const result = await brokerRequest('GET', `/agents/${agentId}`);
+        const result = await brokerRequest<{ agent: BrokerAgent }>('GET', `/agents/${agentId}`);
 
         if (!result.success) {
           return {
