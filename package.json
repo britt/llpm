@@ -32,9 +32,12 @@
     "test:coverage:watch": "vitest --coverage --watch",
     "lint": "eslint . --ext .ts,.tsx",
     "lint:fix": "eslint . --ext .ts,.tsx --fix",
+    "lint:all": "bun run lint && bun run format:check && bun run typecheck",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "find:unused": "ts-prune --error --ignore 'index.ts|.test.ts|.test.tsx'",
+    "find:unused:verbose": "ts-prune"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^6.6.4",
@@ -53,6 +56,7 @@
     "ink-testing-library": "^4.0.0",
     "jsdom": "^26.1.0",
     "prettier": "^3.6.2",
+    "ts-prune": "^0.10.3",
     "vite": "^7.1.1",
     "vitest": "^3.2.4"
   },
