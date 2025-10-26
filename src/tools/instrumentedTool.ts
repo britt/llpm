@@ -10,9 +10,9 @@ export function tool<
   T extends {
     name?: string;
     description: string;
-    inputSchema?: any;
-    parameters?: any;
-    execute: (...args: any[]) => any;
+    inputSchema?: unknown;
+    parameters?: unknown;
+    execute: (...args: unknown[]) => unknown;
   }
 >(config: T): ReturnType<typeof baseTool> {
   // Use the explicit tool name from config, or auto-generate from description if not provided
@@ -28,7 +28,7 @@ export function tool<
   // Wrap the execute function with logging and tracing
   const instrumentedConfig = {
     ...config,
-    execute: async (args: any) => {
+    execute: async (args: unknown) => {
       return traced(
         `tool.${toolName}`,
         {
