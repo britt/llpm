@@ -85,6 +85,12 @@ export class SkillRegistry extends EventEmitter {
     skillPath: string,
     source: 'personal' | 'project'
   ): Promise<void> {
+    // Check if SKILL.md exists - if not, skip silently (allows organizational directories)
+    const skillFilePath = join(skillPath, 'SKILL.md');
+    if (!existsSync(skillFilePath)) {
+      return; // Not a skill directory, just skip
+    }
+
     const result = await parseSkillFile(skillPath, source);
 
     if (!result.valid) {
