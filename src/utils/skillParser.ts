@@ -45,6 +45,7 @@ export async function parseSkillFile(
     const skill: Skill = {
       name: frontmatter.name,
       description: frontmatter.description,
+      instructions: frontmatter.instructions,
       content: content.trim(),
       source,
       path: skillPath,

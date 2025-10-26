@@ -103,7 +103,11 @@ Skills are injected as additional context and their instructions become part of 
     summary.push('**Results:**');
     for (const result of results) {
       if (result.loaded) {
+        const skill = loadedSkills.find(s => s.name === result.name);
         summary.push(`  ✓ ${result.name}: ${result.description}`);
+        if (skill?.instructions) {
+          summary.push(`    Instructions: ${skill.instructions}`);
+        }
       } else {
         summary.push(`  ✗ ${result.name}: ${result.error}`);
       }
@@ -167,6 +171,9 @@ export const listAvailableSkillsTool = tool({
       lines.push('**Available Skills (Enabled):**');
       for (const skill of enabledSkills) {
         lines.push(`  • **${skill.name}**: ${skill.description}`);
+        if (skill.instructions) {
+          lines.push(`    _When to use: ${skill.instructions}_`);
+        }
         if (skill.tags && skill.tags.length > 0) {
           lines.push(`    Tags: ${skill.tags.join(', ')}`);
         }
@@ -194,6 +201,7 @@ export const listAvailableSkillsTool = tool({
       skills: enabledSkills.map(s => ({
         name: s.name,
         description: s.description,
+        instructions: s.instructions,
         tags: s.tags || [],
         source: s.source
       })),
