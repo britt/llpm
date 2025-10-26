@@ -9,7 +9,7 @@ const execAsync = promisify(exec);
 // Use fetch instead of axios for consistency
 const BROKER_URL = process.env.REST_BROKER_URL || 'http://localhost:3010';
 
-async function brokerRequest(method: string, path: string, body?: any) {
+async function brokerRequest(method: string, path: string, body?: unknown) {
   try {
     const url = `${BROKER_URL}${path}`;
     const options: RequestInit = {
@@ -64,20 +64,22 @@ export const agentsCommand: Command = {
         }
 
         const agentList = agents
-          .map((agent: any) => {
+          .map((agentData: unknown) => {
+            const agent = agentData as Record<string, unknown>;
+            const health = agent.health as Record<string, unknown> | undefined;
             const status =
               agent.status === 'available' ? '🟢' : agent.status === 'busy' ? '🟡' : '🔴';
-            const health =
-              agent.health?.status === 'healthy'
+            const healthStatus =
+              health?.status === 'healthy'
                 ? '✅'
-                : agent.health?.status === 'unhealthy'
+                : health?.status === 'unhealthy'
                   ? '❌'
                   : '❓';
-            const auth = agent.health?.authenticated ? '🔒' : '🔓';
+            const auth = health?.authenticated ? '🔒' : '🔓';
 
             return `${status} **${agent.name}** (${agent.id})
-  Status: ${agent.status} | Health: ${health} ${agent.health?.status || 'unknown'}
-  Auth: ${auth} ${agent.health?.authenticated ? 'authenticated' : 'not authenticated'}${agent.provider ? `\n  Provider: ${agent.provider}` : ''}${agent.model ? ` | Model: ${agent.model}` : ''}`;
+  Status: ${agent.status} | Health: ${healthStatus} ${health?.status || 'unknown'}
+  Auth: ${auth} ${health?.authenticated ? 'authenticated' : 'not authenticated'}${agent.provider ? `\n  Provider: ${agent.provider}` : ''}${agent.model ? ` | Model: ${agent.model}` : ''}`;
           })
           .join('\n\n');
 
