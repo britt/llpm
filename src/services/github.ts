@@ -79,6 +79,54 @@ export interface GitHubPullRequest {
   merged_at: string | null;
 }
 
+// GitHub API response types
+interface GitHubAPILabel {
+  name: string;
+  color: string;
+}
+
+interface GitHubAPIIssue {
+  id: number;
+  number: number;
+  title: string;
+  body: string | null;
+  state: string;
+  html_url: string;
+  user?: {
+    login: string;
+    html_url: string;
+  };
+  labels: Array<GitHubAPILabel | string>;
+  created_at: string;
+  updated_at: string;
+}
+
+interface GitHubAPIPullRequest {
+  id: number;
+  number: number;
+  title: string;
+  body: string | null;
+  state: string;
+  html_url: string;
+  user?: {
+    login: string;
+    html_url: string;
+  };
+  head: {
+    ref: string;
+    sha: string;
+  };
+  base: {
+    ref: string;
+    sha: string;
+  };
+  draft?: boolean;
+  mergeable?: boolean | null;
+  created_at: string;
+  updated_at: string;
+  merged_at: string | null;
+}
+
 let octokit: Octokit | null = null;
 
 async function getGitHubToken(): Promise<string> {
@@ -807,7 +855,7 @@ export async function getIssueWithComments(
         login: issueData.user?.login || 'unknown',
         html_url: issueData.user?.html_url || ''
       },
-      labels: issueData.labels.map((label: any) => ({
+      labels: issueData.labels.map((label: GitHubAPILabel | string) => ({
         name: typeof label === 'string' ? label : label.name || '',
         color: typeof label === 'string' ? '' : label.color || ''
       })),
@@ -922,7 +970,10 @@ export async function searchIssues(
       debug('📋 Parameters:', JSON.stringify(apiParams, null, 2));
     }
 
-    const { data } = await (octokit.rest.search as any).issues(apiParams);
+    const searchApi = octokit.rest.search as {
+      issues: (params: unknown) => Promise<{ data: { total_count: number; items: GitHubAPIIssue[] } }>;
+    };
+    const { data } = await searchApi.issues(apiParams);
 
     if (getVerbose()) {
       debug('✅ GitHub API Response: found', data.total_count, 'issues');
@@ -930,7 +981,7 @@ export async function searchIssues(
       debug(
         '📊 Response preview:',
         JSON.stringify(
-          data.items.slice(0, 2).map((issue: any) => ({
+          data.items.slice(0, 2).map((issue: GitHubAPIIssue) => ({
             number: issue.number,
             title: issue.title,
             state: issue.state,
@@ -943,7 +994,7 @@ export async function searchIssues(
       );
     }
 
-    const issues: GitHubIssue[] = data.items.map((issue: any) => ({
+    const issues: GitHubIssue[] = data.items.map((issue: GitHubAPIIssue) => ({
       id: issue.id,
       number: issue.number,
       title: issue.title,
@@ -1053,7 +1104,7 @@ export async function listPullRequests(
         sha: pr.base.sha
       },
       draft: pr.draft || false,
-      mergeable: (pr as any).mergeable,
+      mergeable: (pr as GitHubAPIPullRequest).mergeable || null,
       created_at: pr.created_at,
       updated_at: pr.updated_at,
       merged_at: pr.merged_at
@@ -1146,7 +1197,7 @@ export async function createPullRequest(
         sha: data.base.sha
       },
       draft: data.draft || false,
-      mergeable: (data as any).mergeable,
+      mergeable: data.mergeable || null,
       created_at: data.created_at,
       updated_at: data.updated_at,
       merged_at: data.merged_at
