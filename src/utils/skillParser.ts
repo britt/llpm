@@ -75,70 +75,71 @@ export async function parseSkillFile(
 /**
  * Validate frontmatter schema
  */
-function validateFrontmatter(data: any): string[] {
+function validateFrontmatter(data: unknown): string[] {
+  const dataRecord = data as Record<string, unknown>;
   const errors: string[] = [];
 
   // Required: name
-  if (!data.name) {
+  if (!dataRecord.name) {
     errors.push('Missing required field: name');
-  } else if (typeof data.name !== 'string') {
+  } else if (typeof dataRecord.name !== 'string') {
     errors.push('Field "name" must be a string');
-  } else if (data.name.length > 64) {
+  } else if (dataRecord.name.length > 64) {
     errors.push('Field "name" must be <=64 characters');
-  } else if (!/^[a-z0-9-]+$/.test(data.name)) {
+  } else if (!/^[a-z0-9-]+$/.test(dataRecord.name)) {
     errors.push('Field "name" must contain only lowercase letters, numbers, and hyphens');
   }
 
   // Required: description
-  if (!data.description) {
+  if (!dataRecord.description) {
     errors.push('Missing required field: description');
-  } else if (typeof data.description !== 'string') {
+  } else if (typeof dataRecord.description !== 'string') {
     errors.push('Field "description" must be a string');
-  } else if (data.description.length > 1024) {
+  } else if (dataRecord.description.length > 1024) {
     errors.push('Field "description" must be <=1024 characters');
   }
 
   // Required: instructions
-  if (!data.instructions) {
+  if (!dataRecord.instructions) {
     errors.push(
       'Missing required field: instructions - Skills without instructions will not be loaded into the system prompt'
     );
-  } else if (typeof data.instructions !== 'string') {
+  } else if (typeof dataRecord.instructions !== 'string') {
     errors.push('Field "instructions" must be a string');
-  } else if (data.instructions.trim().length === 0) {
+  } else if (dataRecord.instructions.trim().length === 0) {
     errors.push('Field "instructions" cannot be empty');
   }
 
   // Optional: allowed_tools
-  if (data.allowed_tools !== undefined) {
-    if (!Array.isArray(data.allowed_tools)) {
+  if (dataRecord.allowed_tools !== undefined) {
+    if (!Array.isArray(dataRecord.allowed_tools)) {
       errors.push('Field "allowed_tools" must be an array');
-    } else if (!data.allowed_tools.every((t: any) => typeof t === 'string')) {
+    } else if (!dataRecord.allowed_tools.every((t: unknown) => typeof t === 'string')) {
       errors.push('Field "allowed_tools" must be an array of strings');
     }
   }
 
   // Optional: tags
-  if (data.tags !== undefined) {
-    if (!Array.isArray(data.tags)) {
+  if (dataRecord.tags !== undefined) {
+    if (!Array.isArray(dataRecord.tags)) {
       errors.push('Field "tags" must be an array');
-    } else if (!data.tags.every((t: any) => typeof t === 'string')) {
+    } else if (!dataRecord.tags.every((t: unknown) => typeof t === 'string')) {
       errors.push('Field "tags" must be an array of strings');
     }
   }
 
   // Optional: vars
-  if (data.vars !== undefined) {
-    if (typeof data.vars !== 'object' || Array.isArray(data.vars)) {
+  if (dataRecord.vars !== undefined) {
+    if (typeof dataRecord.vars !== 'object' || Array.isArray(dataRecord.vars)) {
       errors.push('Field "vars" must be an object');
     }
   }
 
   // Optional: resources
-  if (data.resources !== undefined) {
-    if (!Array.isArray(data.resources)) {
+  if (dataRecord.resources !== undefined) {
+    if (!Array.isArray(dataRecord.resources)) {
       errors.push('Field "resources" must be an array');
-    } else if (!data.resources.every((r: any) => typeof r === 'string')) {
+    } else if (!dataRecord.resources.every((r: unknown) => typeof r === 'string')) {
       errors.push('Field "resources" must be an array of strings');
     }
   }
