@@ -26,7 +26,7 @@ export async function auditToolCall(entry: ToolAuditEntry): Promise<void> {
     const db = await getCurrentProjectDatabase();
     if (!db) {
       // No active project - log to console only
-      console.log('[TOOL AUDIT]', JSON.stringify(entry, null, 2));
+      console.warn('[TOOL AUDIT]', JSON.stringify(entry, null, 2));
       return;
     }
 
@@ -34,12 +34,12 @@ export async function auditToolCall(entry: ToolAuditEntry): Promise<void> {
     const title = `Tool Audit: ${entry.toolName}`;
     const content = formatAuditEntry(entry);
 
-    await db.addNote(title, content, 'tool-audit');
+    await db.addNote(title, content, ['tool-audit']);
     db.close();
   } catch (error) {
     // Non-fatal - log to console if note creation fails
     console.error('Failed to create audit note:', error);
-    console.log('[TOOL AUDIT]', JSON.stringify(entry, null, 2));
+    console.warn('[TOOL AUDIT]', JSON.stringify(entry, null, 2));
   }
 }
 

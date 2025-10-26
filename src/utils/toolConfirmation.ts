@@ -24,7 +24,7 @@ export type ConfirmationCheck = ConfirmationRequired | ConfirmationNotRequired;
  */
 export function requiresConfirmation(
   toolName: string,
-  params: Record<string, any>
+  params: Record<string, unknown>
 ): ConfirmationCheck {
   // Destructive operations that require confirmation
   const destructiveOps = [
@@ -50,7 +50,7 @@ export function requiresConfirmation(
 /**
  * Get human-readable operation description
  */
-function getOperationDescription(toolName: string, params: Record<string, any>): string {
+function getOperationDescription(toolName: string, params: Record<string, unknown>): string {
   switch (toolName) {
     case 'cancel_job':
       return `Cancel job ${params.jobId} for agent ${params.agentId}`;
@@ -70,7 +70,7 @@ function getOperationDescription(toolName: string, params: Record<string, any>):
 /**
  * Get detailed operation information
  */
-function getOperationDetails(toolName: string, _params: Record<string, any>): string {
+function getOperationDetails(toolName: string, _params: Record<string, unknown>): string {
   switch (toolName) {
     case 'cancel_job':
       return 'This will terminate the running job and mark it as cancelled. Any in-progress work will be lost.';
