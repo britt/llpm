@@ -106,7 +106,8 @@ export class CredentialManager {
 
     // Check current/active profile
     const activeProfileConfig = this.profileConfig?.profiles[currentProfile];
-    const activeCredential = (activeProfileConfig?.[provider] as any)?.[key];
+    const activeProviderConfig = activeProfileConfig?.[provider] as Record<string, unknown> | undefined;
+    const activeCredential = activeProviderConfig?.[key] as string | undefined;
 
     if (activeCredential) {
       debug(`Using credential from profile '${currentProfile}' for ${provider}.${key}`);
@@ -116,7 +117,8 @@ export class CredentialManager {
     // If not in current profile and current profile isn't default, check default profile
     if (currentProfile !== this.DEFAULT_PROFILE) {
       const defaultProfileConfig = this.profileConfig?.profiles[this.DEFAULT_PROFILE];
-      const defaultCredential = (defaultProfileConfig?.[provider] as any)?.[key];
+      const defaultProviderConfig = defaultProfileConfig?.[provider] as Record<string, unknown> | undefined;
+      const defaultCredential = defaultProviderConfig?.[key] as string | undefined;
 
       if (defaultCredential) {
         debug(`Using credential from default profile for ${provider}.${key}`);
@@ -233,12 +235,14 @@ export class CredentialManager {
     }
 
     // Ensure provider exists in profile
-    if (!this.profileConfig.profiles[targetProfile][provider]) {
-      (this.profileConfig.profiles[targetProfile] as any)[provider] = {};
+    const profile = this.profileConfig.profiles[targetProfile] as Record<string, unknown>;
+    if (!profile[provider]) {
+      profile[provider] = {};
     }
 
     // Set the credential
-    ((this.profileConfig.profiles[targetProfile] as any)[provider] as any)[key] = value;
+    const providerConfig = profile[provider] as Record<string, unknown>;
+    providerConfig[key] = value;
 
     await this.saveProfileConfig();
     debug(`Set credential for ${provider}.${key} in profile '${targetProfile}'`);
@@ -259,13 +263,14 @@ export class CredentialManager {
     }
 
     const targetProfile = profileName || this.getCurrentProfileName();
-    const profile = this.profileConfig.profiles[targetProfile];
+    const profile = this.profileConfig.profiles[targetProfile] as Record<string, unknown> | undefined;
 
     if (profile?.[provider]) {
-      delete ((profile as any)[provider] as any)[key];
+      const providerConfig = profile[provider] as Record<string, unknown>;
+      delete providerConfig[key];
 
       // If provider config is now empty, remove it entirely
-      if (Object.keys(profile[provider] as any).length === 0) {
+      if (Object.keys(providerConfig).length === 0) {
         delete profile[provider];
       }
 
@@ -457,7 +462,8 @@ export class CredentialManager {
 
       debug('Loaded profile configuration');
     } catch (error) {
-      if ((error as any).code === 'ENOENT') {
+      const nodeError = error as { code?: string };
+      if (nodeError.code === 'ENOENT') {
         debug('Profile config file does not exist, creating default');
         this.profileConfig = this.createDefaultProfileConfig();
       } else {
