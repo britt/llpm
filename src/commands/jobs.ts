@@ -3,7 +3,7 @@ import { debug } from '../utils/logger';
 
 const BROKER_URL = process.env.REST_BROKER_URL || 'http://localhost:3010';
 
-async function brokerRequest(method: string, path: string, body?: any) {
+async function brokerRequest(method: string, path: string, body?: unknown) {
   try {
     const url = `${BROKER_URL}${path}`;
     const options: RequestInit = {
@@ -73,7 +73,8 @@ export const jobsCommand: Command = {
         }
 
         const jobList = jobs
-          .map((job: any) => {
+          .map((jobData: unknown) => {
+            const job = jobData as Record<string, unknown>;
             const statusIcon =
               job.status === 'completed'
                 ? '✅'
@@ -86,7 +87,7 @@ export const jobsCommand: Command = {
                       : '⏳';
 
             return `${statusIcon} **Job ${job.id}**
-  Status: ${job.status} | Created: ${new Date(job.createdAt).toLocaleString()}${job.completedAt ? ` | Completed: ${new Date(job.completedAt).toLocaleString()}` : ''}${job.error ? `\n  Error: ${job.error}` : ''}`;
+  Status: ${job.status} | Created: ${new Date(job.createdAt as string).toLocaleString()}${job.completedAt ? ` | Completed: ${new Date(job.completedAt as string).toLocaleString()}` : ''}${job.error ? `\n  Error: ${job.error}` : ''}`;
           })
           .join('\n\n');
 
