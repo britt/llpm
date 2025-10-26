@@ -24,6 +24,10 @@ vi.mock('../services/SkillRegistry', () => {
     scan: vi.fn(async () => {
       // Simulate rescanning by keeping existing skills
     }),
+    // EventEmitter methods
+    on: vi.fn(),
+    removeListener: vi.fn(),
+    emit: vi.fn(),
     // Expose for test setup
     _setMockSkills: (skills: Map<string, Skill>) => {
       mockSkills = skills;
@@ -306,7 +310,7 @@ describe('/skills command', () => {
 
       expect(result.success).toBe(true);
       expect(result.content).toContain('Skills reloaded successfully');
-      expect(result.content).toContain('Discovered 2 skill(s)');
+      expect(result.content).toContain('Discovered: 2 skill(s)');
     });
 
     it('should call registry.scan()', async () => {
