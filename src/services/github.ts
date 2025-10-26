@@ -87,6 +87,7 @@ interface GitHubAPILabel {
 
 interface GitHubAPIIssue {
   id: number;
+  node_id: string;
   number: number;
   title: string;
   body: string | null;
@@ -597,6 +598,7 @@ export async function listIssues(
 
     const issues: GitHubIssue[] = data.map(issue => ({
       id: issue.id,
+      node_id: issue.node_id,
       number: issue.number,
       title: issue.title,
       body: issue.body || null,
@@ -676,6 +678,7 @@ export async function updateIssue(
 
     const issue: GitHubIssue = {
       id: data.id,
+      node_id: data.node_id,
       number: data.number,
       title: data.title,
       body: data.body || null,
@@ -848,14 +851,14 @@ export async function getIssueWithComments(
       node_id: issueData.node_id,
       number: issueData.number,
       title: issueData.title,
-      body: issueData.body,
+      body: issueData.body || null,
       state: issueData.state as 'open' | 'closed',
       html_url: issueData.html_url,
       user: {
         login: issueData.user?.login || 'unknown',
         html_url: issueData.user?.html_url || ''
       },
-      labels: issueData.labels.map((label: GitHubAPILabel | string) => ({
+      labels: (issueData.labels as Array<GitHubAPILabel | string>).map((label: GitHubAPILabel | string) => ({
         name: typeof label === 'string' ? label : label.name || '',
         color: typeof label === 'string' ? '' : label.color || ''
       })),
@@ -970,7 +973,7 @@ export async function searchIssues(
       debug('📋 Parameters:', JSON.stringify(apiParams, null, 2));
     }
 
-    const searchApi = octokit.rest.search as {
+    const searchApi = octokit.rest.search as unknown as {
       issues: (params: unknown) => Promise<{ data: { total_count: number; items: GitHubAPIIssue[] } }>;
     };
     const { data } = await searchApi.issues(apiParams);
@@ -996,6 +999,7 @@ export async function searchIssues(
 
     const issues: GitHubIssue[] = data.items.map((issue: GitHubAPIIssue) => ({
       id: issue.id,
+      node_id: issue.node_id,
       number: issue.number,
       title: issue.title,
       body: issue.body || null,
