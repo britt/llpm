@@ -138,7 +138,7 @@ export function RequestLogDisplay() {
             logMapRef.current.delete(placeholderEntry[0]);
           } else if (entries.length >= MAX_VISIBLE_LOGS) {
             // Remove the oldest entry (first in the sorted array)
-            logMapRef.current.delete(entries[0][0]);
+            logMapRef.current.delete(entries[0]![0]);
           }
 
           logMapRef.current.set(newLog.key, newLog);
@@ -185,7 +185,7 @@ export function RequestLogDisplay() {
             logMapRef.current.delete(placeholderEntry[0]);
           } else if (entries.length >= MAX_VISIBLE_LOGS) {
             // Remove the oldest entry (first in the sorted array)
-            logMapRef.current.delete(entries[0][0]);
+            logMapRef.current.delete(entries[0]![0]);
           }
 
           logMapRef.current.set(newLog.key, newLog);
@@ -265,7 +265,7 @@ function renderProcessedLog(log: ProcessedLog) {
       </Box>
     );
   } else if (log.metadata?.error) {
-    return <Task key={log.key} label={label} state="error" status={log.metadata.error} />;
+    return <Task key={log.key} label={label} state="error" status={String(log.metadata.error)} />;
   } else {
     return <Task key={log.key} label={label} state="pending" />;
   }
