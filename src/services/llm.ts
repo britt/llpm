@@ -6,7 +6,6 @@ import { getSystemPrompt } from '../utils/systemPrompt';
 import { modelRegistry } from './modelRegistry';
 import { RequestContext } from '../utils/requestContext';
 import { traced, getTracer } from '../utils/tracing';
-import { getSkillRegistry } from './SkillRegistry';
 
 const MAX_STEPS = 35;
 
@@ -36,57 +35,10 @@ export async function generateResponse(messages: Message[]): Promise<{ response:
         content: systemPromptContent
       };
 
-      // Extract last user message for skill selection
-      const lastUserMessage = messages
-        .filter(msg => msg.role === 'user')
-        .pop()?.content;
-
-      // Find relevant skills based on user message
-      let skillsMessage: ModelMessage | null = null;
+      // Skills are no longer automatically injected - model must use load_skills tool
       const selectedSkillNames: string[] = [];
-      if (lastUserMessage) {
-        try {
-          const skillRegistry = getSkillRegistry();
-          debug('Looking for relevant skills for message:', lastUserMessage.substring(0, 50));
-          const matchedSkills = skillRegistry.findRelevant({ userMessage: lastUserMessage });
-          debug(`Found ${matchedSkills.length} matching skills`);
 
-          if (matchedSkills.length > 0) {
-            debug(`Injecting ${matchedSkills.length} skill(s) as assistant message`);
-            debug('Matched skill names:', matchedSkills.map(r => r.skill.name).join(', '));
-            const skills = matchedSkills.map(r => r.skill);
-            const skillsContent = await skillRegistry.generatePromptAugmentation(skills);
-
-            if (skillsContent) {
-              skillsMessage = {
-                role: 'assistant' as const,
-                content: `I'll use the following skills as helpful instructions for answering your next question:\n\n${skillsContent}`
-              };
-
-              // Collect selected skill names for UI display
-              selectedSkillNames.push(...matchedSkills.map(r => r.skill.name));
-              debug('Selected skill names for UI:', selectedSkillNames);
-
-              // Emit selection events
-              for (const result of matchedSkills) {
-                debug('Emitting skill.selected event for:', result.skill.name);
-                skillRegistry.emit('skill.selected', {
-                  type: 'skill.selected',
-                  skillName: result.skill.name,
-                  rationale: result.rationale
-                });
-              }
-
-              span.setAttribute('skills.selected_count', matchedSkills.length);
-              span.setAttribute('skills.names', matchedSkills.map(r => r.skill.name).join(', '));
-            }
-          }
-        } catch (error) {
-          debug('Error selecting skills:', error);
-        }
-      }
-
-      // Build messages array with skill injection before last user message
+      // Build messages array
       const conversationMessages = messages
         .filter(msg => msg.role !== 'ui-notification')
         .map(msg => ({
@@ -94,16 +46,7 @@ export async function generateResponse(messages: Message[]): Promise<{ response:
           content: msg.content
         } as ModelMessage));
 
-      const allMessages: ModelMessage[] = [systemMessage];
-
-      if (skillsMessage && conversationMessages.length > 0) {
-        // Insert skill message before the last user message
-        allMessages.push(...conversationMessages.slice(0, -1));
-        allMessages.push(skillsMessage);
-        allMessages.push(conversationMessages[conversationMessages.length - 1]);
-      } else {
-        allMessages.push(...conversationMessages);
-      }
+      const allMessages: ModelMessage[] = [systemMessage, ...conversationMessages];
 
       const tools = await getToolRegistry();
       const toolCount = Object.keys(tools).length;

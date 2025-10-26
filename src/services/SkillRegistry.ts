@@ -122,7 +122,6 @@ export class SkillRegistry extends EventEmitter {
    * Matching criteria:
    * 1. User message contains skill name
    * 2. User message contains any skill tag
-   * 3. User message has keyword overlap with description
    */
   findRelevant(context: SkillActivationContext): SkillActivationResult[] {
     const results: SkillActivationResult[] = [];
@@ -170,16 +169,16 @@ export class SkillRegistry extends EventEmitter {
     }
 
     // Check 3: Description keyword overlap
-    const descriptionWords = skill.description
-      .toLowerCase()
-      .split(/\s+/)
-      .filter(w => w.length > 3);
-    const messageWords = userMessageLower.split(/\s+/);
-    const hasOverlap = descriptionWords.some(word => messageWords.includes(word));
+    // const descriptionWords = skill.description
+    //   .toLowerCase()
+    //   .split(/\s+/)
+    //   .filter(w => w.length > 3);
+    // const messageWords = userMessageLower.split(/\s+/);
+    // const hasOverlap = descriptionWords.some(word => messageWords.includes(word));
 
-    if (hasOverlap) {
-      return { reason: 'description keywords' };
-    }
+    // if (hasOverlap) {
+    //   return { reason: 'description keywords' };
+    // }
 
     return null;
   }

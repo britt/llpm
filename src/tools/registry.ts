@@ -86,6 +86,7 @@ import {
   removeProjectAgentConfigTool
 } from './projectAgentConfigTools';
 import { askUserTool } from './askUserTool';
+import { loadSkillsTool, listAvailableSkillsTool } from './skillTools';
 
 const toolRegistry: ToolRegistry = {
   get_current_project: getCurrentProjectTool,
@@ -165,7 +166,10 @@ const toolRegistry: ToolRegistry = {
   get_project_agent_config: getProjectAgentConfigTool,
   remove_project_agent_config: removeProjectAgentConfigTool,
   // Interactive User Input
-  ask_user: askUserTool
+  ask_user: askUserTool,
+  // Skills Management
+  load_skills: loadSkillsTool,
+  list_available_skills: listAvailableSkillsTool
 };
 
 export async function getToolRegistry(): Promise<ToolRegistry> {
