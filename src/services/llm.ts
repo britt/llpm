@@ -92,11 +92,11 @@ export async function generateResponse(
         });
 
         // Log LLM call end with token counts if available
-        const metadata: any = { status: 200 };
+        const metadata: Record<string, unknown> = { status: 200 };
         if (result.usage) {
-          metadata.tokensIn =
-            (result.usage as any).promptTokens || (result.usage as any).totalTokens;
-          metadata.tokensOut = (result.usage as any).completionTokens;
+          const usage = result.usage as { promptTokens?: number; totalTokens?: number; completionTokens?: number };
+          metadata.tokensIn = usage.promptTokens || usage.totalTokens;
+          metadata.tokensOut = usage.completionTokens;
 
           // Add token counts to span
           span.setAttribute('llm.usage.prompt_tokens', metadata.tokensIn || 0);
@@ -116,8 +116,8 @@ export async function generateResponse(
         debug('Steps count:', result.steps?.length || 0);
 
         // Collect all tool calls and results from all steps
-        const allToolCalls: any[] = [];
-        const allToolResults: any[] = [];
+        const allToolCalls: unknown[] = [];
+        const allToolResults: unknown[] = [];
         const toolNames = new Set<string>();
 
         if (result.steps) {
@@ -148,9 +148,10 @@ export async function generateResponse(
         // Check for user messages in tool results that should be displayed directly
         const userMessages: string[] = [];
         for (const toolResult of allToolResults) {
-          if (toolResult.output && typeof toolResult.output === 'object') {
-            const resultObj = toolResult.output as any;
-            if (resultObj.userMessage) {
+          const tr = toolResult as { output?: unknown };
+          if (tr.output && typeof tr.output === 'object') {
+            const resultObj = tr.output as Record<string, unknown>;
+            if (typeof resultObj.userMessage === 'string') {
               userMessages.push(resultObj.userMessage);
             }
           }
