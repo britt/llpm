@@ -27,6 +27,7 @@
     "noPropertyAccessFromIndexSignature": false
   },
   "exclude": [
-    "test-*.ts"
+    "test-*.ts",
+    "docker/**/*"
   ]
 }
