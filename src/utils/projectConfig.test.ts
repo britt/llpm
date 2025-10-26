@@ -1,5 +1,5 @@
 import '../../test/setup';
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import type { ProjectConfig, Project } from '../types/project';
 
 // Import functions - use real implementations with temp files
@@ -13,7 +13,7 @@ import {
 } from './projectConfig';
 
 describe('Project Board Configuration', () => {
-  const mockProject: Project = {
+  const _mockProject: Project = {
     id: 'test-project',
     name: 'Test Project',
     description: 'A test project',
@@ -83,7 +83,7 @@ describe('Project Config Caching', () => {
     await saveProjectConfig(config1);
 
     // Next load should be a cache miss (cache was invalidated)
-    const config2 = await loadProjectConfig();
+    const _config2 = await loadProjectConfig();
     const stats2 = getProjectConfigCacheStats();
 
     expect(stats2.misses).toBeGreaterThan(initialMisses);

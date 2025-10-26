@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { readWebPageTool, summarizeWebPageTool } from './webContentTools';
 
 // Mock URLs for testing

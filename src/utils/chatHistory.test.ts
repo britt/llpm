@@ -1,4 +1,4 @@
-import { test, expect, describe, beforeEach, afterEach } from 'vitest';
+import { test, expect, describe, afterEach } from 'vitest';
 import { MessageToLogString, LogStringToMessage, saveChatHistory, loadChatHistory, flushChatHistory } from './chatHistory';
 import type { Message } from '../types';
 import { unlink } from 'fs/promises';

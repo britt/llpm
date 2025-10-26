@@ -205,7 +205,7 @@ describe('systemPrompt', () => {
     });
 
     it('should insert context before Core Context section', async () => {
-      const basePrompt = `Some intro\n\n## Core Context\nBase content`;
+      const _basePrompt = `Some intro\n\n## Core Context\nBase content`;
       const mockProject: Project = {
         id: 'test',
         name: 'Test',
@@ -225,7 +225,7 @@ describe('systemPrompt', () => {
     });
 
     it('should handle prompt without Core Context section', async () => {
-      const basePrompt = `## 🎯 Active Project Context\nInfo\n\n## Other Section\nContent`;
+      const _basePrompt = `## 🎯 Active Project Context\nInfo\n\n## Other Section\nContent`;
       const mockProject: Project = {
         id: 'test',
         name: 'Test',
@@ -243,7 +243,7 @@ describe('systemPrompt', () => {
     });
 
     it('should use fallback insertion when no known sections found', async () => {
-      const basePrompt = `Line 1\n\nLine 3`;
+      const _basePrompt = `Line 1\n\nLine 3`;
       const mockProject: Project = {
         id: 'test',
         name: 'Test',
@@ -346,7 +346,7 @@ describe('systemPrompt', () => {
     });
 
     it('should handle errors in project path processing', async () => {
-      const basePrompt = `## Core Context\nBase content`;
+      const _basePrompt = `## Core Context\nBase content`;
       const mockProject = {
         id: 'test',
         name: 'Test',
@@ -371,7 +371,7 @@ describe('systemPrompt', () => {
     });
 
     it('should handle errors in project board processing', async () => {
-      const basePrompt = `## Core Context\nBase content`;
+      const _basePrompt = `## Core Context\nBase content`;
       const mockProject = {
         id: 'test',
         name: 'Test',
@@ -396,7 +396,7 @@ describe('systemPrompt', () => {
     });
 
     it('should handle errors in repository processing', async () => {
-      const basePrompt = `## Core Context\nBase content`;
+      const _basePrompt = `## Core Context\nBase content`;
       const mockProject = {
         id: 'test',
         name: 'Test',
@@ -419,7 +419,7 @@ describe('systemPrompt', () => {
     });
 
     it('should handle errors in formatProjectContext', async () => {
-      const basePrompt = `## Core Context\nBase content`;
+      const _basePrompt = `## Core Context\nBase content`;
       // Create a project that will cause formatProjectContext to throw
       const mockProject = {
         get name() {
@@ -437,7 +437,7 @@ describe('systemPrompt', () => {
     });
 
     it('should handle errors in insert operation', async () => {
-      const basePrompt = `## Core Context\nBase content`;
+      const _basePrompt = `## Core Context\nBase content`;
       const mockProject: Project = {
         id: 'test',
         name: 'Test',
@@ -468,7 +468,7 @@ describe('systemPrompt', () => {
     });
 
     it('should handle unexpected errors in project context injection', async () => {
-      const basePrompt = `## Core Context\nBase content`;
+      const _basePrompt = `## Core Context\nBase content`;
 
       vi.mocked(fs.existsSync).mockReturnValue(false);
       vi.mocked(projectConfig.getCurrentProject).mockImplementation(() => {

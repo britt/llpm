@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { debug, getRecentDebugLogs, setVerbose } from './logger';
+import { debug, getRecentDebugLogs } from './logger';
 
 describe('logger', () => {
   beforeEach(() => {

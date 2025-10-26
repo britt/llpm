@@ -4,7 +4,7 @@ import { describe, it, expect } from 'vitest';
 describe.skip('ChatInterface Basic Tests', () => {
   const messages = [];
   
-  const __mockProps = {
+  const ___mockProps = {
     messages,
     onSendMessage: () => {},
     onAddSystemMessage: () => {},
