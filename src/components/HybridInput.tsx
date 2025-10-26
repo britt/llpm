@@ -114,7 +114,6 @@ export default function HybridInput({
 
     // Handle return key
     if (key.return) {
-      debug('return', inputStateRef.current.input);
       const currentInput = inputStateRef.current.input.trim();
       onSubmit?.(currentInput);
       

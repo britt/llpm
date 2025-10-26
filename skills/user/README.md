@@ -14,7 +14,7 @@ This directory is for your personal custom skills. Skills are reusable instructi
 ---
 name: my-skill-name
 description: "Brief description of what this skill does (max 1024 chars)"
-instructions: "When asked to [action], [what to do]"
+instructions: "When asked to [action], [what to do]"  # REQUIRED!
 tags:
   - tag1
   - tag2
@@ -36,20 +36,25 @@ Instructions, examples, best practices...
 More guidance...
 ```
 
+**⚠️ IMPORTANT**: The `instructions` field is **REQUIRED**. Skills without this field will fail validation and will not be loaded!
+
 ## Frontmatter Fields
 
 ### Required Fields
 
 - **`name`**: Unique identifier for your skill (lowercase letters, numbers, and hyphens only, max 64 chars)
 - **`description`**: Brief description of what the skill does and when to use it (max 1024 chars)
+- **`instructions`**: Single-line guidance on when to use this skill. **MANDATORY - Skills without instructions will not be loaded!**
 
-### Optional Fields
+  **CRITICAL FORMAT REQUIREMENT**: Must start with "When" and follow the pattern: `"When asked to [action], [guidance]"`
 
-- **`instructions`**: Single-line guidance on when to use this skill. **IMPORTANT**: Must start with "When" and follow the pattern: `"When asked to [action], [guidance]"`
   - ✅ Good: `"When asked to create diagrams, use this skill for Mermaid syntax"`
   - ✅ Good: `"When writing API documentation, follow REST conventions"`
   - ❌ Bad: `"Use this skill for diagrams"` (doesn't start with "When")
   - ❌ Bad: `"Creating diagrams"` (not a complete sentence)
+  - ❌ **Will fail validation**: Skills without this field will be rejected during loading
+
+### Optional Fields
 
 - **`tags`**: Array of tags for filtering and discovery
   ```yaml

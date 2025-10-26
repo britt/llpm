@@ -136,7 +136,6 @@ export function useChat() {
   // Process a message immediately (internal function)
   const processMessageImmediate = useCallback(
     async (content: string) => {
-      debug('processMessageImmediate called with:', content);
       
       // If we're in the middle of a project switch, wait for it to complete
       if (isProjectSwitching) {
@@ -355,8 +354,6 @@ export function useChat() {
 
   const sendMessage = useCallback(
     async (content: string) => {
-      debug('sendMessage called with:', content);
-
       // Don't process empty messages
       const trimmedContent = content.trim();
       if (!trimmedContent) {

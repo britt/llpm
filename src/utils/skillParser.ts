@@ -95,6 +95,15 @@ function validateFrontmatter(data: any): string[] {
     errors.push('Field "description" must be <=1024 characters');
   }
 
+  // Required: instructions
+  if (!data.instructions) {
+    errors.push('Missing required field: instructions - Skills without instructions will not be loaded into the system prompt');
+  } else if (typeof data.instructions !== 'string') {
+    errors.push('Field "instructions" must be a string');
+  } else if (data.instructions.trim().length === 0) {
+    errors.push('Field "instructions" cannot be empty');
+  }
+
   // Optional: allowed_tools
   if (data.allowed_tools !== undefined) {
     if (!Array.isArray(data.allowed_tools)) {
