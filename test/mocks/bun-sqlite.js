@@ -29,6 +29,6 @@ export class Database {
   }
 }
 
-// Export Database as both named and default export
-export { Database };
+// Database is already exported as named export above (line 2)
+// Export as default as well
 export default Database;

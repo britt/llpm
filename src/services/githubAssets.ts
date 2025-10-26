@@ -285,7 +285,7 @@ export async function uploadFilesToGitHub(
 /**
  * Get MIME type for common image formats
  */
-function _getMimeType(filename: string): string {
+function __getMimeType(filename: string): string {
   const ext = filename.toLowerCase().split('.').pop();
   switch (ext) {
     case 'png': return 'image/png';
