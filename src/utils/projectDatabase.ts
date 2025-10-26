@@ -334,7 +334,7 @@ export class ProjectDatabase {
     const contentChanged =
       (title && title !== existing.title) || (content && content !== existing.content);
 
-    let embedding: Float32Array | undefined;
+    let embedding: Float32Array | null | undefined;
     let embeddingBlob: Buffer | null = null;
 
     if (contentChanged) {
@@ -450,7 +450,7 @@ export class ProjectDatabase {
           if (!note.embedding) continue;
 
           // Convert blob back to Float32Array
-          const embeddingData = note.embedding as Buffer | Uint8Array;
+          const embeddingData = note.embedding as unknown as Buffer | Uint8Array;
           const embeddingBuffer = Buffer.from(embeddingData);
           const noteEmbedding = new Float32Array(embeddingBuffer.buffer);
 
@@ -464,7 +464,7 @@ export class ProjectDatabase {
 
         span.setAttribute('search.results', limitedResults.length);
         if (limitedResults.length > 0) {
-          span.setAttribute('search.top_similarity', limitedResults[0].similarity);
+          span.setAttribute('search.top_similarity', limitedResults[0]!.similarity);
         }
 
         return limitedResults;
@@ -588,7 +588,7 @@ export class ProjectDatabase {
       if (!file.embedding) continue;
 
       // Convert blob back to Float32Array
-      const embeddingData = file.embedding as Buffer | Uint8Array;
+      const embeddingData = file.embedding as unknown as Buffer | Uint8Array;
       const embeddingBuffer = Buffer.from(embeddingData);
       const fileEmbedding = new Float32Array(embeddingBuffer.buffer);
 
