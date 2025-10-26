@@ -30,13 +30,13 @@ function extractTextFromHTML(html: string): {
 
   // Extract title
   const titleMatch = cleanHtml.match(/<title[^>]*>([\s\S]*?)<\/title>/i);
-  const title = titleMatch ? titleMatch[1].trim() : undefined;
+  const title = titleMatch && titleMatch[1] ? titleMatch[1].trim() : undefined;
 
   // Extract meta description
   const descMatch = cleanHtml.match(
     /<meta[^>]*name=['"]description['"][^>]*content=['"]([^'"]*)['"]/i
   );
-  const description = descMatch ? descMatch[1].trim() : undefined;
+  const description = descMatch && descMatch[1] ? descMatch[1].trim() : undefined;
 
   // Remove HTML tags and decode entities
   let textContent = cleanHtml.replace(/<[^>]*>/g, ' ');
@@ -103,6 +103,110 @@ function normalizeUrl(url: string): string {
       throw error;
     }
     throw new Error(`Invalid URL format: ${url}`);
+  }
+}
+
+/**
+ * Read and parse web page content (shared logic for tools)
+ */
+async function readAndParseWebPage(
+  url: string,
+  maxLength: number = 10000,
+  timeout: number = 10000
+): Promise<
+  | {
+      success: true;
+      url: string;
+      title?: string;
+      description?: string;
+      content: string;
+      contentType: string;
+      wordCount: number;
+      readingTime: number;
+      contentLength: number;
+      originalLength: number;
+      truncated: boolean;
+      extractedAt: string;
+    }
+  | { success: false; url: string; error: string }
+> {
+  try {
+    // Normalize and validate URL
+    const normalizedUrl = normalizeUrl(url);
+
+    // Fetch content from URL
+    const { content: rawContent, contentType } = await fetchWebContent(normalizedUrl, timeout);
+
+    let parsedContent: ParsedContent;
+
+    // Process content based on type
+    if (contentType.includes('text/html') || contentType.includes('application/xhtml')) {
+      const { title, content, description } = extractTextFromHTML(rawContent);
+      const wordCount = content.split(/\s+/).length;
+
+      parsedContent = {
+        title,
+        content,
+        description,
+        url: normalizedUrl,
+        contentType: 'text/html',
+        wordCount,
+        readingTime: calculateReadingTime(wordCount)
+      };
+    } else if (contentType.includes('text/plain')) {
+      const wordCount = rawContent.split(/\s+/).length;
+
+      parsedContent = {
+        content: rawContent.trim(),
+        url: normalizedUrl,
+        contentType: 'text/plain',
+        wordCount,
+        readingTime: calculateReadingTime(wordCount)
+      };
+    } else {
+      // Try to extract text anyway for other content types
+      const { title, content, description } = extractTextFromHTML(rawContent);
+      const wordCount = content.split(/\s+/).length;
+
+      parsedContent = {
+        title,
+        content,
+        description,
+        url: normalizedUrl,
+        contentType,
+        wordCount,
+        readingTime: calculateReadingTime(wordCount)
+      };
+    }
+
+    // Truncate content if too long
+    let finalContent = parsedContent.content;
+    if (finalContent.length > maxLength) {
+      finalContent = finalContent.substring(0, maxLength) + '... [Content truncated]';
+    }
+
+    return {
+      success: true,
+      url: parsedContent.url,
+      title: parsedContent.title,
+      description: parsedContent.description,
+      content: finalContent,
+      contentType: parsedContent.contentType,
+      wordCount: parsedContent.wordCount,
+      readingTime: parsedContent.readingTime,
+      contentLength: finalContent.length,
+      originalLength: parsedContent.content.length,
+      truncated: parsedContent.content.length > maxLength,
+      extractedAt: new Date().toISOString()
+    };
+  } catch (error) {
+    debug('Web content reading error:', error);
+
+    return {
+      success: false,
+      url,
+      error: error instanceof Error ? error.message : 'Unknown error occurred while reading web page'
+    };
   }
 }
 
@@ -176,86 +280,7 @@ export const readWebPageTool = tool({
   }),
   execute: async ({ url, maxLength = 10000, timeout = 10000 }) => {
     debug('Reading web page:', { url, maxLength, timeout });
-
-    try {
-      // Normalize and validate URL
-      const normalizedUrl = normalizeUrl(url);
-
-      // Fetch content from URL
-      const { content: rawContent, contentType } = await fetchWebContent(normalizedUrl, timeout);
-
-      let parsedContent: ParsedContent;
-
-      // Process content based on type
-      if (contentType.includes('text/html') || contentType.includes('application/xhtml')) {
-        const { title, content, description } = extractTextFromHTML(rawContent);
-        const wordCount = content.split(/\s+/).length;
-
-        parsedContent = {
-          title,
-          content,
-          description,
-          url: normalizedUrl,
-          contentType: 'text/html',
-          wordCount,
-          readingTime: calculateReadingTime(wordCount)
-        };
-      } else if (contentType.includes('text/plain')) {
-        const wordCount = rawContent.split(/\s+/).length;
-
-        parsedContent = {
-          content: rawContent.trim(),
-          url: normalizedUrl,
-          contentType: 'text/plain',
-          wordCount,
-          readingTime: calculateReadingTime(wordCount)
-        };
-      } else {
-        // Try to extract text anyway for other content types
-        const { title, content, description } = extractTextFromHTML(rawContent);
-        const wordCount = content.split(/\s+/).length;
-
-        parsedContent = {
-          title,
-          content,
-          description,
-          url: normalizedUrl,
-          contentType,
-          wordCount,
-          readingTime: calculateReadingTime(wordCount)
-        };
-      }
-
-      // Truncate content if too long
-      let finalContent = parsedContent.content;
-      if (finalContent.length > maxLength) {
-        finalContent = finalContent.substring(0, maxLength) + '... [Content truncated]';
-      }
-
-      return {
-        success: true,
-        url: parsedContent.url,
-        title: parsedContent.title,
-        description: parsedContent.description,
-        content: finalContent,
-        contentType: parsedContent.contentType,
-        wordCount: parsedContent.wordCount,
-        readingTime: parsedContent.readingTime,
-        contentLength: finalContent.length,
-        originalLength: parsedContent.content.length,
-        truncated: parsedContent.content.length > maxLength,
-        extractedAt: new Date().toISOString()
-      };
-    } catch (error) {
-      debug('Web content reading error:', error);
-
-      return {
-        success: false,
-        url,
-        error:
-          error instanceof Error ? error.message : 'Unknown error occurred while reading web page'
-      };
-    }
+    return readAndParseWebPage(url, maxLength, timeout);
   }
 });
 
@@ -280,11 +305,7 @@ export const summarizeWebPageTool = tool({
 
     try {
       // First, read the web page content
-      const contentResult = await readWebPageTool.execute({
-        url,
-        maxLength: maxContentLength,
-        timeout: 15000
-      });
+      const contentResult = await readAndParseWebPage(url, maxContentLength, 15000);
 
       if (!contentResult.success) {
         return {
@@ -309,10 +330,10 @@ export const summarizeWebPageTool = tool({
 
       // Basic key point extraction (simple approach)
       const content = contentResult.content;
-      const sentences = content.split(/[.!?]+/).filter(s => s.trim().length > 50);
+      const sentences = content.split(/[.!?]+/).filter((s: string) => s.trim().length > 50);
 
       // Take first few sentences as key points
-      summary.keyPoints = sentences.slice(0, 5).map(s => s.trim());
+      summary.keyPoints = sentences.slice(0, 5).map((s: string) => s.trim());
 
       // Look for focus areas if specified
       if (focusAreas && focusAreas.length > 0) {
