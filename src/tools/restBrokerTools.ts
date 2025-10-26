@@ -20,13 +20,46 @@ const execAsync = promisify(exec);
 // Default REST broker URL (can be overridden via env)
 const BROKER_URL = process.env.REST_BROKER_URL || 'http://localhost:3010';
 
+// REST Broker API Types
+interface BrokerHealth {
+  status: 'healthy' | 'unhealthy' | 'unknown';
+  message?: string;
+  lastCheck?: string;
+  authenticated?: boolean;
+  authExpiresAt?: string;
+}
+
+interface BrokerAgent {
+  id: string;
+  name: string;
+  type: string;
+  status: 'available' | 'busy' | 'offline';
+  health?: BrokerHealth;
+  authType?: string;
+  provider?: string;
+  model?: string;
+  registeredAt?: string;
+}
+
+interface BrokerJob {
+  id: string;
+  agentId: string;
+  status: 'pending' | 'running' | 'completed' | 'failed' | 'cancelled';
+  createdAt: string;
+  startedAt?: string;
+  completedAt?: string;
+  payload?: unknown;
+  result?: unknown;
+  error?: string;
+}
+
 /**
  * Helper to make REST broker API calls
  */
 async function brokerRequest<T>(
   method: string,
   path: string,
-  body?: any
+  body?: unknown
 ): Promise<{ success: boolean; data?: T; error?: string }> {
   try {
     const url = `${BROKER_URL}${path}`;
@@ -77,7 +110,7 @@ export const listAgentsTool = tool({
   }),
   execute: async ({ verifyAuth }) => {
     const queryParam = verifyAuth ? '?verifyAuth=true' : '';
-    const result = await brokerRequest<{ agents: any[] }>('GET', `/agents${queryParam}`);
+    const result = await brokerRequest<{ agents: BrokerAgent[] }>('GET', `/agents${queryParam}`);
 
     if (!result.success) {
       return `❌ Failed to list agents: ${result.error}`;
@@ -120,7 +153,7 @@ export const getAgentTool = tool({
     agentId: z.string().describe('The ID of the agent to retrieve')
   }),
   execute: async ({ agentId }) => {
-    const result = await brokerRequest<{ agent: any }>('GET', `/agents/${agentId}`);
+    const result = await brokerRequest<{ agent: BrokerAgent }>('GET', `/agents/${agentId}`);
 
     if (!result.success) {
       return `❌ Failed to get agent: ${result.error}`;
@@ -179,7 +212,7 @@ export const checkAgentHealthTool = tool({
   }),
   execute: async ({ agentId }) => {
     // Get current agent to check health
-    const result = await brokerRequest<{ agent: any }>('GET', `/agents/${agentId}`);
+    const result = await brokerRequest<{ agent: BrokerAgent }>('GET', `/agents/${agentId}`);
 
     if (!result.success) {
       return `❌ Failed to check agent health: ${result.error}`;
@@ -221,7 +254,7 @@ export const listJobsTool = tool({
     params.append('limit', limit.toString());
     params.append('offset', offset.toString());
 
-    const result = await brokerRequest<{ jobs: any[]; total: number }>(
+    const result = await brokerRequest<{ jobs: BrokerJob[]; total: number }>(
       'GET',
       `/agents/${agentId}/jobs?${params}`
     );
@@ -444,7 +477,7 @@ export const markAgentAuthenticatedTool = tool({
     agentId: z.string().describe('The ID of the subscription agent to mark as authenticated')
   }),
   execute: async ({ agentId }) => {
-    const result = await brokerRequest<{ status: number; message: string; agent: any }>(
+    const result = await brokerRequest<{ status: number; message: string; agent: BrokerAgent }>(
       'PATCH',
       `/agents/${agentId}/auth`
     );
@@ -472,7 +505,7 @@ export const getAgentConnectCommandTool = tool({
     agentId: z.string().describe('The ID of the agent to connect to')
   }),
   execute: async ({ agentId }) => {
-    const result = await brokerRequest<{ agent: any }>('GET', `/agents/${agentId}`);
+    const result = await brokerRequest<{ agent: BrokerAgent }>('GET', `/agents/${agentId}`);
 
     if (!result.success) {
       return `❌ Failed to get agent details: ${result.error}`;
@@ -766,7 +799,7 @@ export const registerAgentTool = tool({
     const startTime = Date.now();
 
     try {
-      const payload: any = {
+      const payload: Record<string, unknown> = {
         agentId,
         name,
         type
@@ -940,7 +973,7 @@ export const updateAgentTool = tool({
     const startTime = Date.now();
 
     try {
-      const payload: any = {};
+      const payload: Record<string, unknown> = {};
       if (status) payload.status = status;
       if (metadata) payload.metadata = metadata;
 
@@ -1018,7 +1051,7 @@ export const triggerAgentVerifyTool = tool({
     try {
       if (agentId) {
         // Get specific agent with verification
-        const result = await brokerRequest<{ agent: any }>('GET', `/agents/${agentId}`);
+        const result = await brokerRequest<{ agent: BrokerAgent }>('GET', `/agents/${agentId}`);
 
         const duration = Date.now() - startTime;
 
@@ -1064,7 +1097,7 @@ ${expiry ? `**${expiry}**` : ''}
 📝 *Verification has been logged for audit purposes.*`;
       } else {
         // Verify all agents
-        const result = await brokerRequest<{ agents: any[] }>('GET', '/agents?verifyAuth=true');
+        const result = await brokerRequest<{ agents: BrokerAgent[] }>('GET', '/agents?verifyAuth=true');
 
         const duration = Date.now() - startTime;
 

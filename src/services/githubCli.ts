@@ -2,6 +2,21 @@ import { execSync } from 'child_process';
 import { debug, getVerbose } from '../utils/logger';
 import type { GitHubRepo } from './github';
 
+// GitHub API response types
+interface GitHubAPIRepo {
+  id: number;
+  name: string;
+  full_name: string;
+  description: string | null;
+  html_url: string;
+  clone_url: string;
+  ssh_url: string;
+  private: boolean;
+  language: string | null;
+  updated_at: string;
+  stargazers_count?: number;
+}
+
 export async function getUserReposViaGhCli(
   options: {
     type?: 'owner' | 'public' | 'private' | 'member';
@@ -133,7 +148,7 @@ export async function searchReposViaGhCli(
       debug(
         '📊 Response preview:',
         JSON.stringify(
-          data.items.slice(0, 2).map((repo: any) => ({
+          data.items.slice(0, 2).map((repo: GitHubAPIRepo) => ({
             name: repo.name,
             full_name: repo.full_name,
             description: repo.description,
@@ -147,18 +162,7 @@ export async function searchReposViaGhCli(
     }
 
     const repos: GitHubRepo[] = data.items.map(
-      (repo: {
-        id: any;
-        name: any;
-        full_name: any;
-        description: any;
-        html_url: any;
-        clone_url: any;
-        ssh_url: any;
-        private: any;
-        language: any;
-        updated_at: any;
-      }) => ({
+      (repo: GitHubAPIRepo) => ({
         id: repo.id,
         name: repo.name,
         full_name: repo.full_name,
