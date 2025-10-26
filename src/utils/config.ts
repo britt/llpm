@@ -71,6 +71,24 @@ async function installCoreSkills(): Promise<void> {
         debug('Installed core skill:', skillName);
       }
     }
+
+    // Install user skills directory with README
+    const userSkillsSourcePath = join(process.cwd(), 'skills', 'user');
+    const userSkillsTargetPath = join(skillsDir, 'user');
+
+    if (existsSync(userSkillsSourcePath) && !existsSync(userSkillsTargetPath)) {
+      debug('Installing user skills directory with README');
+      await mkdir(userSkillsTargetPath, { recursive: true });
+
+      // Copy README.md if it exists
+      const readmePath = join(userSkillsSourcePath, 'README.md');
+      const targetReadmePath = join(userSkillsTargetPath, 'README.md');
+
+      if (existsSync(readmePath)) {
+        await cp(readmePath, targetReadmePath);
+        debug('Installed user skills README');
+      }
+    }
   } catch (error) {
     debug('Error installing core skills:', error);
     // Don't fail config creation if skills installation fails
