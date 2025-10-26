@@ -12,6 +12,7 @@ import * as fs from 'fs';
 import * as fsPromises from 'fs/promises';
 import * as projectConfig from './projectConfig';
 import type { Project } from '../types/project';
+import type { Skill } from '../types/skills';
 
 // Mock dependencies
 vi.mock('fs');
@@ -28,9 +29,20 @@ vi.mock('./tracing', () => ({
   traced: vi.fn((name, opts, fn) => fn({ setAttribute: vi.fn() }))
 }));
 
+// Mock SkillRegistry
+const mockSkills: Skill[] = [];
+const mockSkillRegistry = {
+  getAllSkills: vi.fn(() => mockSkills)
+};
+
+vi.mock('../services/SkillRegistry', () => ({
+  getSkillRegistry: vi.fn(() => mockSkillRegistry)
+}));
+
 describe('systemPrompt', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockSkills.length = 0; // Clear mock skills array
   });
 
   afterEach(() => {
@@ -558,6 +570,206 @@ describe('systemPrompt', () => {
       vi.mocked(fsPromises.writeFile).mockRejectedValue(new Error('Write error'));
 
       await expect(ensureDefaultSystemPromptFile()).rejects.toThrow('Write error');
+    });
+  });
+
+  describe('Skills Injection', () => {
+    beforeEach(() => {
+      vi.mocked(fs.existsSync).mockReturnValue(false);
+      vi.mocked(projectConfig.getCurrentProject).mockResolvedValue(null);
+    });
+
+    it('should inject all enabled skills with instructions into system prompt', async () => {
+      // Create 5 mock skills all with instructions
+      const skills: Skill[] = [
+        {
+          name: 'mermaid-diagrams',
+          description: 'Create Mermaid diagrams',
+          instructions: 'When creating flowcharts, sequence diagrams, or any visual diagrams in markdown',
+          content: 'Skill content',
+          source: 'project',
+          path: '/path/to/skill',
+          enabled: true
+        },
+        {
+          name: 'stakeholder-updates',
+          description: 'Craft stakeholder communications',
+          instructions: 'When writing status updates, communicating delays, or sharing launch announcements',
+          content: 'Skill content',
+          source: 'project',
+          path: '/path/to/skill',
+          enabled: true
+        },
+        {
+          name: 'user-story-template',
+          description: 'Write user stories',
+          instructions: 'When creating new features, writing GitHub issues, or documenting user requirements',
+          content: 'Skill content',
+          source: 'project',
+          path: '/path/to/skill',
+          enabled: true
+        },
+        {
+          name: 'brainstorming',
+          description: 'Brainstorm ideas',
+          instructions: 'When asked to brainstorm, or to help design anything',
+          content: 'Skill content',
+          source: 'personal',
+          path: '/path/to/skill',
+          enabled: true
+        },
+        {
+          name: 'writing-clearly-and-concisely',
+          description: 'Write clear prose',
+          instructions: 'When asked to write a longer text or document, or when asked to review or edit text',
+          content: 'Skill content',
+          source: 'personal',
+          path: '/path/to/skill',
+          enabled: true
+        }
+      ];
+
+      // Add all skills to mock
+      mockSkills.push(...skills);
+
+      const prompt = await getSystemPrompt();
+
+      // Verify Skills section exists
+      expect(prompt).toContain('<Skills>');
+      expect(prompt).toContain('## Available Skills');
+      expect(prompt).toContain('</Skills>');
+
+      // Verify all 5 skills are listed
+      expect(prompt).toContain('When creating flowcharts, sequence diagrams, or any visual diagrams in markdown load the `mermaid-diagrams` skill');
+      expect(prompt).toContain('When writing status updates, communicating delays, or sharing launch announcements load the `stakeholder-updates` skill');
+      expect(prompt).toContain('When creating new features, writing GitHub issues, or documenting user requirements load the `user-story-template` skill');
+      expect(prompt).toContain('When asked to brainstorm, or to help design anything load the `brainstorming` skill');
+      expect(prompt).toContain('When asked to write a longer text or document, or when asked to review or edit text load the `writing-clearly-and-concisely` skill');
+    });
+
+    it('should not inject skills without instructions', async () => {
+      const skills: Skill[] = [
+        {
+          name: 'skill-with-instructions',
+          description: 'Has instructions',
+          instructions: 'When doing something',
+          content: 'Content',
+          source: 'project',
+          path: '/path',
+          enabled: true
+        },
+        {
+          name: 'skill-without-instructions',
+          description: 'No instructions',
+          // No instructions field
+          content: 'Content',
+          source: 'project',
+          path: '/path',
+          enabled: true
+        }
+      ];
+
+      mockSkills.push(...skills);
+
+      const prompt = await getSystemPrompt();
+
+      // Should include skill with instructions
+      expect(prompt).toContain('skill-with-instructions');
+
+      // Should NOT include skill without instructions
+      expect(prompt).not.toContain('skill-without-instructions');
+    });
+
+    it('should not inject disabled skills', async () => {
+      const skills: Skill[] = [
+        {
+          name: 'enabled-skill',
+          description: 'Enabled',
+          instructions: 'When enabled',
+          content: 'Content',
+          source: 'project',
+          path: '/path',
+          enabled: true
+        },
+        {
+          name: 'disabled-skill',
+          description: 'Disabled',
+          instructions: 'When disabled',
+          content: 'Content',
+          source: 'project',
+          path: '/path',
+          enabled: false // Disabled
+        }
+      ];
+
+      mockSkills.push(...skills);
+
+      const prompt = await getSystemPrompt();
+
+      // Should include enabled skill
+      expect(prompt).toContain('enabled-skill');
+
+      // Should NOT include disabled skill
+      expect(prompt).not.toContain('disabled-skill');
+    });
+
+    it('should not inject skills section when no skills have instructions', async () => {
+      const skills: Skill[] = [
+        {
+          name: 'skill-1',
+          description: 'Skill 1',
+          // No instructions
+          content: 'Content',
+          source: 'project',
+          path: '/path',
+          enabled: true
+        },
+        {
+          name: 'skill-2',
+          description: 'Skill 2',
+          // No instructions
+          content: 'Content',
+          source: 'project',
+          path: '/path',
+          enabled: true
+        }
+      ];
+
+      mockSkills.push(...skills);
+
+      const prompt = await getSystemPrompt();
+
+      // Should NOT include Skills section at all
+      expect(prompt).not.toContain('<Skills>');
+      expect(prompt).not.toContain('## Available Skills');
+    });
+
+    it('should insert skills section after </Tools> tag', async () => {
+      const skills: Skill[] = [
+        {
+          name: 'test-skill',
+          description: 'Test',
+          instructions: 'When testing',
+          content: 'Content',
+          source: 'project',
+          path: '/path',
+          enabled: true
+        }
+      ];
+
+      mockSkills.push(...skills);
+
+      const prompt = await getSystemPrompt();
+
+      // Find positions of key sections
+      const toolsEndPos = prompt.indexOf('</Tools>');
+      const skillsStartPos = prompt.indexOf('<Skills>');
+      const responsesStartPos = prompt.indexOf('<Responses>');
+
+      // Verify order: </Tools> -> <Skills> -> <Responses>
+      expect(toolsEndPos).toBeGreaterThan(-1);
+      expect(skillsStartPos).toBeGreaterThan(toolsEndPos);
+      expect(responsesStartPos).toBeGreaterThan(skillsStartPos);
     });
   });
 });

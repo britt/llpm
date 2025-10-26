@@ -358,10 +358,16 @@ function injectSkillsContext(basePrompt: string): string {
     const registry = getSkillRegistry();
     const skills = registry.getAllSkills();
 
+    debug(`Total skills in registry: ${skills.length}`);
+    debug('All skills:', skills.map(s => `${s.name} (enabled: ${s.enabled}, has instructions: ${!!s.instructions})`));
+
     // Filter to enabled skills with instructions
     const skillsWithInstructions = skills.filter(skill =>
       skill.enabled && skill.instructions
     );
+
+    debug(`Skills with instructions and enabled: ${skillsWithInstructions.length}`);
+    debug('Filtered skills:', skillsWithInstructions.map(s => s.name));
 
     if (skillsWithInstructions.length === 0) {
       debug('No enabled skills with instructions to inject');
@@ -399,6 +405,7 @@ function injectSkillsContext(basePrompt: string): string {
         // Insert after </Tools> and add a blank line
         lines.splice(toolsEndIndex + 1, 0, '', skillsContent);
         debug('Skills section inserted after </Tools> at line:', toolsEndIndex);
+        debug('Skills section:', skillsContent);
         return lines.join('\n');
       } else {
         debug('Could not find </Tools> section, appending skills to end');
