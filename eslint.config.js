@@ -85,11 +85,15 @@ export default [
         global: 'readonly',
         // Browser/Web APIs
         URLSearchParams: 'readonly',
+        URL: 'readonly',
         fetch: 'readonly',
         Request: 'readonly',
         Response: 'readonly',
         Headers: 'readonly',
         RequestInit: 'readonly',
+        RequestInfo: 'readonly',
+        AbortController: 'readonly',
+        performance: 'readonly',
         // Node.js types
         NodeJS: 'readonly',
         // Bun globals
@@ -123,6 +127,20 @@ export default [
   },
   {
     files: ['**/*.test.ts', '**/*.test.tsx'],
+    languageOptions: {
+      globals: {
+        // Vitest globals
+        beforeEach: 'readonly',
+        afterEach: 'readonly',
+        beforeAll: 'readonly',
+        afterAll: 'readonly',
+        describe: 'readonly',
+        it: 'readonly',
+        test: 'readonly',
+        expect: 'readonly',
+        vi: 'readonly'
+      }
+    },
     rules: {
       'no-console': 'off',
       '@typescript-eslint/no-explicit-any': 'off'
