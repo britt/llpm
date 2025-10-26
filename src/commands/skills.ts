@@ -110,7 +110,7 @@ async function testSkill(args: string[]): Promise<CommandResult> {
     };
   }
 
-  const skillName = args[0];
+  const skillName = args[0]!; // Safe: args.length checked in caller
   const registry = getSkillRegistry();
   const skill = registry.getSkill(skillName);
 
@@ -180,7 +180,7 @@ async function enableSkill(args: string[]): Promise<CommandResult> {
     };
   }
 
-  const skillName = args[0];
+  const skillName = args[0]!; // Safe: args.length checked in caller
   const registry = getSkillRegistry();
   const skill = registry.getSkill(skillName);
 
@@ -198,7 +198,7 @@ async function enableSkill(args: string[]): Promise<CommandResult> {
     };
   }
 
-  registry.enableSkill(skillName);
+  registry.enableSkill(skillName!);
 
   return {
     success: true,
@@ -217,7 +217,7 @@ async function disableSkill(args: string[]): Promise<CommandResult> {
     };
   }
 
-  const skillName = args[0];
+  const skillName = args[0]!; // Safe: args.length checked in caller
   const registry = getSkillRegistry();
   const skill = registry.getSkill(skillName);
 
@@ -235,7 +235,7 @@ async function disableSkill(args: string[]): Promise<CommandResult> {
     };
   }
 
-  registry.disableSkill(skillName);
+  registry.disableSkill(skillName!);
 
   return {
     success: true,
