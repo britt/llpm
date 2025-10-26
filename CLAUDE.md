@@ -675,6 +675,33 @@ This project follows semantic versioning (MAJOR.MINOR.PATCH):
 - Commit with descriptive messages
 - Push to GitHub repository after commits to keep remote updated
 
+### TypeScript Unused Code Detection
+
+**Two-tier type checking system:**
+
+- **`bun run typecheck`**: Standard type checking for CI/CD and regular development
+  - Compatible with Vitest and test files
+  - No unused code detection to avoid breaking test builds
+
+- **`bun run typecheck:strict`**: Stricter checking for finding unused code
+  - Uses `tsconfig.strict.json` which extends base config
+  - Enables `noUnusedLocals` and `noUnusedParameters`
+  - Excludes test files (`**/*.test.ts`, `**/*.spec.ts`, etc.)
+  - **Use this to find unused functions, methods, and variables**
+
+**When to use:**
+```bash
+# Before committing (standard checks)
+bun run lint
+bun run typecheck
+
+# Weekly cleanup or before major releases (find unused code)
+bun run typecheck:strict
+```
+
+**Why two configs:**
+Strict unused code checks cause Vitest config loading to fail because test files often have intentionally unused parameters (like mocked functions). The two-tier system allows tests to run while still providing strict checking for production code.
+
 ### YAML Configuration Rules
 
 - **NEVER use comments in YAML files**: Do not add any comments (lines starting with #) to YAML configuration files
