@@ -4,6 +4,7 @@
 import { z } from 'zod';
 import { tool } from './instrumentedTool';
 import { getSkillRegistry } from '../services/SkillRegistry';
+import type { Skill } from '../types/skills';
 import { debug } from '../utils/logger';
 
 /**
@@ -46,7 +47,7 @@ Skills are injected as additional context and their instructions become part of 
     const registry = getSkillRegistry();
     const results: Array<{ name: string; loaded: boolean; error?: string; description?: string }> =
       [];
-    const loadedSkills: unknown[] = [];
+    const loadedSkills: Skill[] = [];
 
     for (const skillName of skill_names) {
       const skill = registry.getSkill(skillName);
@@ -161,7 +162,7 @@ export const listAvailableSkillsTool = tool({
     if (filter_tags && filter_tags.length > 0) {
       skills = allSkills.filter(skill => {
         if (!skill.tags) return false;
-        return filter_tags.some(tag => skill.tags?.includes(tag));
+        return filter_tags.some((tag: string) => skill.tags?.includes(tag));
       });
     }
 
