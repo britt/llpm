@@ -5,7 +5,7 @@ export interface RequestContextData {
   requestId: string;
   logger: RequestLogger;
   startTime: number;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 export class RequestContext {
@@ -17,7 +17,7 @@ export class RequestContext {
   static async run<T>(
     fn: () => Promise<T> | T,
     requestId?: string,
-    metadata?: Record<string, any>
+    metadata?: Record<string, unknown>
   ): Promise<T> {
     const logger = new RequestLogger(requestId);
     const context: RequestContextData = {
@@ -56,7 +56,7 @@ export class RequestContext {
   /**
    * Add metadata to the current request context
    */
-  static addMetadata(key: string, value: any): void {
+  static addMetadata(key: string, value: unknown): void {
     const context = this.get();
     if (context) {
       if (!context.metadata) {
@@ -69,7 +69,7 @@ export class RequestContext {
   /**
    * Get metadata from the current request context
    */
-  static getMetadata(key?: string): any {
+  static getMetadata(key?: string): unknown {
     const context = this.get();
     if (!context?.metadata) return undefined;
 
@@ -95,7 +95,7 @@ export class RequestContext {
     step: string,
     phase: 'start' | 'end',
     level?: 'error' | 'info' | 'debug' | 'trace',
-    metadata?: Record<string, any>
+    metadata?: Record<string, unknown>
   ): void {
     const logger = this.getLogger();
     if (logger) {
@@ -128,8 +128,8 @@ export class RequestContext {
   static logToolCall(
     toolName: string,
     phase: 'start' | 'end',
-    args?: any,
-    result?: any,
+    args?: unknown,
+    result?: unknown,
     error?: string
   ): void {
     const logger = this.getLogger();
