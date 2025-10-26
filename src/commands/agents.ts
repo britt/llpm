@@ -9,6 +9,14 @@ const execAsync = promisify(exec);
 // Use fetch instead of axios for consistency
 const BROKER_URL = process.env.REST_BROKER_URL || 'http://localhost:3010';
 
+interface BrokerHealth {
+  status: string;
+  message?: string;
+  lastCheck?: string;
+  authenticated?: boolean;
+  authExpiresAt?: string;
+}
+
 interface BrokerAgent {
   id: string;
   name: string;
@@ -18,13 +26,7 @@ interface BrokerAgent {
   provider?: string;
   model?: string;
   registeredAt?: string;
-  health?: {
-    status: string;
-    message?: string;
-    lastCheck?: string;
-    authenticated?: boolean;
-    authExpiresAt?: string;
-  };
+  health?: BrokerHealth;
 }
 
 interface BrokerResponse<T = unknown> {
@@ -50,9 +52,10 @@ async function brokerRequest<T = unknown>(
     const data = await response.json();
 
     if (!response.ok) {
+      const errorData = data as { message?: string };
       return {
         success: false,
-        error: data.message || `Request failed with status ${response.status}`
+        error: errorData.message || `Request failed with status ${response.status}`
       };
     }
 
@@ -203,7 +206,7 @@ export const agentsCommand: Command = {
           };
         }
 
-        const health = agent.health || {};
+        const health: BrokerHealth = agent.health || { status: 'unknown' };
         const status =
           health.status === 'healthy' ? '✅' : health.status === 'unhealthy' ? '❌' : '❓';
 

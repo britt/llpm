@@ -1,8 +1,19 @@
 import { tool } from 'ai';
 import * as z from 'zod';
-import axios from 'axios';
+import axios, { isAxiosError } from 'axios';
 
 const REST_BROKER_URL = process.env.REST_BROKER_URL || 'http://localhost:3010';
+
+// Helper to extract error message from unknown error type
+function getErrorMessage(error: unknown): string {
+  if (isAxiosError(error)) {
+    return error.response?.data?.message || error.message;
+  }
+  if (error instanceof Error) {
+    return error.message;
+  }
+  return String(error);
+}
 
 // Tool to list available Docker agents
 export const listDockerAgentsTool = tool({
@@ -18,7 +29,7 @@ export const listDockerAgentsTool = tool({
     } catch (error: unknown) {
       return {
         success: false,
-        error: error.response?.data?.message || error.message
+        error: getErrorMessage(error)
       };
     }
   }
@@ -57,7 +68,7 @@ export const submitDockerAgentJobTool = tool({
     } catch (error: unknown) {
       return {
         success: false,
-        error: error.response?.data?.message || error.message
+        error: getErrorMessage(error)
       };
     }
   }
@@ -80,7 +91,7 @@ export const getDockerAgentJobStatusTool = tool({
     } catch (error: unknown) {
       return {
         success: false,
-        error: error.response?.data?.message || error.message
+        error: getErrorMessage(error)
       };
     }
   }
@@ -129,7 +140,7 @@ export const listDockerAgentJobsTool = tool({
     } catch (error: unknown) {
       return {
         success: false,
-        error: error.response?.data?.message || error.message
+        error: getErrorMessage(error)
       };
     }
   }
@@ -157,7 +168,7 @@ export const cancelDockerAgentJobTool = tool({
     } catch (error: unknown) {
       return {
         success: false,
-        error: error.response?.data?.message || error.message
+        error: getErrorMessage(error)
       };
     }
   }
@@ -179,7 +190,7 @@ export const checkDockerBrokerHealthTool = tool({
     } catch (error: unknown) {
       return {
         success: false,
-        error: error.response?.data?.message || error.message
+        error: getErrorMessage(error)
       };
     }
   }
