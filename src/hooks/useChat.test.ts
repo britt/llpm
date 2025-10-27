@@ -204,6 +204,7 @@ describe('useChat - Message State', () => {
         command: 'help',
         args: []
       });
+      // @ts-expect-error - Mock return type mismatch
       vi.mocked(executeCommand).mockResolvedValue({
         content: 'Help information',
       });
@@ -243,6 +244,7 @@ describe('useChat - Message State', () => {
       });
 
       // Make executeCommand take some time
+      // @ts-expect-error - Mock return type mismatch
       vi.mocked(executeCommand).mockImplementation(async () => {
         await new Promise(resolve => setTimeout(resolve, 100));
       });
@@ -427,6 +429,7 @@ describe('useChat - Message State', () => {
         command: undefined,
         args: []
       });
+      // @ts-expect-error - Mock return type mismatch
       vi.mocked(generateResponse).mockResolvedValue('LLM response');
 
       const { result } = renderHook(() => useChat());
@@ -460,6 +463,7 @@ describe('useChat - Message State', () => {
         command: undefined,
         args: []
       });
+      // @ts-expect-error - Mock return type mismatch
       vi.mocked(generateResponse).mockResolvedValue('Response');
 
       const { result } = renderHook(() => useChat());
@@ -499,6 +503,7 @@ describe('useChat - Message State', () => {
         command: undefined,
         args: []
       });
+      // @ts-expect-error - Mock return type mismatch
       vi.mocked(generateResponse).mockResolvedValue('AI response text');
 
       const { result } = renderHook(() => useChat());
@@ -572,6 +577,7 @@ describe('useChat - Message State', () => {
         args: []
       });
       // Return empty or whitespace-only response
+      // @ts-expect-error - Mock return type mismatch
       vi.mocked(generateResponse).mockResolvedValue('   ');
 
       const { result } = renderHook(() => useChat());
@@ -655,6 +661,7 @@ describe('useChat - Message State', () => {
         command: undefined,
         args: []
       });
+      // @ts-expect-error - Mock return type mismatch
       vi.mocked(generateResponse).mockImplementation(async () => {
         await new Promise(resolve => setTimeout(resolve, 200));
         return { content: 'Response', toolResults: [] };
@@ -793,6 +800,7 @@ describe('useChat - Message State', () => {
         success: true,
         interactive: {
           type: 'model-select',
+        // @ts-expect-error - Object literal property mismatch
           models: [{ id: 'gpt-4', name: 'GPT-4', provider: 'openai' }]
         }
       });
@@ -1005,6 +1013,7 @@ describe('useChat - Message State', () => {
         command: undefined,
         args: []
       });
+      // @ts-expect-error - Mock return type mismatch
       vi.mocked(generateResponse).mockResolvedValue('Response after project switch');
 
       const { result } = renderHook(() => useChat());
@@ -1110,6 +1119,7 @@ describe('useChat - Message State', () => {
       });
 
       let callCount = 0;
+      // @ts-expect-error - Mock return type mismatch
       vi.mocked(generateResponse).mockImplementation(async () => {
         callCount++;
         // First call takes longer to allow second message to queue
@@ -1168,7 +1178,9 @@ describe('useChat - Message State', () => {
         interactive: {
           type: 'model-select',
           models: [
+            // @ts-expect-error - Object literal property mismatch
             { id: 'gpt-4', name: 'GPT-4', provider: 'openai' },
+            // @ts-expect-error - Object literal property mismatch
             { id: 'claude-3', name: 'Claude 3', provider: 'anthropic' }
           ]
         }
@@ -1286,6 +1298,7 @@ describe('useChat - Message State', () => {
         args: []
       });
       // Return empty string
+      // @ts-expect-error - Mock return type mismatch
       vi.mocked(generateResponse).mockResolvedValue('');
 
       const { result } = renderHook(() => useChat());

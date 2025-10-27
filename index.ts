@@ -105,7 +105,7 @@ if (import.meta.main) {
     // Parse profile flag
     const profileFlagIndex = args.findIndex(arg => arg === '--profile' || arg === '-p');
     if (profileFlagIndex !== -1 && profileFlagIndex + 1 < args.length) {
-      const profileName = args[profileFlagIndex + 1];
+      const profileName = args[profileFlagIndex + 1]!;
       credentialManager.setProfileOverride(profileName);
       debug(`Profile set to: ${profileName}`);
     }
