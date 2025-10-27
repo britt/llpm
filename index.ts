@@ -37,7 +37,8 @@ export function App() {
   const [maxRenderedLines, setMaxRenderedLines] = React.useState(300);
 
   // Number of recent messages to keep in dynamic zone (rest go to static)
-  const DYNAMIC_MESSAGE_COUNT = 10;
+  // Keep this as low as possible to minimize flicker - only streaming/updating messages need to be dynamic
+  const DYNAMIC_MESSAGE_COUNT = 2;
 
   // Load max rendered lines configuration on mount
   React.useEffect(() => {

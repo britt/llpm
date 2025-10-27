@@ -237,7 +237,7 @@ function MessageList({ messages }: { messages: Message[] }) {
   );
 }
 
-function ViewMessages({
+const ViewMessages = memo(function ViewMessages({
   completedMessages,
   activeMessages,
   queuedMessages,
@@ -277,7 +277,7 @@ function ViewMessages({
       </Box>
     </Box>
   );
-}
+});
 
 export const ChatInterface = memo(function ChatInterface({
   completedMessages,
