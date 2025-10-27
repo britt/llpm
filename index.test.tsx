@@ -14,7 +14,7 @@ describe('App', () => {
     process.env.GOOGLE_VERTEX_PROJECT_ID = 'test-project';
 
     // Mock dependencies
-    vi.spyOn(llmService, 'generateResponse').mockResolvedValue('Hello! How can I help you?');
+    vi.spyOn(llmService, 'generateResponse').mockResolvedValue({ response: 'Hello! How can I help you?', selectedSkills: [] });
     vi.spyOn(chatHistory, 'loadChatHistory').mockResolvedValue([]);
     vi.spyOn(chatHistory, 'saveChatHistory').mockResolvedValue(undefined);
   });

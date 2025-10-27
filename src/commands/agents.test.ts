@@ -3,7 +3,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { agentsCommand } from './agents';
 
 // Mock fetch globally
-global.fetch = vi.fn();
+global.fetch = vi.fn() as any;
 
 describe('agentsCommand', () => {
   beforeEach(() => {
