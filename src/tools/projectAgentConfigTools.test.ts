@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
+import * as z from 'zod';
 import { describe, it, expect } from 'vitest';
 import {
   setProjectAgentConfigTool,
@@ -17,8 +18,8 @@ describe('Project Agent Config Tools', () => {
 
       tools.forEach(tool => {
         expect(tool.inputSchema).toBeDefined();
-        expect(typeof tool.inputSchema.parse).toBe('function');
-        expect(typeof tool.inputSchema.safeParse).toBe('function');
+        expect(typeof (tool.inputSchema as unknown as z.ZodTypeAny).parse).toBe('function');
+        expect(typeof (tool.inputSchema as unknown as z.ZodTypeAny).safeParse).toBe('function');
       });
     });
   });
@@ -28,7 +29,7 @@ describe('Project Agent Config Tools', () => {
       const validPresets = ['dev', 'team', 'heavy', 'minimal'];
 
       validPresets.forEach(preset => {
-        const parseResult = setProjectAgentConfigTool.inputSchema.safeParse({
+        const parseResult = setProjectAgentConfigTool(.inputSchema as unknown as z.ZodTypeAny).safeParse({
           defaultPreset: preset
         });
         expect(parseResult.success).toBe(true);
@@ -36,14 +37,14 @@ describe('Project Agent Config Tools', () => {
     });
 
     it('should reject invalid preset', () => {
-      const parseResult = setProjectAgentConfigTool.inputSchema.safeParse({
+      const parseResult = setProjectAgentConfigTool(.inputSchema as unknown as z.ZodTypeAny).safeParse({
         defaultPreset: 'invalid'
       });
       expect(parseResult.success).toBe(false);
     });
 
     it('should accept custom agent counts', () => {
-      const parseResult = setProjectAgentConfigTool.inputSchema.safeParse({
+      const parseResult = setProjectAgentConfigTool(.inputSchema as unknown as z.ZodTypeAny).safeParse({
         claudeCode: 2,
         openaiCodex: 3,
         aider: 1,
@@ -53,41 +54,41 @@ describe('Project Agent Config Tools', () => {
     });
 
     it('should validate agent count ranges (0-10)', () => {
-      const parseResult1 = setProjectAgentConfigTool.inputSchema.safeParse({ claudeCode: 0 });
+      const parseResult1 = setProjectAgentConfigTool(.inputSchema as unknown as z.ZodTypeAny).safeParse({ claudeCode: 0 });
       expect(parseResult1.success).toBe(true);
 
-      const parseResult2 = setProjectAgentConfigTool.inputSchema.safeParse({ claudeCode: 10 });
+      const parseResult2 = setProjectAgentConfigTool(.inputSchema as unknown as z.ZodTypeAny).safeParse({ claudeCode: 10 });
       expect(parseResult2.success).toBe(true);
 
-      const parseResult3 = setProjectAgentConfigTool.inputSchema.safeParse({ claudeCode: 11 });
+      const parseResult3 = setProjectAgentConfigTool(.inputSchema as unknown as z.ZodTypeAny).safeParse({ claudeCode: 11 });
       expect(parseResult3.success).toBe(false);
 
-      const parseResult4 = setProjectAgentConfigTool.inputSchema.safeParse({ claudeCode: -1 });
+      const parseResult4 = setProjectAgentConfigTool(.inputSchema as unknown as z.ZodTypeAny).safeParse({ claudeCode: -1 });
       expect(parseResult4.success).toBe(false);
     });
 
     it('should accept authType parameter', () => {
-      const parseResult1 = setProjectAgentConfigTool.inputSchema.safeParse({ authType: 'api_key' });
+      const parseResult1 = setProjectAgentConfigTool(.inputSchema as unknown as z.ZodTypeAny).safeParse({ authType: 'api_key' });
       expect(parseResult1.success).toBe(true);
 
-      const parseResult2 = setProjectAgentConfigTool.inputSchema.safeParse({
+      const parseResult2 = setProjectAgentConfigTool(.inputSchema as unknown as z.ZodTypeAny).safeParse({
         authType: 'subscription'
       });
       expect(parseResult2.success).toBe(true);
     });
 
     it('should reject invalid authType', () => {
-      const parseResult = setProjectAgentConfigTool.inputSchema.safeParse({ authType: 'invalid' });
+      const parseResult = setProjectAgentConfigTool(.inputSchema as unknown as z.ZodTypeAny).safeParse({ authType: 'invalid' });
       expect(parseResult.success).toBe(false);
     });
 
     it('should allow all parameters to be optional', () => {
-      const parseResult = setProjectAgentConfigTool.inputSchema.safeParse({});
+      const parseResult = setProjectAgentConfigTool(.inputSchema as unknown as z.ZodTypeAny).safeParse({});
       expect(parseResult.success).toBe(true);
     });
 
     it('should accept mixed parameters', () => {
-      const parseResult = setProjectAgentConfigTool.inputSchema.safeParse({
+      const parseResult = setProjectAgentConfigTool(.inputSchema as unknown as z.ZodTypeAny).safeParse({
         defaultPreset: 'dev',
         claudeCode: 2,
         authType: 'subscription'
@@ -98,7 +99,7 @@ describe('Project Agent Config Tools', () => {
 
   describe('getProjectAgentConfigTool', () => {
     it('should accept empty input', () => {
-      const parseResult = getProjectAgentConfigTool.inputSchema.safeParse({});
+      const parseResult = getProjectAgentConfigTool(.inputSchema as unknown as z.ZodTypeAny).safeParse({});
       expect(parseResult.success).toBe(true);
     });
 
@@ -111,7 +112,7 @@ describe('Project Agent Config Tools', () => {
 
   describe('removeProjectAgentConfigTool', () => {
     it('should accept empty input', () => {
-      const parseResult = removeProjectAgentConfigTool.inputSchema.safeParse({});
+      const parseResult = removeProjectAgentConfigTool(.inputSchema as unknown as z.ZodTypeAny).safeParse({});
       expect(parseResult.success).toBe(true);
     });
 
