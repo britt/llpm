@@ -111,7 +111,7 @@ describe('getSalutationConfig', () => {
   });
 
   it('should return default config when automation section has no salutation', () => {
-    const appConfig = { automation: {} };
+    const appConfig = { automation: {} } as any;
     const config = getSalutationConfig(appConfig);
     expect(config).toEqual({
       enabled: true,
@@ -126,7 +126,7 @@ describe('getSalutationConfig', () => {
           enabled: false
         }
       }
-    };
+    } as any;
     const config = getSalutationConfig(appConfig);
     expect(config.enabled).toBe(false);
     expect(config.text).toBe(DEFAULT_SALUTATION);
@@ -140,7 +140,7 @@ describe('getSalutationConfig', () => {
           text: customText
         }
       }
-    };
+    } as any;
     const config = getSalutationConfig(appConfig);
     expect(config.enabled).toBe(true);
     expect(config.text).toBe(customText);
@@ -155,7 +155,7 @@ describe('getSalutationConfig', () => {
           text: customText
         }
       }
-    };
+    } as any;
     const config = getSalutationConfig(appConfig);
     expect(config.enabled).toBe(false);
     expect(config.text).toBe(customText);
@@ -168,7 +168,7 @@ describe('getSalutationConfig', () => {
           enabled: true
         }
       }
-    };
+    } as any;
     const config = getSalutationConfig(appConfig);
     expect(config.enabled).toBe(true);
   });
@@ -181,7 +181,7 @@ describe('getSalutationConfig', () => {
           text: undefined
         }
       }
-    };
+    } as any;
     const config = getSalutationConfig(appConfig);
     expect(config.enabled).toBe(true);
     expect(config.text).toBe(DEFAULT_SALUTATION);
