@@ -1,9 +1,10 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { describe, it, expect } from 'vitest';
+import type { Message } from '../types';
 
 // Skip in CI due to WebAssembly/yoga-layout compatibility issues
 describe.skip('ChatInterface Basic Tests', () => {
-  const messages = [];
+  const messages: Message[] = [];
 
   const _____mockProps = {
     messages,
