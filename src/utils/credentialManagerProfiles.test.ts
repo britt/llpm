@@ -253,10 +253,10 @@ describe('CredentialManager Profile Integration Tests', () => {
       credManager.setProfileOverride('work');
       const status = await credManager.getCredentialStatus();
 
-      expect(status.openai.apiKey).toBe(true);
-      expect(status.github.token).toBe(true);
-      expect(status.anthropic.apiKey).toBe(true); // Falls back to default
-      expect(status.groq.apiKey).toBe(false);
+      expect(status.openai!.apiKey).toBe(true);
+      expect(status.github!.token).toBe(true);
+      expect(status.anthropic!.apiKey).toBe(true); // Falls back to default
+      expect(status.groq!.apiKey).toBe(false);
     });
   });
 
