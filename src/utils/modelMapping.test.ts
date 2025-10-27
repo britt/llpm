@@ -139,9 +139,9 @@ describe('modelMapping', () => {
     it('should have Claude Sonnet 4.5 entry', () => {
       expect(ANTHROPIC_MODEL_MAPPING).toHaveProperty('claude-sonnet-4-5');
       const entry = ANTHROPIC_MODEL_MAPPING['claude-sonnet-4-5'];
-      expect(entry.canonical).toBe('claude-sonnet-4-5');
-      expect(entry.aliases).toContain('claude-sonnet-4.5');
-      expect(entry.aliases).toContain('claude-sonnet-4-5-20250929');
+      expect(entry!.canonical).toBe('claude-sonnet-4-5');
+      expect(entry!.aliases).toContain('claude-sonnet-4.5');
+      expect(entry!.aliases).toContain('claude-sonnet-4-5-20250929');
     });
 
     it('should have all documented Claude 4 models', () => {
@@ -158,12 +158,12 @@ describe('modelMapping', () => {
 
     it('should have Vercel AI SDK format aliases', () => {
       const sonnet45 = ANTHROPIC_MODEL_MAPPING['claude-sonnet-4-5'];
-      expect(sonnet45.aliases).toContain('anthropic/claude-sonnet-4.5');
+      expect(sonnet45!.aliases).toContain('anthropic/claude-sonnet-4.5');
     });
 
     it('should have snapshot IDs as aliases', () => {
       const sonnet45 = ANTHROPIC_MODEL_MAPPING['claude-sonnet-4-5'];
-      expect(sonnet45.aliases).toContain('claude-sonnet-4-5-20250929');
+      expect(sonnet45!.aliases).toContain('claude-sonnet-4-5-20250929');
     });
   });
 });
