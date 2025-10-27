@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import * as z from 'zod';
 import { getGitHubIssueWithCommentsTool } from './githubIssueTools';
 import * as github from '../services/github';
 import * as projectConfig from '../utils/projectConfig';
@@ -15,7 +16,7 @@ describe('getGitHubIssueWithCommentsTool', () => {
       name: 'test-project',
       github_repo: 'test-owner/test-repo',
       metadata: {}
-    });
+    } as any);
   });
 
   it('should have correct schema properties', () => {
@@ -24,14 +25,14 @@ describe('getGitHubIssueWithCommentsTool', () => {
   });
 
   it('should validate required parameters', () => {
-    const validResult = getGitHubIssueWithCommentsTool.inputSchema.safeParse({
+    const validResult = (getGitHubIssueWithCommentsTool.inputSchema as unknown as z.ZodTypeAny).safeParse({
       issueNumber: 123
     });
     expect(validResult.success).toBe(true);
   });
 
   it('should validate optional parameters', () => {
-    const validResult = getGitHubIssueWithCommentsTool.inputSchema.safeParse({
+    const validResult = (getGitHubIssueWithCommentsTool.inputSchema as unknown as z.ZodTypeAny).safeParse({
       issueNumber: 123,
       includeComments: false,
       commentsPerPage: 50,
@@ -41,7 +42,7 @@ describe('getGitHubIssueWithCommentsTool', () => {
   });
 
   it('should reject invalid issue number', () => {
-    const invalidResult = getGitHubIssueWithCommentsTool.inputSchema.safeParse({
+    const invalidResult = (getGitHubIssueWithCommentsTool.inputSchema as unknown as z.ZodTypeAny).safeParse({
       issueNumber: 'not-a-number'
     });
     expect(invalidResult.success).toBe(false);
@@ -91,7 +92,7 @@ describe('getGitHubIssueWithCommentsTool', () => {
       }
     });
 
-    const result = await getGitHubIssueWithCommentsTool.execute({
+    const result = await (getGitHubIssueWithCommentsTool.execute as any)({
       issueNumber: 123
     });
 
@@ -132,7 +133,7 @@ describe('getGitHubIssueWithCommentsTool', () => {
       }
     });
 
-    const result = await getGitHubIssueWithCommentsTool.execute({
+    const result = await (getGitHubIssueWithCommentsTool.execute as any)({
       issueNumber: 123,
       commentsPerPage: 50,
       page: 2
@@ -147,7 +148,7 @@ describe('getGitHubIssueWithCommentsTool', () => {
   it('should handle errors gracefully', async () => {
     vi.mocked(github.getIssueWithComments).mockRejectedValue(new Error('API rate limit exceeded'));
 
-    const result = await getGitHubIssueWithCommentsTool.execute({
+    const result = await (getGitHubIssueWithCommentsTool.execute as any)({
       issueNumber: 123
     });
 
@@ -158,7 +159,7 @@ describe('getGitHubIssueWithCommentsTool', () => {
   it('should handle missing project configuration', async () => {
     vi.mocked(projectConfig.getCurrentProject).mockResolvedValue(null);
 
-    const result = await getGitHubIssueWithCommentsTool.execute({
+    const result = await (getGitHubIssueWithCommentsTool.execute as any)({
       issueNumber: 123
     });
 
