@@ -122,7 +122,7 @@ describe('systemPrompt', () => {
 
     it('should inject project context when project exists', async () => {
       const basePrompt = `## Core Context\nBase content`;
-      const mockProject: Project = {
+      const mockProject = {
         id: 'test-project',
         name: 'Test Project',
         description: 'Test description',
@@ -134,7 +134,7 @@ describe('systemPrompt', () => {
       vi.mocked(fs.existsSync).mockReturnValue(true);
       vi.mocked(fs.statSync).mockReturnValue({ size: 512 } as fs.Stats);
       vi.mocked(fsPromises.readFile).mockResolvedValue(basePrompt);
-      vi.mocked(projectConfig.getCurrentProject).mockResolvedValue(mockProject);
+      vi.mocked(projectConfig.getCurrentProject).mockResolvedValue(mockProject as any);
 
       const prompt = await getSystemPrompt();
 
@@ -146,7 +146,7 @@ describe('systemPrompt', () => {
 
     it('should inject project board info when available', async () => {
       const basePrompt = `## Core Context\nBase content`;
-      const mockProject: Project = {
+      const mockProject = {
         id: 'test-project',
         name: 'Test Project',
         description: 'Test description',
@@ -158,7 +158,7 @@ describe('systemPrompt', () => {
 
       vi.mocked(fs.existsSync).mockReturnValue(true);
       vi.mocked(fsPromises.readFile).mockResolvedValue(basePrompt);
-      vi.mocked(projectConfig.getCurrentProject).mockResolvedValue(mockProject);
+      vi.mocked(projectConfig.getCurrentProject).mockResolvedValue(mockProject as any);
 
       const prompt = await getSystemPrompt();
 
@@ -169,7 +169,7 @@ describe('systemPrompt', () => {
 
     it('should handle repository with full URL', async () => {
       const basePrompt = `## Core Context\nBase content`;
-      const mockProject: Project = {
+      const mockProject = {
         id: 'test-project',
         name: 'Test Project',
         description: 'Test description',
@@ -179,7 +179,7 @@ describe('systemPrompt', () => {
 
       vi.mocked(fs.existsSync).mockReturnValue(true);
       vi.mocked(fsPromises.readFile).mockResolvedValue(basePrompt);
-      vi.mocked(projectConfig.getCurrentProject).mockResolvedValue(mockProject);
+      vi.mocked(projectConfig.getCurrentProject).mockResolvedValue(mockProject as any);
 
       const prompt = await getSystemPrompt();
 
@@ -207,7 +207,7 @@ describe('systemPrompt', () => {
 
     it('should insert context before Core Context section', async () => {
       const __basePrompt = `Some intro\n\n## Core Context\nBase content`;
-      const mockProject: Project = {
+      const mockProject = {
         id: 'test',
         name: 'Test',
         description: 'Desc',
@@ -216,7 +216,7 @@ describe('systemPrompt', () => {
       };
 
       vi.mocked(fs.existsSync).mockReturnValue(false);
-      vi.mocked(projectConfig.getCurrentProject).mockResolvedValue(mockProject);
+      vi.mocked(projectConfig.getCurrentProject).mockResolvedValue(mockProject as any);
 
       const prompt = await getSystemPrompt();
       const coreContextIndex = prompt.indexOf('## Core Context');
@@ -227,7 +227,7 @@ describe('systemPrompt', () => {
 
     it('should handle prompt without Core Context section', async () => {
       const __basePrompt = `## 🎯 Active Project Context\nInfo\n\n## Other Section\nContent`;
-      const mockProject: Project = {
+      const mockProject = {
         id: 'test',
         name: 'Test',
         description: 'Desc',
@@ -236,7 +236,7 @@ describe('systemPrompt', () => {
       };
 
       vi.mocked(fs.existsSync).mockReturnValue(false);
-      vi.mocked(projectConfig.getCurrentProject).mockResolvedValue(mockProject);
+      vi.mocked(projectConfig.getCurrentProject).mockResolvedValue(mockProject as any);
 
       const prompt = await getSystemPrompt();
 
@@ -245,7 +245,7 @@ describe('systemPrompt', () => {
 
     it('should use fallback insertion when no known sections found', async () => {
       const __basePrompt = `Line 1\n\nLine 3`;
-      const mockProject: Project = {
+      const mockProject = {
         id: 'test',
         name: 'Test',
         description: 'Desc',
@@ -254,7 +254,7 @@ describe('systemPrompt', () => {
       };
 
       vi.mocked(fs.existsSync).mockReturnValue(false);
-      vi.mocked(projectConfig.getCurrentProject).mockResolvedValue(mockProject);
+      vi.mocked(projectConfig.getCurrentProject).mockResolvedValue(mockProject as any);
 
       const prompt = await getSystemPrompt();
 
@@ -263,7 +263,7 @@ describe('systemPrompt', () => {
 
     it('should use default insertion when no empty line found', async () => {
       const basePrompt = `Line1\nLine2\nLine3`;
-      const mockProject: Project = {
+      const mockProject = {
         id: 'test',
         name: 'Test',
         description: 'Desc',
@@ -273,7 +273,7 @@ describe('systemPrompt', () => {
 
       vi.mocked(fs.existsSync).mockReturnValue(true);
       vi.mocked(fsPromises.readFile).mockResolvedValue(basePrompt);
-      vi.mocked(projectConfig.getCurrentProject).mockResolvedValue(mockProject);
+      vi.mocked(projectConfig.getCurrentProject).mockResolvedValue(mockProject as any);
 
       const prompt = await getSystemPrompt();
 
@@ -283,7 +283,7 @@ describe('systemPrompt', () => {
     it('should use index 3 when no empty line is at beginning', async () => {
       // Empty line at index 0 should use firstEmptyIndex + 1 = 1
       const basePrompt = `\nLine1\nLine2`;
-      const mockProject: Project = {
+      const mockProject = {
         id: 'test',
         name: 'Test',
         description: 'Desc',
@@ -293,7 +293,7 @@ describe('systemPrompt', () => {
 
       vi.mocked(fs.existsSync).mockReturnValue(true);
       vi.mocked(fsPromises.readFile).mockResolvedValue(basePrompt);
-      vi.mocked(projectConfig.getCurrentProject).mockResolvedValue(mockProject);
+      vi.mocked(projectConfig.getCurrentProject).mockResolvedValue(mockProject as any);
 
       const prompt = await getSystemPrompt();
 
@@ -302,7 +302,7 @@ describe('systemPrompt', () => {
 
     it('should handle nextSectionIndex when found', async () => {
       const basePrompt = `## 🎯 Active Project Context\nInfo\n\n## Next Section\nContent\n\n## Another Section\nMore`;
-      const mockProject: Project = {
+      const mockProject = {
         id: 'test',
         name: 'Test',
         description: 'Desc',
@@ -312,7 +312,7 @@ describe('systemPrompt', () => {
 
       vi.mocked(fs.existsSync).mockReturnValue(true);
       vi.mocked(fsPromises.readFile).mockResolvedValue(basePrompt);
-      vi.mocked(projectConfig.getCurrentProject).mockResolvedValue(mockProject);
+      vi.mocked(projectConfig.getCurrentProject).mockResolvedValue(mockProject as any);
 
       const prompt = await getSystemPrompt();
 
@@ -328,7 +328,7 @@ describe('systemPrompt', () => {
       }
       const basePrompt = lines.join('\n');
 
-      const mockProject: Project = {
+      const mockProject = {
         id: 'test',
         name: 'Test',
         description: 'Desc',
@@ -338,7 +338,7 @@ describe('systemPrompt', () => {
 
       vi.mocked(fs.existsSync).mockReturnValue(true);
       vi.mocked(fsPromises.readFile).mockResolvedValue(basePrompt);
-      vi.mocked(projectConfig.getCurrentProject).mockResolvedValue(mockProject);
+      vi.mocked(projectConfig.getCurrentProject).mockResolvedValue(mockProject as any);
 
       const prompt = await getSystemPrompt();
 
@@ -364,7 +364,7 @@ describe('systemPrompt', () => {
       });
 
       vi.mocked(fs.existsSync).mockReturnValue(false);
-      vi.mocked(projectConfig.getCurrentProject).mockResolvedValue(mockProject);
+      vi.mocked(projectConfig.getCurrentProject).mockResolvedValue(mockProject as any);
 
       const prompt = await getSystemPrompt();
 
@@ -389,7 +389,7 @@ describe('systemPrompt', () => {
       });
 
       vi.mocked(fs.existsSync).mockReturnValue(false);
-      vi.mocked(projectConfig.getCurrentProject).mockResolvedValue(mockProject);
+      vi.mocked(projectConfig.getCurrentProject).mockResolvedValue(mockProject as any);
 
       const prompt = await getSystemPrompt();
 
@@ -412,7 +412,7 @@ describe('systemPrompt', () => {
       });
 
       vi.mocked(fs.existsSync).mockReturnValue(false);
-      vi.mocked(projectConfig.getCurrentProject).mockResolvedValue(mockProject);
+      vi.mocked(projectConfig.getCurrentProject).mockResolvedValue(mockProject as any);
 
       const prompt = await getSystemPrompt();
 
@@ -429,7 +429,7 @@ describe('systemPrompt', () => {
       } as unknown as Project;
 
       vi.mocked(fs.existsSync).mockReturnValue(false);
-      vi.mocked(projectConfig.getCurrentProject).mockResolvedValue(mockProject);
+      vi.mocked(projectConfig.getCurrentProject).mockResolvedValue(mockProject as any);
 
       const prompt = await getSystemPrompt();
 
@@ -439,7 +439,7 @@ describe('systemPrompt', () => {
 
     it('should handle errors in insert operation', async () => {
       const __basePrompt = `## Core Context\nBase content`;
-      const mockProject: Project = {
+      const mockProject = {
         id: 'test',
         name: 'Test',
         description: 'Desc',
@@ -448,7 +448,7 @@ describe('systemPrompt', () => {
       };
 
       vi.mocked(fs.existsSync).mockReturnValue(false);
-      vi.mocked(projectConfig.getCurrentProject).mockResolvedValue(mockProject);
+      vi.mocked(projectConfig.getCurrentProject).mockResolvedValue(mockProject as any);
 
       // Mock String.prototype.split to throw during insert operation
       const originalSplit = String.prototype.split;
