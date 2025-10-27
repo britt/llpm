@@ -1,5 +1,6 @@
 import '../../test/setup';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import * as z from 'zod';
 import { getSystemPromptTool } from './systemTools';
 import * as systemPrompt from '../utils/systemPrompt';
 
@@ -24,7 +25,7 @@ describe('systemTools', () => {
         .mockResolvedValueOnce(mockPrompt);
 
       expect(getSystemPromptTool.execute).toBeDefined();
-      const result = await getSystemPromptTool.execute({}, {} as any);
+      const result = await (getSystemPromptTool.execute as any)({}, {} as any);
 
       expect(getSystemPromptSpy).toHaveBeenCalledOnce();
       expect(result).toEqual({
@@ -43,7 +44,7 @@ describe('systemTools', () => {
         .mockRejectedValueOnce(mockError);
 
       expect(getSystemPromptTool.execute).toBeDefined();
-      const result = await getSystemPromptTool.execute({}, {} as any);
+      const result = await (getSystemPromptTool.execute as any)({}, {} as any);
 
       expect(getSystemPromptSpy).toHaveBeenCalledOnce();
       expect(result).toEqual({
@@ -60,7 +61,7 @@ describe('systemTools', () => {
         .mockRejectedValueOnce('String error');
 
       expect(getSystemPromptTool.execute).toBeDefined();
-      const result = await getSystemPromptTool.execute({}, {} as any);
+      const result = await (getSystemPromptTool.execute as any)({}, {} as any);
 
       expect(getSystemPromptSpy).toHaveBeenCalledOnce();
       expect(result).toEqual({
@@ -79,10 +80,10 @@ describe('systemTools', () => {
 
     it('should have a valid Zod schema as inputSchema', () => {
       expect(getSystemPromptTool.inputSchema).toBeDefined();
-      expect(typeof getSystemPromptTool.inputSchema.parse).toBe('function');
-      expect(typeof getSystemPromptTool.inputSchema.safeParse).toBe('function');
+      expect(typeof (getSystemPromptTool.inputSchema as unknown as z.ZodTypeAny).parse).toBe('function');
+      expect(typeof (getSystemPromptTool.inputSchema as unknown as z.ZodTypeAny).safeParse).toBe('function');
       // Verify it's actually a Zod schema by testing parse
-      expect(() => getSystemPromptTool.inputSchema.parse({})).not.toThrow();
+      expect(() => (getSystemPromptTool.inputSchema as unknown as z.ZodTypeAny).parse({})).not.toThrow();
     });
   });
 });
