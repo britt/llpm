@@ -53,8 +53,8 @@ instructions: "When testing skill discovery, use this test skill"
     const skills = registry.getAllSkills();
 
     expect(skills).toHaveLength(1);
-    expect(skills[0].name).toBe('test-skill');
-    expect(skills[0].source).toBe('project');
+    expect(skills[0]!.name).toBe('test-skill');
+    expect(skills[0]!.source).toBe('project');
   });
 
   it('should discover skills from .llpm/skills/user on startup', async () => {
@@ -84,8 +84,8 @@ instructions: "When testing user-specific skills, use this skill"
     const skills = registry.getAllSkills();
 
     expect(skills).toHaveLength(1);
-    expect(skills[0].name).toBe('user-specific-skill');
-    expect(skills[0].source).toBe('project');
+    expect(skills[0]!.name).toBe('user-specific-skill');
+    expect(skills[0]!.source).toBe('project');
   });
 
   it('should discover skills from both .llpm/skills and .llpm/skills/user', async () => {
@@ -171,7 +171,7 @@ instructions: "When testing newly discovered skills, use this skill"
     const skills = registry.getAllSkills();
 
     expect(skills).toHaveLength(1);
-    expect(skills[0].name).toBe('new-skill');
+    expect(skills[0]!.name).toBe('new-skill');
   });
 
   it('should clear old skills when rescanning', async () => {
@@ -199,7 +199,7 @@ instructions: "When testing old skills, use this skill"
 
     await registry.scan();
     expect(registry.getAllSkills()).toHaveLength(1);
-    expect(registry.getAllSkills()[0].name).toBe('old-skill');
+    expect(registry.getAllSkills()[0]!.name).toBe('old-skill');
 
     // Remove old skill and add new skill (simulating switch to different project)
     await rm(skillDir1, { recursive: true, force: true });
@@ -223,7 +223,7 @@ instructions: "When testing new skills after clearing old ones, use this skill"
     const skills = registry.getAllSkills();
 
     expect(skills).toHaveLength(1);
-    expect(skills[0].name).toBe('new-skill');
+    expect(skills[0]!.name).toBe('new-skill');
     expect(skills.find(s => s.name === 'old-skill')).toBeUndefined();
   });
 });
