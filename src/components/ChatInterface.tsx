@@ -1,5 +1,5 @@
 import { useState, useEffect, memo, useMemo, useCallback } from 'react';
-import { Box, Text, useInput } from 'ink';
+import { Box, Text, useInput, Static } from 'ink';
 import type { Message } from '../types';
 import {
   getCurrentProject,
@@ -17,7 +17,8 @@ import { RequestLogDisplay } from './RequestLogDisplay';
 import { renderMarkdown, isASCIICapableTerminal } from '../utils/markdownRenderer';
 
 interface ChatInterfaceProps {
-  messages: Message[];
+  completedMessages: Message[];
+  activeMessages: Message[];
   hiddenLinesCount?: number;
   totalLines?: number;
   showAllHistory?: boolean;
@@ -237,37 +238,50 @@ function MessageList({ messages }: { messages: Message[] }) {
 }
 
 function ViewMessages({
-  messages,
+  completedMessages,
+  activeMessages,
   queuedMessages,
   hiddenLinesCount,
   totalLines,
   showAllHistory
 }: {
-  messages: Message[];
+  completedMessages: Message[];
+  activeMessages: Message[];
   queuedMessages: QueuedMessage[];
   hiddenLinesCount?: number;
   totalLines?: number;
   showAllHistory?: boolean;
 }) {
   return (
-    <Box flexDirection="column" paddingX={1}>
-      {/* Show collapse indicator if there are hidden lines */}
-      {hiddenLinesCount !== undefined && totalLines !== undefined && (
-        <CollapseIndicator
-          hiddenLinesCount={hiddenLinesCount}
-          totalLines={totalLines}
-          showAllHistory={showAllHistory || false}
-        />
+    <Box flexDirection="column">
+      {/* Static zone: Completed messages render once and never update */}
+      {completedMessages.length > 0 && (
+        <Static items={completedMessages}>
+          {(message) => <MessageItem key={message.id} message={message} />}
+        </Static>
       )}
-      <MessageList messages={messages} />
-      {/* Show queued messages in light text */}
-      <MessageQueue messages={queuedMessages} />
+
+      {/* Dynamic zone: Active messages can re-render without affecting static zone */}
+      <Box flexDirection="column" paddingX={1}>
+        {/* Show collapse indicator if there are hidden lines */}
+        {hiddenLinesCount !== undefined && totalLines !== undefined && (
+          <CollapseIndicator
+            hiddenLinesCount={hiddenLinesCount}
+            totalLines={totalLines}
+            showAllHistory={showAllHistory || false}
+          />
+        )}
+        <MessageList messages={activeMessages} />
+        {/* Show queued messages in light text */}
+        <MessageQueue messages={queuedMessages} />
+      </Box>
     </Box>
   );
 }
 
 export const ChatInterface = memo(function ChatInterface({
-  messages,
+  completedMessages,
+  activeMessages,
   hiddenLinesCount = 0,
   totalLines = 0,
   showAllHistory = false,
@@ -319,7 +333,9 @@ export const ChatInterface = memo(function ChatInterface({
 
   // Reload model when a model switch notification is detected
   useEffect(() => {
-    const lastMessage = messages[messages.length - 1];
+    // Check last message in either active or completed messages
+    const allMessages = [...completedMessages, ...activeMessages];
+    const lastMessage = allMessages[allMessages.length - 1];
     if (lastMessage?.role === 'ui-notification' && lastMessage?.content?.includes('Switched to')) {
       const loadModel = async () => {
         try {
@@ -331,7 +347,7 @@ export const ChatInterface = memo(function ChatInterface({
       };
       loadModel();
     }
-  }, [messages]);
+  }, [completedMessages, activeMessages]);
 
   // Handle project selection - memoized to prevent re-creation
   const handleProjectSelect = useCallback(
@@ -455,9 +471,10 @@ export const ChatInterface = memo(function ChatInterface({
 
   return (
     <Box flexDirection="column" minHeight="100%">
-      {/* Messages - no border, fills available space */}
+      {/* Messages - two-zone rendering: Static (completed) + Dynamic (active) */}
       <ViewMessages
-        messages={messages}
+        completedMessages={completedMessages}
+        activeMessages={activeMessages}
         queuedMessages={queuedMessages}
         hiddenLinesCount={hiddenLinesCount}
         totalLines={totalLines}
