@@ -1,5 +1,5 @@
 import { useState, useEffect, memo, useMemo, useCallback } from 'react';
-import { Box, Text, useInput, Static } from 'ink';
+import { Box, Text, useInput } from 'ink';
 import type { Message } from '../types';
 import {
   getCurrentProject,
@@ -253,16 +253,14 @@ const ViewMessages = memo(function ViewMessages({
   showAllHistory?: boolean;
 }) {
   return (
-    <Box flexDirection="column">
+    <Box flexDirection="column" paddingX={1}>
       {/* Static zone: Completed messages render once and never update */}
-      {completedMessages.length > 0 && (
-        <Static items={completedMessages}>
-          {(message) => <MessageItem key={message.id} message={message} />}
-        </Static>
-      )}
+      {/* Note: Can't use Static with MessageItem due to async markdown rendering */}
+      {/* Instead, render completed messages normally - they won't flicker since they're in memo */}
+      <MessageList messages={completedMessages} />
 
       {/* Dynamic zone: Active messages can re-render without affecting static zone */}
-      <Box flexDirection="column" paddingX={1}>
+      <Box flexDirection="column">
         {/* Show collapse indicator if there are hidden lines */}
         {hiddenLinesCount !== undefined && totalLines !== undefined && (
           <CollapseIndicator
