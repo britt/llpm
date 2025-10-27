@@ -28,7 +28,7 @@ vi.mock('child_process', async importOriginal => {
   };
 });
 
-const mockExec = vi.mocked(exec);
+const mockExec = vi.mocked(exec) as any;
 
 describe('REST Broker Tools', () => {
   describe('Schema Validation', () => {
