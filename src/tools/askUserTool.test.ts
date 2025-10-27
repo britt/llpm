@@ -102,11 +102,12 @@ describe('askUserTool', () => {
 
     it('should have inputSchema property', () => {
       expect(askUserTool.inputSchema).toBeDefined();
-      expect(askUserTool.inputSchema.shape).toBeDefined();
-      expect(askUserTool.inputSchema.shape.question).toBeDefined();
-      expect(askUserTool.inputSchema.shape.type).toBeDefined();
-      expect(askUserTool.inputSchema.shape.options).toBeDefined();
-      expect(askUserTool.inputSchema.shape.context).toBeDefined();
+      const schema = askUserTool.inputSchema as any;
+      expect(schema.shape).toBeDefined();
+      expect(schema.shape.question).toBeDefined();
+      expect(schema.shape.type).toBeDefined();
+      expect(schema.shape.options).toBeDefined();
+      expect(schema.shape.context).toBeDefined();
     });
   });
 

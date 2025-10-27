@@ -437,7 +437,7 @@ describe('REST Broker Tools', () => {
     beforeEach(() => {
       vi.clearAllMocks();
       originalFetch = global.fetch;
-      global.fetch = vi.fn() as typeof fetch;
+      global.fetch = vi.fn() as unknown as typeof fetch;
     });
 
     afterEach(() => {
