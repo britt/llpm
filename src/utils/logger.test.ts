@@ -1,5 +1,4 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import * as z from 'zod';
 import { debug, getRecentDebugLogs } from './logger';
 
 describe('logger', () => {
