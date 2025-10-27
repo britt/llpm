@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import * as z from 'zod';
 import { DEFAULT_SALUTATION } from '../utils/salutation';
 
 // Mock the dependencies
@@ -35,8 +36,8 @@ describe('GitHub Issue Tools', () => {
 
       tools.forEach(tool => {
         expect(tool.inputSchema).toBeDefined();
-        expect(typeof tool.inputSchema.parse).toBe('function');
-        expect(typeof tool.inputSchema.safeParse).toBe('function');
+        expect(typeof (tool.inputSchema as unknown as z.ZodTypeAny).parse).toBe('function');
+        expect(typeof (tool.inputSchema as unknown as z.ZodTypeAny).safeParse).toBe('function');
       });
     });
   });
@@ -71,9 +72,9 @@ describe('GitHub Issue Tools', () => {
         node_id: 'node-1'
       } as any);
 
-      vi.mocked(projectBoardIntegration.autoAddToProjectBoard).mockResolvedValue({ success: true });
+      vi.mocked(projectBoardIntegration.autoAddToProjectBoard).mockResolvedValue({ success: true, message: '' });
 
-      const result = await createGitHubIssueTool.execute({
+      const result = await (createGitHubIssueTool.execute as any)({
         title: 'Test Issue',
         body: 'This is a test issue body.'
       });
@@ -110,7 +111,7 @@ describe('GitHub Issue Tools', () => {
         created_at: '2024-01-01T00:00:00Z'
       } as any);
 
-      const result = await commentOnGitHubIssueTool.execute({
+      const result = await (commentOnGitHubIssueTool.execute as any)({
         issueNumber: 1,
         body: 'This is a test comment.'
       });
@@ -153,9 +154,9 @@ describe('GitHub Issue Tools', () => {
         node_id: 'node-1'
       } as any);
 
-      vi.mocked(projectBoardIntegration.autoAddToProjectBoard).mockResolvedValue({ success: true });
+      vi.mocked(projectBoardIntegration.autoAddToProjectBoard).mockResolvedValue({ success: true, message: '' });
 
-      const result = await createGitHubIssueTool.execute({
+      const result = await (createGitHubIssueTool.execute as any)({
         title: 'Test Issue',
         body: 'This is a test issue body.'
       });
@@ -203,9 +204,9 @@ describe('GitHub Issue Tools', () => {
         node_id: 'node-1'
       } as any);
 
-      vi.mocked(projectBoardIntegration.autoAddToProjectBoard).mockResolvedValue({ success: true });
+      vi.mocked(projectBoardIntegration.autoAddToProjectBoard).mockResolvedValue({ success: true, message: '' });
 
-      const result = await createGitHubIssueTool.execute({
+      const result = await (createGitHubIssueTool.execute as any)({
         title: 'Test Issue',
         body: 'This is a test issue body.'
       });
