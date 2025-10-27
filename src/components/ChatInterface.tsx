@@ -259,13 +259,6 @@ const ViewMessages = memo(function ViewMessages({
       {/* Instead, render completed messages normally - they won't flicker since they're in memo */}
       <MessageList messages={completedMessages} />
 
-      {/* Visual separator between static and dynamic zones */}
-      {completedMessages.length > 0 && (
-        <Box paddingX={1} marginY={1}>
-          <Text color="red">{'─'.repeat(80)}</Text>
-        </Box>
-      )}
-
       {/* Dynamic zone: Active messages can re-render without affecting static zone */}
       <Box flexDirection="column">
         {/* Show collapse indicator if there are hidden lines */}
