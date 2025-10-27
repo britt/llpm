@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import * as z from 'zod';
 import {
   listAgentsTool,
   getAgentTool,
@@ -46,55 +47,55 @@ describe('REST Broker Tools', () => {
 
       tools.forEach(tool => {
         expect(tool.inputSchema).toBeDefined();
-        expect(typeof tool.inputSchema.parse).toBe('function');
-        expect(typeof tool.inputSchema.safeParse).toBe('function');
+        expect(typeof (tool.inputSchema as unknown as z.ZodTypeAny).parse).toBe('function');
+        expect(typeof (tool.inputSchema as unknown as z.ZodTypeAny).safeParse).toBe('function');
       });
     });
   });
 
   describe('listAgentsTool', () => {
     it('should have optional verifyAuth parameter', () => {
-      const parseResult = listAgentsTool.inputSchema.safeParse({});
+      const parseResult = (listAgentsTool.inputSchema as unknown as z.ZodTypeAny).safeParse({});
       expect(parseResult.success).toBe(true);
 
-      const parseResult2 = listAgentsTool.inputSchema.safeParse({ verifyAuth: true });
+      const parseResult2 = (listAgentsTool.inputSchema as unknown as z.ZodTypeAny).safeParse({ verifyAuth: true });
       expect(parseResult2.success).toBe(true);
     });
   });
 
   describe('getAgentTool', () => {
     it('should require agentId parameter', () => {
-      const parseResult = listAgentsTool.inputSchema.safeParse({});
+      const parseResult = (listAgentsTool.inputSchema as unknown as z.ZodTypeAny).safeParse({});
       expect(parseResult.success).toBe(true);
 
-      const parseResult2 = getAgentTool.inputSchema.safeParse({ agentId: 'test-agent' });
+      const parseResult2 = (getAgentTool.inputSchema as unknown as z.ZodTypeAny).safeParse({ agentId: 'test-agent' });
       expect(parseResult2.success).toBe(true);
     });
 
     it('should reject missing agentId', () => {
-      const parseResult = getAgentTool.inputSchema.safeParse({});
+      const parseResult = (getAgentTool.inputSchema as unknown as z.ZodTypeAny).safeParse({});
       expect(parseResult.success).toBe(false);
     });
   });
 
   describe('checkAgentHealthTool', () => {
     it('should require agentId parameter', () => {
-      const parseResult = checkAgentHealthTool.inputSchema.safeParse({ agentId: 'test-agent' });
+      const parseResult = (checkAgentHealthTool.inputSchema as unknown as z.ZodTypeAny).safeParse({ agentId: 'test-agent' });
       expect(parseResult.success).toBe(true);
     });
 
     it('should reject missing agentId', () => {
-      const parseResult = checkAgentHealthTool.inputSchema.safeParse({});
+      const parseResult = (checkAgentHealthTool.inputSchema as unknown as z.ZodTypeAny).safeParse({});
       expect(parseResult.success).toBe(false);
     });
   });
 
   describe('listJobsTool', () => {
     it('should require agentId and accept optional filters', () => {
-      const parseResult1 = listJobsTool.inputSchema.safeParse({ agentId: 'test-agent' });
+      const parseResult1 = (listJobsTool.inputSchema as unknown as z.ZodTypeAny).safeParse({ agentId: 'test-agent' });
       expect(parseResult1.success).toBe(true);
 
-      const parseResult2 = listJobsTool.inputSchema.safeParse({
+      const parseResult2 = (listJobsTool.inputSchema as unknown as z.ZodTypeAny).safeParse({
         agentId: 'test-agent',
         status: 'completed',
         limit: 10,
@@ -107,14 +108,14 @@ describe('REST Broker Tools', () => {
       const validStatuses = ['pending', 'running', 'completed', 'failed', 'cancelled'];
 
       validStatuses.forEach(status => {
-        const parseResult = listJobsTool.inputSchema.safeParse({
+        const parseResult = (listJobsTool.inputSchema as unknown as z.ZodTypeAny).safeParse({
           agentId: 'test-agent',
           status
         });
         expect(parseResult.success).toBe(true);
       });
 
-      const parseResult = listJobsTool.inputSchema.safeParse({
+      const parseResult = (listJobsTool.inputSchema as unknown as z.ZodTypeAny).safeParse({
         agentId: 'test-agent',
         status: 'invalid-status'
       });
@@ -122,7 +123,7 @@ describe('REST Broker Tools', () => {
     });
 
     it('should have default values for limit and offset', () => {
-      const parseResult = listJobsTool.inputSchema.parse({ agentId: 'test-agent' });
+      const parseResult = (listJobsTool.inputSchema as unknown as z.ZodTypeAny).parse({ agentId: 'test-agent' });
       expect(parseResult.limit).toBe(50);
       expect(parseResult.offset).toBe(0);
     });
@@ -130,7 +131,7 @@ describe('REST Broker Tools', () => {
 
   describe('getJobTool', () => {
     it('should require both agentId and jobId', () => {
-      const parseResult = getJobTool.inputSchema.safeParse({
+      const parseResult = (getJobTool.inputSchema as unknown as z.ZodTypeAny).safeParse({
         agentId: 'test-agent',
         jobId: 'test-job'
       });
@@ -138,17 +139,17 @@ describe('REST Broker Tools', () => {
     });
 
     it('should reject missing parameters', () => {
-      const parseResult1 = getJobTool.inputSchema.safeParse({ agentId: 'test-agent' });
+      const parseResult1 = (getJobTool.inputSchema as unknown as z.ZodTypeAny).safeParse({ agentId: 'test-agent' });
       expect(parseResult1.success).toBe(false);
 
-      const parseResult2 = getJobTool.inputSchema.safeParse({ jobId: 'test-job' });
+      const parseResult2 = (getJobTool.inputSchema as unknown as z.ZodTypeAny).safeParse({ jobId: 'test-job' });
       expect(parseResult2.success).toBe(false);
     });
   });
 
   describe('createJobTool', () => {
     it('should require agentId and payload', () => {
-      const parseResult = createJobTool.inputSchema.safeParse({
+      const parseResult = (createJobTool.inputSchema as unknown as z.ZodTypeAny).safeParse({
         agentId: 'test-agent',
         payload: { task: 'test' }
       });
@@ -163,7 +164,7 @@ describe('REST Broker Tools', () => {
       ];
 
       payloads.forEach(payload => {
-        const parseResult = createJobTool.inputSchema.safeParse({
+        const parseResult = (createJobTool.inputSchema as unknown as z.ZodTypeAny).safeParse({
           agentId: 'test-agent',
           payload
         });
@@ -172,14 +173,14 @@ describe('REST Broker Tools', () => {
     });
 
     it('should reject missing agentId', () => {
-      const parseResult = createJobTool.inputSchema.safeParse({ payload: {} });
+      const parseResult = (createJobTool.inputSchema as unknown as z.ZodTypeAny).safeParse({ payload: {} });
       expect(parseResult.success).toBe(false);
     });
   });
 
   describe('cancelJobTool', () => {
     it('should require both agentId and jobId', () => {
-      const parseResult = cancelJobTool.inputSchema.safeParse({
+      const parseResult = (cancelJobTool.inputSchema as unknown as z.ZodTypeAny).safeParse({
         agentId: 'test-agent',
         jobId: 'test-job'
       });
@@ -187,24 +188,24 @@ describe('REST Broker Tools', () => {
     });
 
     it('should reject missing parameters', () => {
-      const parseResult1 = cancelJobTool.inputSchema.safeParse({ agentId: 'test-agent' });
+      const parseResult1 = (cancelJobTool.inputSchema as unknown as z.ZodTypeAny).safeParse({ agentId: 'test-agent' });
       expect(parseResult1.success).toBe(false);
 
-      const parseResult2 = cancelJobTool.inputSchema.safeParse({ jobId: 'test-job' });
+      const parseResult2 = (cancelJobTool.inputSchema as unknown as z.ZodTypeAny).safeParse({ jobId: 'test-job' });
       expect(parseResult2.success).toBe(false);
     });
   });
 
   describe('markAgentAuthenticatedTool', () => {
     it('should require agentId parameter', () => {
-      const parseResult = markAgentAuthenticatedTool.inputSchema.safeParse({
+      const parseResult = (markAgentAuthenticatedTool.inputSchema as unknown as z.ZodTypeAny).safeParse({
         agentId: 'test-agent'
       });
       expect(parseResult.success).toBe(true);
     });
 
     it('should reject missing agentId', () => {
-      const parseResult = markAgentAuthenticatedTool.inputSchema.safeParse({});
+      const parseResult = (markAgentAuthenticatedTool.inputSchema as unknown as z.ZodTypeAny).safeParse({});
       expect(parseResult.success).toBe(false);
     });
   });
@@ -319,18 +320,18 @@ describe('REST Broker Tools', () => {
       const validPresets = ['dev', 'team', 'heavy', 'minimal', 'custom'];
 
       validPresets.forEach(preset => {
-        const parseResult = scaleAgentClusterTool.inputSchema.safeParse({ preset });
+        const parseResult = (scaleAgentClusterTool.inputSchema as unknown as z.ZodTypeAny).safeParse({ preset });
         expect(parseResult.success).toBe(true);
       });
     });
 
     it('should reject invalid preset', () => {
-      const parseResult = scaleAgentClusterTool.inputSchema.safeParse({ preset: 'invalid' });
+      const parseResult = (scaleAgentClusterTool.inputSchema as unknown as z.ZodTypeAny).safeParse({ preset: 'invalid' });
       expect(parseResult.success).toBe(false);
     });
 
     it('should accept custom instance counts', () => {
-      const parseResult = scaleAgentClusterTool.inputSchema.safeParse({
+      const parseResult = (scaleAgentClusterTool.inputSchema as unknown as z.ZodTypeAny).safeParse({
         preset: 'custom',
         claudeCode: 2,
         openaiCodex: 3,
@@ -342,26 +343,26 @@ describe('REST Broker Tools', () => {
 
     it('should validate instance count ranges (0-10)', () => {
       // Valid range
-      const parseResult1 = scaleAgentClusterTool.inputSchema.safeParse({
+      const parseResult1 = (scaleAgentClusterTool.inputSchema as unknown as z.ZodTypeAny).safeParse({
         preset: 'custom',
         claudeCode: 0
       });
       expect(parseResult1.success).toBe(true);
 
-      const parseResult2 = scaleAgentClusterTool.inputSchema.safeParse({
+      const parseResult2 = (scaleAgentClusterTool.inputSchema as unknown as z.ZodTypeAny).safeParse({
         preset: 'custom',
         claudeCode: 10
       });
       expect(parseResult2.success).toBe(true);
 
       // Invalid range
-      const parseResult3 = scaleAgentClusterTool.inputSchema.safeParse({
+      const parseResult3 = (scaleAgentClusterTool.inputSchema as unknown as z.ZodTypeAny).safeParse({
         preset: 'custom',
         claudeCode: 11
       });
       expect(parseResult3.success).toBe(false);
 
-      const parseResult4 = scaleAgentClusterTool.inputSchema.safeParse({
+      const parseResult4 = (scaleAgentClusterTool.inputSchema as unknown as z.ZodTypeAny).safeParse({
         preset: 'custom',
         claudeCode: -1
       });
@@ -369,13 +370,13 @@ describe('REST Broker Tools', () => {
     });
 
     it('should accept authType parameter', () => {
-      const parseResult1 = scaleAgentClusterTool.inputSchema.safeParse({
+      const parseResult1 = (scaleAgentClusterTool.inputSchema as unknown as z.ZodTypeAny).safeParse({
         preset: 'dev',
         authType: 'api_key'
       });
       expect(parseResult1.success).toBe(true);
 
-      const parseResult2 = scaleAgentClusterTool.inputSchema.safeParse({
+      const parseResult2 = (scaleAgentClusterTool.inputSchema as unknown as z.ZodTypeAny).safeParse({
         preset: 'dev',
         authType: 'subscription'
       });
@@ -383,14 +384,14 @@ describe('REST Broker Tools', () => {
     });
 
     it('should default authType to subscription', () => {
-      const parseResult = scaleAgentClusterTool.inputSchema.parse({
+      const parseResult = (scaleAgentClusterTool.inputSchema as unknown as z.ZodTypeAny).parse({
         preset: 'dev'
       });
       expect(parseResult.authType).toBe('subscription');
     });
 
     it('should reject invalid authType', () => {
-      const parseResult = scaleAgentClusterTool.inputSchema.safeParse({
+      const parseResult = (scaleAgentClusterTool.inputSchema as unknown as z.ZodTypeAny).safeParse({
         preset: 'dev',
         authType: 'invalid'
       });
@@ -399,13 +400,13 @@ describe('REST Broker Tools', () => {
 
     it('should allow optional parameters', () => {
       // Preset only
-      const parseResult1 = scaleAgentClusterTool.inputSchema.safeParse({
+      const parseResult1 = (scaleAgentClusterTool.inputSchema as unknown as z.ZodTypeAny).safeParse({
         preset: 'dev'
       });
       expect(parseResult1.success).toBe(true);
 
       // Custom with partial counts
-      const parseResult2 = scaleAgentClusterTool.inputSchema.safeParse({
+      const parseResult2 = (scaleAgentClusterTool.inputSchema as unknown as z.ZodTypeAny).safeParse({
         preset: 'custom',
         claudeCode: 2
       });
@@ -700,10 +701,10 @@ describe('REST Broker Tools', () => {
     });
 
     it('should require agentId parameter', () => {
-      const parseResult = getAgentConnectCommandTool.inputSchema.safeParse({ agentId: 'test' });
+      const parseResult = (getAgentConnectCommandTool.inputSchema as unknown as z.ZodTypeAny).safeParse({ agentId: 'test' });
       expect(parseResult.success).toBe(true);
 
-      const parseResult2 = getAgentConnectCommandTool.inputSchema.safeParse({});
+      const parseResult2 = (getAgentConnectCommandTool.inputSchema as unknown as z.ZodTypeAny).safeParse({});
       expect(parseResult2.success).toBe(false);
     });
   });
@@ -711,20 +712,20 @@ describe('REST Broker Tools', () => {
   describe('registerAgentTool', () => {
     it('should require agentId, name, and type parameters', async () => {
       const { registerAgentTool } = await import('./restBrokerTools');
-      const validResult = registerAgentTool.inputSchema.safeParse({
+      const validResult = (registerAgentTool.inputSchema as unknown as z.ZodTypeAny).safeParse({
         agentId: 'test-agent',
         name: 'Test Agent',
         type: 'test-type'
       });
       expect(validResult.success).toBe(true);
 
-      const invalidResult = registerAgentTool.inputSchema.safeParse({});
+      const invalidResult = (registerAgentTool.inputSchema as unknown as z.ZodTypeAny).safeParse({});
       expect(invalidResult.success).toBe(false);
     });
 
     it('should accept optional authType, provider, model, host, port, metadata', async () => {
       const { registerAgentTool } = await import('./restBrokerTools');
-      const validResult = registerAgentTool.inputSchema.safeParse({
+      const validResult = (registerAgentTool.inputSchema as unknown as z.ZodTypeAny).safeParse({
         agentId: 'test-agent',
         name: 'Test Agent',
         type: 'test-type',
@@ -740,7 +741,7 @@ describe('REST Broker Tools', () => {
 
     it('should validate authType enum values', async () => {
       const { registerAgentTool } = await import('./restBrokerTools');
-      const validResult = registerAgentTool.inputSchema.safeParse({
+      const validResult = (registerAgentTool.inputSchema as unknown as z.ZodTypeAny).safeParse({
         agentId: 'test-agent',
         name: 'Test Agent',
         type: 'test-type',
@@ -748,7 +749,7 @@ describe('REST Broker Tools', () => {
       });
       expect(validResult.success).toBe(true);
 
-      const invalidResult = registerAgentTool.inputSchema.safeParse({
+      const invalidResult = (registerAgentTool.inputSchema as unknown as z.ZodTypeAny).safeParse({
         agentId: 'test-agent',
         name: 'Test Agent',
         type: 'test-type',
@@ -761,16 +762,16 @@ describe('REST Broker Tools', () => {
   describe('deleteAgentTool', () => {
     it('should require agentId parameter', async () => {
       const { deleteAgentTool } = await import('./restBrokerTools');
-      const validResult = deleteAgentTool.inputSchema.safeParse({ agentId: 'test-agent' });
+      const validResult = (deleteAgentTool.inputSchema as unknown as z.ZodTypeAny).safeParse({ agentId: 'test-agent' });
       expect(validResult.success).toBe(true);
 
-      const invalidResult = deleteAgentTool.inputSchema.safeParse({});
+      const invalidResult = (deleteAgentTool.inputSchema as unknown as z.ZodTypeAny).safeParse({});
       expect(invalidResult.success).toBe(false);
     });
 
     it('should accept optional confirmed parameter', async () => {
       const { deleteAgentTool } = await import('./restBrokerTools');
-      const validResult = deleteAgentTool.inputSchema.safeParse({
+      const validResult = (deleteAgentTool.inputSchema as unknown as z.ZodTypeAny).safeParse({
         agentId: 'test-agent',
         confirmed: true
       });
@@ -781,16 +782,16 @@ describe('REST Broker Tools', () => {
   describe('updateAgentTool', () => {
     it('should require agentId parameter', async () => {
       const { updateAgentTool } = await import('./restBrokerTools');
-      const validResult = updateAgentTool.inputSchema.safeParse({ agentId: 'test-agent' });
+      const validResult = (updateAgentTool.inputSchema as unknown as z.ZodTypeAny).safeParse({ agentId: 'test-agent' });
       expect(validResult.success).toBe(true);
 
-      const invalidResult = updateAgentTool.inputSchema.safeParse({});
+      const invalidResult = (updateAgentTool.inputSchema as unknown as z.ZodTypeAny).safeParse({});
       expect(invalidResult.success).toBe(false);
     });
 
     it('should accept optional status and metadata', async () => {
       const { updateAgentTool } = await import('./restBrokerTools');
-      const validResult = updateAgentTool.inputSchema.safeParse({
+      const validResult = (updateAgentTool.inputSchema as unknown as z.ZodTypeAny).safeParse({
         agentId: 'test-agent',
         status: 'available',
         metadata: { key: 'value' }
@@ -800,13 +801,13 @@ describe('REST Broker Tools', () => {
 
     it('should validate status enum values', async () => {
       const { updateAgentTool } = await import('./restBrokerTools');
-      const validResult = updateAgentTool.inputSchema.safeParse({
+      const validResult = (updateAgentTool.inputSchema as unknown as z.ZodTypeAny).safeParse({
         agentId: 'test-agent',
         status: 'available'
       });
       expect(validResult.success).toBe(true);
 
-      const invalidResult = updateAgentTool.inputSchema.safeParse({
+      const invalidResult = (updateAgentTool.inputSchema as unknown as z.ZodTypeAny).safeParse({
         agentId: 'test-agent',
         status: 'invalid'
       });
@@ -817,13 +818,13 @@ describe('REST Broker Tools', () => {
   describe('triggerAgentVerifyTool', () => {
     it('should accept optional agentId parameter', async () => {
       const { triggerAgentVerifyTool } = await import('./restBrokerTools');
-      const validResult = triggerAgentVerifyTool.inputSchema.safeParse({ agentId: 'test-agent' });
+      const validResult = (triggerAgentVerifyTool.inputSchema as unknown as z.ZodTypeAny).safeParse({ agentId: 'test-agent' });
       expect(validResult.success).toBe(true);
     });
 
     it('should work without any parameters (verify all)', async () => {
       const { triggerAgentVerifyTool } = await import('./restBrokerTools');
-      const validResult = triggerAgentVerifyTool.inputSchema.safeParse({});
+      const validResult = (triggerAgentVerifyTool.inputSchema as unknown as z.ZodTypeAny).safeParse({});
       expect(validResult.success).toBe(true);
     });
   });
