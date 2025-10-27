@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import * as z from 'zod';
 import { takeScreenshotTool, checkScreenshotSetupTool } from './screenshotTools';
 
 describe('Screenshot Tools', () => {
@@ -19,17 +20,17 @@ describe('Screenshot Tools', () => {
   describe('Parameter Validation', () => {
     it('should have inputSchema defined', () => {
       expect(takeScreenshotTool.inputSchema).toBeDefined();
-      expect(typeof takeScreenshotTool.inputSchema.parse).toBe('function');
+      expect(typeof (takeScreenshotTool.inputSchema as unknown as z.ZodTypeAny).parse).toBe('function');
     });
 
     it('should have a valid Zod schema as inputSchema', () => {
       expect(takeScreenshotTool.inputSchema).toBeDefined();
-      expect(typeof takeScreenshotTool.inputSchema.parse).toBe('function');
-      expect(typeof takeScreenshotTool.inputSchema.safeParse).toBe('function');
+      expect(typeof (takeScreenshotTool.inputSchema as unknown as z.ZodTypeAny).parse).toBe('function');
+      expect(typeof (takeScreenshotTool.inputSchema as unknown as z.ZodTypeAny).safeParse).toBe('function');
 
       expect(checkScreenshotSetupTool.inputSchema).toBeDefined();
-      expect(typeof checkScreenshotSetupTool.inputSchema.parse).toBe('function');
-      expect(typeof checkScreenshotSetupTool.inputSchema.safeParse).toBe('function');
+      expect(typeof (checkScreenshotSetupTool.inputSchema as unknown as z.ZodTypeAny).parse).toBe('function');
+      expect(typeof (checkScreenshotSetupTool.inputSchema as unknown as z.ZodTypeAny).safeParse).toBe('function');
     });
 
     it('should validate valid parameters', () => {
@@ -41,7 +42,7 @@ describe('Screenshot Tools', () => {
       };
 
       // Should not throw
-      expect(() => takeScreenshotTool.inputSchema.parse(validParams)).not.toThrow();
+      expect(() => (takeScreenshotTool.inputSchema as unknown as z.ZodTypeAny).parse(validParams)).not.toThrow();
     });
 
     it('should require URL parameter', () => {
@@ -50,7 +51,7 @@ describe('Screenshot Tools', () => {
       };
 
       // Should throw because URL is required
-      expect(() => takeScreenshotTool.inputSchema.parse(invalidParams)).toThrow();
+      expect(() => (takeScreenshotTool.inputSchema as unknown as z.ZodTypeAny).parse(invalidParams)).toThrow();
     });
   });
 
@@ -58,7 +59,7 @@ describe('Screenshot Tools', () => {
     it('should require shot-scraper for screenshots', async () => {
       // This is an integration test - it will fail if shot-scraper is not installed
       // but that's expected behavior
-      const result = await takeScreenshotTool.execute({
+      const result = await (takeScreenshotTool.execute as any)({
         url: 'https://example.com'
       });
 
@@ -73,7 +74,7 @@ describe('Screenshot Tools', () => {
     });
 
     it('should check shot-scraper availability', async () => {
-      const result = await checkScreenshotSetupTool.execute({});
+      const result = await (checkScreenshotSetupTool.execute as any)({});
 
       // Either succeeds or provides installation instructions
       if (result.success) {
