@@ -97,7 +97,7 @@ describe('RequestLogger', () => {
 
       logger.logStep('test_step', 'start');
 
-      const startLog = capturedLogs[0];
+      const startLog = capturedLogs[0]!;
       expect(startLog?.duration).toBeUndefined();
     });
   });
@@ -112,7 +112,7 @@ describe('RequestLogger', () => {
         data: 'Contact user@domain.org for details'
       });
 
-      const log = capturedLogs[0];
+      const log = capturedLogs[0]!;
       expect(log.metadata?.user).toBe('[EMAIL_REDACTED]');
       expect(log.metadata?.data).toContain('[EMAIL_REDACTED]');
     });
@@ -127,7 +127,7 @@ describe('RequestLogger', () => {
         authHeader: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9'
       });
 
-      const log = capturedLogs[0];
+      const log = capturedLogs[0]!;
       expect(log.metadata?.apiKey).toBe('[REDACTED]');
       expect(log.metadata?.token).toBe('[REDACTED]');
       expect(log.metadata?.authHeader).toBe('Bearer [TOKEN_REDACTED]');
@@ -140,7 +140,7 @@ describe('RequestLogger', () => {
       const email = 'test@example.com';
       logger.logStep('test', 'start', 'info', { user: email });
 
-      const log = capturedLogs[0];
+      const log = capturedLogs[0]!;
       expect(log.metadata?.user).toBe(email);
     });
   });
@@ -187,8 +187,8 @@ describe('RequestLogger', () => {
         status: 200
       });
 
-      const startLog = capturedLogs[0];
-      const endLog = capturedLogs[1];
+      const startLog = capturedLogs[0]!;
+      const endLog = capturedLogs[1]!;
 
       expect(startLog.step).toBe('llm_call');
       expect(startLog.metadata?.model).toBe('gpt-4');
@@ -211,8 +211,8 @@ describe('RequestLogger', () => {
       logger.logToolCall('test_tool', 'start', { param: 'value' });
       logger.logToolCall('test_tool', 'end', { param: 'value' }, { result: 'success' });
 
-      const startLog = capturedLogs[0];
-      const endLog = capturedLogs[1];
+      const startLog = capturedLogs[0]!;
+      const endLog = capturedLogs[1]!;
 
       expect(startLog.step).toBe('tool_call');
       expect(startLog.metadata?.name).toBe('test_tool');
@@ -230,7 +230,7 @@ describe('RequestLogger', () => {
 
       logger.logToolCall('test_tool', 'end', {}, undefined, 'Tool execution failed');
 
-      const log = capturedLogs[0];
+      const log = capturedLogs[0]!;
       expect(log.metadata?.error).toBe('Tool execution failed');
       expect(log.metadata?.status).toBe('failed');
     });
@@ -244,8 +244,8 @@ describe('RequestLogger', () => {
       logger.logDatabaseOperation('insert', 'start', { table: 'notes' });
       logger.logDatabaseOperation('insert', 'end', { table: 'notes', rowCount: 1 });
 
-      const startLog = capturedLogs[0];
-      const endLog = capturedLogs[1];
+      const startLog = capturedLogs[0]!;
+      const endLog = capturedLogs[1]!;
 
       expect(startLog.step).toBe('db_insert');
       expect(startLog.metadata?.table).toBe('notes');
@@ -270,8 +270,8 @@ describe('RequestLogger', () => {
         status: 200
       });
 
-      const startLog = capturedLogs[0];
-      const endLog = capturedLogs[1];
+      const startLog = capturedLogs[0]!;
+      const endLog = capturedLogs[1]!;
 
       expect(startLog.step).toBe('api_github');
       expect(startLog.metadata?.method).toBe('GET');
@@ -318,7 +318,7 @@ describe('RequestLogger', () => {
         key2: 123
       });
 
-      const log = capturedLogs[0];
+      const log = capturedLogs[0]!;
 
       // Check for timestamp
       expect(log.timestamp).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/);
