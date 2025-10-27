@@ -36,32 +36,52 @@ export function App() {
   const [showAllHistory, setShowAllHistory] = React.useState(false);
   const [maxRenderedLines, setMaxRenderedLines] = React.useState(300);
 
+  // Number of recent messages to keep in dynamic zone (rest go to static)
+  // Keep this as low as possible to minimize flicker - only streaming/updating messages need to be dynamic
+  const DYNAMIC_MESSAGE_COUNT = 2;
+
   // Load max rendered lines configuration on mount
   React.useEffect(() => {
     getMaxRenderedLines().then(setMaxRenderedLines);
   }, []);
 
-  // Filter messages based on line count (unless showing all history)
-  // Full history is still maintained in useChat hook
-  const { visibleMessages, hiddenLinesCount, totalLines } = React.useMemo(() => {
+  // Split messages into static (completed) and dynamic (active) zones
+  const { completedMessages, activeMessages, hiddenLinesCount, totalLines } = React.useMemo(() => {
     if (showAllHistory) {
-      // Show all messages
+      // When showing all history, split messages into static + dynamic zones
       const totalLines = messages.reduce((sum, msg) => {
         const lines = (msg.content.match(/\n/g) || []).length;
         return sum + (msg.content.endsWith('\n') ? lines : lines + 1);
       }, 0);
+
+      // All but last DYNAMIC_MESSAGE_COUNT go to static zone
+      const splitIndex = Math.max(0, messages.length - DYNAMIC_MESSAGE_COUNT);
+
       return {
-        visibleMessages: messages,
+        completedMessages: messages.slice(0, splitIndex),
+        activeMessages: messages.slice(splitIndex),
         hiddenLinesCount: 0,
         totalLines
       };
     }
 
-    return filterMessagesByLines(messages, maxRenderedLines);
+    // When not showing all history, filter by line count first
+    const { visibleMessages, hiddenLinesCount, totalLines } = filterMessagesByLines(messages, maxRenderedLines);
+
+    // Then split visible messages into static + dynamic zones
+    const splitIndex = Math.max(0, visibleMessages.length - DYNAMIC_MESSAGE_COUNT);
+
+    return {
+      completedMessages: visibleMessages.slice(0, splitIndex),
+      activeMessages: visibleMessages.slice(splitIndex),
+      hiddenLinesCount,
+      totalLines
+    };
   }, [messages, showAllHistory, maxRenderedLines]);
 
   return React.createElement(ChatInterface, {
-    messages: visibleMessages,
+    completedMessages,
+    activeMessages,
     hiddenLinesCount,
     totalLines,
     showAllHistory,

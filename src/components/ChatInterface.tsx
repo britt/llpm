@@ -1,5 +1,5 @@
 import { useState, useEffect, memo, useMemo, useCallback } from 'react';
-import { Box, Text, useInput } from 'ink';
+import { Box, Text, useInput, Static } from 'ink';
 import type { Message } from '../types';
 import {
   getCurrentProject,
@@ -17,7 +17,8 @@ import { RequestLogDisplay } from './RequestLogDisplay';
 import { renderMarkdown, isASCIICapableTerminal } from '../utils/markdownRenderer';
 
 interface ChatInterfaceProps {
-  messages: Message[];
+  completedMessages: Message[];
+  activeMessages: Message[];
   hiddenLinesCount?: number;
   totalLines?: number;
   showAllHistory?: boolean;
@@ -143,15 +144,6 @@ const ProjectStatus = memo(
 
 // Individual message component to prevent full rerenders
 const MessageItem = memo(({ message }: { message: Message }) => {
-  const [renderedContent, setRenderedContent] = useState<string>(message.content);
-  const [isRendering, setIsRendering] = useState(false);
-
-  // Reset state when message ID changes to prevent showing stale content
-  useEffect(() => {
-    setRenderedContent(message.content);
-    setIsRendering(false);
-  }, [message.id]);
-
   const isSystemMessage = message.role === 'system' || message.role === 'ui-notification';
   const isUserMessage = message.role === 'user';
   const shouldAddPadding = !isSystemMessage && !isUserMessage;
@@ -169,17 +161,7 @@ const MessageItem = memo(({ message }: { message: Message }) => {
     return 'brightWhite';
   }, [message.role]);
 
-  // Determine if this message should be rendered with markdown
-  const shouldRenderMarkdown = useMemo(() => {
-    // Only render markdown for assistant messages
-    if (message.role === 'assistant') {
-      // Check if rendering is enabled
-      return isASCIICapableTerminal();
-    }
-    return false;
-  }, [message.role]);
-
-  // Prepend emoji to system and user messages
+  // Render markdown synchronously for assistant messages
   const displayContent = useMemo(() => {
     if (isSystemMessage) {
       return `System: ${message.content}`;
@@ -187,35 +169,22 @@ const MessageItem = memo(({ message }: { message: Message }) => {
     if (isUserMessage) {
       return `> ${message.content}`;
     }
-    // For PM messages, use rendered content
-    return isRendering ? message.content : renderedContent;
-  }, [message.role, isRendering, message.content, renderedContent]);
-
-  // Render markdown for PM messages
-  useEffect(() => {
-    if (!shouldRenderMarkdown) {
-      setRenderedContent(message.content);
-      return;
-    }
-
-    setIsRendering(true);
-    renderMarkdown(message.content)
-      .then(rendered => {
-        setRenderedContent(rendered);
-        setIsRendering(false);
-      })
-      .catch(error => {
+    // For assistant messages, render markdown if terminal supports it
+    if (message.role === 'assistant' && isASCIICapableTerminal()) {
+      try {
+        return renderMarkdown(message.content);
+      } catch (error) {
         console.error('Failed to render markdown:', error);
-        setRenderedContent(message.content);
-        setIsRendering(false);
-      });
-  }, [message.content, shouldRenderMarkdown]);
+        return message.content;
+      }
+    }
+    return message.content;
+  }, [message.role, message.content, isSystemMessage, isUserMessage]);
 
   return (
     <Box
       marginBottom={1}
       flexDirection="column"
-      paddingX={1}
       paddingY={shouldAddPadding ? 1 : 0}
       backgroundColor={backgroundColor}
     >
@@ -236,38 +205,54 @@ function MessageList({ messages }: { messages: Message[] }) {
   );
 }
 
-function ViewMessages({
-  messages,
+const ViewMessages = memo(function ViewMessages({
+  completedMessages,
+  activeMessages,
   queuedMessages,
   hiddenLinesCount,
   totalLines,
   showAllHistory
 }: {
-  messages: Message[];
+  completedMessages: Message[];
+  activeMessages: Message[];
   queuedMessages: QueuedMessage[];
   hiddenLinesCount?: number;
   totalLines?: number;
   showAllHistory?: boolean;
 }) {
+  // Combine all messages for Static rendering
+  const allMessages = [...completedMessages, ...activeMessages];
+
   return (
     <Box flexDirection="column" paddingX={1}>
-      {/* Show collapse indicator if there are hidden lines */}
-      {hiddenLinesCount !== undefined && totalLines !== undefined && (
-        <CollapseIndicator
-          hiddenLinesCount={hiddenLinesCount}
-          totalLines={totalLines}
-          showAllHistory={showAllHistory || false}
-        />
+      {/* Static zone: ALL messages render once and never update */}
+      {/* This eliminates flicker when typing in input */}
+      {allMessages.length > 0 && (
+        <Static items={allMessages}>
+          {(message) => <MessageItem key={message.id} message={message} />}
+        </Static>
       )}
-      <MessageList messages={messages} />
-      {/* Show queued messages in light text */}
-      <MessageQueue messages={queuedMessages} />
+
+      {/* Dynamic zone: Only UI elements that need to update */}
+      <Box flexDirection="column">
+        {/* Show collapse indicator if there are hidden lines */}
+        {hiddenLinesCount !== undefined && totalLines !== undefined && (
+          <CollapseIndicator
+            hiddenLinesCount={hiddenLinesCount}
+            totalLines={totalLines}
+            showAllHistory={showAllHistory || false}
+          />
+        )}
+        {/* Show queued messages in light text */}
+        <MessageQueue messages={queuedMessages} />
+      </Box>
     </Box>
   );
-}
+});
 
 export const ChatInterface = memo(function ChatInterface({
-  messages,
+  completedMessages,
+  activeMessages,
   hiddenLinesCount = 0,
   totalLines = 0,
   showAllHistory = false,
@@ -319,7 +304,9 @@ export const ChatInterface = memo(function ChatInterface({
 
   // Reload model when a model switch notification is detected
   useEffect(() => {
-    const lastMessage = messages[messages.length - 1];
+    // Check last message in either active or completed messages
+    const allMessages = [...completedMessages, ...activeMessages];
+    const lastMessage = allMessages[allMessages.length - 1];
     if (lastMessage?.role === 'ui-notification' && lastMessage?.content?.includes('Switched to')) {
       const loadModel = async () => {
         try {
@@ -331,7 +318,7 @@ export const ChatInterface = memo(function ChatInterface({
       };
       loadModel();
     }
-  }, [messages]);
+  }, [completedMessages, activeMessages]);
 
   // Handle project selection - memoized to prevent re-creation
   const handleProjectSelect = useCallback(
@@ -455,9 +442,10 @@ export const ChatInterface = memo(function ChatInterface({
 
   return (
     <Box flexDirection="column" minHeight="100%">
-      {/* Messages - no border, fills available space */}
+      {/* Messages - two-zone rendering: Static (completed) + Dynamic (active) */}
       <ViewMessages
-        messages={messages}
+        completedMessages={completedMessages}
+        activeMessages={activeMessages}
         queuedMessages={queuedMessages}
         hiddenLinesCount={hiddenLinesCount}
         totalLines={totalLines}
