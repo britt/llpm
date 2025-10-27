@@ -42,7 +42,7 @@ describe('useChat - Message State', () => {
     vi.mocked(saveChatHistory).mockResolvedValue();
     vi.mocked(parseCommand).mockReturnValue({
       isCommand: false,
-      command: null,
+      command: undefined,
       args: []
     });
   });
@@ -169,7 +169,7 @@ describe('useChat - Message State', () => {
       let capturedContent = '';
       vi.mocked(parseCommand).mockImplementation(content => {
         capturedContent = content;
-        return { isCommand: false, command: null, args: [] };
+        return { isCommand: false, command: undefined, args: [] };
       });
 
       const { result } = renderHook(() => useChat());
@@ -205,7 +205,6 @@ describe('useChat - Message State', () => {
       });
       vi.mocked(executeCommand).mockResolvedValue({
         content: 'Help information',
-        shouldAddToHistory: true
       });
 
       const { result } = renderHook(() => useChat());
@@ -245,7 +244,6 @@ describe('useChat - Message State', () => {
       // Make executeCommand take some time
       vi.mocked(executeCommand).mockImplementation(async () => {
         await new Promise(resolve => setTimeout(resolve, 100));
-        return { content: 'Help', shouldAddToHistory: true };
       });
 
       const { result } = renderHook(() => useChat());
@@ -289,7 +287,6 @@ describe('useChat - Message State', () => {
       });
       vi.mocked(executeCommand).mockResolvedValue({
         content: 'System information',
-        shouldAddToHistory: true,
         success: true
       });
 
@@ -334,7 +331,6 @@ describe('useChat - Message State', () => {
       });
       vi.mocked(executeCommand).mockResolvedValue({
         content: 'Chat history cleared',
-        shouldAddToHistory: false,
         success: true
       });
 
@@ -388,7 +384,6 @@ describe('useChat - Message State', () => {
       });
       vi.mocked(executeCommand).mockResolvedValue({
         content: 'Switched to project: test-project',
-        shouldAddToHistory: true,
         success: true
       });
 
@@ -428,7 +423,7 @@ describe('useChat - Message State', () => {
       vi.mocked(loadChatHistory).mockResolvedValue([]);
       vi.mocked(parseCommand).mockReturnValue({
         isCommand: false,
-        command: null,
+        command: undefined,
         args: []
       });
       vi.mocked(generateResponse).mockResolvedValue('LLM response');
@@ -461,7 +456,7 @@ describe('useChat - Message State', () => {
       vi.mocked(loadChatHistory).mockResolvedValue([]);
       vi.mocked(parseCommand).mockReturnValue({
         isCommand: false,
-        command: null,
+        command: undefined,
         args: []
       });
       vi.mocked(generateResponse).mockResolvedValue('Response');
@@ -500,7 +495,7 @@ describe('useChat - Message State', () => {
       vi.mocked(loadChatHistory).mockResolvedValue([]);
       vi.mocked(parseCommand).mockReturnValue({
         isCommand: false,
-        command: null,
+        command: undefined,
         args: []
       });
       vi.mocked(generateResponse).mockResolvedValue('AI response text');
@@ -536,7 +531,7 @@ describe('useChat - Message State', () => {
       vi.mocked(loadChatHistory).mockResolvedValue([]);
       vi.mocked(parseCommand).mockReturnValue({
         isCommand: false,
-        command: null,
+        command: undefined,
         args: []
       });
       vi.mocked(generateResponse).mockRejectedValue(new Error('LLM API error'));
@@ -572,7 +567,7 @@ describe('useChat - Message State', () => {
       vi.mocked(loadChatHistory).mockResolvedValue([]);
       vi.mocked(parseCommand).mockReturnValue({
         isCommand: false,
-        command: null,
+        command: undefined,
         args: []
       });
       // Return empty or whitespace-only response
@@ -656,7 +651,7 @@ describe('useChat - Message State', () => {
       vi.mocked(loadChatHistory).mockResolvedValue([]);
       vi.mocked(parseCommand).mockReturnValue({
         isCommand: false,
-        command: null,
+        command: undefined,
         args: []
       });
       vi.mocked(generateResponse).mockImplementation(async () => {
@@ -702,7 +697,6 @@ describe('useChat - Message State', () => {
       vi.mocked(loadChatHistory).mockResolvedValue([]);
       vi.mocked(executeCommand).mockResolvedValue({
         content: 'Switched to gpt-4',
-        shouldAddToHistory: true,
         success: true
       });
 
@@ -795,7 +789,6 @@ describe('useChat - Message State', () => {
       vi.mocked(loadChatHistory).mockResolvedValue([]);
       vi.mocked(executeCommand).mockResolvedValue({
         content: 'Select a model',
-        shouldAddToHistory: true,
         success: true,
         interactive: {
           type: 'model-select',
@@ -863,7 +856,6 @@ describe('useChat - Message State', () => {
       vi.mocked(loadChatHistory).mockResolvedValue([]);
       vi.mocked(executeCommand).mockResolvedValue({
         content: 'Current model: gpt-4',
-        shouldAddToHistory: true,
         success: true
         // No interactive property - should be treated as non-interactive
       });
@@ -969,7 +961,7 @@ describe('useChat - Message State', () => {
       vi.mocked(loadChatHistory).mockResolvedValue([]);
       vi.mocked(parseCommand).mockReturnValue({
         isCommand: false,
-        command: null,
+        command: undefined,
         args: []
       });
       // Make generateResponse throw an error to trigger error path
@@ -1009,7 +1001,7 @@ describe('useChat - Message State', () => {
       vi.mocked(loadChatHistory).mockResolvedValue([]);
       vi.mocked(parseCommand).mockReturnValue({
         isCommand: false,
-        command: null,
+        command: undefined,
         args: []
       });
       vi.mocked(generateResponse).mockResolvedValue('Response after project switch');
@@ -1056,7 +1048,6 @@ describe('useChat - Message State', () => {
       // Command result with no interactive property at all
       vi.mocked(executeCommand).mockResolvedValue({
         content: 'Command executed',
-        shouldAddToHistory: true,
         success: true
         // Note: no 'interactive' property
       });
@@ -1113,7 +1104,7 @@ describe('useChat - Message State', () => {
       vi.mocked(loadChatHistory).mockResolvedValue([]);
       vi.mocked(parseCommand).mockReturnValue({
         isCommand: false,
-        command: null,
+        command: undefined,
         args: []
       });
 
@@ -1172,7 +1163,6 @@ describe('useChat - Message State', () => {
       });
       vi.mocked(executeCommand).mockResolvedValue({
         content: 'Select a model',
-        shouldAddToHistory: true,
         success: true,
         interactive: {
           type: 'model-select',
@@ -1217,7 +1207,6 @@ describe('useChat - Message State', () => {
       });
       vi.mocked(executeCommand).mockResolvedValue({
         content: 'Command failed',
-        shouldAddToHistory: true,
         success: false // Not successful
       });
 
@@ -1256,7 +1245,6 @@ describe('useChat - Message State', () => {
       });
       vi.mocked(executeCommand).mockResolvedValue({
         content: 'Project set to: my-project',
-        shouldAddToHistory: true,
         success: true
       });
 
@@ -1293,7 +1281,7 @@ describe('useChat - Message State', () => {
       vi.mocked(loadChatHistory).mockResolvedValue([]);
       vi.mocked(parseCommand).mockReturnValue({
         isCommand: false,
-        command: null,
+        command: undefined,
         args: []
       });
       // Return empty string
@@ -1330,7 +1318,7 @@ describe('useChat - Message State', () => {
       vi.mocked(loadChatHistory).mockResolvedValue([]);
       vi.mocked(parseCommand).mockReturnValue({
         isCommand: false,
-        command: null,
+        command: undefined,
         args: []
       });
       // Return null (which gets coerced to empty)
