@@ -1,6 +1,6 @@
 import cliMd from 'cli-markdown';
 
-export async function renderMarkdown(markdown: string): Promise<string> {
+export function renderMarkdown(markdown: string): string {
   return cliMd(markdown);
 }
 

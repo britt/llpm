@@ -1,5 +1,5 @@
 import { useState, useEffect, memo, useMemo, useCallback } from 'react';
-import { Box, Text, useInput } from 'ink';
+import { Box, Text, useInput, Static } from 'ink';
 import type { Message } from '../types';
 import {
   getCurrentProject,
@@ -144,15 +144,6 @@ const ProjectStatus = memo(
 
 // Individual message component to prevent full rerenders
 const MessageItem = memo(({ message }: { message: Message }) => {
-  const [renderedContent, setRenderedContent] = useState<string>(message.content);
-  const [isRendering, setIsRendering] = useState(false);
-
-  // Reset state when message ID changes to prevent showing stale content
-  useEffect(() => {
-    setRenderedContent(message.content);
-    setIsRendering(false);
-  }, [message.id]);
-
   const isSystemMessage = message.role === 'system' || message.role === 'ui-notification';
   const isUserMessage = message.role === 'user';
   const shouldAddPadding = !isSystemMessage && !isUserMessage;
@@ -170,17 +161,7 @@ const MessageItem = memo(({ message }: { message: Message }) => {
     return 'brightWhite';
   }, [message.role]);
 
-  // Determine if this message should be rendered with markdown
-  const shouldRenderMarkdown = useMemo(() => {
-    // Only render markdown for assistant messages
-    if (message.role === 'assistant') {
-      // Check if rendering is enabled
-      return isASCIICapableTerminal();
-    }
-    return false;
-  }, [message.role]);
-
-  // Prepend emoji to system and user messages
+  // Render markdown synchronously for assistant messages
   const displayContent = useMemo(() => {
     if (isSystemMessage) {
       return `System: ${message.content}`;
@@ -188,29 +169,17 @@ const MessageItem = memo(({ message }: { message: Message }) => {
     if (isUserMessage) {
       return `> ${message.content}`;
     }
-    // For PM messages, use rendered content
-    return isRendering ? message.content : renderedContent;
-  }, [message.role, isRendering, message.content, renderedContent]);
-
-  // Render markdown for PM messages
-  useEffect(() => {
-    if (!shouldRenderMarkdown) {
-      setRenderedContent(message.content);
-      return;
-    }
-
-    setIsRendering(true);
-    renderMarkdown(message.content)
-      .then(rendered => {
-        setRenderedContent(rendered);
-        setIsRendering(false);
-      })
-      .catch(error => {
+    // For assistant messages, render markdown if terminal supports it
+    if (message.role === 'assistant' && isASCIICapableTerminal()) {
+      try {
+        return renderMarkdown(message.content);
+      } catch (error) {
         console.error('Failed to render markdown:', error);
-        setRenderedContent(message.content);
-        setIsRendering(false);
-      });
-  }, [message.content, shouldRenderMarkdown]);
+        return message.content;
+      }
+    }
+    return message.content;
+  }, [message.role, message.content, isSystemMessage, isUserMessage]);
 
   return (
     <Box
@@ -255,9 +224,12 @@ const ViewMessages = memo(function ViewMessages({
   return (
     <Box flexDirection="column" paddingX={1}>
       {/* Static zone: Completed messages render once and never update */}
-      {/* Note: Can't use Static with MessageItem due to async markdown rendering */}
-      {/* Instead, render completed messages normally - they won't flicker since they're in memo */}
-      <MessageList messages={completedMessages} />
+      {/* Now works with synchronous markdown rendering! */}
+      {completedMessages.length > 0 && (
+        <Static items={completedMessages}>
+          {(message) => <MessageItem key={message.id} message={message} />}
+        </Static>
+      )}
 
       {/* Dynamic zone: Active messages can re-render without affecting static zone */}
       <Box flexDirection="column">
