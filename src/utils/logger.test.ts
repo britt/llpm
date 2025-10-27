@@ -13,15 +13,15 @@ describe('logger', () => {
       const logs = getRecentDebugLogs(1);
 
       expect(logs).toHaveLength(1);
-      expect(logs[0].message).toBe('Test message');
-      expect(logs[0].timestamp).toBeDefined();
+      expect(logs[0]!.message).toBe('Test message');
+      expect(logs[0]!.timestamp).toBeDefined();
     });
 
     it('should handle multiple arguments', () => {
       debug('Message', 'with', 'multiple', 'parts');
       const logs = getRecentDebugLogs(1);
 
-      expect(logs[0].message).toBe('Message with multiple parts');
+      expect(logs[0]!.message).toBe('Message with multiple parts');
     });
 
     it('should truncate long strings', () => {
@@ -29,8 +29,8 @@ describe('logger', () => {
       debug(longString);
       const logs = getRecentDebugLogs(1);
 
-      expect(logs[0].message.length).toBeLessThanOrEqual(503); // 500 + '...'
-      expect(logs[0].message).toContain('...');
+      expect(logs[0]!.message.length).toBeLessThanOrEqual(503); // 500 + '...'
+      expect(logs[0]!.message).toContain('...');
     });
 
     it('should truncate large objects', () => {
@@ -44,16 +44,16 @@ describe('logger', () => {
       debug(largeObject);
       const logs = getRecentDebugLogs(1);
 
-      expect(logs[0].message.length).toBeLessThanOrEqual(503); // 500 + '...'
-      expect(logs[0].message).toContain('...');
+      expect(logs[0]!.message.length).toBeLessThanOrEqual(503); // 500 + '...'
+      expect(logs[0]!.message).toContain('...');
     });
 
     it('should not truncate short messages', () => {
       debug('Short message');
       const logs = getRecentDebugLogs(1);
 
-      expect(logs[0].message).toBe('Short message');
-      expect(logs[0].message).not.toContain('...');
+      expect(logs[0]!.message).toBe('Short message');
+      expect(logs[0]!.message).not.toContain('...');
     });
 
     it('should handle mixed short and long arguments', () => {
@@ -62,8 +62,8 @@ describe('logger', () => {
       const logs = getRecentDebugLogs(1);
 
       // First arg should be intact, second should be truncated
-      expect(logs[0].message).toContain('Short');
-      expect(logs[0].message).toContain('...');
+      expect(logs[0]!.message).toContain('Short');
+      expect(logs[0]!.message).toContain('...');
     });
 
     it('should stringify objects compactly', () => {
@@ -72,7 +72,7 @@ describe('logger', () => {
       const logs = getRecentDebugLogs(1);
 
       // Should use compact JSON (no newlines/indentation)
-      expect(logs[0].message).toBe('{"key":"value","num":42}');
+      expect(logs[0]!.message).toBe('{"key":"value","num":42}');
     });
 
     it('should handle null and undefined', () => {
@@ -80,8 +80,8 @@ describe('logger', () => {
       debug(undefined);
       const logs = getRecentDebugLogs(2);
 
-      expect(logs[0].message).toBe('null');
-      expect(logs[1].message).toBe('undefined');
+      expect(logs[0]!.message).toBe('null');
+      expect(logs[1]!.message).toBe('undefined');
     });
   });
 
@@ -93,8 +93,8 @@ describe('logger', () => {
 
       const logs = getRecentDebugLogs(2);
       expect(logs).toHaveLength(2);
-      expect(logs[0].message).toBe('Log 2');
-      expect(logs[1].message).toBe('Log 3');
+      expect(logs[0]!.message).toBe('Log 2');
+      expect(logs[1]!.message).toBe('Log 3');
     });
 
     it('should return all logs if count exceeds available', () => {
@@ -135,7 +135,7 @@ describe('logger', () => {
       const logs = getRecentDebugLogs(1);
 
       // Message should be truncated to reasonable size
-      expect(logs[0].message.length).toBeLessThanOrEqual(503);
+      expect(logs[0]!.message.length).toBeLessThanOrEqual(503);
 
       // Should complete quickly (< 50ms even with huge object)
       const duration = endTime - startTime;
