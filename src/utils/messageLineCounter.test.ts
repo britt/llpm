@@ -85,8 +85,8 @@ describe('messageLineCounter', () => {
       const result = filterMessagesByLines(messages, 4);
 
       expect(result.visibleMessages).toHaveLength(2); // Last 2 messages = 4 lines
-      expect(result.visibleMessages[0].id).toBe('2');
-      expect(result.visibleMessages[1].id).toBe('3');
+      expect(result.visibleMessages[0]!.id).toBe('2');
+      expect(result.visibleMessages[1]!.id).toBe('3');
       expect(result.hiddenLinesCount).toBe(2);
       expect(result.totalLines).toBe(6);
     });
@@ -102,8 +102,8 @@ describe('messageLineCounter', () => {
 
       // Message 2 (2 lines) + Message 3 (1 line) = 3 lines
       expect(result.visibleMessages).toHaveLength(2);
-      expect(result.visibleMessages[0].id).toBe('2');
-      expect(result.visibleMessages[1].id).toBe('3');
+      expect(result.visibleMessages[0]!.id).toBe('2');
+      expect(result.visibleMessages[1]!.id).toBe('3');
       expect(result.hiddenLinesCount).toBe(3);
       expect(result.totalLines).toBe(6);
     });
@@ -169,8 +169,8 @@ describe('messageLineCounter', () => {
       const result = filterMessagesByLines(messages, 4);
 
       expect(result.visibleMessages).toHaveLength(2);
-      expect(result.visibleMessages[0].role).toBe('assistant');
-      expect(result.visibleMessages[1].role).toBe('system');
+      expect(result.visibleMessages[0]!.role).toBe('assistant');
+      expect(result.visibleMessages[1]!.role).toBe('system');
     });
   });
 });
