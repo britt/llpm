@@ -1,3 +1,4 @@
+import * as z from 'zod';
 import { describe, it, expect } from 'vitest';
 import { readWebPageTool, summarizeWebPageTool } from './webContentTools';
 
@@ -24,7 +25,7 @@ It has multiple lines.
 And should be handled properly.`;
 
 // Mock fetch for testing
-global.fetch = async (url: RequestInfo | URL): Promise<Response> => {
+global.fetch = (async (url: string | URL): Promise<Response> => {
   const urlString = url.toString();
 
   if (urlString.includes('html-test')) {
@@ -53,12 +54,12 @@ global.fetch = async (url: RequestInfo | URL): Promise<Response> => {
     status: 200,
     headers: { 'content-type': 'text/html' }
   });
-};
+}) as typeof fetch;
 
 describe('WebContentTools', () => {
   describe('readWebPageTool', () => {
     it('should successfully read HTML content', async () => {
-      const result = await readWebPageTool.execute({
+      const result = await (readWebPageTool.execute as any)({
         url: 'https://example.com/html-test',
         maxLength: 1000
       });
@@ -76,7 +77,7 @@ describe('WebContentTools', () => {
     });
 
     it('should successfully read plain text content', async () => {
-      const result = await readWebPageTool.execute({
+      const result = await (readWebPageTool.execute as any)({
         url: 'https://example.com/text-test'
       });
 
@@ -89,7 +90,7 @@ describe('WebContentTools', () => {
     });
 
     it('should handle content truncation', async () => {
-      const result = await readWebPageTool.execute({
+      const result = await (readWebPageTool.execute as any)({
         url: 'https://example.com/html-test',
         maxLength: 50
       });
@@ -101,7 +102,7 @@ describe('WebContentTools', () => {
     });
 
     it('should handle HTTP errors', async () => {
-      const result = await readWebPageTool.execute({
+      const result = await (readWebPageTool.execute as any)({
         url: 'https://example.com/error-test'
       });
 
@@ -110,7 +111,7 @@ describe('WebContentTools', () => {
     });
 
     it('should handle invalid URLs', async () => {
-      const result = await readWebPageTool.execute({
+      const result = await (readWebPageTool.execute as any)({
         url: 'not-a-valid-url-with-spaces and special chars!'
       });
 
@@ -119,7 +120,7 @@ describe('WebContentTools', () => {
     });
 
     it('should normalize URLs by adding protocol', async () => {
-      const result = await readWebPageTool.execute({
+      const result = await (readWebPageTool.execute as any)({
         url: 'example.com/html-test'
       });
 
@@ -128,7 +129,7 @@ describe('WebContentTools', () => {
     });
 
     it('should handle timeout', async () => {
-      const result = await readWebPageTool.execute({
+      const result = await (readWebPageTool.execute as any)({
         url: 'https://example.com/timeout-test',
         timeout: 50
       });
@@ -140,7 +141,7 @@ describe('WebContentTools', () => {
 
   describe('summarizeWebPageTool', () => {
     it('should summarize web page content', async () => {
-      const result = await summarizeWebPageTool.execute({
+      const result = await (summarizeWebPageTool.execute as any)({
         url: 'https://example.com/html-test'
       });
 
@@ -154,7 +155,7 @@ describe('WebContentTools', () => {
     });
 
     it('should find focus areas when specified', async () => {
-      const result = await summarizeWebPageTool.execute({
+      const result = await (summarizeWebPageTool.execute as any)({
         url: 'https://example.com/html-test',
         focusAreas: ['paragraph', 'content', 'nonexistent']
       });
@@ -167,7 +168,7 @@ describe('WebContentTools', () => {
     });
 
     it('should handle errors from readWebPageTool', async () => {
-      const result = await summarizeWebPageTool.execute({
+      const result = await (summarizeWebPageTool.execute as any)({
         url: 'https://example.com/error-test'
       });
 
@@ -182,8 +183,8 @@ describe('WebContentTools', () => {
 
       tools.forEach(tool => {
         expect(tool.inputSchema).toBeDefined();
-        expect(typeof tool.inputSchema.parse).toBe('function');
-        expect(typeof tool.inputSchema.safeParse).toBe('function');
+        expect(typeof (tool.inputSchema as unknown as z.ZodTypeAny).parse).toBe('function');
+        expect(typeof (tool.inputSchema as unknown as z.ZodTypeAny).safeParse).toBe('function');
       });
     });
   });

@@ -64,7 +64,7 @@ describe('filesystemTools', () => {
 
   describe('readProjectFile', () => {
     it('should read a file in the project root', async () => {
-      const result = await readProjectFile!.execute({ path: 'README.md' });
+      const result = await (readProjectFile.execute as any)({ path: 'README.md' });
 
       expect(result).toContain('File: README.md');
       expect(result).toContain('# Test Project');
@@ -72,7 +72,7 @@ describe('filesystemTools', () => {
     });
 
     it('should read a file in a subdirectory', async () => {
-      const result = await readProjectFile!.execute({ path: 'src/main.ts' });
+      const result = await (readProjectFile.execute as any)({ path: 'src/main.ts' });
 
       expect(result).toContain('File: src/main.ts');
       expect(result).toContain('export function main()');
@@ -80,21 +80,21 @@ describe('filesystemTools', () => {
 
     it('should handle absolute paths within project', async () => {
       const absolutePath = join(mockProjectDir, 'package.json');
-      const result = await readProjectFile!.execute({ path: absolutePath });
+      const result = await (readProjectFile.execute as any)({ path: absolutePath });
 
       expect(result).toContain('File: package.json');
       expect(result).toContain('"name": "test-project"');
     });
 
     it('should reject paths outside project directory', async () => {
-      const result = await readProjectFile!.execute({ path: '../../../etc/passwd' });
+      const result = await (readProjectFile.execute as any)({ path: '../../../etc/passwd' });
 
       expect(result).toContain('Error');
       expect(result).toContain('outside the current project directory');
     });
 
     it('should handle non-existent files', async () => {
-      const result = await readProjectFile!.execute({ path: 'nonexistent.txt' });
+      const result = await (readProjectFile.execute as any)({ path: 'nonexistent.txt' });
 
       expect(result).toContain('Error');
       expect(result).toContain('does not exist');
@@ -103,7 +103,7 @@ describe('filesystemTools', () => {
     it('should handle no active project', async () => {
       vi.spyOn(projectConfig, 'getCurrentProject').mockResolvedValue(null);
 
-      const result = await readProjectFile!.execute({ path: 'README.md' });
+      const result = await (readProjectFile.execute as any)({ path: 'README.md' });
 
       expect(result).toContain('No active project set');
     });
@@ -111,7 +111,7 @@ describe('filesystemTools', () => {
 
   describe('listProjectDirectory', () => {
     it('should list files in project root', async () => {
-      const result = await listProjectDirectory!.execute({ path: '.' });
+      const result = await (listProjectDirectory.execute as any)({ path: '.' });
 
       expect(result).toContain('Directory listing: .');
       expect(result).toContain('📄 README.md');
@@ -121,7 +121,7 @@ describe('filesystemTools', () => {
     });
 
     it('should list files in subdirectory', async () => {
-      const result = await listProjectDirectory!.execute({ path: 'src' });
+      const result = await (listProjectDirectory.execute as any)({ path: 'src' });
 
       expect(result).toContain('Directory listing: src');
       expect(result).toContain('📄 src/main.ts');
@@ -129,7 +129,7 @@ describe('filesystemTools', () => {
     });
 
     it('should handle recursive listing', async () => {
-      const result = await listProjectDirectory!.execute({
+      const result = await (listProjectDirectory.execute as any)({
         path: '.',
         recursive: true
       });
@@ -142,7 +142,7 @@ describe('filesystemTools', () => {
       // Create a hidden file
       await writeFile(join(mockProjectDir, '.hidden'), 'hidden content');
 
-      const result = await listProjectDirectory!.execute({ path: '.' });
+      const result = await (listProjectDirectory.execute as any)({ path: '.' });
 
       expect(result).not.toContain('.hidden');
     });
@@ -151,7 +151,7 @@ describe('filesystemTools', () => {
       // Create a hidden file
       await writeFile(join(mockProjectDir, '.hidden'), 'hidden content');
 
-      const result = await listProjectDirectory!.execute({
+      const result = await (listProjectDirectory.execute as any)({
         path: '.',
         includeHidden: true
       });
@@ -162,7 +162,7 @@ describe('filesystemTools', () => {
 
   describe('getProjectFileInfo', () => {
     it('should get info for a file', async () => {
-      const result = await getProjectFileInfo!.execute({ path: 'README.md' });
+      const result = await (getProjectFileInfo.execute as any)({ path: 'README.md' });
 
       expect(result).toContain('File Info: README.md');
       expect(result).toContain('Type: file');
@@ -172,7 +172,7 @@ describe('filesystemTools', () => {
     });
 
     it('should get info for a directory', async () => {
-      const result = await getProjectFileInfo!.execute({ path: 'src' });
+      const result = await (getProjectFileInfo.execute as any)({ path: 'src' });
 
       expect(result).toContain('File Info: src');
       expect(result).toContain('Type: directory');
@@ -181,7 +181,7 @@ describe('filesystemTools', () => {
 
   describe('findProjectFiles', () => {
     it('should find files by pattern', async () => {
-      const result = await findProjectFiles!.execute({ pattern: '*.ts' });
+      const result = await (findProjectFiles.execute as any)({ pattern: '*.ts' });
 
       expect(result).toContain('Found');
       expect(result).toContain('main.ts');
@@ -189,19 +189,19 @@ describe('filesystemTools', () => {
     });
 
     it('should find files with glob pattern', async () => {
-      const result = await findProjectFiles!.execute({ pattern: 'src/*.ts' });
+      const result = await (findProjectFiles.execute as any)({ pattern: 'src/*.ts' });
 
       expect(result).toContain('src/main.ts');
       expect(result).toContain('src/utils.ts');
     });
 
     it('should limit results', async () => {
-      const result = await findProjectFiles!.execute({
+      const result = await (findProjectFiles.execute as any)({
         pattern: '*',
         maxResults: 2
       });
 
-      const lines = result.split('\n').filter(line => line.includes('📄'));
+      const lines = result.split('\n').filter((line: string) => line.includes('📄'));
       expect(lines.length).toBeLessThanOrEqual(2);
     });
   });
