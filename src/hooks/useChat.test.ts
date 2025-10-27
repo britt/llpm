@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import * as z from 'zod';
 import { renderHook, act, waitFor } from '@testing-library/react';
 import { useChat } from './useChat';
 
@@ -63,8 +64,8 @@ describe('useChat - Message State', () => {
 
       // Should have welcome message
       expect(result.current.messages).toHaveLength(1);
-      expect(result.current.messages[0].role).toBe('assistant');
-      expect(result.current.messages[0].content).toContain('LLPM');
+      expect(result.current.messages[0]!.role).toBe('assistant');
+      expect(result.current.messages[0]!.content).toContain('LLPM');
     });
 
     it('should load existing chat history', async () => {
@@ -102,8 +103,8 @@ describe('useChat - Message State', () => {
       );
 
       // Should have welcome message
-      expect(result.current.messages[0].role).toBe('assistant');
-      expect(result.current.messages[0].content).toContain('LLPM');
+      expect(result.current.messages[0]!.role).toBe('assistant');
+      expect(result.current.messages[0]!.content).toContain('LLPM');
     });
   });
 
@@ -371,8 +372,8 @@ describe('useChat - Message State', () => {
       );
 
       // Should be the welcome message
-      expect(result.current.messages[0].role).toBe('assistant');
-      expect(result.current.messages[0].content).toContain('LLPM');
+      expect(result.current.messages[0]!.role).toBe('assistant');
+      expect(result.current.messages[0]!.content).toContain('LLPM');
     });
 
     it.skip('should handle project switch command with context refresh', async () => {

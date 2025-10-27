@@ -1,4 +1,5 @@
 /**
+import * as z from 'zod';
  * End-to-end tests for tool schema validation with OpenAI and Anthropic APIs
  *
  * These tests ensure that our tool schemas are valid and accepted by the actual

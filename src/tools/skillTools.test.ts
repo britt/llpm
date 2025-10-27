@@ -1,4 +1,5 @@
 /**
+import * as z from 'zod';
  * Tests for skill management tools
  */
 import { describe, it, expect, beforeEach, vi } from 'vitest';
@@ -51,7 +52,7 @@ describe('Skill Tools', () => {
       skillsMap.set('test-skill', skill);
       (getSkillRegistry() as any)._setMockSkills(skillsMap);
 
-      const result = await loadSkillsTool.execute({
+      const result = await (loadSkillsTool.execute as any)({
         skill_names: ['test-skill']
       });
 
@@ -59,8 +60,8 @@ describe('Skill Tools', () => {
       expect(result.loaded_count).toBe(1);
       expect(result.failed_count).toBe(0);
       expect(result.results).toHaveLength(1);
-      expect(result.results[0].loaded).toBe(true);
-      expect(result.results[0].name).toBe('test-skill');
+      expect(result.results[0]!.loaded).toBe(true);
+      expect(result.results[0]!.name).toBe('test-skill');
       expect(result.skills_content).toContain('test-skill');
       expect(result.skills_content).toContain('Test skill content');
     });
@@ -89,7 +90,7 @@ describe('Skill Tools', () => {
       skillsMap.set('skill-2', skill2);
       (getSkillRegistry() as any)._setMockSkills(skillsMap);
 
-      const result = await loadSkillsTool.execute({
+      const result = await (loadSkillsTool.execute as any)({
         skill_names: ['skill-1', 'skill-2']
       });
 
@@ -102,15 +103,15 @@ describe('Skill Tools', () => {
     });
 
     it('should handle skill not found', async () => {
-      const result = await loadSkillsTool.execute({
+      const result = await (loadSkillsTool.execute as any)({
         skill_names: ['nonexistent-skill']
       });
 
       expect(result.success).toBe(false);
       expect(result.loaded_count).toBe(0);
       expect(result.failed_count).toBe(1);
-      expect(result.results[0].loaded).toBe(false);
-      expect(result.results[0].error).toBe('Skill not found');
+      expect(result.results[0]!.loaded).toBe(false);
+      expect(result.results[0]!.error).toBe('Skill not found');
     });
 
     it('should handle disabled skill', async () => {
@@ -127,14 +128,14 @@ describe('Skill Tools', () => {
       skillsMap.set('disabled-skill', skill);
       (getSkillRegistry() as any)._setMockSkills(skillsMap);
 
-      const result = await loadSkillsTool.execute({
+      const result = await (loadSkillsTool.execute as any)({
         skill_names: ['disabled-skill']
       });
 
       expect(result.success).toBe(false);
       expect(result.loaded_count).toBe(0);
       expect(result.failed_count).toBe(1);
-      expect(result.results[0].error).toBe('Skill is disabled');
+      expect(result.results[0]!.error).toBe('Skill is disabled');
     });
 
     it('should include reason in output when provided', async () => {
@@ -151,7 +152,7 @@ describe('Skill Tools', () => {
       skillsMap.set('test-skill', skill);
       (getSkillRegistry() as any)._setMockSkills(skillsMap);
 
-      const result = await loadSkillsTool.execute({
+      const result = await (loadSkillsTool.execute as any)({
         skill_names: ['test-skill'],
         reason: 'Need specialized guidance for this task'
       });
@@ -175,7 +176,7 @@ describe('Skill Tools', () => {
 
       const registry = getSkillRegistry();
 
-      await loadSkillsTool.execute({
+      await (loadSkillsTool.execute as any)({
         skill_names: ['test-skill'],
         reason: 'Testing'
       });
@@ -201,7 +202,7 @@ describe('Skill Tools', () => {
       skillsMap.set('good-skill', skill);
       (getSkillRegistry() as any)._setMockSkills(skillsMap);
 
-      const result = await loadSkillsTool.execute({
+      const result = await (loadSkillsTool.execute as any)({
         skill_names: ['good-skill', 'bad-skill', 'another-bad-skill']
       });
 
@@ -239,7 +240,7 @@ describe('Skill Tools', () => {
       skillsMap.set('skill-2', skill2);
       (getSkillRegistry() as any)._setMockSkills(skillsMap);
 
-      const result = await listAvailableSkillsTool.execute({});
+      const result = await (listAvailableSkillsTool.execute as any)({});
 
       expect(result.success).toBe(true);
       expect(result.total_count).toBe(2);
@@ -276,13 +277,13 @@ describe('Skill Tools', () => {
       skillsMap.set('docs-skill', skill2);
       (getSkillRegistry() as any)._setMockSkills(skillsMap);
 
-      const result = await listAvailableSkillsTool.execute({
+      const result = await (listAvailableSkillsTool.execute as any)({
         filter_tags: ['diagram']
       });
 
       expect(result.total_count).toBe(1);
       expect(result.skills).toHaveLength(1);
-      expect(result.skills[0].name).toBe('diagram-skill');
+      expect(result.skills[0]!.name).toBe('diagram-skill');
       expect(result.message).toContain('matching tags: diagram');
     });
 
@@ -310,7 +311,7 @@ describe('Skill Tools', () => {
       skillsMap.set('disabled-skill', disabledSkill);
       (getSkillRegistry() as any)._setMockSkills(skillsMap);
 
-      const result = await listAvailableSkillsTool.execute({});
+      const result = await (listAvailableSkillsTool.execute as any)({});
 
       expect(result.enabled_count).toBe(1);
       expect(result.disabled_count).toBe(1);
@@ -319,7 +320,7 @@ describe('Skill Tools', () => {
     });
 
     it('should handle no skills available', async () => {
-      const result = await listAvailableSkillsTool.execute({});
+      const result = await (listAvailableSkillsTool.execute as any)({});
 
       expect(result.success).toBe(true);
       expect(result.total_count).toBe(0);

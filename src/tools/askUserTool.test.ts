@@ -1,4 +1,5 @@
 /**
+import * as z from 'zod';
  * Tests for askUserTool
  */
 import { describe, it, expect } from 'vitest';
@@ -7,7 +8,7 @@ import { askUserTool } from './askUserTool';
 describe('askUserTool', () => {
   describe('Text Questions', () => {
     it('should format basic text question', async () => {
-      const result = await askUserTool.execute({
+      const result = await (askUserTool.execute as any)({
         question: 'What is your API key?'
       });
 
@@ -19,7 +20,7 @@ describe('askUserTool', () => {
     });
 
     it('should include context when provided', async () => {
-      const result = await askUserTool.execute({
+      const result = await (askUserTool.execute as any)({
         question: 'Which environment?',
         context: 'I need to know where to deploy this application'
       });
@@ -32,7 +33,7 @@ describe('askUserTool', () => {
 
   describe('Confirm Questions', () => {
     it('should format confirm question with yes/no prompt', async () => {
-      const result = await askUserTool.execute({
+      const result = await (askUserTool.execute as any)({
         question: 'Are you sure you want to delete all files?',
         type: 'confirm'
       });
@@ -46,7 +47,7 @@ describe('askUserTool', () => {
 
   describe('Choice Questions', () => {
     it('should format choice question with numbered options', async () => {
-      const result = await askUserTool.execute({
+      const result = await (askUserTool.execute as any)({
         question: 'Which branch should I deploy to?',
         type: 'choice',
         options: ['main', 'staging', 'development']
@@ -65,7 +66,7 @@ describe('askUserTool', () => {
     });
 
     it('should handle choice without options', async () => {
-      const result = await askUserTool.execute({
+      const result = await (askUserTool.execute as any)({
         question: 'Pick one',
         type: 'choice'
       });
@@ -80,7 +81,7 @@ describe('askUserTool', () => {
 
   describe('Number Questions', () => {
     it('should format number question with numeric prompt', async () => {
-      const result = await askUserTool.execute({
+      const result = await (askUserTool.execute as any)({
         question: 'How many instances should I scale to?',
         type: 'number'
       });
@@ -111,7 +112,7 @@ describe('askUserTool', () => {
 
   describe('userMessage Field', () => {
     it('should always include userMessage field for display', async () => {
-      const result = await askUserTool.execute({
+      const result = await (askUserTool.execute as any)({
         question: 'Test question'
       });
 

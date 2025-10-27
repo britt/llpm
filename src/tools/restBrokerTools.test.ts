@@ -123,7 +123,7 @@ describe('REST Broker Tools', () => {
     });
 
     it('should have default values for limit and offset', () => {
-      const parseResult = (listJobsTool.inputSchema as unknown as z.ZodTypeAny).parse({ agentId: 'test-agent' });
+      const parseResult = ((listJobsTool.inputSchema as unknown as z.ZodTypeAny).parse({ agentId: 'test-agent' })) as any;
       expect(parseResult.limit).toBe(50);
       expect(parseResult.offset).toBe(0);
     });
@@ -226,7 +226,7 @@ describe('REST Broker Tools', () => {
 
       tools.forEach(({ tool, name }) => {
         expect(tool.description).toBeDefined();
-        expect(tool.description.length).toBeGreaterThan(20);
+        expect(tool.description!.length).toBeGreaterThan(20);
         expect(typeof tool.description).toBe('string');
       });
     });
@@ -384,9 +384,9 @@ describe('REST Broker Tools', () => {
     });
 
     it('should default authType to subscription', () => {
-      const parseResult = (scaleAgentClusterTool.inputSchema as unknown as z.ZodTypeAny).parse({
+      const parseResult = ((scaleAgentClusterTool.inputSchema as unknown as z.ZodTypeAny).parse({
         preset: 'dev'
-      });
+      })) as any;
       expect(parseResult.authType).toBe('subscription');
     });
 
@@ -437,7 +437,7 @@ describe('REST Broker Tools', () => {
     beforeEach(() => {
       vi.clearAllMocks();
       originalFetch = global.fetch;
-      global.fetch = vi.fn();
+      global.fetch = vi.fn() as typeof fetch;
     });
 
     afterEach(() => {
@@ -479,7 +479,7 @@ describe('REST Broker Tools', () => {
       );
 
       if (getAgentConnectCommandTool.execute) {
-        const result = await getAgentConnectCommandTool.execute({ agentId: 'claude-code-3' });
+        const result = await (getAgentConnectCommandTool.execute as any)({ agentId: 'claude-code-3' });
 
         expect(result).toContain('docker exec -it claude-code-3 /bin/bash');
         expect(result).toContain('**Container**: claude-code-3');
@@ -520,7 +520,7 @@ describe('REST Broker Tools', () => {
       );
 
       if (getAgentConnectCommandTool.execute) {
-        const result = await getAgentConnectCommandTool.execute({ agentId: 'claude-code-99' });
+        const result = await (getAgentConnectCommandTool.execute as any)({ agentId: 'claude-code-99' });
 
         // Should fall back to using the agentId
         expect(result).toContain('docker exec -it claude-code-99 /bin/bash');
@@ -562,7 +562,7 @@ describe('REST Broker Tools', () => {
       );
 
       if (getAgentConnectCommandTool.execute) {
-        const result = await getAgentConnectCommandTool.execute({ agentId: 'my-agent-1' });
+        const result = await (getAgentConnectCommandTool.execute as any)({ agentId: 'my-agent-1' });
 
         expect(result).toContain('docker exec -it my-agent-1 /bin/bash');
         expect(result).toContain('**Container**: my-agent-1');
@@ -592,7 +592,7 @@ describe('REST Broker Tools', () => {
       );
 
       if (getAgentConnectCommandTool.execute) {
-        const result = await getAgentConnectCommandTool.execute({ agentId: 'test-agent' });
+        const result = await (getAgentConnectCommandTool.execute as any)({ agentId: 'test-agent' });
 
         // Should fall back to using the agentId
         expect(result).toContain('docker exec -it test-agent /bin/bash');
@@ -610,7 +610,7 @@ describe('REST Broker Tools', () => {
       });
 
       if (getAgentConnectCommandTool.execute) {
-        const result = await getAgentConnectCommandTool.execute({ agentId: 'non-existent' });
+        const result = await (getAgentConnectCommandTool.execute as any)({ agentId: 'non-existent' });
 
         expect(result).toContain('❌ Failed to get agent details');
       }
@@ -650,7 +650,7 @@ describe('REST Broker Tools', () => {
       );
 
       if (getAgentConnectCommandTool.execute) {
-        const result = await getAgentConnectCommandTool.execute({ agentId: 'aider-2' });
+        const result = await (getAgentConnectCommandTool.execute as any)({ agentId: 'aider-2' });
 
         // Should use the compose-style container name (docker-aider-2-1)
         expect(result).toContain('docker exec -it docker-aider-2-1 /bin/bash');
@@ -692,7 +692,7 @@ describe('REST Broker Tools', () => {
       );
 
       if (getAgentConnectCommandTool.execute) {
-        const result = await getAgentConnectCommandTool.execute({ agentId: 'claude-code-1' });
+        const result = await (getAgentConnectCommandTool.execute as any)({ agentId: 'claude-code-1' });
 
         // Should use the custom compose project container name
         expect(result).toContain('docker exec -it myproject-claude-code-1 /bin/bash');

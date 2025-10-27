@@ -1,4 +1,5 @@
 /**
+import * as z from 'zod';
  * Tests for SkillRegistry binary matching logic
  */
 import { describe, it, expect, beforeEach } from 'vitest';
@@ -47,8 +48,8 @@ describe('SkillRegistry - Binary Matching', () => {
       });
 
       expect(results).toHaveLength(1);
-      expect(results[0].skill.name).toBe('user-story-template');
-      expect(results[0].rationale).toBe('name match');
+      expect(results[0]!.skill.name).toBe('user-story-template');
+      expect(results[0]!.rationale).toBe('name match');
     });
 
     it('should be case insensitive for name matching', () => {
@@ -62,7 +63,7 @@ describe('SkillRegistry - Binary Matching', () => {
       });
 
       expect(results).toHaveLength(1);
-      expect(results[0].skill.name).toBe('stakeholder-updates');
+      expect(results[0]!.skill.name).toBe('stakeholder-updates');
     });
 
     it('should not match disabled skills by name', () => {
@@ -93,8 +94,8 @@ describe('SkillRegistry - Binary Matching', () => {
       });
 
       expect(results).toHaveLength(1);
-      expect(results[0].skill.name).toBe('pm-skill');
-      expect(results[0].rationale).toContain('tag: stakeholders');
+      expect(results[0]!.skill.name).toBe('pm-skill');
+      expect(results[0]!.rationale).toContain('tag: stakeholders');
     });
 
     it('should be case insensitive for tag matching', () => {
@@ -109,7 +110,7 @@ describe('SkillRegistry - Binary Matching', () => {
       });
 
       expect(results).toHaveLength(1);
-      expect(results[0].skill.name).toBe('test-skill');
+      expect(results[0]!.skill.name).toBe('test-skill');
     });
 
     it('should match first tag found', () => {
@@ -125,7 +126,7 @@ describe('SkillRegistry - Binary Matching', () => {
 
       expect(results).toHaveLength(1);
       // Should match first tag encountered
-      expect(results[0].rationale).toMatch(/tag: (beta|gamma)/);
+      expect(results[0]!.rationale).toMatch(/tag: (beta|gamma)/);
     });
   });
 
@@ -141,8 +142,8 @@ describe('SkillRegistry - Binary Matching', () => {
       });
 
       expect(results).toHaveLength(1);
-      expect(results[0].skill.name).toBe('writing-skill');
-      expect(results[0].rationale).toBe('description keywords');
+      expect(results[0]!.skill.name).toBe('writing-skill');
+      expect(results[0]!.rationale).toBe('description keywords');
     });
 
     it('should filter out short words (<=3 chars) in description', () => {
@@ -170,7 +171,7 @@ describe('SkillRegistry - Binary Matching', () => {
       });
 
       expect(results).toHaveLength(1);
-      expect(results[0].rationale).toBe('description keywords');
+      expect(results[0]!.rationale).toBe('description keywords');
     });
   });
 
@@ -193,8 +194,8 @@ describe('SkillRegistry - Binary Matching', () => {
 
       // Both should match, but alpha-skill by name, beta-skill by tag
       expect(results.length).toBeGreaterThan(0);
-      expect(results[0].skill.name).toBe('alpha-skill');
-      expect(results[0].rationale).toBe('name match');
+      expect(results[0]!.skill.name).toBe('alpha-skill');
+      expect(results[0]!.rationale).toBe('name match');
     });
 
     it('should sort results alphabetically', () => {
@@ -219,9 +220,9 @@ describe('SkillRegistry - Binary Matching', () => {
       });
 
       expect(results).toHaveLength(3);
-      expect(results[0].skill.name).toBe('alpha-skill');
-      expect(results[1].skill.name).toBe('middle-skill');
-      expect(results[2].skill.name).toBe('zebra-skill');
+      expect(results[0]!.skill.name).toBe('alpha-skill');
+      expect(results[1]!.skill.name).toBe('middle-skill');
+      expect(results[2]!.skill.name).toBe('zebra-skill');
     });
   });
 
@@ -241,9 +242,9 @@ describe('SkillRegistry - Binary Matching', () => {
       // Should return max 3 (default limit)
       expect(results).toHaveLength(3);
       // Should return first 3 alphabetically
-      expect(results[0].skill.name).toBe('skill-1');
-      expect(results[1].skill.name).toBe('skill-2');
-      expect(results[2].skill.name).toBe('skill-3');
+      expect(results[0]!.skill.name).toBe('skill-1');
+      expect(results[1]!.skill.name).toBe('skill-2');
+      expect(results[2]!.skill.name).toBe('skill-3');
     });
 
     it('should use custom maxSkillsPerPrompt if configured', () => {
