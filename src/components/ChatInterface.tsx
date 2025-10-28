@@ -223,7 +223,7 @@ const ViewMessages = memo(function ViewMessages({
   showAllHistory?: boolean;
 }) {
   return (
-    <Box flexDirection="column" paddingX={1}>
+    <Box flexDirection="column">
       {/* Static zone: Completed messages render once and never update */}
       {/* This eliminates flicker when typing in input */}
       {completedMessages.length > 0 && (
