@@ -21,7 +21,7 @@ function messagesToTranscript(messages: Message[]): string {
 /**
  * Export transcript to a file
  */
-async function exportTranscript(messages: Message[]): Promise<CommandResult> {
+async function _exportTranscript(messages: Message[]): Promise<CommandResult> {
   try {
     const transcript = messagesToTranscript(messages);
     const timestamp = new Date().toISOString().replace(/:/g, '-').split('.')[0];
@@ -106,7 +106,7 @@ The collapse/expand functionality is available through the UI indicator:
           success: false
         };
 
-      case 'tail':
+      case 'tail': {
         if (args.length < 2) {
           return {
             content: '❌ Usage: /history tail <number>\n\nExample: /history tail 500',
@@ -133,6 +133,7 @@ You can override this with the environment variable:
   LLPM_CHAT_MAX_RENDER_LINES=${tailSize}`,
           success: false
         };
+      }
 
       default:
         return {
