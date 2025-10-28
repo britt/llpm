@@ -6,7 +6,7 @@ export function highlightMarkdown(text: string): string {
   
   // Code blocks must be processed first (before inline code)
   // This regex looks for ``` followed by optional language, newline, content, newline, ```
-  highlighted = highlighted.replace(/(```(\w*)\n)([\s\S]*?)(\n```)/g, (match, openBlock, lang, code, closeBlock) => {
+  highlighted = highlighted.replace(/(```(\w*)\n)([\s\S]*?)(\n```)/g, (match, openBlock, lang, code, _closeBlock) => {
     return `\x1b[2m\x1b[37m\`\`\`${lang || ''}\x1b[0m\n\x1b[90m${code}\x1b[0m\n\x1b[2m\x1b[37m\`\`\`\x1b[0m`;
   });
   

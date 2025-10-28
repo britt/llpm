@@ -1,6 +1,6 @@
 import { tool } from './instrumentedTool';
 import * as z from "zod";
-import { getSystemPrompt, getBaseSystemPrompt } from '../utils/systemPrompt';
+import { getSystemPrompt } from '../utils/systemPrompt';
 import { debug } from '../utils/logger';
 
 export const getSystemPromptTool = tool({

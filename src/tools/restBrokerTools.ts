@@ -480,7 +480,7 @@ ${connectCommand}
 ✅ The command has been copied to your clipboard. Just paste and run!
 
 **Note**: If the container name doesn't match, run \`docker ps\` to see available containers.`;
-    } catch (error) {
+    } catch {
       return `🔗 **Docker Connect Command**
 
 \`\`\`bash

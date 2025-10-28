@@ -3,10 +3,9 @@ import { join } from 'path';
 // Note: SQLite VSS extensions not available with bun:sqlite, using simple similarity instead
 import { getConfigDir } from './config';
 import { debug } from './logger';
-import { modelRegistry } from '../services/modelRegistry';
 import type { Project } from '../types/project';
 import { RequestContext } from './requestContext';
-import { traced, getTracer } from './tracing';
+import { traced } from './tracing';
 import { SpanKind } from '@opentelemetry/api';
 import { embeddingsFactory } from '../services/embeddings';
 
@@ -31,11 +30,12 @@ interface ProjectFile {
   updatedAt: string;
 }
 
-interface ProjectMetadata {
-  key: string;
-  value: string;
-  updatedAt: string;
-}
+// Commented out - not currently used but may be useful in the future
+// interface ProjectMetadata {
+//   key: string;
+//   value: string;
+//   updatedAt: string;
+// }
 
 export class ProjectDatabase {
   private db: DatabaseType;

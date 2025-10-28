@@ -235,7 +235,7 @@ async function getProjectV2ById(projectId: string): Promise<any> {
         stdio: ['ignore', 'pipe', 'ignore']
       });
       token = rawToken.trim();
-    } catch (error: any) {
+    } catch {
       throw new Error('GitHub token not found');
     }
   }

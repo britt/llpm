@@ -3,8 +3,6 @@ import { mkdir, cp, readdir } from 'fs/promises';
 import { join } from 'path';
 import { homedir, tmpdir } from 'os';
 import { debug } from './logger';
-import { ensureDefaultSystemPromptFile } from './systemPrompt';
-import { loadProjectConfig } from './projectConfig';
 
 // Allow override for testing
 function getBaseConfigDir(): string {

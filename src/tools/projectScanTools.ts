@@ -131,7 +131,6 @@ Results are cached in memory and can be referenced in future conversations.`,
         const match = line.match(/^\s*📄\s*(.+?)\s*\((.+?)\)(?:\s*-\s*(\d+)\s*lines)?/);
         if (match && match[1]) {
           const path = match[1];
-          const sizeStr = match[2] || '';
           const lines = match[3] ? parseInt(match[3]) : undefined;
           const ext = path.split('.').pop();
           

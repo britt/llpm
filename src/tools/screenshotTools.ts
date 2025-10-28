@@ -29,7 +29,7 @@ export const takeScreenshotTool = tool({
       // Check if uv and shot-scraper are available
       try {
         await execAsync('uv --version');
-      } catch (error) {
+      } catch {
         const instructions = [
           '📸 Screenshot Setup Required',
           '',
@@ -56,7 +56,7 @@ export const takeScreenshotTool = tool({
 
       try {
         await execAsync('uvx shot-scraper --version');
-      } catch (error) {
+      } catch {
         const instructions = [
           '📸 Shot-scraper Setup Required',
           '',
@@ -184,7 +184,7 @@ export const checkScreenshotSetupTool = tool({
       // Check if uv is installed
       try {
         await execAsync('uv --version');
-      } catch (uvError) {
+      } catch {
         const instructions = [
           '📸 Screenshot Setup Required',
           '',

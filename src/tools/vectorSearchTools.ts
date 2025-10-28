@@ -2,7 +2,6 @@ import { tool } from './instrumentedTool';
 import * as z from "zod";
 import { getCurrentProjectDatabase } from '../utils/projectDatabase';
 import { debug } from '../utils/logger';
-import type { Project } from '../types/project';
 import { readFileSync } from 'fs';
 import { join, relative } from 'path';
 import { glob } from 'glob';

@@ -14,8 +14,6 @@ export async function parseSkillFile(
   skillPath: string,
   source: 'personal' | 'project'
 ): Promise<SkillValidationResult> {
-  const errors: string[] = [];
-
   // Check if SKILL.md exists
   const skillFilePath = join(skillPath, 'SKILL.md');
   if (!existsSync(skillFilePath)) {
