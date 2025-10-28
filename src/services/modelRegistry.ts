@@ -3,7 +3,7 @@ import { createAnthropic } from '@ai-sdk/anthropic';
 import { createGroq } from '@ai-sdk/groq';
 import { createVertex } from '@ai-sdk/google-vertex';
 import type { LanguageModel } from 'ai';
-import type { ModelProvider, ModelConfig, ModelProviderConfig, ModelState, DEFAULT_MODELS } from '../types/models';
+import type { ModelProvider, ModelConfig, ModelProviderConfig, ModelState } from '../types/models';
 import { DEFAULT_MODELS as DEFAULT_MODEL_CONFIGS } from '../types/models';
 import { debug } from '../utils/logger';
 import { saveCurrentModel, loadCurrentModel } from '../utils/modelStorage';
