@@ -109,7 +109,7 @@ ${highlightedPrompt}`;
     try {
       const embeddingsProvider = await embeddingsFactory.getProvider();
       embeddingsInfo = embeddingsProvider.getName();
-    } catch (_error) {
+    } catch {
       embeddingsInfo = 'Not available';
     }
 

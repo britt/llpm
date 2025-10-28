@@ -20,8 +20,9 @@ function messagesToTranscript(messages: Message[]): string {
 
 /**
  * Export transcript to a file
+ * TODO: Implement this feature
  */
-async function _exportTranscript(messages: Message[]): Promise<CommandResult> {
+/* async function exportTranscript(messages: Message[]): Promise<CommandResult> {
   try {
     const transcript = messagesToTranscript(messages);
     const timestamp = new Date().toISOString().replace(/:/g, '-').split('.')[0];
@@ -40,7 +41,7 @@ async function _exportTranscript(messages: Message[]): Promise<CommandResult> {
       success: false
     };
   }
-}
+} */
 
 export const historyCommand: Command = {
   name: 'history',
