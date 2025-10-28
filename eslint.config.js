@@ -15,7 +15,10 @@ export default [
       'docker/**',
       'scripts/**',
       '*.min.js',
-      '*.bundle.js'
+      '*.bundle.js',
+      'test-*.ts',
+      'test-*.js',
+      'test/**/*.js'
     ]
   },
 
