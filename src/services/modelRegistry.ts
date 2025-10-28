@@ -118,8 +118,9 @@ class ModelRegistry {
         const openaiModel = openaiProvider(config.modelId);
         debug('OpenAI model instance created');
         return openaiModel;
+      }
 
-      case 'anthropic':
+      case 'anthropic': {
         if (!providerConfig.apiKey) {
           throw new Error('Anthropic API key not configured');
         }
@@ -130,8 +131,9 @@ class ModelRegistry {
           apiKey: providerConfig.apiKey
         });
         return anthropicProvider(normalizedModelId);
+      }
 
-      case 'groq':
+      case 'groq': {
         if (!providerConfig.apiKey) {
           throw new Error('Groq API key not configured');
         }
@@ -139,8 +141,9 @@ class ModelRegistry {
           apiKey: providerConfig.apiKey
         });
         return groqProvider(config.modelId);
+      }
 
-      case 'google-vertex':
+      case 'google-vertex': {
         if (!providerConfig.projectId) {
           throw new Error('Google Vertex project ID not configured');
         }
@@ -149,6 +152,7 @@ class ModelRegistry {
           location: providerConfig.region || 'us-central1'
         });
         return vertexProvider(config.modelId);
+      }
 
       default:
         throw new Error(`Unsupported model provider: ${config.provider}`);
