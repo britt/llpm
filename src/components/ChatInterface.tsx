@@ -220,20 +220,18 @@ const ViewMessages = memo(function ViewMessages({
   totalLines?: number;
   showAllHistory?: boolean;
 }) {
-  // Combine all messages for Static rendering
-  const allMessages = [...completedMessages, ...activeMessages];
-
   return (
     <Box flexDirection="column" paddingX={1}>
-      {/* Static zone: ALL messages render once and never update */}
+      {/* Static zone: Completed messages render once and never update */}
       {/* This eliminates flicker when typing in input */}
-      {allMessages.length > 0 && (
-        <Static items={allMessages}>
+      {completedMessages.length > 0 && (
+        <Static items={completedMessages}>
           {(message) => <MessageItem key={message.id} message={message} />}
         </Static>
       )}
 
-      {/* Dynamic zone: Only UI elements that need to update */}
+      {/* Dynamic zone: Active messages and UI elements that need to update */}
+      {/* Active messages must be in dynamic zone so new messages appear immediately */}
       <Box flexDirection="column">
         {/* Show collapse indicator if there are hidden lines */}
         {hiddenLinesCount !== undefined && totalLines !== undefined && (
@@ -243,6 +241,8 @@ const ViewMessages = memo(function ViewMessages({
             showAllHistory={showAllHistory || false}
           />
         )}
+        {/* Active messages - must be dynamic so new messages appear */}
+        <MessageList messages={activeMessages} />
         {/* Show queued messages in light text */}
         <MessageQueue messages={queuedMessages} />
       </Box>
