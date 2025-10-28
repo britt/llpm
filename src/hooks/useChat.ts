@@ -79,7 +79,7 @@ export function useChat() {
           setMessages(trimMessages(savedMessages));
           shouldSaveRef.current = false; // Don't save immediately after loading
         }
-      } catch (error) {
+      } catch {
         // Fallback to welcome message
         const welcomeMessage: Message = {
           role: 'assistant',
@@ -104,7 +104,7 @@ export function useChat() {
         .then(() => {
           shouldSaveRef.current = false; // Reset save flag
         })
-        .catch(error => {
+        .catch(() => {
           // Silently fail - not critical
         });
     }
