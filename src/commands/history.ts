@@ -1,14 +1,15 @@
 import type { Command, CommandResult } from './types';
 import { debug } from '../utils/logger';
-import { writeFile } from 'fs/promises';
-import { join } from 'path';
-import { homedir } from 'os';
-import type { Message } from '../types';
+// import { writeFile } from 'fs/promises';
+// import { join } from 'path';
+// import { homedir } from 'os';
+// import type { Message } from '../types';
 
 /**
  * Convert messages to a text transcript format
+ * TODO: Uncomment when exportTranscript is implemented
  */
-function messagesToTranscript(messages: Message[]): string {
+/* function messagesToTranscript(messages: Message[]): string {
   return messages
     .map((msg) => {
       const role = msg.role === 'user' ? 'User' : msg.role === 'assistant' ? 'Assistant' : 'System';
@@ -16,7 +17,7 @@ function messagesToTranscript(messages: Message[]): string {
       return `[${timestamp}] ${role}:\n${msg.content}\n`;
     })
     .join('\n');
-}
+} */
 
 /**
  * Export transcript to a file
