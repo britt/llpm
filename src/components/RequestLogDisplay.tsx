@@ -14,13 +14,13 @@ export interface LogEntry {
   step: string;
   phase: 'start' | 'end';
   duration?: number;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 // Global singleton to share logger instance
 class LoggerRegistry {
   private static instance: LoggerRegistry;
-  private currentLogger: any = null;
+  private currentLogger: unknown = null;
   private listeners: Set<(log: LogEntry) => void> = new Set();
   private clearListeners: Set<() => void> = new Set();
 
@@ -31,11 +31,11 @@ class LoggerRegistry {
     return LoggerRegistry.instance;
   }
 
-  setLogger(logger: any) {
+  setLogger(logger: import('../utils/requestLogger').RequestLogger) {
     // Remove old listeners
     if (this.currentLogger) {
-      this.currentLogger.removeAllListeners('log');
-      this.currentLogger.removeAllListeners('clear');
+      (this.currentLogger as import('../utils/requestLogger').RequestLogger).removeAllListeners('log');
+      (this.currentLogger as import('../utils/requestLogger').RequestLogger).removeAllListeners('clear');
     }
 
     this.currentLogger = logger;
@@ -76,7 +76,7 @@ interface ProcessedLog {
   step: string;
   status: 'running' | 'completed' | 'placeholder';
   duration?: number;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
   orderIndex: number; // Track insertion order
 }
 
