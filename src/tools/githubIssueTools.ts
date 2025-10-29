@@ -9,7 +9,6 @@ import {
   searchIssues,
   getIssueWithComments
 } from '../services/github';
-import { autoAddToProjectBoard } from '../services/projectBoardIntegration';
 import { uploadFilesToGitHub } from '../services/githubAssets';
 import { debug } from '../utils/logger';
 import { composeWithSalutation, getSalutationConfig } from '../utils/salutation';
@@ -74,15 +73,6 @@ export const createGitHubIssueTool = tool({
       finalBody = composeWithSalutation(finalBody, salutationConfig);
 
       const issue = await createIssue(owner, repo, title, finalBody, labels);
-
-      // Attempt to automatically add the issue to the project board
-      try {
-        const autoAddResult = await autoAddToProjectBoard(issue.node_id, 'issue');
-        debug('Auto-add to project board result:', autoAddResult);
-      } catch (error) {
-        debug('Failed to auto-add issue to project board:', error);
-        // Don't fail the issue creation if project board addition fails
-      }
 
       return {
         success: true,

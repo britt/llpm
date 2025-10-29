@@ -38,12 +38,6 @@ import {
   findProjectFiles
 } from './filesystemTools';
 import {
-  setProjectBoardTool,
-  getProjectBoardInfoTool,
-  removeProjectBoardTool,
-  listAvailableProjectBoardsTool
-} from './projectConfigTools';
-import {
   scanProjectTool,
   getProjectScanTool,
   listProjectScansTool
@@ -51,19 +45,9 @@ import {
 import {
   indexProjectFiles,
   semanticSearchProject,
-  addProjectNote,
-  searchProjectNotes,
   getProjectVectorStats
 } from './vectorSearchTools';
 import { takeScreenshotTool, checkScreenshotSetupTool } from './screenshotTools';
-import {
-  listDockerAgentsTool,
-  submitDockerAgentJobTool,
-  getDockerAgentJobStatusTool,
-  listDockerAgentJobsTool,
-  cancelDockerAgentJobTool,
-  checkDockerBrokerHealthTool
-} from './dockerAgentTools';
 import {
   listAgentsTool,
   getAgentTool,
@@ -120,11 +104,6 @@ const toolRegistry: ToolRegistry = {
   list_project_directory: listProjectDirectory,
   get_project_file_info: getProjectFileInfo,
   find_project_files: findProjectFiles,
-  // Project Board Configuration
-  set_project_board: setProjectBoardTool,
-  get_project_board_info: getProjectBoardInfoTool,
-  remove_project_board: removeProjectBoardTool,
-  list_available_project_boards: listAvailableProjectBoardsTool,
   // Project Analysis
   scan_project: scanProjectTool,
   get_project_scan: getProjectScanTool,
@@ -132,20 +111,11 @@ const toolRegistry: ToolRegistry = {
   // Vector Search
   index_project_files: indexProjectFiles,
   semantic_search_project: semanticSearchProject,
-  add_project_note: addProjectNote,
-  search_project_notes: searchProjectNotes,
   get_project_vector_stats: getProjectVectorStats,
   // Screenshots
   take_screenshot: takeScreenshotTool,
   check_screenshot_setup: checkScreenshotSetupTool,
-  // Docker Agent Tools (legacy)
-  list_docker_agents: listDockerAgentsTool,
-  submit_docker_agent_job: submitDockerAgentJobTool,
-  get_docker_agent_job_status: getDockerAgentJobStatusTool,
-  list_docker_agent_jobs: listDockerAgentJobsTool,
-  cancel_docker_agent_job: cancelDockerAgentJobTool,
-  check_docker_broker_health: checkDockerBrokerHealthTool,
-  // REST Broker Agent Tools (enhanced formatting)
+  // REST Broker Agent Tools
   list_agents: listAgentsTool,
   get_agent: getAgentTool,
   check_agent_health: checkAgentHealthTool,

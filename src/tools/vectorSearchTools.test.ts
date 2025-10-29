@@ -2,8 +2,6 @@ import { describe, it, expect } from 'vitest';
 import {
   indexProjectFiles,
   semanticSearchProject,
-  addProjectNote,
-  searchProjectNotes,
   getProjectVectorStats
 } from './vectorSearchTools';
 
@@ -13,8 +11,6 @@ describe('Vector Search Tools', () => {
       const tools = [
         indexProjectFiles,
         semanticSearchProject,
-        addProjectNote,
-        searchProjectNotes,
         getProjectVectorStats
       ];
 
