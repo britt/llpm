@@ -251,7 +251,7 @@ export function useChat() {
             },
             openInferenceKind: 'CHAIN',  // Phoenix UI span kind for request flow
           }, async (span) => {
-            RequestContext.logStep('prompt_assembly', 'start');
+            RequestContext.logStep('prompt_assembly', 'start', 'info', { 'message.count': allMessages.length });
             RequestContext.logStep('prompt_assembly', 'end');
             const result = await generateResponse(allMessages);
             span.setAttribute('response.length', result?.response?.length || 0);

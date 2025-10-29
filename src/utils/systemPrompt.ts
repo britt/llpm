@@ -381,7 +381,7 @@ function injectSkillsContext(basePrompt: string): string {
       '<Skills>',
       '## Available Skills',
       '',
-      'When you need specialized guidance, you can load skills using the load_skills tool:',
+      'Whenever you encounter a task that meets one of the conditions below, load the skill using the load_skills tool:',
       ''
     ];
 
