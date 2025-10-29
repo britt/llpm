@@ -38,12 +38,6 @@ import {
   findProjectFiles
 } from './filesystemTools';
 import {
-  setProjectBoardTool,
-  getProjectBoardInfoTool,
-  removeProjectBoardTool,
-  listAvailableProjectBoardsTool
-} from './projectConfigTools';
-import {
   scanProjectTool,
   getProjectScanTool,
   listProjectScansTool
@@ -51,8 +45,6 @@ import {
 import {
   indexProjectFiles,
   semanticSearchProject,
-  addProjectNote,
-  searchProjectNotes,
   getProjectVectorStats
 } from './vectorSearchTools';
 import { takeScreenshotTool, checkScreenshotSetupTool } from './screenshotTools';
@@ -120,11 +112,6 @@ const toolRegistry: ToolRegistry = {
   list_project_directory: listProjectDirectory,
   get_project_file_info: getProjectFileInfo,
   find_project_files: findProjectFiles,
-  // Project Board Configuration
-  set_project_board: setProjectBoardTool,
-  get_project_board_info: getProjectBoardInfoTool,
-  remove_project_board: removeProjectBoardTool,
-  list_available_project_boards: listAvailableProjectBoardsTool,
   // Project Analysis
   scan_project: scanProjectTool,
   get_project_scan: getProjectScanTool,
@@ -132,8 +119,6 @@ const toolRegistry: ToolRegistry = {
   // Vector Search
   index_project_files: indexProjectFiles,
   semantic_search_project: semanticSearchProject,
-  add_project_note: addProjectNote,
-  search_project_notes: searchProjectNotes,
   get_project_vector_stats: getProjectVectorStats,
   // Screenshots
   take_screenshot: takeScreenshotTool,

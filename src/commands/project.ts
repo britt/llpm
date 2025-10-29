@@ -7,8 +7,7 @@ import {
   addProject,
   listProjects,
   removeProject,
-  updateProject,
-  getProjectBoard
+  updateProject
 } from '../utils/projectConfig';
 
 // Import project scan functionality
@@ -283,14 +282,8 @@ export const projectCommand: Command = {
       const currentProject = await getCurrentProject();
 
       if (currentProject) {
-        // Check if project has a linked board
-        const projectBoard = await getProjectBoard(currentProject.id);
-        const boardInfo = projectBoard 
-          ? `\n📋 Project Board: Linked (ID: ${projectBoard.projectBoardId}${projectBoard.projectBoardNumber ? `, #${projectBoard.projectBoardNumber}` : ''})`
-          : '\n📋 Project Board: Not linked';
-
         return {
-          content: `📁 Current project: ${currentProject.name}\n📂 Repository: ${currentProject.repository}\n📍 Path: ${currentProject.path}${currentProject.description ? `\n📝 Description: ${currentProject.description}` : ''}${boardInfo}`,
+          content: `📁 Current project: ${currentProject.name}\n📂 Repository: ${currentProject.repository}\n📍 Path: ${currentProject.path}${currentProject.description ? `\n📝 Description: ${currentProject.description}` : ''}`,
           success: true
         };
       } else {
@@ -445,14 +438,8 @@ export const projectCommand: Command = {
             const isCurrent = currentProject?.id === project.id;
             const indicator = isCurrent ? '👉 ' : '   ';
             const description = project.description ? `\n    📝 ${project.description}` : '';
-            
-            // Check project board status
-            const projectBoard = await getProjectBoard(project.id);
-            const boardStatus = projectBoard 
-              ? `\n    📋 Project Board: Linked (#${projectBoard.projectBoardNumber || 'Unknown'})`
-              : `\n    📋 Project Board: Not linked`;
-            
-            return `${indicator}${project.name} (${project.id})\n    📂 ${project.repository}\n    📍 ${project.path}${description}${boardStatus}`;
+
+            return `${indicator}${project.name} (${project.id})\n    📂 ${project.repository}\n    📍 ${project.path}${description}`;
           }));
 
           const header = `📂 Available Projects (${projects.length}):\n\n`;

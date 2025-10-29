@@ -4,7 +4,6 @@ import { DEFAULT_SALUTATION } from '../utils/salutation';
 // Mock the dependencies
 vi.mock('../utils/projectConfig');
 vi.mock('../services/github');
-vi.mock('../services/projectBoardIntegration');
 vi.mock('../services/githubAssets');
 
 // Import after mocking
@@ -18,7 +17,6 @@ import {
 
 import * as projectConfig from '../utils/projectConfig';
 import * as github from '../services/github';
-import * as projectBoardIntegration from '../services/projectBoardIntegration';
 import * as githubAssets from '../services/githubAssets';
 
 describe('GitHub Issue Tools', () => {
@@ -69,8 +67,6 @@ describe('GitHub Issue Tools', () => {
         state: 'open',
         node_id: 'node-1'
       } as any);
-
-      vi.mocked(projectBoardIntegration.autoAddToProjectBoard).mockResolvedValue({ success: true });
 
       const result = await createGitHubIssueTool.execute({
         title: 'Test Issue',
@@ -152,8 +148,6 @@ describe('GitHub Issue Tools', () => {
         node_id: 'node-1'
       } as any);
 
-      vi.mocked(projectBoardIntegration.autoAddToProjectBoard).mockResolvedValue({ success: true });
-
       const result = await createGitHubIssueTool.execute({
         title: 'Test Issue',
         body: 'This is a test issue body.'
@@ -201,8 +195,6 @@ describe('GitHub Issue Tools', () => {
         state: 'open',
         node_id: 'node-1'
       } as any);
-
-      vi.mocked(projectBoardIntegration.autoAddToProjectBoard).mockResolvedValue({ success: true });
 
       const result = await createGitHubIssueTool.execute({
         title: 'Test Issue',
