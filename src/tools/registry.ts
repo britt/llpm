@@ -49,14 +49,6 @@ import {
 } from './vectorSearchTools';
 import { takeScreenshotTool, checkScreenshotSetupTool } from './screenshotTools';
 import {
-  listDockerAgentsTool,
-  submitDockerAgentJobTool,
-  getDockerAgentJobStatusTool,
-  listDockerAgentJobsTool,
-  cancelDockerAgentJobTool,
-  checkDockerBrokerHealthTool
-} from './dockerAgentTools';
-import {
   listAgentsTool,
   getAgentTool,
   checkAgentHealthTool,
@@ -123,14 +115,7 @@ const toolRegistry: ToolRegistry = {
   // Screenshots
   take_screenshot: takeScreenshotTool,
   check_screenshot_setup: checkScreenshotSetupTool,
-  // Docker Agent Tools (legacy)
-  list_docker_agents: listDockerAgentsTool,
-  submit_docker_agent_job: submitDockerAgentJobTool,
-  get_docker_agent_job_status: getDockerAgentJobStatusTool,
-  list_docker_agent_jobs: listDockerAgentJobsTool,
-  cancel_docker_agent_job: cancelDockerAgentJobTool,
-  check_docker_broker_health: checkDockerBrokerHealthTool,
-  // REST Broker Agent Tools (enhanced formatting)
+  // REST Broker Agent Tools
   list_agents: listAgentsTool,
   get_agent: getAgentTool,
   check_agent_health: checkAgentHealthTool,
