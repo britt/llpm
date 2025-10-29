@@ -8,7 +8,7 @@ const execAsync = promisify(exec);
 // Use fetch instead of axios for consistency
 const BROKER_URL = process.env.REST_BROKER_URL || 'http://localhost:3010';
 
-async function brokerRequest(method: string, path: string, body?: any) {
+async function brokerRequest(method: string, path: string, body?: unknown) {
   try {
     const url = `${BROKER_URL}${path}`;
     const options: RequestInit = {
@@ -58,7 +58,7 @@ export const agentsCommand: Command = {
           };
         }
 
-        const agentList = agents.map((agent: any) => {
+        const agentList = agents.map((agent: Record<string, unknown>) => {
           const status = agent.status === 'available' ? '🟢' :
                         agent.status === 'busy' ? '🟡' : '🔴';
           const health = agent.health?.status === 'healthy' ? '✅' :
