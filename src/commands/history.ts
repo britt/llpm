@@ -1,14 +1,15 @@
 import type { Command, CommandResult } from './types';
 import { debug } from '../utils/logger';
-import { writeFile } from 'fs/promises';
-import { join } from 'path';
-import { homedir } from 'os';
-import type { Message } from '../types';
+// import { writeFile } from 'fs/promises';
+// import { join } from 'path';
+// import { homedir } from 'os';
+// import type { Message } from '../types';
 
 /**
  * Convert messages to a text transcript format
+ * TODO: Uncomment when exportTranscript is implemented
  */
-function messagesToTranscript(messages: Message[]): string {
+/* function messagesToTranscript(messages: Message[]): string {
   return messages
     .map((msg) => {
       const role = msg.role === 'user' ? 'User' : msg.role === 'assistant' ? 'Assistant' : 'System';
@@ -16,12 +17,13 @@ function messagesToTranscript(messages: Message[]): string {
       return `[${timestamp}] ${role}:\n${msg.content}\n`;
     })
     .join('\n');
-}
+} */
 
 /**
  * Export transcript to a file
+ * TODO: Implement this feature
  */
-async function exportTranscript(messages: Message[]): Promise<CommandResult> {
+/* async function exportTranscript(messages: Message[]): Promise<CommandResult> {
   try {
     const transcript = messagesToTranscript(messages);
     const timestamp = new Date().toISOString().replace(/:/g, '-').split('.')[0];
@@ -40,7 +42,7 @@ async function exportTranscript(messages: Message[]): Promise<CommandResult> {
       success: false
     };
   }
-}
+} */
 
 export const historyCommand: Command = {
   name: 'history',
@@ -106,7 +108,7 @@ The collapse/expand functionality is available through the UI indicator:
           success: false
         };
 
-      case 'tail':
+      case 'tail': {
         if (args.length < 2) {
           return {
             content: '❌ Usage: /history tail <number>\n\nExample: /history tail 500',
@@ -133,6 +135,7 @@ You can override this with the environment variable:
   LLPM_CHAT_MAX_RENDER_LINES=${tailSize}`,
           success: false
         };
+      }
 
       default:
         return {

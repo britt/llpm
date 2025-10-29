@@ -15,7 +15,10 @@ export default [
       'docker/**',
       'scripts/**',
       '*.min.js',
-      '*.bundle.js'
+      '*.bundle.js',
+      'test-*.ts',
+      'test-*.js',
+      'test/**/*.js'
     ]
   },
 
@@ -84,12 +87,15 @@ export default [
         __filename: 'readonly',
         global: 'readonly',
         // Browser/Web APIs
+        URL: 'readonly',
         URLSearchParams: 'readonly',
         fetch: 'readonly',
         Request: 'readonly',
         Response: 'readonly',
         Headers: 'readonly',
         RequestInit: 'readonly',
+        RequestInfo: 'readonly',
+        AbortController: 'readonly',
         // Node.js types
         NodeJS: 'readonly',
         // Bun globals
@@ -122,10 +128,26 @@ export default [
     }
   },
   {
-    files: ['**/*.test.ts', '**/*.test.tsx'],
+    files: ['**/*.test.ts', '**/*.test.tsx', '**/*.spec.ts', '**/*.spec.tsx', 'test/**/*.ts'],
+    languageOptions: {
+      globals: {
+        vi: 'readonly',
+        describe: 'readonly',
+        it: 'readonly',
+        test: 'readonly',
+        expect: 'readonly',
+        beforeEach: 'readonly',
+        afterEach: 'readonly',
+        beforeAll: 'readonly',
+        afterAll: 'readonly',
+        jest: 'readonly'
+      }
+    },
     rules: {
       'no-console': 'off',
-      '@typescript-eslint/no-explicit-any': 'off'
+      '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/no-unused-vars': 'off',
+      'no-undef': 'off'
     }
   },
   prettier

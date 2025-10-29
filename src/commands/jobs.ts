@@ -3,7 +3,7 @@ import { debug } from '../utils/logger';
 
 const BROKER_URL = process.env.REST_BROKER_URL || 'http://localhost:3010';
 
-async function brokerRequest(method: string, path: string, body?: any) {
+async function brokerRequest(method: string, path: string, body?: unknown) {
   try {
     const url = `${BROKER_URL}${path}`;
     const options: RequestInit = {
@@ -68,7 +68,7 @@ export const jobsCommand: Command = {
           };
         }
 
-        const jobList = jobs.map((job: any) => {
+        const jobList = jobs.map((job: Record<string, unknown>) => {
           const statusIcon = job.status === 'completed' ? '✅' :
                             job.status === 'failed' ? '❌' :
                             job.status === 'running' ? '🔄' :

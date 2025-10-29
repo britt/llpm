@@ -79,7 +79,7 @@ export function useChat() {
           setMessages(trimMessages(savedMessages));
           shouldSaveRef.current = false; // Don't save immediately after loading
         }
-      } catch (error) {
+      } catch {
         // Fallback to welcome message
         const welcomeMessage: Message = {
           role: 'assistant',
@@ -104,7 +104,7 @@ export function useChat() {
         .then(() => {
           shouldSaveRef.current = false; // Reset save flag
         })
-        .catch(error => {
+        .catch(() => {
           // Silently fail - not critical
         });
     }
@@ -114,7 +114,7 @@ export function useChat() {
   useEffect(() => {
     const skillRegistry = getSkillRegistry();
 
-    const handleSkillSelected = (event: any) => {
+    const handleSkillSelected = (event: { skillName: string }) => {
       debug('Skill selected event received:', event.skillName);
       if (!selectedSkillsRef.current.includes(event.skillName)) {
         selectedSkillsRef.current.push(event.skillName);
@@ -251,7 +251,7 @@ export function useChat() {
             },
             openInferenceKind: 'CHAIN',  // Phoenix UI span kind for request flow
           }, async (span) => {
-            RequestContext.logStep('prompt_assembly', 'start');
+            RequestContext.logStep('prompt_assembly', 'start', 'info', { 'message.count': allMessages.length });
             RequestContext.logStep('prompt_assembly', 'end');
             const result = await generateResponse(allMessages);
             span.setAttribute('response.length', result?.response?.length || 0);

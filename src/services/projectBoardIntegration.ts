@@ -1,6 +1,5 @@
-import type { Project } from '../types/project';
 import { getCurrentProject, setProjectBoard, getProjectBoard } from '../utils/projectConfig';
-import { getProjectV2, listProjectsV2, addProjectV2Item, getOwnerId } from './githubProjects';
+import { getProjectV2, listProjectsV2, addProjectV2Item } from './githubProjects';
 import { debug } from '../utils/logger';
 import { credentialManager } from '../utils/credentialManager';
 
@@ -110,7 +109,7 @@ export async function autoAddToProjectBoard(
 
     debug('Auto-adding', type, 'to project board:', projectBoard.projectBoardId);
 
-    const item = await addProjectV2Item(projectBoard.projectBoardId, issueNodeId);
+    await addProjectV2Item(projectBoard.projectBoardId, issueNodeId);
     const itemType = type === 'issue' ? 'issue' : 'pull request';
 
     return {
@@ -236,7 +235,7 @@ async function getProjectV2ById(projectId: string): Promise<any> {
         stdio: ['ignore', 'pipe', 'ignore']
       });
       token = rawToken.trim();
-    } catch (error: any) {
+    } catch {
       throw new Error('GitHub token not found');
     }
   }

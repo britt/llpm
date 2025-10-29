@@ -3,7 +3,6 @@ import { debug, getVerbose } from '../utils/logger';
 import { execSync } from 'child_process';
 import { getUserReposViaGhCli, searchReposViaGhCli, getRepoViaGhCli } from './githubCli';
 import { credentialManager } from '../utils/credentialManager';
-import { RequestContext } from '../utils/requestContext';
 import { traced } from '../utils/tracing';
 import { SpanKind } from '@opentelemetry/api';
 

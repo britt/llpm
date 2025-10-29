@@ -282,18 +282,19 @@ export async function uploadFilesToGitHub(
   return results;
 }
 
-/**
- * Get MIME type for common image formats
- */
-function getMimeType(filename: string): string {
-  const ext = filename.toLowerCase().split('.').pop();
-  switch (ext) {
-    case 'png': return 'image/png';
-    case 'jpg':
-    case 'jpeg': return 'image/jpeg';
-    case 'gif': return 'image/gif';
-    case 'bmp': return 'image/bmp';
-    case 'webp': return 'image/webp';
-    default: return 'application/octet-stream';
-  }
-}
+// Commented out - not currently used but may be useful in the future
+// /**
+//  * Get MIME type for common image formats
+//  */
+// function getMimeType(filename: string): string {
+//   const ext = filename.toLowerCase().split('.').pop();
+//   switch (ext) {
+//     case 'png': return 'image/png';
+//     case 'jpg':
+//     case 'jpeg': return 'image/jpeg';
+//     case 'gif': return 'image/gif';
+//     case 'bmp': return 'image/bmp';
+//     case 'webp': return 'image/webp';
+//     default: return 'application/octet-stream';
+//   }
+// }

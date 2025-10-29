@@ -38,7 +38,7 @@ export const skillsCommand: Command = {
 /**
  * List all discovered skills
  */
-async function listSkills(args: string[]): Promise<CommandResult> {
+async function listSkills(_args: string[]): Promise<CommandResult> {
   const registry = getSkillRegistry();
   const skills = registry.getAllSkills();
 
@@ -252,11 +252,11 @@ async function reloadSkills(): Promise<CommandResult> {
   const discoveredSkills: string[] = [];
 
   // Listen for validation errors during scan
-  const errorHandler = (event: any) => {
+  const errorHandler = (event: { skillName: string; errors: string[] }) => {
     validationErrors.push(`${event.skillName}: ${event.errors.join(', ')}`);
   };
 
-  const discoveryHandler = (event: any) => {
+  const discoveryHandler = (event: { skillName: string }) => {
     discoveredSkills.push(event.skillName);
   };
 

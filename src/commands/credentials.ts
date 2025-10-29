@@ -294,7 +294,7 @@ async function handleSet(provider?: string, key?: string, value?: string, profil
 
   const targetProfile = profileName || credentialManager.getCurrentProfileName();
 
-  await credentialManager.setCredential(provider as any, key, value, profileName);
+  await credentialManager.setCredential(provider as keyof import('../utils/credentialManager').CredentialConfig, key, value, profileName);
   
   return {
     success: true,
@@ -302,7 +302,7 @@ async function handleSet(provider?: string, key?: string, value?: string, profil
   };
 }
 
-async function handleGet(provider?: string, key?: string, profileName?: string): Promise<CommandResult> {
+async function handleGet(provider?: string, key?: string, _profileName?: string): Promise<CommandResult> {
   if (!provider || !key) {
     return {
       success: false,
@@ -311,7 +311,7 @@ async function handleGet(provider?: string, key?: string, profileName?: string):
   }
 
   // For get operations, we use the profile-aware credential manager
-  const credential = await credentialManager.getCredential(provider as any, key);
+  const credential = await credentialManager.getCredential(provider as keyof import('../utils/credentialManager').CredentialConfig, key);
   const activeProfile = credentialManager.getCurrentProfileName();
   
   if (!credential) {
@@ -342,7 +342,7 @@ async function handleRemove(provider?: string, key?: string, profileName?: strin
 
   const targetProfile = profileName || credentialManager.getCurrentProfileName();
 
-  await credentialManager.removeCredential(provider as any, key, profileName);
+  await credentialManager.removeCredential(provider as keyof import('../utils/credentialManager').CredentialConfig, key, profileName);
   
   return {
     success: true,

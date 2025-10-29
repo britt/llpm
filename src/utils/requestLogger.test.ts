@@ -1,6 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { RequestLogger } from './requestLogger';
-import type { LoggingConfig, RequestLogEntry } from './requestLogger';
+import { RequestLogger, type LoggingConfig, type RequestLogEntry } from './requestLogger';
 
 describe('RequestLogger', () => {
   let logger: RequestLogger;

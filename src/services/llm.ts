@@ -157,15 +157,6 @@ export async function generateResponse(messages: Message[]): Promise<{ response:
       debug('Error in generateResponse:', error);
       console.error('Error generating response:', error);
 
-      let errorMessage = 'Sorry, I encountered an error while processing your request.';
-
-      if (getVerbose() && error instanceof Error) {
-        errorMessage += `\n\n🔍 Debug Details:\n${error.name}: ${error.message}`;
-        if (error.stack) {
-          errorMessage += `\n\nStack trace:\n${error.stack}`;
-        }
-      }
-
       throw error; // Re-throw so traced() can record the error
     }
   });
