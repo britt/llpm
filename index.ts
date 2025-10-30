@@ -38,7 +38,9 @@ export function App() {
 
   // Number of recent messages to keep in dynamic zone (rest go to static)
   // Keep this as low as possible to minimize flicker - only streaming/updating messages need to be dynamic
-  const DYNAMIC_MESSAGE_COUNT = 2;
+  // When not loading: 0 messages in dynamic zone = zero flicker when typing
+  // When loading: 1 message in dynamic zone = only the streaming message can update
+  const DYNAMIC_MESSAGE_COUNT = isLoading ? 1 : 0;
 
   // Track messages that have been moved to static zone
   // Static zone NEVER recalculates - only accumulates new messages
@@ -109,7 +111,7 @@ export function App() {
       hiddenLinesCount,
       totalLines
     };
-  }, [messages, showAllHistory, maxRenderedLines, staticMessages]);
+  }, [messages, showAllHistory, maxRenderedLines, staticMessages, isLoading]);
 
   return React.createElement(ChatInterface, {
     completedMessages,
