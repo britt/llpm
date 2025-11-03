@@ -12,6 +12,7 @@ import { initializeTelemetry } from './src/utils/telemetry';
 import { filterMessagesByLines } from './src/utils/messageLineCounter';
 import { getMaxRenderedLines } from './src/utils/chatConfig';
 import { getSkillRegistry } from './src/services/SkillRegistry';
+import { listProjects, getCurrentProject, setCurrentProject } from './src/utils/projectConfig';
 
 // Re-export validateEnvironment for external use
 export { validateEnvironment } from './src/utils/validation';
@@ -192,6 +193,36 @@ if (import.meta.main) {
       debug('System prompt file initialization completed');
     } catch (error) {
       debug('Failed to initialize system prompt file:', error);
+      // Don't exit on this error - it's not critical for the app to run
+    }
+
+    // Auto-detect project based on current working directory
+    try {
+      const cwd = process.cwd();
+      debug('Current working directory:', cwd);
+
+      const currentProject = await getCurrentProject();
+      const allProjects = await listProjects();
+
+      // Find a project that matches the current directory
+      const matchingProject = allProjects.find(project => {
+        // Check if CWD matches project path exactly or is within project path
+        return cwd === project.path || cwd.startsWith(project.path + '/');
+      });
+
+      if (matchingProject) {
+        // Only auto-switch if there's no current project or if the matching project is different
+        if (!currentProject || currentProject.id !== matchingProject.id) {
+          await setCurrentProject(matchingProject.id);
+          debug(`Auto-detected and switched to project: ${matchingProject.name} (${matchingProject.id})`);
+        } else {
+          debug(`Current directory matches active project: ${matchingProject.name}`);
+        }
+      } else {
+        debug('No matching project found for current directory');
+      }
+    } catch (error) {
+      debug('Error during project auto-detection:', error);
       // Don't exit on this error - it's not critical for the app to run
     }
 

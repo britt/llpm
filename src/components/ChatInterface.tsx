@@ -183,10 +183,9 @@ const MessageItem = memo(({ message }: { message: Message }) => {
 
   return (
     <Box
-      marginBottom={1}
       flexDirection="column"
       paddingX={1}
-      paddingY={shouldAddPadding ? 1 : 0}
+      paddingY={1}
       backgroundColor={backgroundColor}
       width="100%"
     >
