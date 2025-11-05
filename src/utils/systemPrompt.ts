@@ -161,7 +161,6 @@ export async function getSystemPrompt(): Promise<string> {
     kind: SpanKind.INTERNAL,
   }, async (span) => {
     try {
-      debug('Loading system prompt...');
       await ensureConfigDir();
       const promptPath = getSystemPromptPath();
       span.setAttribute('file.path', promptPath);
@@ -175,18 +174,18 @@ export async function getSystemPrompt(): Promise<string> {
           const stats = statSync(promptPath);
           const sizeKb = Math.round(stats.size / 1024 * 100) / 100;
           span.setAttribute('file.size_kb', sizeKb);
-          debug(`System prompt loaded from: ${promptPath} (${sizeKb} KB)`);
+          debug(`System prompt: Loading from custom file at ${promptPath} (${sizeKb} KB)`);
         } catch (statsError) {
           debug('Error getting file stats:', statsError);
+          debug(`System prompt: Loading from custom file at ${promptPath}`);
         }
         const customPrompt = await readFile(promptPath, 'utf-8');
         basePrompt = customPrompt.trim();
         span.setAttribute('prompt.source', 'custom');
-        debug('Using custom system prompt from file');
       } else {
+        debug(`System prompt: No custom file found at ${promptPath}, using built-in default`);
         basePrompt = DEFAULT_SYSTEM_PROMPT;
         span.setAttribute('prompt.source', 'default');
-        debug('Using default system prompt (no custom file found)');
       }
 
       // Inject current project context
@@ -194,9 +193,9 @@ export async function getSystemPrompt(): Promise<string> {
       const projectContextInjected = promptWithContext !== basePrompt;
       span.setAttribute('project.context_injected', projectContextInjected);
       if (projectContextInjected) {
-        debug('Project context injected into system prompt');
+        debug('System prompt: Project context injected');
       } else {
-        debug('No project context to inject');
+        debug('System prompt: No active project, skipping project context injection');
       }
 
       // Inject skills context
@@ -205,12 +204,12 @@ export async function getSystemPrompt(): Promise<string> {
       const skillsContextInjected = promptWithContext.length > beforeSkillsLength;
       span.setAttribute('prompt.final_length', promptWithContext.length);
       if (skillsContextInjected) {
-        debug('Skills context injected into system prompt');
+        debug('System prompt: Skills context injected');
       } else {
-        debug('No skills context to inject');
+        debug('System prompt: No enabled skills, skipping skills context injection');
       }
 
-      debug(`System prompt ready (${promptWithContext.length} characters)`);
+      debug(`System prompt: Ready (${promptWithContext.length} characters total)`);
       return promptWithContext;
     } catch (error) {
       debug('Error loading system prompt:', error);
