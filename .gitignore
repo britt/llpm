@@ -50,3 +50,6 @@ docker/docker-compose.override.yml
 # Python virtual environment (embeddings)
 scripts/embeddings/venv/
 scripts/embeddings/__pycache__/
+
+# Git worktrees
+.worktrees/
