@@ -172,26 +172,44 @@ export async function getSystemPrompt(): Promise<string> {
       if (fileExists) {
         try {
           const stats = statSync(promptPath);
-          span.setAttribute('file.size_kb', Math.round(stats.size / 1024 * 100) / 100);
+          const sizeKb = Math.round(stats.size / 1024 * 100) / 100;
+          span.setAttribute('file.size_kb', sizeKb);
+          debug(`System prompt: Loading from custom file at ${promptPath} (${sizeKb} KB)`);
         } catch (statsError) {
           debug('Error getting file stats:', statsError);
+          debug(`System prompt: Loading from custom file at ${promptPath}`);
         }
         const customPrompt = await readFile(promptPath, 'utf-8');
         basePrompt = customPrompt.trim();
         span.setAttribute('prompt.source', 'custom');
       } else {
+        debug(`System prompt: No custom file found at ${promptPath}, using built-in default`);
         basePrompt = DEFAULT_SYSTEM_PROMPT;
         span.setAttribute('prompt.source', 'default');
       }
 
       // Inject current project context
       let promptWithContext = await injectProjectContext(basePrompt);
-      span.setAttribute('project.context_injected', promptWithContext !== basePrompt);
+      const projectContextInjected = promptWithContext !== basePrompt;
+      span.setAttribute('project.context_injected', projectContextInjected);
+      if (projectContextInjected) {
+        debug('System prompt: Project context injected');
+      } else {
+        debug('System prompt: No active project, skipping project context injection');
+      }
 
       // Inject skills context
+      const beforeSkillsLength = promptWithContext.length;
       promptWithContext = injectSkillsContext(promptWithContext);
+      const skillsContextInjected = promptWithContext.length > beforeSkillsLength;
       span.setAttribute('prompt.final_length', promptWithContext.length);
+      if (skillsContextInjected) {
+        debug('System prompt: Skills context injected');
+      } else {
+        debug('System prompt: No enabled skills, skipping skills context injection');
+      }
 
+      debug(`System prompt: Ready (${promptWithContext.length} characters total)`);
       return promptWithContext;
     } catch (error) {
       debug('Error loading system prompt:', error);
