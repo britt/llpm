@@ -90,6 +90,7 @@
     "cli-markdown": "^3.5.1",
     "cli-spinners": "^3.3.0",
     "clipboardy": "^4.0.0",
+    "fullscreen-ink": "^0.1.0",
     "gray-matter": "^4.0.3",
     "ink": "^6.1.0",
     "ink-link": "^4.1.0",

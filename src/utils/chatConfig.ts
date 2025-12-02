@@ -2,7 +2,7 @@ import type { ChatConfig } from '../types/project';
 import { loadProjectConfig } from './projectConfig';
 import { debug } from './logger';
 
-const DEFAULT_MAX_RENDERED_LINES = 300;
+const DEFAULT_MAX_RENDERED_LINES = 100;
 
 /**
  * Get the chat configuration with environment variable override

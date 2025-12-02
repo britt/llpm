@@ -15,6 +15,7 @@ import NotesSelector from './NotesSelector';
 import type { QueuedMessage } from '../hooks/useChat';
 import { RequestLogDisplay } from './RequestLogDisplay';
 import { renderMarkdown, isASCIICapableTerminal } from '../utils/markdownRenderer';
+import { useScreenSize } from "fullscreen-ink";
 
 interface ChatInterfaceProps {
   completedMessages: Message[];
@@ -36,25 +37,26 @@ interface ChatInterfaceProps {
   selectedSkills?: string[];
 }
 
-const ThinkingIndicator = memo(({ isVisible, selectedSkills }: { isVisible: boolean; selectedSkills?: string[] }) => {
-  if (!isVisible) return null;
+const ThinkingIndicator = memo(
+  ({ isVisible, selectedSkills }: { isVisible: boolean; selectedSkills?: string[] }) => {
+    if (!isVisible) return null;
 
-  return (
-    <Box flexDirection="column" paddingX={1} paddingY={1} height={8}>
-      <Box>
-        <Text color="red">
-          PM is thinking...
-        </Text>
-        {selectedSkills && selectedSkills.length > 0 && (
-          <Text color="cyan" dimColor>
-            {' '}(using skill{selectedSkills.length > 1 ? 's' : ''}: {selectedSkills.join(', ')})
-          </Text>
-        )}
+    return (
+      <Box flexDirection="column" paddingX={1} paddingY={1} height={8}>
+        <Box>
+          <Text color="red">PM is thinking...</Text>
+          {selectedSkills && selectedSkills.length > 0 && (
+            <Text color="cyan" dimColor>
+              {' '}
+              (using skill{selectedSkills.length > 1 ? 's' : ''}: {selectedSkills.join(', ')})
+            </Text>
+          )}
+        </Box>
+        <RequestLogDisplay />
       </Box>
-      <RequestLogDisplay />
-    </Box>
-  );
-});
+    );
+  }
+);
 
 const QueuedMessageItem = memo(({ message }: { message: QueuedMessage }) => {
   return (
@@ -102,8 +104,7 @@ const CollapseIndicator = memo(
           ) : (
             <>
               Showing last {visibleLines} lines ({hiddenLinesCount} hidden) —{' '}
-              <Text color="cyan">/history all</Text> |{' '}
-              <Text color="cyan">/history export</Text>
+              <Text color="cyan">/history all</Text> | <Text color="cyan">/history export</Text>
             </>
           )}
         </Text>
@@ -146,13 +147,13 @@ const ProjectStatus = memo(
 const MessageItem = memo(({ message }: { message: Message }) => {
   const isSystemMessage = message.role === 'system' || message.role === 'ui-notification';
   const isUserMessage = message.role === 'user';
-  const shouldAddPadding = !isSystemMessage && !isUserMessage;
 
-  const backgroundColor = useMemo(() => {
-    if (message.role === 'system' || message.role === 'ui-notification') return '#2e1d11';
-    if (message.role === 'assistant') return 'black';
-    return '#333';
-  }, [message.role]);
+  // const backgroundColor = useMemo(() => {
+  //   if (message.role === 'system' || message.role === 'ui-notification') return '#2e1d11';
+  //   if (message.role === 'assistant') return 'black';
+  //   return '#333';
+  // }, [message.role]);
+  const backgroundColor = '';
 
   const textColor = useMemo(() => {
     if (message.role === 'system' || message.role === 'ui-notification') return '#cb9774';
@@ -206,6 +207,60 @@ function MessageList({ messages }: { messages: Message[] }) {
   );
 }
 
+function InputComponent({
+  activeInput,
+  models,
+  onProjectSelect,
+  onModelSelect,
+  onSubmit,
+  onInsertNote,
+  setActiveInput
+}: {
+  activeInput: 'main' | 'project' | 'model' | 'notes';
+  onProjectSelect: (projectValue: { label: string; value: string }) => void;
+  models: Model[];
+  onModelSelect: (modelValue: string) => void;
+  onSubmit: (input: string) => void;
+  onInsertNote: (noteContent: string) => void;
+  setActiveInput: (input: 'main' | 'project' | 'model' | 'notes') => void;
+}) {
+  switch (activeInput) {
+    case 'project':
+      return <ProjectSelector onProjectSelect={onProjectSelect} />;
+    case 'model':
+      return <ModelSelector models={models} onModelSelect={onModelSelect} />;
+    case 'notes':
+      return (
+        <NotesSelector
+          onClose={() => {
+            setActiveInput('main');
+          }}
+          onInsertNote={(noteContent: string) => {
+            onInsertNote(noteContent);
+            setActiveInput('main');
+          }}
+        />
+      );
+    default:
+      return (
+        <HybridInput
+          focus={activeInput === 'main'}
+          placeholder="Type your message..."
+          onSubmit={onSubmit}
+          onShowModelSelector={() => {
+            setActiveInput('model');
+          }}
+          onShowProjectSelector={() => {
+            setActiveInput('project');
+          }}
+          onShowNotesSelector={() => {
+            setActiveInput('notes');
+          }}
+        />
+      );
+  }
+}
+
 const ViewMessages = memo(function ViewMessages({
   completedMessages,
   activeMessages,
@@ -226,11 +281,10 @@ const ViewMessages = memo(function ViewMessages({
       {/* Static zone: Completed messages render once and never update */}
       {/* This eliminates flicker when typing in input */}
       {completedMessages.length > 0 && (
-        <Static items={completedMessages}>
-          {(message) => <MessageItem key={message.id} message={message} />}
-        </Static>
+      <Static items={completedMessages}>
+        {message => <MessageItem key={message.id} message={message} />}
+      </Static>
       )}
-
       {/* Dynamic zone: Active messages and UI elements that need to update */}
       {/* Active messages must be in dynamic zone so new messages appear immediately */}
       <Box flexDirection="column">
@@ -271,8 +325,6 @@ export const ChatInterface = memo(function ChatInterface({
 }: ChatInterfaceProps) {
   const [currentProject, setCurrentProject] = useState<Project | null>(null);
   const [currentModel, setCurrentModel] = useState<ModelConfig | null>(null);
-  const [showProjectSelector, setShowProjectSelector] = useState(false);
-  const [showNotesSelector, setShowNotesSelector] = useState(false);
   const [activeInput, setActiveInput] = useState<'main' | 'project' | 'model' | 'notes'>('main');
 
   // Load current project on mount
@@ -305,10 +357,7 @@ export const ChatInterface = memo(function ChatInterface({
 
   // Reload model when a model switch notification is detected
   useEffect(() => {
-    // Check last message in either active or completed messages
-    const allMessages = [...completedMessages, ...activeMessages];
-    const lastMessage = allMessages[allMessages.length - 1];
-    if (lastMessage?.role === 'ui-notification' && lastMessage?.content?.includes('Switched to')) {
+    if (currentModel) {
       const loadModel = async () => {
         try {
           const model = await loadCurrentModel();
@@ -319,7 +368,13 @@ export const ChatInterface = memo(function ChatInterface({
       };
       loadModel();
     }
-  }, [completedMessages, activeMessages]);
+  }, [currentModel]);
+
+  useEffect(() => {
+    if (activeInput === 'model') {
+      onTriggerModelSelector?.();
+    }
+  }, [activeInput, onTriggerModelSelector]);
 
   // Handle project selection - memoized to prevent re-creation
   const handleProjectSelect = useCallback(
@@ -327,7 +382,6 @@ export const ChatInterface = memo(function ChatInterface({
       try {
         if (item.value === '__create_new__') {
           // Handle "Create New Project" option - show help command
-          setShowProjectSelector(false);
           setActiveInput('main');
 
           // Directly invoke the project help command to show proper usage
@@ -339,7 +393,6 @@ export const ChatInterface = memo(function ChatInterface({
 
         const updatedProject = await getCurrentProject();
         setCurrentProject(updatedProject);
-        setShowProjectSelector(false);
         setActiveInput('main');
 
         // Notify the chat system that project has switched and wait for it to complete
@@ -348,7 +401,6 @@ export const ChatInterface = memo(function ChatInterface({
         }
       } catch (error) {
         console.error('Failed to set current project:', error);
-        setShowProjectSelector(false);
         setActiveInput('main');
       }
     },
@@ -369,80 +421,24 @@ export const ChatInterface = memo(function ChatInterface({
       // Cancel model selection, project selector, and notes selector
       if (key.escape) {
         onCancelModelSelection?.();
-        setShowProjectSelector(false);
-        setShowNotesSelector(false);
         setActiveInput('main');
       }
     },
     { isActive: activeInput !== 'main' }
   );
 
-  // Update active input state when selectors show/hide
-  useEffect(() => {
-    if (showProjectSelector) {
-      setActiveInput('project');
-    } else if (showNotesSelector) {
-      setActiveInput('notes');
-    } else if (modelSelectorModels && modelSelectorModels.length > 0) {
-      setActiveInput('model');
-    } else {
-      setActiveInput('main');
-    }
-  }, [showProjectSelector, showNotesSelector, modelSelectorModels]);
-
   // Handle note insertion
   const handleInsertNote = useCallback(
     (noteContent: string) => {
       onSendMessage(noteContent);
-      setShowNotesSelector(false);
       setActiveInput('main');
     },
     [onSendMessage]
   );
 
-  // FIXME: make this its own component
-  let inputComponent = (
-    <HybridInput
-      focus={activeInput === 'main'}
-      placeholder="Type your message..."
-      onSubmit={handleInputSubmit}
-      onShowModelSelector={() => {
-        onTriggerModelSelector?.();
-        setActiveInput('model');
-      }}
-      onShowProjectSelector={() => {
-        setShowProjectSelector(true);
-        setActiveInput('project');
-      }}
-      onShowNotesSelector={() => {
-        setShowNotesSelector(true);
-        setActiveInput('notes');
-      }}
-    />
-  );
-
-  if (showProjectSelector) {
-    inputComponent = <ProjectSelector onProjectSelect={handleProjectSelect} />;
-  }
-
-  if (showNotesSelector) {
-    inputComponent = (
-      <NotesSelector
-        onClose={() => {
-          setShowNotesSelector(false);
-          setActiveInput('main');
-        }}
-        onInsertNote={handleInsertNote}
-      />
-    );
-  }
-
-  if (modelSelectorModels && modelSelectorModels.length > 0) {
-    inputComponent = <ModelSelector models={modelSelectorModels} onModelSelect={onModelSelect} />;
-  }
-
+  const { height } = useScreenSize();
   return (
-    <Box flexDirection="column" minHeight="100%">
+    <Box flexDirection="column" minHeight={height}>
       {/* Messages - two-zone rendering: Static (completed) + Dynamic (active) */}
       <ViewMessages
         completedMessages={completedMessages}
@@ -456,7 +452,18 @@ export const ChatInterface = memo(function ChatInterface({
       <ThinkingIndicator isVisible={isLoading || isProcessing} selectedSkills={selectedSkills} />
       <Box flexDirection="column">
         {/* Input */}
-        {inputComponent}
+        <InputComponent
+          activeInput={activeInput}
+          models={modelSelectorModels || []}
+          onProjectSelect={handleProjectSelect}
+          onModelSelect={(modelValue: string) => {
+            onModelSelect?.(modelValue);
+            setActiveInput('main');
+          }}
+          onSubmit={handleInputSubmit || (() => {})}
+          onInsertNote={handleInsertNote || (() => {})}
+          setActiveInput={setActiveInput || (() => {})}
+        />
         {/* Project Status */}
         <ProjectStatus project={currentProject} model={currentModel} />
       </Box>
