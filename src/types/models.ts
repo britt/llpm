@@ -19,62 +19,20 @@ export interface ModelProviderConfig {
 
 export const DEFAULT_MODELS: Record<ModelProvider, ModelConfig[]> = {
   openai: [
-    {
-      provider: 'openai',
-      modelId: 'gpt-5.2',
-      displayName: 'GPT-5.2',
-      description: 'Latest GPT-5 model',
-      family: 'gpt-5.2'
-    },
-    {
-      provider: 'openai',
-      modelId: 'gpt-5.2-mini',
-      displayName: 'GPT-5.2 Mini',
-      description: 'Fast GPT-5.2 model',
-      family: 'gpt-5.2'
-    },
-    {
-      provider: 'openai',
-      modelId: 'gpt-5.1',
-      displayName: 'GPT-5.1',
-      description: 'GPT-5.1 model',
-      family: 'gpt-5.1'
-    },
-    {
-      provider: 'openai',
-      modelId: 'gpt-5.1-mini',
-      displayName: 'GPT-5.1 Mini',
-      description: 'Fast GPT-5.1 model',
-      family: 'gpt-5.1'
-    },
-    {
-      provider: 'openai',
-      modelId: 'gpt-4o',
-      displayName: 'GPT-4o',
-      description: 'Most capable GPT-4 model',
-      family: 'gpt-4o'
-    },
-    {
-      provider: 'openai',
-      modelId: 'gpt-4o-mini',
-      displayName: 'GPT-4o Mini',
-      description: 'Fast and efficient model',
-      family: 'gpt-4o'
-    },
-    {
-      provider: 'openai',
-      modelId: 'o4-mini',
-      displayName: 'o4 Mini',
-      description: 'Reasoning model',
-      family: 'o4'
-    },
-    {
-      provider: 'openai',
-      modelId: 'o3-mini',
-      displayName: 'o3 Mini',
-      description: 'Reasoning model',
-      family: 'o3'
-    }
+    // GPT-5.2 family
+    { provider: 'openai', modelId: 'gpt-5.2', displayName: 'GPT-5.2', family: 'gpt-5.2' },
+    { provider: 'openai', modelId: 'gpt-5.2-mini', displayName: 'GPT-5.2 Mini', family: 'gpt-5.2' },
+    { provider: 'openai', modelId: 'gpt-5.2-turbo', displayName: 'GPT-5.2 Turbo', family: 'gpt-5.2' },
+    // GPT-5.1 family
+    { provider: 'openai', modelId: 'gpt-5.1', displayName: 'GPT-5.1', family: 'gpt-5.1' },
+    { provider: 'openai', modelId: 'gpt-5.1-mini', displayName: 'GPT-5.1 Mini', family: 'gpt-5.1' },
+    { provider: 'openai', modelId: 'gpt-5.1-turbo', displayName: 'GPT-5.1 Turbo', family: 'gpt-5.1' },
+    // GPT-4o family
+    { provider: 'openai', modelId: 'gpt-4o', displayName: 'GPT-4o', family: 'gpt-4o' },
+    { provider: 'openai', modelId: 'gpt-4o-mini', displayName: 'GPT-4o Mini', family: 'gpt-4o' },
+    // O-series
+    { provider: 'openai', modelId: 'o4-mini', displayName: 'o4 Mini', family: 'o4' },
+    { provider: 'openai', modelId: 'o3-mini', displayName: 'o3 Mini', family: 'o3' },
   ],
   anthropic: [
     {
