@@ -170,7 +170,8 @@ function showModelInfo(): CommandResult {
   content += `   /model list --all  - Show all models (including unconfigured)\n`;
   content += `   /model providers   - Show provider configuration status\n`;
   content += `   /model switch <provider>/<model> - Switch to a specific model\n`;
-  
+  content += `   /model update      - Fetch latest models from provider APIs\n`;
+
   return {
     content,
     success: true
