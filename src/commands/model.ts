@@ -197,11 +197,29 @@ function showCurrentModel(): CommandResult {
 
 const MAX_GENERATIONS_PER_PROVIDER = 2;
 
+// Generation priority by provider (lower = more recent/recommended)
+const GENERATION_PRIORITY: Record<ModelProvider, Record<string, number>> = {
+  'openai': {
+    '5.2': 1, '5.1': 2, '5': 3, '4o': 4, '4.1': 5, '4-turbo': 6, '4': 7,
+    'o4': 20, 'o3': 21, 'o1': 22, '3.5': 30,
+  },
+  'anthropic': {
+    '4.5': 1, '4.1': 2, '4': 3, '3.7': 4, '3.5': 5, '3': 6,
+  },
+  'groq': {
+    'llama-4': 1, 'llama-3.3': 2, 'llama-3.1': 3,
+    'deepseek': 10, 'mixtral': 11, 'qwen': 12,
+  },
+  'google-vertex': {
+    '2.5': 1, '2.0': 2, '1.5': 3, '1.0': 4,
+  },
+};
+
 interface ModelGeneration {
   name: string;
   displayName: string;
   models: ModelConfig[];
-  bestRank: number;
+  priority: number;
 }
 
 /**
@@ -265,15 +283,16 @@ function groupModelsByGeneration(models: ModelConfig[], provider: ModelProvider)
     generationMap.set(gen.id, existing);
   }
 
-  // Convert to array and compute best rank per generation
+  // Convert to array and use hardcoded priority
+  const providerPriority = GENERATION_PRIORITY[provider] || {};
   const generations: ModelGeneration[] = [];
   for (const [id, data] of generationMap) {
-    const bestRank = Math.min(...data.models.map(m => m.recommendedRank ?? 100));
-    generations.push({ name: id, displayName: data.display, models: data.models, bestRank });
+    const priority = providerPriority[id] ?? 100;
+    generations.push({ name: id, displayName: data.display, models: data.models, priority });
   }
 
-  // Sort by best rank
-  return generations.sort((a, b) => a.bestRank - b.bestRank);
+  // Sort by hardcoded priority
+  return generations.sort((a, b) => a.priority - b.priority);
 }
 
 function listAvailableModels(showAll: boolean = false): CommandResult {
