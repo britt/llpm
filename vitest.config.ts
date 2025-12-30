@@ -7,7 +7,11 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      'bun:sqlite': new URL('./test/mocks/bun-sqlite.js', import.meta.url).pathname
+      'bun:sqlite': new URL('./test/mocks/bun-sqlite.js', import.meta.url).pathname,
+      // Mock yoga-layout in CI due to WASM compilation issues
+      ...(process.env.CI === 'true' ? {
+        'yoga-layout': new URL('./test/mocks/yoga-layout.js', import.meta.url).pathname,
+      } : {}),
     }
   },
   test: {
@@ -24,8 +28,6 @@ export default defineConfig({
       '**/*.performance.test.*',
       'docker/**/*.test.*',
       '.worktrees/**',
-      // Exclude ink-testing-library tests in CI due to yoga-layout WASM issues
-      ...(process.env.CI === 'true' ? ['**/ModelSelector.test.tsx'] : []),
     ],
     // Force tests to run in single thread in CI to avoid resource contention
     // threads: process.env.CI === 'true' ? false : true,

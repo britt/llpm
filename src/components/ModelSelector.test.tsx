@@ -1,8 +1,5 @@
 /**
  * ModelSelector Tests
- *
- * Note: These tests are skipped in CI due to yoga-layout WASM issues
- * in GitHub Actions environment.
  */
 
 import React from 'react';
@@ -11,10 +8,7 @@ import { render } from 'ink-testing-library';
 import ModelSelector from './ModelSelector';
 import type { Model } from '../types/models';
 
-// Skip in CI due to yoga-layout WASM compilation issues
-const isCI = process.env.CI === 'true';
-
-describe.skipIf(isCI)('ModelSelector', () => {
+describe('ModelSelector', () => {
   const mockModels: Model[] = [
     // OpenAI models
     { id: '1', label: 'GPT-4o', value: 'openai/gpt-4o', provider: 'openai', recommendedRank: 1 },
