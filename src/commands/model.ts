@@ -221,14 +221,15 @@ function extractGeneration(family: string, provider: ModelProvider): { id: strin
   }
 
   if (provider === 'openai') {
-    // GPT models: gpt-4o -> 4o, gpt-4-turbo -> 4, gpt-3.5 -> 3.5
+    // GPT models: gpt-5.2 -> 5.2, gpt-4o -> 4o, gpt-4-turbo -> 4
+    const gptMatch = lower.match(/gpt-(\d+(?:\.\d+)?[a-z]*)/);
+    if (gptMatch) {
+      return { id: gptMatch[1]!, display: `GPT-${gptMatch[1]}` };
+    }
+    // O-series models: o1, o3, o4
     if (lower.includes('o1') || lower.includes('o3') || lower.includes('o4')) {
       const match = lower.match(/(o\d+)/);
       if (match) return { id: match[1]!, display: match[1]!.toUpperCase() };
-    }
-    const match = lower.match(/gpt-(\d+(?:\.\d+)?[a-z]*)/);
-    if (match) {
-      return { id: match[1]!, display: `GPT-${match[1]}` };
     }
   }
 

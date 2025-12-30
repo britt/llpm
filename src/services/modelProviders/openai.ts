@@ -13,15 +13,17 @@ const CHAT_MODEL_PREFIXES = ['gpt-', 'o1', 'o3', 'o4', 'chatgpt'];
 
 // Model family rankings (lower = more recommended)
 const FAMILY_RANKINGS: Record<string, number> = {
-  'o4': 1,
-  'o3': 2,
-  'o1': 3,
-  'gpt-5': 4,
-  'gpt-4o': 5,
-  'gpt-4.1': 6,
-  'gpt-4-turbo': 7,
-  'gpt-4': 8,
-  'gpt-3.5': 9,
+  'gpt-5.2': 1,
+  'gpt-5.1': 2,
+  'gpt-5': 3,
+  'gpt-4o': 4,
+  'gpt-4.1': 5,
+  'gpt-4-turbo': 6,
+  'gpt-4': 7,
+  'o4': 8,
+  'o3': 9,
+  'o1': 10,
+  'gpt-3.5': 11,
 };
 
 interface OpenAIModel {
