@@ -148,14 +148,39 @@ export async function generateResponse(messages: Message[]): Promise<{ response:
 
       return { response: responseText, selectedSkills: selectedSkillNames };
     } catch (error) {
-      // Log LLM error
+      // Log LLM error with full details
       const currentModel = modelRegistry.getCurrentModel();
+
+      // Extract detailed error information for AI SDK errors
+      let errorDetails = '';
+      if (error instanceof Error) {
+        errorDetails = error.message;
+        // AI SDK errors often have additional properties
+        const anyError = error as any;
+        if (anyError.cause) {
+          errorDetails += `\nCause: ${JSON.stringify(anyError.cause, null, 2)}`;
+        }
+        if (anyError.responseBody) {
+          errorDetails += `\nResponse Body: ${JSON.stringify(anyError.responseBody, null, 2)}`;
+        }
+        if (anyError.statusCode) {
+          errorDetails += `\nStatus Code: ${anyError.statusCode}`;
+        }
+        if (anyError.data) {
+          errorDetails += `\nData: ${JSON.stringify(anyError.data, null, 2)}`;
+        }
+      }
+
       RequestContext.logLLMCall('end', `${currentModel.provider}/${currentModel.modelId}`, {
-        error: error instanceof Error ? error.message : String(error)
+        error: errorDetails || String(error)
       });
 
       debug('Error in generateResponse:', error);
-      console.error('Error generating response:', error);
+      // Log full error details
+      console.error('Error generating response:', errorDetails || error);
+      if (error instanceof Error && error.stack) {
+        console.error('Stack trace:', error.stack);
+      }
 
       throw error; // Re-throw so traced() can record the error
     }

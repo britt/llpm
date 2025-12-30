@@ -280,12 +280,33 @@ export function useChat() {
         shouldSaveRef.current = true; // Mark for saving
         debug('Added assistant response to state');
       } catch (error) {
-        debug('Error in processMessageImmediate:', error);
+        // Extract full error details from AI SDK errors
+        let fullErrorDetails = '';
+        if (error instanceof Error) {
+          const anyError = error as any;
+          fullErrorDetails = `${error.name}: ${error.message}`;
+          if (anyError.cause) {
+            fullErrorDetails += `\nCause: ${JSON.stringify(anyError.cause, null, 2)}`;
+          }
+          if (anyError.responseBody) {
+            fullErrorDetails += `\nAPI Response: ${JSON.stringify(anyError.responseBody, null, 2)}`;
+          }
+          if (anyError.statusCode) {
+            fullErrorDetails += `\nStatus Code: ${anyError.statusCode}`;
+          }
+          if (anyError.data) {
+            fullErrorDetails += `\nData: ${JSON.stringify(anyError.data, null, 2)}`;
+          }
+          if (anyError.url) {
+            fullErrorDetails += `\nURL: ${anyError.url}`;
+          }
+        }
+        debug('Error in processMessageImmediate:', fullErrorDetails || error);
 
         let errorContent = 'Sorry, I encountered an error. Please try again.';
 
         if (getVerbose() && error instanceof Error) {
-          errorContent += `\n\n🔍 Debug Details:\n${error.name}: ${error.message}`;
+          errorContent += `\n\n🔍 Debug Details:\n${fullErrorDetails}`;
           if (error.stack) {
             errorContent += `\n\nStack trace:\n${error.stack}`;
           }
