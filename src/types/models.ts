@@ -5,6 +5,7 @@ export interface ModelConfig {
   modelId: string;
   displayName: string;
   description?: string;
+  recommendedRank?: number;
 }
 
 export interface ModelProviderConfig {
@@ -204,4 +205,6 @@ export type Model = {
   id: string;
   label: string;
   value: string;
+  provider?: ModelProvider;
+  recommendedRank?: number;
 }

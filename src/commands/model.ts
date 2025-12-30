@@ -2,34 +2,56 @@ import type { Command, CommandResult } from './types';
 import { modelRegistry } from '../services/modelRegistry';
 import type { ModelProvider } from '../types/models';
 import { debug } from '../utils/logger';
+import {
+  readModelCache,
+  writeModelCache,
+  createEmptyCache,
+  getCacheAge,
+  formatCacheAge,
+  type CachedModels,
+} from '../utils/modelCache';
+import {
+  getProviderAdapter,
+  type ProviderCredentials,
+} from '../services/modelProviders';
 
 function showInteractiveModelSelector(): CommandResult {
   const configuredProviders = modelRegistry.getConfiguredProviders();
-  
+
   if (configuredProviders.length === 0) {
     return {
       content: '❌ No providers are configured. Please check your API keys in .env file.\n\n💡 Use `/model providers` to see configuration requirements.',
       success: false
     };
   }
-  
-  const models: Array<{id: string, label: string, value: string}> = [];
+
+  const models: Array<{id: string, label: string, value: string, provider: ModelProvider, recommendedRank: number}> = [];
   const currentModel = modelRegistry.getCurrentModel();
-  
+
   for (const provider of configuredProviders) {
     const providerModels = modelRegistry.getModelsForProvider(provider);
     for (const model of providerModels) {
       const isCurrent = currentModel.modelId === model.modelId && currentModel.provider === model.provider;
       const currentMarker = isCurrent ? ' 👉 ' : '   ';
-      
+
       models.push({
         id: `${model.provider}/${model.modelId}`,
         label: `${currentMarker}${model.displayName} (${model.provider})`,
-        value: `${model.provider}/${model.modelId}`
+        value: `${model.provider}/${model.modelId}`,
+        provider: model.provider,
+        recommendedRank: model.recommendedRank ?? 100
       });
     }
   }
-  
+
+  // Sort by recommendedRank within each provider
+  models.sort((a, b) => {
+    if (a.provider !== b.provider) {
+      return a.provider.localeCompare(b.provider);
+    }
+    return a.recommendedRank - b.recommendedRank;
+  });
+
   return {
     content: 'Select a model to switch to:',
     success: true,
@@ -69,16 +91,24 @@ export const modelCommand: Command = {
 • /model switch <provider>/<model-id> - Switch to specific model
 • /model set <provider>/<model-id> - Alias for switch
 • /model <model-spec> - Quick switch to model
+• /model update [options] - Fetch latest models from provider APIs
+
+🔄 Update Command Options:
+• --providers <list> - Comma-separated providers (default: all configured)
+• --project <id> - Google Vertex project ID
+• --location <region> - Google Vertex region (default: us-central1)
+• --dry-run - Show what would change without updating cache
 
 🔧 Provider-Specific Commands:
-• /model openai [model] - Switch to OpenAI model (defaults to gpt-4o-mini)
-• /model anthropic [model] - Switch to Anthropic model (defaults to claude-3-5-sonnet-20241022)
-• /model groq [model] - Switch to Groq model (defaults to llama-3.1-70b-versatile)
-• /model google-vertex [model] - Switch to Google Vertex model (defaults to gemini-1.5-pro)
+• /model openai [model] - Switch to OpenAI model
+• /model anthropic [model] - Switch to Anthropic model
+• /model groq [model] - Switch to Groq model
+• /model google-vertex [model] - Switch to Google Vertex model
 
 📝 Examples:
 • /model switch openai/gpt-4o
-• /model anthropic claude-3-opus-20240229
+• /model anthropic claude-3-opus
+• /model update --providers openai,anthropic
 • /model list --all`,
           success: true
         };
@@ -95,7 +125,10 @@ export const modelCommand: Command = {
       
       case 'providers':
         return showProviders();
-      
+
+      case 'update':
+        return await updateModels(args.slice(1));
+
       case 'switch':
       case 'set':
         if (args.length < 2) {
@@ -308,7 +341,7 @@ async function switchModel(modelSpec: string): Promise<CommandResult> {
   try {
     await modelRegistry.createLanguageModel(targetModel);
     await modelRegistry.setCurrentModel(targetModel);
-    
+
     return {
       content: `✅ Switched to ${targetModel.displayName} (${targetModel.provider}/${targetModel.modelId})`,
       success: true
@@ -320,4 +353,202 @@ async function switchModel(modelSpec: string): Promise<CommandResult> {
       success: false
     };
   }
+}
+
+interface UpdateOptions {
+  providers?: ModelProvider[];
+  project?: string;
+  location?: string;
+  dryRun: boolean;
+}
+
+function parseUpdateArgs(args: string[]): UpdateOptions {
+  const options: UpdateOptions = {
+    dryRun: false,
+  };
+
+  for (let i = 0; i < args.length; i++) {
+    const arg = args[i];
+
+    if (arg === '--providers' && args[i + 1]) {
+      options.providers = args[i + 1]!.split(',') as ModelProvider[];
+      i++;
+    } else if (arg === '--project' && args[i + 1]) {
+      options.project = args[i + 1];
+      i++;
+    } else if (arg === '--location' && args[i + 1]) {
+      options.location = args[i + 1];
+      i++;
+    } else if (arg === '--dry-run') {
+      options.dryRun = true;
+    }
+  }
+
+  return options;
+}
+
+async function updateModels(args: string[]): Promise<CommandResult> {
+  const options = parseUpdateArgs(args);
+  debug('Update models with options:', options);
+
+  const allProviders: ModelProvider[] = ['openai', 'anthropic', 'groq', 'google-vertex'];
+  const configuredProviders = modelRegistry.getConfiguredProviders();
+
+  // Determine which providers to update
+  let providersToUpdate: ModelProvider[];
+  if (options.providers) {
+    // Validate specified providers
+    const invalidProviders = options.providers.filter(p => !allProviders.includes(p));
+    if (invalidProviders.length > 0) {
+      return {
+        content: `❌ Invalid provider(s): ${invalidProviders.join(', ')}\nValid providers: ${allProviders.join(', ')}`,
+        success: false,
+      };
+    }
+    providersToUpdate = options.providers;
+  } else {
+    // Default to configured providers
+    providersToUpdate = configuredProviders;
+  }
+
+  if (providersToUpdate.length === 0) {
+    return {
+      content: '❌ No providers to update. Configure API keys or use --providers flag.\nUse /model providers to see configuration requirements.',
+      success: false,
+    };
+  }
+
+  // Show current cache info
+  const cacheAge = getCacheAge();
+  let content = '🔄 **Updating Model Cache**\n\n';
+
+  if (cacheAge !== null) {
+    content += `📦 Current cache: ${formatCacheAge(cacheAge)}\n`;
+  } else {
+    content += '📦 No existing cache found\n';
+  }
+
+  content += `🎯 Providers: ${providersToUpdate.join(', ')}\n\n`;
+
+  // Get credentials for each provider
+  const providerCredentials = modelRegistry.getProviderCredentials();
+
+  // Fetch models from each provider
+  const results: Array<{
+    provider: ModelProvider;
+    success: boolean;
+    modelCount: number;
+    error?: string;
+    sourceUrl: string;
+  }> = [];
+
+  for (const provider of providersToUpdate) {
+    content += `⏳ Fetching ${provider}...\n`;
+
+    const adapter = getProviderAdapter(provider);
+    const credentials: ProviderCredentials = {
+      apiKey: providerCredentials[provider]?.apiKey,
+      projectId: options.project || providerCredentials['google-vertex']?.projectId,
+      location: options.location || providerCredentials['google-vertex']?.region,
+    };
+
+    const result = await adapter.fetchModels(credentials);
+    results.push({
+      provider,
+      success: result.success,
+      modelCount: result.models.length,
+      error: result.error,
+      sourceUrl: result.sourceUrl,
+    });
+
+    if (result.success) {
+      content = content.replace(`⏳ Fetching ${provider}...`, `✅ ${provider}: ${result.models.length} models`);
+    } else {
+      content = content.replace(`⏳ Fetching ${provider}...`, `❌ ${provider}: ${result.error}`);
+    }
+  }
+
+  // Check if any succeeded
+  const successfulResults = results.filter(r => r.success);
+  if (successfulResults.length === 0) {
+    content += '\n❌ All providers failed. Cache not updated.\n';
+    content += '\n💡 Check your API keys with /model providers';
+    return {
+      content,
+      success: false,
+    };
+  }
+
+  // Build new cache
+  const existingCache = readModelCache();
+  const newCache: CachedModels = existingCache ? { ...existingCache } : createEmptyCache();
+  newCache.fetchedAt = new Date().toISOString();
+  newCache.version = '1.0.0';
+
+  // Collect all models from successful fetches
+  const allModels = [...(existingCache?.models || [])];
+
+  for (const provider of providersToUpdate) {
+    const adapter = getProviderAdapter(provider);
+    const credentials: ProviderCredentials = {
+      apiKey: providerCredentials[provider]?.apiKey,
+      projectId: options.project || providerCredentials['google-vertex']?.projectId,
+      location: options.location || providerCredentials['google-vertex']?.region,
+    };
+
+    const result = await adapter.fetchModels(credentials);
+    if (result.success) {
+      // Remove old models for this provider
+      const otherModels = allModels.filter(m => m.provider !== provider);
+      allModels.length = 0;
+      allModels.push(...otherModels, ...result.models);
+
+      newCache.sourceUrls[provider] = result.sourceUrl;
+      newCache.providerCounts[provider] = result.models.length;
+    }
+  }
+
+  newCache.models = allModels;
+
+  // Dry run - show what would change
+  if (options.dryRun) {
+    content += '\n📋 **Dry Run - Changes that would be made:**\n';
+
+    for (const result of successfulResults) {
+      const oldCount = existingCache?.providerCounts[result.provider] || 0;
+      const diff = result.modelCount - oldCount;
+      const diffStr = diff > 0 ? `+${diff}` : diff < 0 ? `${diff}` : '±0';
+      content += `   ${result.provider}: ${result.modelCount} models (${diffStr})\n`;
+    }
+
+    content += '\n💡 Run without --dry-run to apply changes';
+    return {
+      content,
+      success: true,
+    };
+  }
+
+  // Write cache
+  try {
+    writeModelCache(newCache);
+    content += '\n✅ **Cache Updated**\n';
+    content += `📦 Total models: ${newCache.models.length}\n`;
+    content += `📅 Updated: ${new Date().toLocaleString()}\n`;
+
+    // Reload models in registry
+    await modelRegistry.reloadModelsFromCache();
+
+    content += '\n💡 Use /model list to see updated models';
+  } catch (error) {
+    content += `\n❌ Failed to write cache: ${error instanceof Error ? error.message : 'Unknown error'}`;
+    return {
+      content,
+      success: false,
+    };
+  }
+
+  return {
+    content,
+    success: true,
+  };
 }

@@ -8,16 +8,26 @@ import { debug } from '../utils/logger';
 import { saveCurrentModel, loadCurrentModel } from '../utils/modelStorage';
 import { credentialManager } from '../utils/credentialManager';
 import { normalizeAnthropicModel } from '../utils/modelMapping';
+import { readModelCache, type NormalizedModel } from '../utils/modelCache';
+
+// Fallback models when cache is unavailable
+const FALLBACK_MODELS: ModelConfig[] = [
+  { provider: 'openai', modelId: 'gpt-4o', displayName: 'GPT-4o', description: 'Most capable GPT-4 model' },
+  { provider: 'anthropic', modelId: 'claude-sonnet-4-5', displayName: 'Claude Sonnet 4.5', description: 'Latest Claude model' },
+  { provider: 'groq', modelId: 'llama-3.3-70b-versatile', displayName: 'Llama 3.3 70B', description: 'Large Llama model on Groq' },
+  { provider: 'google-vertex', modelId: 'gemini-2.5-pro', displayName: 'Gemini 2.5 Pro', description: 'Most capable Gemini model' },
+];
 
 class ModelRegistry {
   private currentModel: ModelConfig;
   private providerConfigs: Record<ModelProvider, ModelProviderConfig>;
+  private cachedModels: ModelConfig[] | null = null;
   private initialized: boolean = false;
 
   constructor() {
-    // Default to GPT-4.1 mini, but will be overridden by init()
-    this.currentModel = DEFAULT_MODEL_CONFIGS.openai.find(m => m.modelId === 'gpt-4.1-mini')!;
-    
+    // Default to GPT-4o, but will be overridden by init()
+    this.currentModel = FALLBACK_MODELS[0]!;
+
     // Provider configs will be populated during init() using credential manager
     this.providerConfigs = {
       openai: { provider: 'openai' },
@@ -29,12 +39,15 @@ class ModelRegistry {
 
   public async init(): Promise<void> {
     if (this.initialized) return;
-    
+
     debug('Initializing model registry');
-    
+
     // Load credentials using credential manager
     await this.loadProviderCredentials();
-    
+
+    // Try to load cached models
+    this.loadModelsFromCache();
+
     // Try to load stored model
     const storedModel = await loadCurrentModel();
     
@@ -80,11 +93,34 @@ class ModelRegistry {
   }
 
   public getAvailableModels(): ModelConfig[] {
+    // Use cached models if available, otherwise fallback to static defaults
+    if (this.cachedModels && this.cachedModels.length > 0) {
+      return this.cachedModels;
+    }
     return Object.values(DEFAULT_MODEL_CONFIGS).flat();
   }
 
   public getModelsForProvider(provider: ModelProvider): ModelConfig[] {
+    // Use cached models if available
+    if (this.cachedModels && this.cachedModels.length > 0) {
+      return this.cachedModels.filter(m => m.provider === provider);
+    }
     return DEFAULT_MODEL_CONFIGS[provider] || [];
+  }
+
+  /**
+   * Get recommended models (top N per provider)
+   */
+  public getRecommendedModels(maxPerProvider: number = 1): ModelConfig[] {
+    const providers: ModelProvider[] = ['openai', 'anthropic', 'groq', 'google-vertex'];
+    const recommended: ModelConfig[] = [];
+
+    for (const provider of providers) {
+      const models = this.getModelsForProvider(provider);
+      recommended.push(...models.slice(0, maxPerProvider));
+    }
+
+    return recommended;
   }
 
   public getModelState(): ModelState {
@@ -209,6 +245,55 @@ class ModelRegistry {
     }
 
     debug('Provider credentials loaded');
+  }
+
+  /**
+   * Load models from cache file
+   */
+  private loadModelsFromCache(): void {
+    const cache = readModelCache();
+    if (cache && cache.models.length > 0) {
+      debug('Loading models from cache:', cache.models.length, 'models');
+      this.cachedModels = cache.models.map(this.normalizedToModelConfig);
+    } else {
+      debug('No cached models found, using static defaults');
+      this.cachedModels = null;
+    }
+  }
+
+  /**
+   * Reload models from cache (called after /model update)
+   */
+  public async reloadModelsFromCache(): Promise<void> {
+    this.loadModelsFromCache();
+    debug('Models reloaded from cache');
+  }
+
+  /**
+   * Convert NormalizedModel to ModelConfig
+   */
+  private normalizedToModelConfig(model: NormalizedModel): ModelConfig {
+    return {
+      provider: model.provider,
+      modelId: model.id,
+      displayName: model.displayName,
+      description: model.family ? `${model.family} family` : undefined,
+      recommendedRank: model.recommendedRank,
+    };
+  }
+
+  /**
+   * Get provider credentials for external use (e.g., model update)
+   */
+  public getProviderCredentials(): Record<ModelProvider, ModelProviderConfig> {
+    return { ...this.providerConfigs };
+  }
+
+  /**
+   * Check if models are loaded from cache
+   */
+  public hasCachedModels(): boolean {
+    return this.cachedModels !== null && this.cachedModels.length > 0;
   }
 }
 
