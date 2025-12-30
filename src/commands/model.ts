@@ -195,33 +195,84 @@ function showCurrentModel(): CommandResult {
   };
 }
 
-const MAX_FAMILIES_PER_PROVIDER = 2;
+const MAX_GENERATIONS_PER_PROVIDER = 2;
 
-interface ModelFamily {
+interface ModelGeneration {
   name: string;
+  displayName: string;
   models: ModelConfig[];
   bestRank: number;
 }
 
-function groupModelsByFamily(models: ModelConfig[]): ModelFamily[] {
-  const familyMap = new Map<string, ModelConfig[]>();
+/**
+ * Extract generation identifier from model family/name
+ * e.g., "claude-sonnet-4-5" -> "4.5", "gpt-4o" -> "4o", "llama-3.3-70b" -> "3.3"
+ */
+function extractGeneration(family: string, provider: ModelProvider): { id: string; display: string } {
+  const lower = family.toLowerCase();
 
-  for (const model of models) {
-    const familyName = model.family || model.displayName;
-    const existing = familyMap.get(familyName) || [];
-    existing.push(model);
-    familyMap.set(familyName, existing);
+  if (provider === 'anthropic') {
+    // Claude models: claude-sonnet-4-5 -> 4.5, claude-3-7-sonnet -> 3.7
+    const match = lower.match(/claude-(?:sonnet|opus|haiku)?-?(\d+(?:-\d+)?)/);
+    if (match) {
+      const version = match[1]!.replace('-', '.');
+      return { id: version, display: `Claude ${version}` };
+    }
   }
 
-  // Convert to array and compute best rank per family
-  const families: ModelFamily[] = [];
-  for (const [name, familyModels] of familyMap) {
-    const bestRank = Math.min(...familyModels.map(m => m.recommendedRank ?? 100));
-    families.push({ name, models: familyModels, bestRank });
+  if (provider === 'openai') {
+    // GPT models: gpt-4o -> 4o, gpt-4-turbo -> 4, gpt-3.5 -> 3.5
+    if (lower.includes('o1') || lower.includes('o3') || lower.includes('o4')) {
+      const match = lower.match(/(o\d+)/);
+      if (match) return { id: match[1]!, display: match[1]!.toUpperCase() };
+    }
+    const match = lower.match(/gpt-(\d+(?:\.\d+)?[a-z]*)/);
+    if (match) {
+      return { id: match[1]!, display: `GPT-${match[1]}` };
+    }
+  }
+
+  if (provider === 'groq') {
+    // Llama models: llama-3.3-70b -> 3.3, llama-4 -> 4
+    if (lower.includes('llama')) {
+      const match = lower.match(/llama-?(\d+(?:\.\d+)?)/);
+      if (match) return { id: `llama-${match[1]}`, display: `Llama ${match[1]}` };
+    }
+    if (lower.includes('deepseek')) return { id: 'deepseek', display: 'DeepSeek' };
+    if (lower.includes('mixtral')) return { id: 'mixtral', display: 'Mixtral' };
+    if (lower.includes('qwen')) return { id: 'qwen', display: 'Qwen' };
+  }
+
+  if (provider === 'google-vertex') {
+    // Gemini models: gemini-2.5-pro -> 2.5, gemini-2.0-flash -> 2.0
+    const match = lower.match(/gemini-(\d+\.\d+)/);
+    if (match) return { id: match[1]!, display: `Gemini ${match[1]}` };
+  }
+
+  // Fallback: use family as-is
+  return { id: family, display: family };
+}
+
+function groupModelsByGeneration(models: ModelConfig[], provider: ModelProvider): ModelGeneration[] {
+  const generationMap = new Map<string, { display: string; models: ModelConfig[] }>();
+
+  for (const model of models) {
+    const family = model.family || model.displayName;
+    const gen = extractGeneration(family, provider);
+    const existing = generationMap.get(gen.id) || { display: gen.display, models: [] };
+    existing.models.push(model);
+    generationMap.set(gen.id, existing);
+  }
+
+  // Convert to array and compute best rank per generation
+  const generations: ModelGeneration[] = [];
+  for (const [id, data] of generationMap) {
+    const bestRank = Math.min(...data.models.map(m => m.recommendedRank ?? 100));
+    generations.push({ name: id, displayName: data.display, models: data.models, bestRank });
   }
 
   // Sort by best rank
-  return families.sort((a, b) => a.bestRank - b.bestRank);
+  return generations.sort((a, b) => a.bestRank - b.bestRank);
 }
 
 function listAvailableModels(showAll: boolean = false): CommandResult {
@@ -244,29 +295,29 @@ function listAvailableModels(showAll: boolean = false): CommandResult {
     const isConfigured = configuredProviders.includes(provider);
     const providerStatus = isConfigured ? '✅' : '❌';
 
-    // Group by family and take top N families (unless showing all)
-    const allFamilies = groupModelsByFamily(allModels);
-    const families = showAll ? allFamilies : allFamilies.slice(0, MAX_FAMILIES_PER_PROVIDER);
-    const hiddenFamilyCount = allFamilies.length - families.length;
+    // Group by generation and take top N (unless showing all)
+    const allGenerations = groupModelsByGeneration(allModels, provider);
+    const generations = showAll ? allGenerations : allGenerations.slice(0, MAX_GENERATIONS_PER_PROVIDER);
+    const hiddenCount = allGenerations.length - generations.length;
 
     content += `**${provider.toUpperCase()}** ${providerStatus}`;
-    if (hiddenFamilyCount > 0) {
-      content += ` (${hiddenFamilyCount} more families)`;
+    if (hiddenCount > 0) {
+      content += ` (${hiddenCount} more)`;
     }
     content += '\n';
 
-    for (const family of families) {
+    for (const gen of generations) {
       const currentModel = modelRegistry.getCurrentModel();
-      // Check if any model in this family is current
-      const currentInFamily = family.models.find(
+      // Check if any model in this generation is current
+      const currentInGen = gen.models.find(
         m => m.modelId === currentModel.modelId && m.provider === currentModel.provider
       );
-      const currentMarker = currentInFamily ? '👉 ' : '   ';
+      const currentMarker = currentInGen ? '👉 ' : '   ';
       const usableStatus = isConfigured ? '🟢' : '🔴';
 
-      // Show family name with model count if multiple
-      const modelCount = family.models.length > 1 ? ` (${family.models.length} variants)` : '';
-      content += `${currentMarker}${usableStatus} ${family.name}${modelCount}`;
+      // Show generation display name with model count if multiple
+      const modelCount = gen.models.length > 1 ? ` (${gen.models.length} models)` : '';
+      content += `${currentMarker}${usableStatus} ${gen.displayName}${modelCount}`;
 
       if (!isConfigured) {
         content += ' - Not configured';
@@ -281,7 +332,7 @@ function listAvailableModels(showAll: boolean = false): CommandResult {
     content += `💡 Legend: 🟢 = Usable, 🔴 = Needs configuration\n`;
     content += `💡 Configure providers in .env file (see /model providers)\n`;
   } else {
-    content += `💡 Use /model list --all to see all families\n`;
+    content += `💡 Use /model list --all to see all generations\n`;
   }
   content += `💡 Switch with: /model switch <provider>/<model-id>`;
 
