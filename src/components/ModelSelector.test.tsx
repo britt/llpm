@@ -2,8 +2,39 @@
  * ModelSelector Tests
  */
 
-import React from 'react';
 import { describe, it, expect, vi } from 'vitest';
+
+// Must mock yoga-layout before any ink imports to prevent WASM compilation errors in CI
+vi.mock('yoga-layout', () => ({
+  default: {
+    Node: {
+      create: () => ({
+        setWidth: () => {}, setHeight: () => {}, setFlexDirection: () => {},
+        setFlexWrap: () => {}, setFlexGrow: () => {}, setFlexShrink: () => {},
+        setFlexBasis: () => {}, setAlignItems: () => {}, setAlignSelf: () => {},
+        setAlignContent: () => {}, setJustifyContent: () => {}, setDisplay: () => {},
+        setPositionType: () => {}, setPosition: () => {}, setMargin: () => {},
+        setPadding: () => {}, setBorder: () => {}, setOverflow: () => {},
+        setMinWidth: () => {}, setMinHeight: () => {}, setMaxWidth: () => {},
+        setMaxHeight: () => {}, insertChild: () => {}, removeChild: () => {},
+        getChildCount: () => 0, calculateLayout: () => {},
+        getComputedLayout: () => ({ left: 0, top: 0, width: 0, height: 0 }),
+        getComputedLeft: () => 0, getComputedTop: () => 0,
+        getComputedWidth: () => 0, getComputedHeight: () => 0,
+        getComputedBorder: () => 0, getComputedPadding: () => 0,
+        free: () => {}, freeRecursive: () => {},
+      }),
+    },
+    EDGE_LEFT: 0, EDGE_TOP: 1, EDGE_RIGHT: 2, EDGE_BOTTOM: 3,
+    EDGE_START: 4, EDGE_END: 5, EDGE_ALL: 8,
+    FLEX_DIRECTION_ROW: 2, FLEX_DIRECTION_COLUMN: 0,
+    JUSTIFY_FLEX_START: 0, ALIGN_STRETCH: 4,
+    DISPLAY_FLEX: 0, DISPLAY_NONE: 1,
+    DIRECTION_LTR: 1,
+  },
+}));
+
+import React from 'react';
 import { render } from 'ink-testing-library';
 import ModelSelector from './ModelSelector';
 import type { Model } from '../types/models';
