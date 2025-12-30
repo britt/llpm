@@ -27,9 +27,12 @@ export default defineConfig({
       'docker/**/*.test.*',
       '.worktrees/**',
     ],
-    // Inline yoga-layout for CI to allow mocking
-    deps: {
-      inline: process.env.CI === 'true' ? [/yoga-layout/] : [],
+    // Server deps configuration for mocking
+    server: {
+      deps: {
+        // Inline yoga-layout to allow module aliasing
+        inline: [/yoga-layout/],
+      },
     },
     // Force tests to run in single thread in CI to avoid resource contention
     // threads: process.env.CI === 'true' ? false : true,
