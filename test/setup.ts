@@ -5,6 +5,13 @@ import { cleanup } from '@testing-library/react';
 // Note: bun:sqlite is mocked via vitest.config.ts alias to test/mocks/bun-sqlite.js
 // This provides browser/testing compatibility for the native Bun SQLite module
 
+// Mock the specific yoga-layout WASM binary that fails in CI
+vi.mock('yoga-layout/dist/binaries/yoga-wasm-base64-esm.js', () => {
+  return {
+    default: async () => ({ exports: {} })
+  };
+});
+
 // Mock yoga-layout to prevent WASM compilation errors in CI
 // vi.mock is hoisted and runs before any module imports
 vi.mock('yoga-layout', () => {
