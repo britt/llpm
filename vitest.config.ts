@@ -6,9 +6,13 @@ export default defineConfig({
     'process.env.NODE_ENV': JSON.stringify('test')
   },
   resolve: {
-    alias: {
-      'bun:sqlite': new URL('./test/mocks/bun-sqlite.js', import.meta.url).pathname,
-    }
+    alias: [
+      { find: 'bun:sqlite', replacement: new URL('./test/mocks/bun-sqlite.js', import.meta.url).pathname },
+      // Mock ALL yoga-layout imports (including deep paths) in CI
+      ...(process.env.CI === 'true' ? [
+        { find: /^yoga-layout.*/, replacement: new URL('./test/mocks/yoga-layout.js', import.meta.url).pathname }
+      ] : [])
+    ]
   },
   test: {
     globals: true,
