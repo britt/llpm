@@ -52,13 +52,13 @@ function TextInput({
 }) {
   const { beforeCursor, currentCharacter, afterCursor } = useMemo(() => splitText(ref.current?.input || '', ref.current?.cursor || 0, placeholder), [ref.current?.input, ref.current?.cursor, placeholder]);
   return (
-    <Text color="white">
-      <Text color="cyan" bold>
+    <Text color="brightWhite">
+      <Text color="cyanBright" bold>
         &gt;{' '}
       </Text>
       {beforeCursor}
       <Cursor character={currentCharacter} />
-      {beforeCursor.length > 0 || currentCharacter !== ' ' ? afterCursor : <Text dimColor>{placeholder}</Text>}
+      {beforeCursor.length > 0 || currentCharacter !== ' ' ? afterCursor : <Text color="gray">{placeholder}</Text>}
     </Text>
   );
 }
@@ -259,7 +259,7 @@ export default function HybridInput({
     <Box
       paddingX={1}
       borderStyle="single"
-      borderColor="cyan"
+      borderColor="cyanBright"
       borderLeft={false}
       borderRight={false}
       minHeight={1}

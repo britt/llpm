@@ -4,6 +4,7 @@ import type { Model, ModelProvider } from '../types/models';
 import SelectInput from 'ink-select-input';
 
 const TOP_MODELS_PER_PROVIDER = 3;
+const MAX_VISIBLE_ITEMS = 12;
 
 export type ModelSelectorProps = {
   models: Model[];
@@ -79,13 +80,14 @@ export default function ModelSelector({
         </Box>
         <SelectInput
           items={items}
+          limit={MAX_VISIBLE_ITEMS}
           onSelect={item => onModelSelect?.(item.value)}
           onHighlight={() => {}}
         />
         <Box marginTop={1}>
           <Text color="gray" dimColor>
             {showAdvanced
-              ? '💡 Showing all models. Press [A] to show recommended only.'
+              ? `💡 Showing all ${models.length} models. Use ↑↓ to scroll. Press [A] for recommended only.`
               : `💡 Showing top ${TOP_MODELS_PER_PROVIDER} per provider${hiddenCount > 0 ? ` (${hiddenCount} more hidden)` : ''}. Press [A] for all.`
             }
           </Text>

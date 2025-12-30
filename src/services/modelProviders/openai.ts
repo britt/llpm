@@ -44,7 +44,7 @@ function isChatModel(modelId: string): boolean {
 }
 
 function extractFamily(modelId: string): string {
-  // Extract family from model ID (e.g., "gpt-4o-2024-08-06" -> "gpt-4o")
+  // Extract generation/family from model ID (e.g., "gpt-5.2-mini" -> "gpt-5.2")
   const lower = modelId.toLowerCase();
 
   // Check known families
@@ -54,8 +54,16 @@ function extractFamily(modelId: string): string {
     }
   }
 
-  // Fallback: use first part before date suffix
-  const match = modelId.match(/^([a-z0-9.-]+?)(?:-\d{4}|-preview|-latest)?$/i);
+  // Fallback: use first part before variant suffix
+  const match = modelId.match(/^([a-z0-9.-]+?)(?:-mini|-turbo|-preview|-latest|-\d{4})?/i);
+  return match?.[1] ?? modelId;
+}
+
+function extractBaseModelId(modelId: string): string {
+  // Extract base model ID by removing only date suffixes
+  // e.g., "gpt-5.2-mini-2024-08-06" -> "gpt-5.2-mini"
+  // This keeps variant suffixes like -mini, -turbo intact
+  const match = modelId.match(/^(.+?)(?:-\d{4}-\d{2}-\d{2}|-\d{8})?$/i);
   return match?.[1] ?? modelId;
 }
 
@@ -67,7 +75,7 @@ function getModelRank(modelId: string): number {
 function formatDisplayName(modelId: string): string {
   // Convert model ID to display name
   // e.g., "gpt-4o-2024-08-06" -> "GPT-4o"
-  const family = extractFamily(modelId);
+  const baseId = extractBaseModelId(modelId).toLowerCase();
 
   const displayNames: Record<string, string> = {
     'o4-mini': 'o4 Mini',
@@ -77,6 +85,12 @@ function formatDisplayName(modelId: string): string {
     'o1-mini': 'o1 Mini',
     'o1-preview': 'o1 Preview',
     'o1': 'o1',
+    'gpt-5.2': 'GPT-5.2',
+    'gpt-5.2-mini': 'GPT-5.2 Mini',
+    'gpt-5.2-turbo': 'GPT-5.2 Turbo',
+    'gpt-5.1': 'GPT-5.1',
+    'gpt-5.1-mini': 'GPT-5.1 Mini',
+    'gpt-5.1-turbo': 'GPT-5.1 Turbo',
     'gpt-5': 'GPT-5',
     'gpt-5-mini': 'GPT-5 Mini',
     'gpt-4o': 'GPT-4o',
@@ -86,7 +100,7 @@ function formatDisplayName(modelId: string): string {
     'gpt-3.5-turbo': 'GPT-3.5 Turbo',
   };
 
-  return displayNames[family] ?? modelId.toUpperCase();
+  return displayNames[baseId] ?? modelId.toUpperCase();
 }
 
 export class OpenAIAdapter implements ModelProviderAdapter {
@@ -152,18 +166,19 @@ export class OpenAIAdapter implements ModelProviderAdapter {
       const chatModels = data.data.filter(m => isChatModel(m.id));
       debug('Filtered to', chatModels.length, 'chat models');
 
-      // Deduplicate by family (keep latest version)
-      const familyMap = new Map<string, OpenAIModel>();
+      // Deduplicate by base model ID (keep latest version of each variant)
+      // This removes date suffixes but keeps variant suffixes like -mini, -turbo
+      const baseModelMap = new Map<string, OpenAIModel>();
       for (const model of chatModels) {
-        const family = extractFamily(model.id);
-        const existing = familyMap.get(family);
+        const baseId = extractBaseModelId(model.id);
+        const existing = baseModelMap.get(baseId);
         if (!existing || model.created > existing.created) {
-          familyMap.set(family, model);
+          baseModelMap.set(baseId, model);
         }
       }
 
       // Convert to normalized format
-      const models: NormalizedModel[] = Array.from(familyMap.values())
+      const models: NormalizedModel[] = Array.from(baseModelMap.values())
         .map(model => ({
           provider: 'openai' as const,
           id: model.id,

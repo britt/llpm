@@ -117,10 +117,10 @@ const ProjectStatus = memo(
   ({ project, model }: { project: Project | null; model: ModelConfig | null }) => {
     return (
       <Box paddingX={1} paddingY={0}>
-        <Text dimColor>
+        <Text color="white">
           project:{' '}
           {project ? (
-            <Text color="cyan" bold>
+            <Text color="cyanBright" bold>
               {project.name}
             </Text>
           ) : (
@@ -128,13 +128,13 @@ const ProjectStatus = memo(
           )}{' '}
           | model:{' '}
           {model ? (
-            <Text color="green" bold>
+            <Text color="greenBright" bold>
               {model.displayName}
             </Text>
           ) : (
             <Text color="gray">none</Text>
           )}{' '}
-          <Text color="blackBright">
+          <Text color="gray">
             (shift+tab: switch project, option+m: switch model, option+n: notes)
           </Text>
         </Text>
@@ -355,20 +355,6 @@ export const ChatInterface = memo(function ChatInterface({
     loadModel();
   }, []);
 
-  // Reload model when a model switch notification is detected
-  useEffect(() => {
-    if (currentModel) {
-      const loadModel = async () => {
-        try {
-          const model = await loadCurrentModel();
-          setCurrentModel(model);
-        } catch (error) {
-          console.error('Failed to reload model after switch:', error);
-        }
-      };
-      loadModel();
-    }
-  }, [currentModel]);
 
   useEffect(() => {
     if (activeInput === 'model') {
@@ -456,9 +442,17 @@ export const ChatInterface = memo(function ChatInterface({
           activeInput={activeInput}
           models={modelSelectorModels || []}
           onProjectSelect={handleProjectSelect}
-          onModelSelect={(modelValue: string) => {
-            onModelSelect?.(modelValue);
+          onModelSelect={async (modelValue: string) => {
             setActiveInput('main');
+            // Await the model switch to complete before reloading
+            await onModelSelect?.(modelValue);
+            // Reload model from storage after selection to update display
+            try {
+              const model = await loadCurrentModel();
+              setCurrentModel(model);
+            } catch (error) {
+              console.error('Failed to reload model after selection:', error);
+            }
           }}
           onSubmit={handleInputSubmit || (() => {})}
           onInsertNote={handleInsertNote || (() => {})}
