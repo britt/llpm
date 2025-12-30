@@ -12,10 +12,10 @@ import { readModelCache, type NormalizedModel } from '../utils/modelCache';
 
 // Fallback models when cache is unavailable
 const FALLBACK_MODELS: ModelConfig[] = [
-  { provider: 'openai', modelId: 'gpt-4o', displayName: 'GPT-4o', description: 'Most capable GPT-4 model' },
-  { provider: 'anthropic', modelId: 'claude-sonnet-4-5', displayName: 'Claude Sonnet 4.5', description: 'Latest Claude model' },
-  { provider: 'groq', modelId: 'llama-3.3-70b-versatile', displayName: 'Llama 3.3 70B', description: 'Large Llama model on Groq' },
-  { provider: 'google-vertex', modelId: 'gemini-2.5-pro', displayName: 'Gemini 2.5 Pro', description: 'Most capable Gemini model' },
+  { provider: 'openai', modelId: 'gpt-5.2', displayName: 'GPT-5.2', description: 'Latest GPT model', family: 'gpt-5.2' },
+  { provider: 'anthropic', modelId: 'claude-sonnet-4-5', displayName: 'Claude Sonnet 4.5', description: 'Latest Claude model', family: 'claude-sonnet-4-5' },
+  { provider: 'groq', modelId: 'llama-3.3-70b-versatile', displayName: 'Llama 3.3 70B', description: 'Large Llama model on Groq', family: 'llama-3.3-70b' },
+  { provider: 'google-vertex', modelId: 'gemini-2.5-pro', displayName: 'Gemini 2.5 Pro', description: 'Most capable Gemini model', family: 'gemini-2.5-pro' },
 ];
 
 class ModelRegistry {

@@ -21,57 +21,59 @@ export const DEFAULT_MODELS: Record<ModelProvider, ModelConfig[]> = {
   openai: [
     {
       provider: 'openai',
-      modelId: 'o4-mini',
-      displayName: 'o4 Mini',
-      description: 'Fast and efficient reasoning model'
+      modelId: 'gpt-5.2',
+      displayName: 'GPT-5.2',
+      description: 'Latest GPT-5 model',
+      family: 'gpt-5.2'
     },
     {
       provider: 'openai',
-      modelId: 'gpt-5',
-      displayName: 'GPT-5',
-      description: 'Next-generation OpenAI model'
+      modelId: 'gpt-5.2-mini',
+      displayName: 'GPT-5.2 Mini',
+      description: 'Fast GPT-5.2 model',
+      family: 'gpt-5.2'
     },
     {
       provider: 'openai',
-      modelId: 'gpt-5-mini',
-      displayName: 'GPT-5 Mini',
-      description: 'Fast and efficient GPT-5 model'
+      modelId: 'gpt-5.1',
+      displayName: 'GPT-5.1',
+      description: 'GPT-5.1 model',
+      family: 'gpt-5.1'
     },
     {
       provider: 'openai',
-      modelId: 'gpt-5-nano',
-      displayName: 'GPT-5 Nano',
-      description: 'Ultra-lightweight GPT-5 model'
+      modelId: 'gpt-5.1-mini',
+      displayName: 'GPT-5.1 Mini',
+      description: 'Fast GPT-5.1 model',
+      family: 'gpt-5.1'
     },
     {
       provider: 'openai',
       modelId: 'gpt-4o',
       displayName: 'GPT-4o',
-      description: 'Most capable GPT-4 model'
+      description: 'Most capable GPT-4 model',
+      family: 'gpt-4o'
     },
     {
       provider: 'openai',
       modelId: 'gpt-4o-mini',
       displayName: 'GPT-4o Mini',
-      description: 'Fast and efficient model'
+      description: 'Fast and efficient model',
+      family: 'gpt-4o'
     },
     {
       provider: 'openai',
-      modelId: 'gpt-4.1-mini',
-      displayName: 'GPT-4.1 Mini',
-      description: 'Improved GPT-4 model'
+      modelId: 'o4-mini',
+      displayName: 'o4 Mini',
+      description: 'Reasoning model',
+      family: 'o4'
     },
     {
       provider: 'openai',
-      modelId: 'gpt-4.1-turbo',
-      displayName: 'GPT-4.1 Turbo',
-      description: 'High-performance GPT-4.1 model'
-    },
-    {
-      provider: 'openai',
-      modelId: 'gpt-4-turbo',
-      displayName: 'GPT-4 Turbo',
-      description: 'High-performance GPT-4 model'
+      modelId: 'o3-mini',
+      displayName: 'o3 Mini',
+      description: 'Reasoning model',
+      family: 'o3'
     }
   ],
   anthropic: [
