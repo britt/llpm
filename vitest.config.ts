@@ -8,10 +8,6 @@ export default defineConfig({
   resolve: {
     alias: {
       'bun:sqlite': new URL('./test/mocks/bun-sqlite.js', import.meta.url).pathname,
-      // Mock yoga-layout in CI due to WASM compilation issues
-      ...(process.env.CI === 'true' ? {
-        'yoga-layout': new URL('./test/mocks/yoga-layout.js', import.meta.url).pathname,
-      } : {}),
     }
   },
   test: {
@@ -29,6 +25,10 @@ export default defineConfig({
       'docker/**/*.test.*',
       '.worktrees/**',
     ],
+    // Inline yoga-layout for CI to allow mocking
+    deps: {
+      inline: process.env.CI === 'true' ? [/yoga-layout/] : [],
+    },
     // Force tests to run in single thread in CI to avoid resource contention
     // threads: process.env.CI === 'true' ? false : true,
     // Add pool options for CI stability
