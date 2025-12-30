@@ -6,11 +6,9 @@ export default defineConfig({
     'process.env.NODE_ENV': JSON.stringify('test')
   },
   resolve: {
-    alias: [
-      { find: 'bun:sqlite', replacement: new URL('./test/mocks/bun-sqlite.js', import.meta.url).pathname },
-      // Mock ALL yoga-layout imports (including deep paths)
-      { find: /^yoga-layout/, replacement: new URL('./test/mocks/yoga-layout.js', import.meta.url).pathname }
-    ]
+    alias: {
+      'bun:sqlite': new URL('./test/mocks/bun-sqlite.js', import.meta.url).pathname,
+    }
   },
   test: {
     globals: true,
@@ -27,13 +25,6 @@ export default defineConfig({
       'docker/**/*.test.*',
       '.worktrees/**',
     ],
-    // Server deps configuration for mocking
-    server: {
-      deps: {
-        // Inline yoga-layout to allow module aliasing
-        inline: [/yoga-layout/],
-      },
-    },
     // Force tests to run in single thread in CI to avoid resource contention
     // threads: process.env.CI === 'true' ? false : true,
     // Add pool options for CI stability

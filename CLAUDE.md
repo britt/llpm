@@ -26,7 +26,14 @@ Default to using Bun instead of Node.js.
 
 ## Testing
 
-**CRITICAL: Use `bun test` to run tests - NOT `bun run test` or any other command.**
+- **CRITICAL: Use `bun test` to run tests - NOT `bun run test` or any other command.**
+- `bun run test` executes the npm script which runs Vitest properly
+- Test files should use `.test.tsx` or `.spec.tsx` extensions
+- Mock external dependencies (APIs, services) in tests to ensure reliability
+- Use Vitest's `vi.mock()` for mocking modules and `vi.spyOn()` for spying on functions
+- Test both success and error cases for robust coverage
+- **Always add unit tests for new behaviors**: When implementing new features, validation logic, or significant changes, write corresponding unit tests
+
 
 ```ts#index.test.ts
 import { test, expect } from "bun:test";
@@ -36,81 +43,6 @@ test("hello world", () => {
 });
 ```
 
-## Frontend
-
-Use HTML imports with `Bun.serve()`. Don't use `vite`. HTML imports fully support React, CSS, Tailwind.
-
-Server:
-
-```ts#index.ts
-import index from "./index.html"
-
-Bun.serve({
-  routes: {
-    "/": index,
-    "/api/users/:id": {
-      GET: (req) => {
-        return new Response(JSON.stringify({ id: req.params.id }));
-      },
-    },
-  },
-  // optional websocket support
-  websocket: {
-    open: (ws) => {
-      ws.send("Hello, world!");
-    },
-    message: (ws, message) => {
-      ws.send(message);
-    },
-    close: (ws) => {
-      // handle close
-    }
-  },
-  development: {
-    hmr: true,
-    console: true,
-  }
-})
-```
-
-HTML files can import .tsx, .jsx or .js files directly and Bun's bundler will transpile & bundle automatically. `<link>` tags can point to stylesheets and Bun's CSS bundler will bundle.
-
-```html#index.html
-<html>
-  <body>
-    <h1>Hello, world!</h1>
-    <script type="module" src="./frontend.tsx"></script>
-  </body>
-</html>
-```
-
-With the following `frontend.tsx`:
-
-```tsx#frontend.tsx
-import React from "react";
-
-// import .css files directly and it works
-import './index.css';
-
-import { createRoot } from "react-dom/client";
-
-const root = createRoot(document.body);
-
-export default function Frontend() {
-  return <h1>Hello, world!</h1>;
-}
-
-root.render(<Frontend />);
-```
-
-Then, run index.ts
-
-```sh
-bun --hot ./index.ts
-```
-
-For more information, read the Bun API docs in `node_modules/bun-types/docs/**.md`.
-
 ## Project-Specific Instructions
 
 **IMPORTANT**: When you discover new useful practices or install new tools during development, add instructions to this CLAUDE.md file so that you remember to use them in future sessions.
@@ -118,18 +50,6 @@ For more information, read the Bun API docs in `node_modules/bun-types/docs/**.m
 **NOTE**: This project has been renamed from Claude PM to LLPM (Large Language Model Product Manager). All references to "Claude PM" should be replaced with "LLPM".
 
 **IMPORTANT**: Always answer questions and fulfill requests honestly. Do not just be compliant. If you cannot do something or don't know an answer say so.
-
-### Testing
-
-- **CRITICAL: Use `bun run test` to run Vitest tests, NOT `bun test`**
-- `bun test` runs Bun's native test runner which doesn't support Vitest features
-- `bun run test` executes the npm script which runs Vitest properly
-- Tests use React Testing Library with jsdom environment
-- Test files should use `.test.tsx` or `.spec.tsx` extensions
-- **Always add unit tests for new behaviors**: When implementing new features, validation logic, or significant changes, write corresponding unit tests
-- Mock external dependencies (APIs, services) in tests to ensure reliability
-- Use Vitest's `vi.mock()` for mocking modules and `vi.spyOn()` for spying on functions
-- Test both success and error cases for robust coverage
 
 ### AI/LLM Integration
 
@@ -369,10 +289,6 @@ export const noParamTool = tool({
 - AI SDK v5 expects `inputSchema` - using anything else causes JSON Schema conversion errors
 - OpenAI/Anthropic APIs require valid JSON Schema with `type: "object"`
 - Empty schemas `z.object({})` work correctly when passed as `inputSchema`
-
-**CRITICAL SCREENSHOT RULE:**
-- **ONLY use shot-scraper tools for screenshots** (`take_screenshot`, `check_screenshot_setup`)
-- **Use built-in web content tools** for web page reading (`read_web_page`, `summarize_web_page`)
 
 **CRITICAL RULE: NEVER MODIFY EXISTING TOOL SCHEMAS ACROSS THE CODEBASE**
 - **ONLY modify the specific tools you are asked to work on**
