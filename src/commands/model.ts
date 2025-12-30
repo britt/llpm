@@ -1,6 +1,6 @@
 import type { Command, CommandResult } from './types';
 import { modelRegistry } from '../services/modelRegistry';
-import type { ModelProvider } from '../types/models';
+import type { ModelProvider, ModelConfig } from '../types/models';
 import { debug } from '../utils/logger';
 import {
   readModelCache,
@@ -195,7 +195,34 @@ function showCurrentModel(): CommandResult {
   };
 }
 
-const MAX_MODELS_PER_PROVIDER = 2;
+const MAX_FAMILIES_PER_PROVIDER = 2;
+
+interface ModelFamily {
+  name: string;
+  models: ModelConfig[];
+  bestRank: number;
+}
+
+function groupModelsByFamily(models: ModelConfig[]): ModelFamily[] {
+  const familyMap = new Map<string, ModelConfig[]>();
+
+  for (const model of models) {
+    const familyName = model.family || model.displayName;
+    const existing = familyMap.get(familyName) || [];
+    existing.push(model);
+    familyMap.set(familyName, existing);
+  }
+
+  // Convert to array and compute best rank per family
+  const families: ModelFamily[] = [];
+  for (const [name, familyModels] of familyMap) {
+    const bestRank = Math.min(...familyModels.map(m => m.recommendedRank ?? 100));
+    families.push({ name, models: familyModels, bestRank });
+  }
+
+  // Sort by best rank
+  return families.sort((a, b) => a.bestRank - b.bestRank);
+}
 
 function listAvailableModels(showAll: boolean = false): CommandResult {
   const configuredProviders = modelRegistry.getConfiguredProviders();
@@ -217,26 +244,29 @@ function listAvailableModels(showAll: boolean = false): CommandResult {
     const isConfigured = configuredProviders.includes(provider);
     const providerStatus = isConfigured ? '✅' : '❌';
 
-    // Sort by recommendedRank and take top N (unless showing all)
-    const sortedModels = [...allModels].sort(
-      (a, b) => (a.recommendedRank ?? 100) - (b.recommendedRank ?? 100)
-    );
-    const models = showAll ? sortedModels : sortedModels.slice(0, MAX_MODELS_PER_PROVIDER);
-    const hiddenCount = allModels.length - models.length;
+    // Group by family and take top N families (unless showing all)
+    const allFamilies = groupModelsByFamily(allModels);
+    const families = showAll ? allFamilies : allFamilies.slice(0, MAX_FAMILIES_PER_PROVIDER);
+    const hiddenFamilyCount = allFamilies.length - families.length;
 
     content += `**${provider.toUpperCase()}** ${providerStatus}`;
-    if (hiddenCount > 0) {
-      content += ` (${hiddenCount} more available)`;
+    if (hiddenFamilyCount > 0) {
+      content += ` (${hiddenFamilyCount} more families)`;
     }
     content += '\n';
 
-    for (const model of models) {
+    for (const family of families) {
       const currentModel = modelRegistry.getCurrentModel();
-      const isCurrent = currentModel.modelId === model.modelId && currentModel.provider === model.provider;
-      const currentMarker = isCurrent ? '👉 ' : '   ';
+      // Check if any model in this family is current
+      const currentInFamily = family.models.find(
+        m => m.modelId === currentModel.modelId && m.provider === currentModel.provider
+      );
+      const currentMarker = currentInFamily ? '👉 ' : '   ';
       const usableStatus = isConfigured ? '🟢' : '🔴';
 
-      content += `${currentMarker}${usableStatus} ${model.displayName}`;
+      // Show family name with model count if multiple
+      const modelCount = family.models.length > 1 ? ` (${family.models.length} variants)` : '';
+      content += `${currentMarker}${usableStatus} ${family.name}${modelCount}`;
 
       if (!isConfigured) {
         content += ' - Not configured';
@@ -251,7 +281,7 @@ function listAvailableModels(showAll: boolean = false): CommandResult {
     content += `💡 Legend: 🟢 = Usable, 🔴 = Needs configuration\n`;
     content += `💡 Configure providers in .env file (see /model providers)\n`;
   } else {
-    content += `💡 Use /model list --all to see all models\n`;
+    content += `💡 Use /model list --all to see all families\n`;
   }
   content += `💡 Switch with: /model switch <provider>/<model-id>`;
 

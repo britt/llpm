@@ -279,6 +279,7 @@ class ModelRegistry {
       displayName: model.displayName,
       description: model.family ? `${model.family} family` : undefined,
       recommendedRank: model.recommendedRank,
+      family: model.family,
     };
   }
 

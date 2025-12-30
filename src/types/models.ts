@@ -6,6 +6,7 @@ export interface ModelConfig {
   displayName: string;
   description?: string;
   recommendedRank?: number;
+  family?: string;
 }
 
 export interface ModelProviderConfig {
