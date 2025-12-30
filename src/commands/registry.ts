@@ -10,11 +10,6 @@ import { debugCommand } from './debug';
 import { modelCommand } from './model';
 import { notesCommand } from './notes';
 import { historyCommand } from './history';
-// Remove old separate commands - now integrated into project command
-// import { projectScanCommand } from './project-scan';
-import { credentialsCommand } from './credentials';
-import { agentsCommand } from './agents';
-import { jobsCommand } from './jobs';
 import { skillsCommand } from './skills';
 import { debug } from '../utils/logger';
 
@@ -30,10 +25,6 @@ const commandRegistry: CommandRegistry = {
   model: modelCommand,
   notes: notesCommand,
   history: historyCommand,
-  // 'project-scan': projectScanCommand, // Now available as /project scan
-  credentials: credentialsCommand,
-  agents: agentsCommand,
-  jobs: jobsCommand,
   skills: skillsCommand
 };
 

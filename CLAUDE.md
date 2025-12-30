@@ -119,132 +119,6 @@ For more information, read the Bun API docs in `node_modules/bun-types/docs/**.m
 
 **IMPORTANT**: Always answer questions and fulfill requests honestly. Do not just be compliant. If you cannot do something or don't know an answer say so.
 
-### Docker Container Management
-
-**When to Rebuild vs Restart:**
-- **Code changes in `src/`**: Rebuild + restart
-- **New files added**: Rebuild with `--no-cache` + restart
-- **Dockerfile changes**: Rebuild with `--no-cache` + restart
-- **Configuration changes only**: Restart only
-- **Dependency changes (package.json)**: Rebuild + restart
-
-**Standard Rebuild Workflow:**
-
-Use this for most code changes:
-```bash
-docker-compose build <service-name> && docker-compose restart <service-name>
-docker logs <service-name> --tail 20
-```
-
-**Force Rebuild Workflow (when caching causes issues):**
-
-Use this when new files aren't being included or changes aren't appearing:
-```bash
-docker-compose stop <service-name>
-docker-compose rm -f <service-name>
-docker rmi <image-name>:latest
-docker-compose build --no-cache <service-name>
-docker-compose up -d <service-name>
-docker logs <service-name> --tail 20
-```
-
-**CRITICAL: Always Test Docker Container Changes:**
-
-After making changes to Docker containers (Dockerfiles, entrypoint scripts, etc.), you MUST:
-1. **Rebuild and restart** the affected container
-2. **Test the changes** by running commands or exercising the modified code path
-3. **Verify success** before committing
-
-Example testing workflow:
-```bash
-# 1. Rebuild and restart
-docker-compose build <service-name> && docker-compose up -d <service-name>
-
-# 2. Test the change (examples):
-# - If you modified a wrapper script, test it:
-docker exec <container-name> /path/to/wrapper --version
-
-# - If you modified entrypoint behavior, check logs:
-docker logs <container-name> | grep "expected output"
-
-# - If you modified CLI options, verify they're set:
-docker exec <container-name> bash -c 'echo $VARIABLE_NAME'
-
-# 3. Only commit after verifying success
-```
-
-**Why this matters:**
-- Container changes can't be tested without rebuilding
-- Incorrect paths, permissions, or syntax errors won't surface until runtime
-- Failed changes waste time and create broken commits
-
-**Common Services:**
-- `rest-broker` (image: `llpm-rest-broker`)
-- `claude-code` (image: `llpm-claude-code`)
-- `openai-codex` (image: `llpm-openai-codex`)
-- `aider` (image: `llpm-aider`)
-- `opencode` (image: `llpm-opencode`)
-
-**Example: Standard rebuild for rest-broker:**
-```bash
-docker-compose build rest-broker && docker-compose restart rest-broker
-docker logs rest-broker --tail 20
-```
-
-**Example: Force rebuild for rest-broker:**
-```bash
-docker-compose stop rest-broker
-docker-compose rm -f rest-broker
-docker rmi llpm-rest-broker:latest
-docker-compose build --no-cache rest-broker
-docker-compose up -d rest-broker
-docker logs rest-broker --tail 20
-```
-
-**Verifying Changes Were Applied:**
-- Check container logs for startup messages
-- Inspect files inside container: `docker exec <service-name> ls -la /path/to/files`
-- Check TypeScript compilation: Look for "Compilation complete" in logs
-- Test endpoints: Use curl or browser to verify API changes
-
-### Workspace Isolation for Agents
-
-**IMPORTANT:** Each agent instance has its own isolated workspace directory to prevent cross-agent file conflicts.
-
-**How it works:**
-- When using `scale.sh` to start agents, the system auto-generates `docker-compose.override.yml`
-- Each agent gets a unique workspace: `~/.llpm/workspaces/<agent-id>/`
-- Example: `claude-code-1` → `~/.llpm/workspaces/claude-code-1/`
-
-**Rules when working with agents:**
-1. **Always use `scale.sh`** instead of direct `docker-compose up --scale`:
-   - ✅ Correct: `./scale.sh dev`
-   - ❌ Wrong: `docker-compose up -d --scale claude-code=2` (no isolation)
-
-2. **Workspace paths are per-instance**, not shared:
-   - Each `claude-code-N` agent has `/home/claude/workspace` mounted to different host paths
-   - Files created in one agent are NOT visible in other agents
-
-3. **Testing workspace isolation:**
-   ```bash
-   # Verify workspaces exist
-   ls -la ~/.llpm/workspaces/
-
-   # Test isolation
-   docker exec -it docker-claude-code-1 bash -c "echo 'test1' > ~/workspace/test.txt"
-   docker exec -it docker-claude-code-2 bash -c "ls ~/workspace/test.txt"  # Should fail
-   ```
-
-4. **Configuration options:**
-   - Environment: `export LLPM_WORKSPACE_ROOT=/custom/path`
-   - Config file: `~/.llpm/config.yaml` with `workspace_root: /custom/path`
-   - Default: `~/.llpm/workspaces/`
-
-**When modifying workspace behavior:**
-- Changes to `workspace-utils.sh` or `generate-compose-override.sh` affect all agents
-- Test with multiple agents to ensure isolation still works
-- Verify workspace directories are created with correct permissions
-
 ### Testing
 
 - **CRITICAL: Use `bun run test` to run Vitest tests, NOT `bun test`**
@@ -504,7 +378,7 @@ export const noParamTool = tool({
 - **ONLY modify the specific tools you are asked to work on**
 - **NEVER change `inputSchema` to `parameters` (or vice versa) across existing tool files**
 - **NEVER make sweeping changes to tool definitions across multiple files**
-- When adding NEW tools to a file (e.g., `restBrokerTools.ts`), ONLY add the new tools
+- When adding NEW tools to a file, ONLY add the new tools
 - Do NOT modify any existing tools in the same file or other tool files
 - If there's a schema conversion bug, fix the WRAPPER (`instrumentedTool.ts`), NOT individual tools
 - When debugging tool issues, isolate the problem to specific tools - don't touch everything
@@ -518,7 +392,6 @@ export const noParamTool = tool({
 **Examples:**
 ```typescript
 // ✅ CORRECT - Adding new tools to existing file
-// In restBrokerTools.ts:
 export const existingTool = tool({ ... }); // DON'T TOUCH THIS
 
 // Add your NEW tools at the end:

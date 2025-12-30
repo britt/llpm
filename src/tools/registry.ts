@@ -49,22 +49,6 @@ import {
 } from './vectorSearchTools';
 import { takeScreenshotTool, checkScreenshotSetupTool } from './screenshotTools';
 import {
-  listAgentsTool,
-  getAgentTool,
-  checkAgentHealthTool,
-  listJobsTool,
-  getJobTool,
-  createJobTool,
-  cancelJobTool,
-  markAgentAuthenticatedTool,
-  getAgentConnectCommandTool,
-  scaleAgentClusterTool,
-  registerAgentTool,
-  deleteAgentTool,
-  updateAgentTool,
-  triggerAgentVerifyTool
-} from './restBrokerTools';
-import {
   setProjectAgentConfigTool,
   getProjectAgentConfigTool,
   removeProjectAgentConfigTool
@@ -115,22 +99,6 @@ const toolRegistry: ToolRegistry = {
   // Screenshots
   take_screenshot: takeScreenshotTool,
   check_screenshot_setup: checkScreenshotSetupTool,
-  // REST Broker Agent Tools
-  list_agents: listAgentsTool,
-  get_agent: getAgentTool,
-  check_agent_health: checkAgentHealthTool,
-  list_jobs: listJobsTool,
-  get_job: getJobTool,
-  create_job: createJobTool,
-  cancel_job: cancelJobTool,
-  mark_agent_authenticated: markAgentAuthenticatedTool,
-  get_agent_connect_command: getAgentConnectCommandTool,
-  scale_agent_cluster: scaleAgentClusterTool,
-  // Agent Lifecycle Tools
-  register_agent: registerAgentTool,
-  delete_agent: deleteAgentTool,
-  update_agent: updateAgentTool,
-  trigger_agent_verify: triggerAgentVerifyTool,
   // Project Agent Configuration
   set_project_agent_config: setProjectAgentConfigTool,
   get_project_agent_config: getProjectAgentConfigTool,
