@@ -195,55 +195,66 @@ function showCurrentModel(): CommandResult {
   };
 }
 
+const MAX_MODELS_PER_PROVIDER = 2;
+
 function listAvailableModels(showAll: boolean = false): CommandResult {
   const configuredProviders = modelRegistry.getConfiguredProviders();
   const allProviders: ModelProvider[] = ['openai', 'anthropic', 'groq', 'google-vertex'];
-  
+
   if (!showAll && configuredProviders.length === 0) {
     return {
       content: '❌ No providers are configured. Please check your API keys in .env file.\n\n💡 Use `/model list --all` to see all available models regardless of configuration.',
       success: false
     };
   }
-  
+
   let content = `🤖 **Available Models**${showAll ? ' (All)' : ' (Configured Only)'}\n\n`;
-  
+
   const providersToShow = showAll ? allProviders : configuredProviders;
-  
+
   for (const provider of providersToShow) {
-    const models = modelRegistry.getModelsForProvider(provider);
+    const allModels = modelRegistry.getModelsForProvider(provider);
     const isConfigured = configuredProviders.includes(provider);
     const providerStatus = isConfigured ? '✅' : '❌';
-    
-    content += `**${provider.toUpperCase()}** ${providerStatus}\n`;
-    
+
+    // Sort by recommendedRank and take top N (unless showing all)
+    const sortedModels = [...allModels].sort(
+      (a, b) => (a.recommendedRank ?? 100) - (b.recommendedRank ?? 100)
+    );
+    const models = showAll ? sortedModels : sortedModels.slice(0, MAX_MODELS_PER_PROVIDER);
+    const hiddenCount = allModels.length - models.length;
+
+    content += `**${provider.toUpperCase()}** ${providerStatus}`;
+    if (hiddenCount > 0) {
+      content += ` (${hiddenCount} more available)`;
+    }
+    content += '\n';
+
     for (const model of models) {
       const currentModel = modelRegistry.getCurrentModel();
       const isCurrent = currentModel.modelId === model.modelId && currentModel.provider === model.provider;
       const currentMarker = isCurrent ? '👉 ' : '   ';
       const usableStatus = isConfigured ? '🟢' : '🔴';
-      
-      content += `${currentMarker}${usableStatus} ${model.displayName} (${model.modelId})`;
-      
+
+      content += `${currentMarker}${usableStatus} ${model.displayName}`;
+
       if (!isConfigured) {
         content += ' - Not configured';
       }
-      
+
       content += '\n';
-      
-      if (model.description) {
-        content += `      ${model.description}\n`;
-      }
     }
     content += '\n';
   }
-  
+
   if (showAll) {
     content += `💡 Legend: 🟢 = Usable, 🔴 = Needs configuration\n`;
     content += `💡 Configure providers in .env file (see /model providers)\n`;
+  } else {
+    content += `💡 Use /model list --all to see all models\n`;
   }
   content += `💡 Switch with: /model switch <provider>/<model-id>`;
-  
+
   return {
     content,
     success: true
