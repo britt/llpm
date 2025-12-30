@@ -4,6 +4,15 @@
 
 import { describe, it, expect, vi } from 'vitest';
 
+// Mock the deep WASM path first
+vi.mock('yoga-layout/dist/binaries/yoga-wasm-base64-esm.js', () => ({
+  default: async () => ({ exports: {} }),
+}));
+
+vi.mock('yoga-layout/dist/binaries/yoga-wasm-base64-esm', () => ({
+  default: async () => ({ exports: {} }),
+}));
+
 // Must mock yoga-layout before any ink imports to prevent WASM compilation errors in CI
 vi.mock('yoga-layout', () => ({
   default: {
