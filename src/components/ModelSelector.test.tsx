@@ -7,6 +7,11 @@
 
 import { describe, it, expect, vi } from 'vitest';
 
+// Mock yoga-layout first to prevent WASM loading
+vi.mock('yoga-layout', () => ({
+  default: { Node: { create: () => ({}) }, EDGE_LEFT: 0 },
+}));
+
 // Mock ink-testing-library to avoid yoga-layout WASM compilation errors
 vi.mock('ink-testing-library', () => ({
   render: () => ({
