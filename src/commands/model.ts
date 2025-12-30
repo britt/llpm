@@ -308,22 +308,21 @@ function listAvailableModels(showAll: boolean = false): CommandResult {
 
     for (const gen of generations) {
       const currentModel = modelRegistry.getCurrentModel();
-      // Check if any model in this generation is current
-      const currentInGen = gen.models.find(
-        m => m.modelId === currentModel.modelId && m.provider === currentModel.provider
-      );
-      const currentMarker = currentInGen ? '👉 ' : '   ';
       const usableStatus = isConfigured ? '🟢' : '🔴';
 
-      // Show generation display name with model count if multiple
-      const modelCount = gen.models.length > 1 ? ` (${gen.models.length} models)` : '';
-      content += `${currentMarker}${usableStatus} ${gen.displayName}${modelCount}`;
-
+      // Show generation header
+      content += `   ${usableStatus} **${gen.displayName}**`;
       if (!isConfigured) {
         content += ' - Not configured';
       }
-
       content += '\n';
+
+      // Show models within this generation
+      for (const model of gen.models) {
+        const isCurrent = model.modelId === currentModel.modelId && model.provider === currentModel.provider;
+        const currentMarker = isCurrent ? '👉 ' : '   ';
+        content += `      ${currentMarker}${model.displayName}\n`;
+      }
     }
     content += '\n';
   }
