@@ -45,10 +45,10 @@ describe('validation', () => {
     });
 
     it('should pass when Anthropic key is available', async () => {
-      vi.mocked(credentialManager.getOpenAIAPIKey).mockResolvedValue(null);
+      vi.mocked(credentialManager.getOpenAIAPIKey).mockResolvedValue(undefined);
       vi.mocked(credentialManager.getAnthropicAPIKey).mockResolvedValue('test-anthropic-key');
-      vi.mocked(credentialManager.getGroqAPIKey).mockResolvedValue(null);
-      vi.mocked(credentialManager.getGoogleVertexProjectId).mockResolvedValue(null);
+      vi.mocked(credentialManager.getGroqAPIKey).mockResolvedValue(undefined);
+      vi.mocked(credentialManager.getGoogleVertexProjectId).mockResolvedValue(undefined);
 
       await validateEnvironment();
 
@@ -56,10 +56,10 @@ describe('validation', () => {
     });
 
     it('should pass when Groq key is available', async () => {
-      vi.mocked(credentialManager.getOpenAIAPIKey).mockResolvedValue(null);
-      vi.mocked(credentialManager.getAnthropicAPIKey).mockResolvedValue(null);
+      vi.mocked(credentialManager.getOpenAIAPIKey).mockResolvedValue(undefined);
+      vi.mocked(credentialManager.getAnthropicAPIKey).mockResolvedValue(undefined);
       vi.mocked(credentialManager.getGroqAPIKey).mockResolvedValue('test-groq-key');
-      vi.mocked(credentialManager.getGoogleVertexProjectId).mockResolvedValue(null);
+      vi.mocked(credentialManager.getGoogleVertexProjectId).mockResolvedValue(undefined);
 
       await validateEnvironment();
 
@@ -67,9 +67,9 @@ describe('validation', () => {
     });
 
     it('should pass when Google Vertex project ID is available', async () => {
-      vi.mocked(credentialManager.getOpenAIAPIKey).mockResolvedValue(null);
-      vi.mocked(credentialManager.getAnthropicAPIKey).mockResolvedValue(null);
-      vi.mocked(credentialManager.getGroqAPIKey).mockResolvedValue(null);
+      vi.mocked(credentialManager.getOpenAIAPIKey).mockResolvedValue(undefined);
+      vi.mocked(credentialManager.getAnthropicAPIKey).mockResolvedValue(undefined);
+      vi.mocked(credentialManager.getGroqAPIKey).mockResolvedValue(undefined);
       vi.mocked(credentialManager.getGoogleVertexProjectId).mockResolvedValue('test-project-id');
 
       await validateEnvironment();
@@ -80,8 +80,8 @@ describe('validation', () => {
     it('should pass when multiple providers are available', async () => {
       vi.mocked(credentialManager.getOpenAIAPIKey).mockResolvedValue('test-openai-key');
       vi.mocked(credentialManager.getAnthropicAPIKey).mockResolvedValue('test-anthropic-key');
-      vi.mocked(credentialManager.getGroqAPIKey).mockResolvedValue(null);
-      vi.mocked(credentialManager.getGoogleVertexProjectId).mockResolvedValue(null);
+      vi.mocked(credentialManager.getGroqAPIKey).mockResolvedValue(undefined);
+      vi.mocked(credentialManager.getGoogleVertexProjectId).mockResolvedValue(undefined);
 
       await validateEnvironment();
 
@@ -89,20 +89,20 @@ describe('validation', () => {
     });
 
     it('should exit when no credentials are available', async () => {
-      vi.mocked(credentialManager.getOpenAIAPIKey).mockResolvedValue(null);
-      vi.mocked(credentialManager.getAnthropicAPIKey).mockResolvedValue(null);
-      vi.mocked(credentialManager.getGroqAPIKey).mockResolvedValue(null);
-      vi.mocked(credentialManager.getGoogleVertexProjectId).mockResolvedValue(null);
+      vi.mocked(credentialManager.getOpenAIAPIKey).mockResolvedValue(undefined);
+      vi.mocked(credentialManager.getAnthropicAPIKey).mockResolvedValue(undefined);
+      vi.mocked(credentialManager.getGroqAPIKey).mockResolvedValue(undefined);
+      vi.mocked(credentialManager.getGoogleVertexProjectId).mockResolvedValue(undefined);
 
       await expect(validateEnvironment()).rejects.toThrow();
       expect(mockExit).toHaveBeenCalledWith(1);
     });
 
     it('should print error messages when no credentials available', async () => {
-      vi.mocked(credentialManager.getOpenAIAPIKey).mockResolvedValue(null);
-      vi.mocked(credentialManager.getAnthropicAPIKey).mockResolvedValue(null);
-      vi.mocked(credentialManager.getGroqAPIKey).mockResolvedValue(null);
-      vi.mocked(credentialManager.getGoogleVertexProjectId).mockResolvedValue(null);
+      vi.mocked(credentialManager.getOpenAIAPIKey).mockResolvedValue(undefined);
+      vi.mocked(credentialManager.getAnthropicAPIKey).mockResolvedValue(undefined);
+      vi.mocked(credentialManager.getGroqAPIKey).mockResolvedValue(undefined);
+      vi.mocked(credentialManager.getGoogleVertexProjectId).mockResolvedValue(undefined);
 
       try {
         await validateEnvironment();

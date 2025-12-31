@@ -110,7 +110,7 @@ export class SkillRegistry extends EventEmitter {
             this.skillMetadata.set(metadata.name, metadata);
           }
         }
-      } catch (error) {
+      } catch {
         // Silent fail for metadata scanning
       }
     }
@@ -353,7 +353,7 @@ export class SkillRegistry extends EventEmitter {
       // Pattern match for tool with command restrictions like "Bash(git:*)"
       const patternMatch = pattern.match(/^(\w+)\((.+)\)$/);
       if (patternMatch) {
-        const [, baseTool, commandPattern] = patternMatch;
+        const [, baseTool] = patternMatch;
         if (baseTool === toolName) {
           // For now, if the base tool matches, allow it
           // Full command pattern matching would require more context

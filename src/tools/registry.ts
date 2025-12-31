@@ -55,6 +55,7 @@ import {
 } from './projectAgentConfigTools';
 import { askUserTool } from './askUserTool';
 import { loadSkillsTool, listAvailableSkillsTool } from './skillTools';
+import { runShellCommandTool } from './shellTools';
 
 const toolRegistry: ToolRegistry = {
   get_current_project: getCurrentProjectTool,
@@ -107,7 +108,9 @@ const toolRegistry: ToolRegistry = {
   ask_user: askUserTool,
   // Skills Management
   load_skills: loadSkillsTool,
-  list_available_skills: listAvailableSkillsTool
+  list_available_skills: listAvailableSkillsTool,
+  // Shell execution
+  run_shell_command: runShellCommandTool
 };
 
 export async function getToolRegistry(): Promise<ToolRegistry> {

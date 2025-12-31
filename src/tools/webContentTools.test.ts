@@ -59,7 +59,6 @@ global.fetch = async (url: RequestInfo | URL): Promise<Response> => {
   }
 
   if (urlString.includes('throw-non-error')) {
-    // eslint-disable-next-line @typescript-eslint/no-throw-literal
     throw 'String error instead of Error object';
   }
 

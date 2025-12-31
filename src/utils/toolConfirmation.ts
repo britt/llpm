@@ -32,7 +32,8 @@ export function requiresConfirmation(
     'delete_agent',
     'update_agent',
     'delete_project',
-    'force_push'
+    'force_push',
+    'run_shell_command'
   ];
 
   if (destructiveOps.includes(toolName)) {
@@ -62,6 +63,8 @@ function getOperationDescription(toolName: string, params: Record<string, any>):
       return `Delete project ${params.projectId}`;
     case 'force_push':
       return `Force push to ${params.branch} in ${params.repo}`;
+    case 'run_shell_command':
+      return `Run shell command: ${params.command}`;
     default:
       return `Execute ${toolName}`;
   }
@@ -82,6 +85,8 @@ function getOperationDetails(toolName: string, _params: Record<string, any>): st
       return 'This will permanently delete the project and all associated data including notes and scans.';
     case 'force_push':
       return 'This will overwrite the remote branch history. Other developers may lose work.';
+    case 'run_shell_command':
+      return 'This will execute a shell command in the project directory. Review the command carefully before approving.';
     default:
       return 'This operation may have irreversible effects.';
   }
@@ -121,6 +126,12 @@ function getOperationRisks(toolName: string): string[] {
         'Rewrites history',
         'Other developers lose work',
         'May break CI/CD pipelines'
+      ];
+    case 'run_shell_command':
+      return [
+        'Commands can modify files',
+        'Commands can delete data',
+        'Commands can have system-wide effects'
       ];
     default:
       return ['Operation may be irreversible'];
