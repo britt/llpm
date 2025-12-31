@@ -1,14 +1,269 @@
+# Project Overview
+
+**LLPM (Large Language Model Product Manager)** is an AI-powered project management CLI that brings intelligent assistance directly to the terminal.
+
+## What It Does
+- Interactive chat with AI models (OpenAI, Anthropic, Groq, Google Vertex AI)
+- Project management with GitHub integration
+- Skills system for reusable AI instruction sets
+- Slash commands for quick actions (`/project`, `/github`, `/model`, `/skills`)
+
+## Tech Stack
+- **Runtime**: Bun (not Node.js)
+- **UI**: Ink (React for CLI)
+- **AI**: Vercel AI SDK with multi-provider support
+- **Testing**: Vitest
+- **Language**: TypeScript
+
+## Key Directories
+- `src/commands/` - Slash command implementations
+- `src/services/` - Core services (GitHub, LLM, model registry)
+- `src/tools/` - AI tools for LLM function calling
+- `src/utils/` - Utility functions and helpers
+- `src/components/` - Ink UI components
+
+## Running LLPM
+
+```bash
+# Development mode (same as start)
+bun run dev
+
+# Production mode
+bun run start
+
+# With verbose logging
+bun run dev:verbose
+```
+
+Entry point: `index.ts`
+
 ---
-description: Use Bun instead of Node.js, npm, pnpm, or vite.
-globs: '*.ts, *.tsx, *.html, *.css, *.js, *.jsx, package.json'
-alwaysApply: true
+
+## ABSOLUTE RULES - NO EXCEPTIONS
+
+### 1. Test-Driven Development is MANDATORY
+
+**The Iron Law**: NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST
+
+Every single line of production code MUST follow this cycle:
+1. **RED**: Write failing test FIRST
+2. **Verify RED**: Run test, watch it fail for the RIGHT reason
+3. **GREEN**: Write MINIMAL code to pass the test
+4. **Verify GREEN**: Run test, confirm it passes
+5. **REFACTOR**: Clean up with tests staying green
+
+### 2. Violations = Delete and Start Over
+
+If ANY of these occur, you MUST delete the code and start over:
+- ❌ Wrote production code before test → DELETE CODE, START OVER
+- ❌ Test passed immediately → TEST IS WRONG, FIX TEST FIRST
+- ❌ Can't explain why test failed → NOT TDD, START OVER
+- ❌ "I'll add tests later" → DELETE CODE NOW
+- ❌ "Just this once without tests" → NO. DELETE CODE.
+- ❌ "It's too simple to test" → NO. TEST FIRST.
+- ❌ "Tests after achieve same goal" → NO. DELETE CODE.
+
+### 3. Test Coverage Requirements
+
+- **Minimum 90%** coverage on ALL metrics:
+  - Lines: 90%+
+  - Functions: 90%+
+  - Branches: 85%+
+  - Statements: 90%+
+- Coverage below threshold = Implementation incomplete
+- Untested code = Code that shouldn't exist
+
+### 4. Before Writing ANY Code
+
+Ask yourself:
+1. Did I write a failing test for this?
+2. Did I run the test and see it fail?
+3. Did it fail for the expected reason?
+
+If ANY answer is "no" → STOP. Write the test first.
+
+### 5. Test File Structure
+
+Tests are **co-located** with source files (not in separate `__tests__` folders):
+- `src/commands/github.ts` → `src/commands/github.test.ts`
+- `src/utils/config.ts` → `src/utils/config.test.ts`
+- `src/services/llm.ts` → `src/services/llm.test.ts`
+
+### 6. Task Completion Requirements
+
+**MANDATORY RULE**: NO TASK IS COMPLETE until:
+- ✅ ALL tests pass (100% green)
+- ✅ Build succeeds with ZERO errors
+- ✅ NO linter errors or warnings
+- ✅ Coverage meets minimum thresholds (90%+)
+- ✅ Progress documented in PROGRESS.md
+
+A task with failing tests, build errors, or linter warnings is INCOMPLETE. Period.
+
+### 7. Progress Documentation
+
+**MANDATORY RULE**: YOU MUST REPORT YOUR PROGRESS IN `PROGRESS.md`
+
+After completing EACH task:
+1. Create `PROGRESS.md` if it doesn't exist
+2. Document:
+   - Task completed
+   - Tests written/passed
+   - Coverage achieved
+   - Any issues encountered
+   - Timestamp
+
+Format:
+```markdown
+## Task X: [Name] - [COMPLETE/IN PROGRESS]
+- Started: [timestamp]
+- Tests: X passing, 0 failing
+- Coverage: Lines: X%, Functions: X%, Branches: X%, Statements: X%
+- Build: ✅ Successful / ❌ Failed
+- Linting: ✅ Clean / ❌ X errors
+- Completed: [timestamp]
+- Notes: [any relevant notes]
+```
+
+### 8. Git Commits - Commit Early, Commit Often
+
+**MANDATORY RULE**: COMMIT EARLY, COMMIT OFTEN
+
+- **Commit after EACH successful TDD cycle**:
+  - ✅ After RED-GREEN-REFACTOR cycle completes
+  - ✅ After each test file is created
+  - ✅ After each module implementation
+  - ✅ After fixing bugs or issues
+  - ✅ After updating documentation
+
+- **Frequency Requirements**:
+  - Minimum: After each completed subtask
+  - Maximum: No more than 30 minutes without a commit
+  - Never have more than one feature in a single commit
+
+- **Each commit MUST**:
+  - Have failing tests written first
+  - Pass all tests
+  - Build successfully
+  - Have no linter errors
+  - Meet coverage requirements (if code was added)
+  - Have progress documented
+  - Include clear commit message mentioning TDD
+
+- **Commit Message Format**:
+  ```
+  type(scope): brief description
+
+  - RED: What tests were written first
+  - GREEN: What minimal code was added
+  - Status: X tests passing, build successful
+  - Coverage: X% (if applicable)
+  ```
+
+- **Benefits of Frequent Commits**:
+  - Easy rollback if something breaks
+  - Clear history of TDD progression
+  - Smaller, reviewable changes
+  - Proof of TDD discipline
+
+## Development Workflow
+
+For EACH feature/function:
+
+```
+1. Write test file or add test case
+2. Run: bun run test
+3. See RED (test fails)
+4. Understand WHY it fails
+5. Write minimal production code
+6. Run: bun run test
+7. See GREEN (test passes)
+8. Refactor if needed
+9. Run: bun run test (stays green)
+10. Check coverage: bun run test --coverage
+11. Repeat for next feature
+```
+
+## Commands You'll Use Constantly
+
+```bash
+# Watch mode - keep this running ALWAYS
+bun run test --watch
+
+# Run once
+bun run test
+
+# Check coverage
+bun run test --coverage
+
+# Build - MUST succeed before task is complete
+bun run build
+
+# Check for Linter errors
+bun run lint
+
+# Type checking
+bun run typecheck
+```
+
+## Red Flags - STOP Immediately
+
+If you catch yourself:
+- Opening a code file before a test file
+- Writing function implementation before test
+- Thinking "I know this works"
+- Copying code from examples without tests
+- Skipping test runs
+- Ignoring failing tests
+- Writing multiple features before testing
+
+**STOP. DELETE. START WITH TEST.**
+
+## The Mindset
+
+- Tests are not optional
+- Tests are not added after
+- Tests DRIVE the implementation
+- If it's not tested, it doesn't exist
+- Coverage below 90% = unfinished work
+
+## Accountability Check
+
+Before marking ANY task complete, verify:
+1. ✓ Test written first?
+2. ✓ Test failed first?
+3. ✓ Minimal code to pass?
+4. ✓ All tests green? (`bun run test`)
+5. ✓ Coverage maintained (90%+)? (`bun run test --coverage`)
+6. ✓ Build succeeds? (`bun run build`)
+7. ✓ No linter errors? (`bun run lint`)
+8. ✓ Progress documented in PROGRESS.md?
+
+Missing ANY ✓ = Task is NOT complete. Fix it first.
+
+## Final Rule
+
+**When in doubt**: Write a test.
+**When not in doubt**: Write a test anyway.
+**When it seems too simple**: Especially write a test.
+
+There are NO exceptions to TDD in this project. None.
+
 ---
+
+*This document is your contract. Breaking these rules means breaking the project's core quality commitment. The discipline of TDD is what separates professional, reliable code from hopeful guesswork.*
+
+---
+
+# Development Tools
+
+## Bun Usage
 
 Default to using Bun instead of Node.js.
 
 - Use `bun <file>` instead of `node <file>` or `ts-node <file>`
-- Use `bun test` instead of `jest` or `vitest`
-- **ALWAYS use `bun test` for running tests, NOT `bun run test` or `npm test`**
+- Use `bun run test` to run Vitest tests (NOT `bun test` which runs Bun's native test runner)
+- **ALWAYS use `bun run test` for running tests, NOT `bun test` or `npm test`**
 - Use `bun build <file.html|file.ts|file.css>` instead of `webpack` or `esbuild`
 - Use `bun install` instead of `npm install` or `yarn install` or `pnpm install`
 - Use `bun run <script>` instead of `npm run <script>` or `yarn run <script>` or `pnpm run <script>`
@@ -17,7 +272,7 @@ Default to using Bun instead of Node.js.
 ## APIs
 
 - `Bun.serve()` supports WebSockets, HTTPS, and routes. Don't use `express`.
-- `bun:sqlite` for SQLite. Don't use `better-sqlite3`.
+- `bun:sqlite` for SQLite (default). Use `better-sqlite3` only when SQLite extensions are needed (e.g., VSS).
 - `Bun.redis` for Redis. Don't use `ioredis`.
 - `Bun.sql` for Postgres. Don't use `pg` or `postgres.js`.
 - `WebSocket` is built-in. Don't use `ws`.
@@ -26,30 +281,14 @@ Default to using Bun instead of Node.js.
 
 ## Testing
 
-- **CRITICAL: Use `bun test` to run tests - NOT `bun run test` or any other command.**
+- **CRITICAL: Use `bun run test` to run Vitest tests - NOT `bun test` or any other command.**
+- `bun test` runs Bun's native test runner which doesn't support Vitest features
 - `bun run test` executes the npm script which runs Vitest properly
 - Test files should use `.test.tsx` or `.spec.tsx` extensions
 - Mock external dependencies (APIs, services) in tests to ensure reliability
 - Use Vitest's `vi.mock()` for mocking modules and `vi.spyOn()` for spying on functions
 - Test both success and error cases for robust coverage
 - **Always add unit tests for new behaviors**: When implementing new features, validation logic, or significant changes, write corresponding unit tests
-
-
-```ts#index.test.ts
-import { test, expect } from "bun:test";
-
-test("hello world", () => {
-  expect(1).toBe(1);
-});
-```
-
-## Project-Specific Instructions
-
-**IMPORTANT**: When you discover new useful practices or install new tools during development, add instructions to this CLAUDE.md file so that you remember to use them in future sessions.
-
-**NOTE**: This project has been renamed from Claude PM to LLPM (Large Language Model Product Manager). All references to "Claude PM" should be replaced with "LLPM".
-
-**IMPORTANT**: Always answer questions and fulfill requests honestly. Do not just be compliant. If you cannot do something or don't know an answer say so.
 
 ### AI/LLM Integration
 
@@ -58,43 +297,6 @@ test("hello world", () => {
 - Import model: `import { openai } from '@ai-sdk/openai'`
 - Use `generateText()` for single responses, `streamText()` for streaming
 - Environment variables: Store API keys in `.env` (Bun loads automatically)
-
-### Screenshot Tools
-
-LLPM uses ONLY shot-scraper for screenshots. NEVER use JINA screenshot tools!
-
-**AI Tools for Screenshots (shot-scraper ONLY):**
-- `take_screenshot`: Take a screenshot of any web page with customizable options
-- `check_screenshot_setup`: Check if shot-scraper is properly installed and configured
-
-**IMPORTANT: Use only the shot-scraper tools for screenshots!**
-
-**Key Features:**
-- **URL Screenshots**: Capture any web page by URL
-- **Custom Dimensions**: Specify browser width/height (default: 1280x720)
-- **Element Selection**: Screenshot specific CSS selectors instead of full page
-- **Wait Delays**: Add delays before capture for dynamic content
-- **Custom Filenames**: Specify screenshot filename (auto-generates if not provided)
-- **Temporary Storage**: Screenshots saved to system temp directory
-
-**Setup Requirements:**
-1. Install uv: `curl -LsSf https://astral.sh/uv/install.sh | sh`
-2. Install shot-scraper: `uv pip install shot-scraper`
-3. Verify: `uvx shot-scraper --version`
-
-**AI Tool Usage Examples:**
-```
-User: "Take a screenshot of https://example.com"
-Assistant: I'll take a screenshot using shot-scraper.
-[Uses take_screenshot tool (shot-scraper) with URL parameter]
-
-User: "Screenshot just the main content area of the page"
-Assistant: I'll take a screenshot of the specific content area using shot-scraper with a CSS selector.
-[Uses take_screenshot tool (shot-scraper) with selector parameter]
-```
-
-**CRITICAL RULE: ONLY use shot-scraper for screenshots!**
-The AI automatically uses shot-scraper when requested and provides the file path for viewing.
 
 ### CLI Development with Ink
 
@@ -107,68 +309,6 @@ The AI automatically uses shot-scraper when requested and provides the file path
   - Check for `!key.return` when handling regular character input to avoid conflicts
   - Use `inputChar` parameter for actual character input, not the conflicting variable name
   - Always remove `borderColor` if borders disappear - stick to default border styling
-
-### Slash Command System
-
-- Commands start with `/` and are processed locally (not sent to LLM)
-- Command structure: `/command [args]`
-- Built-in commands: `/info`, `/help`, `/quit`, `/model`
-- Create new commands in `src/commands/` directory
-- Register commands in `src/commands/registry.ts`
-- Command interface:
-  ```typescript
-  export interface Command {
-    name: string;
-    description: string;
-    execute: (args: string[]) => Promise<CommandResult> | CommandResult;
-  }
-  ```
-- System messages use 'system' role with magenta color
-- Commands are parsed before being sent to chat hook
-
-### Model Switching System
-
-- **Multi-provider support**: OpenAI, Anthropic, Groq, Google Vertex AI
-- **Dynamic switching**: Change models during conversation without restart
-- **Persistent selection**: Model choice saved to `~/.llpm/model-config.json`
-- **Environment-based config**: Uses API keys from environment variables
-- **Command interface**: `/model` command with multiple subcommands
-
-#### Model Commands
-
-- `/model` - Show current model and available providers
-- `/model list` - List available models from configured providers only
-- `/model list --all` - List all models regardless of configuration status
-- `/model current` - Show detailed current model information
-- `/model providers` - Show provider configuration status
-- `/model switch <provider>/<model-id>` - Switch to specific model
-- `/model <model-spec>` - Quick switch (shorthand)
-
-#### Model Status Indicators
-
-- 🟢 = Model is usable (provider configured)
-- 🔴 = Model needs configuration (API key missing)
-- ✅ = Provider is properly configured
-- ❌ = Provider needs configuration
-- 👉 = Currently selected model
-
-#### Model Configuration
-
-Environment variables (configure at least one):
-```env
-OPENAI_API_KEY=your-openai-key
-ANTHROPIC_API_KEY=your-anthropic-key
-GROQ_API_KEY=your-groq-key
-GOOGLE_VERTEX_PROJECT_ID=your-project-id
-GOOGLE_VERTEX_REGION=us-central1  # optional
-```
-
-#### Architecture
-
-- **ModelRegistry**: Central service managing model providers and configurations
-- **Model persistence**: Automatic saving/loading of selected model
-- **Provider factory**: Creates appropriate AI SDK instances based on provider
-- **Type-safe configuration**: Full TypeScript support for model configurations
 
 ### File Attachments for GitHub Issues and PRs
 
@@ -191,17 +331,6 @@ LLPM can upload and attach files when creating or commenting on GitHub issues an
 - **Text Files**: TXT, MD, JSON, JS, TS, HTML, CSS, LOG, YAML, XML, CSV
 - **Binary Files**: Any other file type (linked for download)
 
-**AI Tool Usage Examples:**
-```
-User: "Create an issue about the login bug and attach the error screenshot"
-Assistant: I'll create the issue and upload your screenshot.
-[Uses create_github_issue tool with attachments parameter]
-
-User: "Comment on issue #123 and attach the debug logs"
-Assistant: I'll add a comment with the log file attached.
-[Uses comment_on_github_issue tool with attachments parameter]
-```
-
 **Implementation Details:**
 - Files are uploaded as private GitHub gists for secure, permanent hosting
 - Attachment markdown is appended to issue/PR/comment body automatically
@@ -213,38 +342,6 @@ Assistant: I'll add a comment with the log file attached.
 - Use `@octokit/rest` for GitHub API interactions
 - Create repositories: `gh repo create` command
 - Environment variable: `GITHUB_TOKEN` for authentication
-
-#### Project Board Integration
-- **Automatic Linking**: Link LLPM projects with GitHub Project Boards for seamless integration
-- **Auto-Assignment**: Newly created issues/PRs are automatically added to the linked project board
-- **AI Tools**: Comprehensive AI tools for setting, viewing, and managing project board configurations
-- **Configuration**: Project board settings are stored in project metadata and persist across sessions
-
-AI Tools for Project Board Management:
-- `set_project_board`: Link a GitHub Project Board to current LLPM project
-- `get_project_board_info`: View current project board configuration with optional validation
-- `remove_project_board`: Remove project board link from current project
-- `list_available_project_boards`: List all available project boards for an owner
-
-Example AI Usage:
-```
-User: Link this project to GitHub project board #8 for user 'myorg'
-Assistant: I'll link your current project to the GitHub project board using the set_project_board tool.
-```
-
-### TypeScript Best Practices
-
-- **Always use `import type` for type-only imports**: Use `import type { MyType } from './types'` instead of `import { MyType } from './types'` when importing interfaces, types, or other TypeScript-only constructs
-- This improves build performance and makes the distinction between runtime and compile-time imports clear
-- Examples:
-
-  ```typescript
-  // ✅ Good - type-only import
-  import type { Message } from '../types';
-
-  // ❌ Bad - regular import for types
-  import { Message } from '../types';
-  ```
 
 ### AI Tool Creation Rules
 
@@ -322,6 +419,20 @@ export const existingTool = tool({
 export const newTool1 = tool({ ... }); // Your new tool
 ```
 
+### TypeScript Best Practices
+
+- **Always use `import type` for type-only imports**: Use `import type { MyType } from './types'` instead of `import { MyType } from './types'` when importing interfaces, types, or other TypeScript-only constructs
+- This improves build performance and makes the distinction between runtime and compile-time imports clear
+- Examples:
+
+  ```typescript
+  // ✅ Good - type-only import
+  import type { Message } from '../types';
+
+  // ❌ Bad - regular import for types
+  import { Message } from '../types';
+  ```
+
 ### Type System Rules
 
 **Rule 1: Never Create Custom Types When Library Types Exist**
@@ -367,7 +478,7 @@ import { z } from 'zod';
 
 const myTool = tool({
   description: 'Does something useful',
-  parameters: z.object({ ... }),
+  inputSchema: z.object({ ... }),
   execute: async (params) => { ... }
 });
 ```
@@ -378,54 +489,6 @@ const myTool = tool({
 3. **Improves Maintainability**: Changes in library versions are automatically handled
 4. **Follows Best Practices**: Library authors know their system best
 5. **Saves Time**: No need to reverse-engineer or guess at type structures
-
-### Project Analysis Tools
-
-LLPM includes AI tools that allow the model to analyze and understand project structure:
-
-**AI Tools for Project Analysis:**
-- `scan_project`: Analyze current project codebase and store results in memory
-- `get_project_scan`: Retrieve previously cached project analysis from memory  
-- `list_project_scans`: List all cached project scans across multiple projects
-
-**Command Line Interface:**
-- `/project-scan` - Analyze the current project and display detailed summary
-- `/project-scan help` - Show help for the project scan command
-
-**Key Features:**
-- **Comprehensive Analysis**: File types, languages, directory structure, code metrics
-- **Memory Storage**: Results cached in memory for AI to reference across conversations
-- **Smart Filtering**: Automatically ignores build artifacts, dependencies, hidden files
-- **Performance Optimized**: Limits file scanning to prevent performance issues
-- **Rich Metrics**: Lines of code, file counts, largest files, language distribution
-
-**Example AI Usage:**
-```
-User: "Analyze the current project structure"
-Assistant: I'll scan the project to understand its structure and composition.
-[Uses scan_project tool to analyze codebase and stores results in memory]
-
-User: "What are the main languages used in this project?"
-Assistant: Based on the previous scan, this project primarily uses:
-[References cached scan results from memory without re-scanning]
-```
-
-The AI can now understand project architecture and provide contextually relevant assistance based on the actual codebase structure.
-
-### Debug Logging
-
-- Use `debug()` function from `src/utils/logger` for debug output
-- Enable with `--verbose` or `-v` command line flag
-- Debug logs are written to stderr with timestamp and [DEBUG] prefix
-- Add debug logging to new features for better troubleshooting
-- Examples:
-
-  ```typescript
-  import { debug } from '../utils/logger';
-
-  debug('Function called with:', parameter);
-  debug('API response received:', response.data);
-  ```
 
 ### Version Management (Semantic Versioning)
 
@@ -495,3 +558,84 @@ Strict unused code checks cause Vitest config loading to fail because test files
 
 - **NEVER use comments in YAML files**: Do not add any comments (lines starting with #) to YAML configuration files
 - Keep YAML files clean and comment-free for better compatibility and parsing
+
+### Screenshot Tools
+
+LLPM uses ONLY shot-scraper for screenshots. NEVER use JINA screenshot tools!
+
+**AI Tools for Screenshots (shot-scraper ONLY):**
+- `take_screenshot`: Take a screenshot of any web page with customizable options
+- `check_screenshot_setup`: Check if shot-scraper is properly installed and configured
+
+**IMPORTANT: Use only the shot-scraper tools for screenshots!**
+
+**Key Features:**
+- **URL Screenshots**: Capture any web page by URL
+- **Custom Dimensions**: Specify browser width/height (default: 1280x720)
+- **Element Selection**: Screenshot specific CSS selectors instead of full page
+- **Wait Delays**: Add delays before capture for dynamic content
+- **Custom Filenames**: Specify screenshot filename (auto-generates if not provided)
+- **Temporary Storage**: Screenshots saved to system temp directory
+
+**Setup Requirements:**
+1. Install uv: `curl -LsSf https://astral.sh/uv/install.sh | sh`
+2. Install shot-scraper: `uv pip install shot-scraper`
+3. Verify: `uvx shot-scraper --version`
+
+**AI Tool Usage Examples:**
+```
+User: "Take a screenshot of https://example.com"
+Assistant: I'll take a screenshot using shot-scraper.
+[Uses take_screenshot tool (shot-scraper) with URL parameter]
+
+User: "Screenshot just the main content area of the page"
+Assistant: I'll take a screenshot of the specific content area using shot-scraper with a CSS selector.
+[Uses take_screenshot tool (shot-scraper) with selector parameter]
+```
+
+**CRITICAL RULE: ONLY use shot-scraper for screenshots!**
+The AI automatically uses shot-scraper when requested and provides the file path for viewing.
+
+# Verification
+
+Verification is acceptance testing with real systems (not mocks). It validates that features work in production-like conditions.
+The specific verification plan is detailed in @VERIFICATION_PLAN.md
+
+## When to Run Verification
+
+| Verification Type | When to Run | What It Covers |
+|-------------------|-------------|----------------|
+| **Quick** | After completing a set of related changes | Smoke test: `/help`, `/model`, AI responds |
+| **Extensive** | Before completing a major feature or PR | All 8 scenarios in VERIFICATION_PLAN.md |
+
+**Verification is NOT required after every commit.** TDD handles code correctness at the unit level. Verification validates real-world behavior at the feature level.
+
+## If Verification Fails
+
+1. **Document the failure** - which scenario failed and why
+2. **Fix the issue** - address the root cause
+3. **Re-run verification** - confirm the fix works
+4. **Proceed only when passing** - do not create PRs with failing verification
+
+## Quick Verification (run often)
+
+```bash
+# Start LLPM and run:
+/help
+/model
+/skills list
+# Send: "Hello, what model are you?"
+/exit
+```
+
+Pass: All commands succeed, AI responds.
+
+## Extensive Verification (before PRs)
+
+See @VERIFICATION_PLAN.md for full acceptance testing procedures covering:
+- AI chat integration
+- Model switching
+- Slash commands
+- Skills system
+- GitHub integration
+- Project management
