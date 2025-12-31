@@ -5,7 +5,8 @@
  * and traceability. Integrates with project notes for persistent storage.
  */
 
-import { getCurrentProjectDatabase } from './projectDatabase';
+import { getCurrentProject } from './projectConfig';
+import { getNotesBackend } from '../services/notesBackend';
 
 export interface ToolAuditEntry {
   timestamp: string;
@@ -23,19 +24,20 @@ export interface ToolAuditEntry {
  */
 export async function auditToolCall(entry: ToolAuditEntry): Promise<void> {
   try {
-    const db = await getCurrentProjectDatabase();
-    if (!db) {
+    const currentProject = await getCurrentProject();
+    if (!currentProject) {
       // No active project - log to console only
       console.log('[TOOL AUDIT]', JSON.stringify(entry, null, 2));
       return;
     }
 
+    const backend = await getNotesBackend(currentProject.id);
+
     // Create audit note with structured format
     const title = `Tool Audit: ${entry.toolName}`;
     const content = formatAuditEntry(entry);
 
-    await db.addNote(title, content, 'tool-audit');
-    db.close();
+    await backend.addNote(title, content, ['tool-audit']);
   } catch (error) {
     // Non-fatal - log to console if note creation fails
     console.error('Failed to create audit note:', error);
@@ -91,28 +93,43 @@ export async function getAuditLogs(
   limit: number = 50
 ): Promise<ToolAuditEntry[]> {
   try {
-    const db = await getCurrentProjectDatabase();
-    if (!db) {
+    const currentProject = await getCurrentProject();
+    if (!currentProject) {
       return [];
     }
 
-    const notes = db.searchNotes('tool-audit');
-    const filtered = toolName
-      ? notes.filter(note => note.title.includes(toolName))
-      : notes;
+    const backend = await getNotesBackend(currentProject.id);
 
-    const entries = filtered.slice(0, limit).map(note => {
-      // Parse audit entry from note content
+    let notes;
+    if (toolName) {
+      // List all notes with tool-audit tag and filter by tool name
+      const allNotes = await backend.listNotes();
+      notes = allNotes.filter(note =>
+        note.tags.includes('tool-audit') && note.title.includes(toolName)
+      );
+    } else {
+      // Search for all tool-audit notes
+      const results = await backend.searchNotes('tool-audit');
+      notes = results.map(r => ({
+        id: r.id,
+        title: r.title,
+        tags: ['tool-audit'],
+        createdAt: '',
+        updatedAt: ''
+      }));
+    }
+
+    const entries = notes.slice(0, limit).map(note => {
+      // Parse audit entry from note
       // This is simplified - would need more robust parsing
       return {
-        timestamp: note.createdAt,
+        timestamp: note.createdAt || new Date().toISOString(),
         toolName: note.title.replace('Tool Audit: ', ''),
         parameters: {},
         // Would parse from content in real implementation
       };
     });
 
-    db.close();
     return entries;
   } catch (error) {
     console.error('Failed to retrieve audit logs:', error);
@@ -129,25 +146,31 @@ export async function getAuditStats(): Promise<{
   errorCount: number;
 }> {
   try {
-    const db = await getCurrentProjectDatabase();
-    if (!db) {
+    const currentProject = await getCurrentProject();
+    if (!currentProject) {
       return { totalCalls: 0, toolCounts: {}, errorCount: 0 };
     }
 
-    const auditNotes = db.searchNotes('tool-audit');
+    const backend = await getNotesBackend(currentProject.id);
+
+    // Get all notes with tool-audit tag
+    const allNotes = await backend.listNotes();
+    const auditNotes = allNotes.filter(note => note.tags.includes('tool-audit'));
+
     const toolCounts: Record<string, number> = {};
     let errorCount = 0;
 
+    // Need to fetch full content to check for errors
     for (const note of auditNotes) {
       const toolName = note.title.replace('Tool Audit: ', '');
       toolCounts[toolName] = (toolCounts[toolName] || 0) + 1;
 
-      if (note.content.includes('### Error')) {
+      // Get full note content to check for errors
+      const fullNote = await backend.getNote(note.id);
+      if (fullNote && fullNote.content.includes('### Error')) {
         errorCount++;
       }
     }
-
-    db.close();
 
     return {
       totalCalls: auditNotes.length,
