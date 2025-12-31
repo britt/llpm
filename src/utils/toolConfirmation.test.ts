@@ -4,9 +4,9 @@ import {
   requiresConfirmation,
   formatConfirmationPrompt,
   isConfirmed,
-  isCancelled
+  isCancelled,
+  type ConfirmationRequired
 } from './toolConfirmation';
-import type { ConfirmationRequired } from './toolConfirmation';
 
 describe('Tool Confirmation Utils', () => {
   describe('requiresConfirmation', () => {
@@ -64,6 +64,17 @@ describe('Tool Confirmation Utils', () => {
         expect(result.operation).toContain('my-repo');
         expect(result.details).toContain('overwrite the remote branch');
         expect(result.risks).toContain('Rewrites history');
+      }
+    });
+
+    it('should require confirmation for run_shell_command', () => {
+      const result = requiresConfirmation('run_shell_command', { command: 'git status' });
+
+      expect(result.required).toBe(true);
+      if (result.required) {
+        expect(result.operation).toContain('git status');
+        expect(result.details).toContain('shell command');
+        expect(result.risks).toContain('Commands can modify files');
       }
     });
 
