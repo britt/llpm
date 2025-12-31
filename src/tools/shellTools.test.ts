@@ -89,7 +89,9 @@ describe('shellTools', () => {
     });
 
     it('should execute command and return structured result', async () => {
-      const result = await runShellCommandTool.execute!({
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const execute = runShellCommandTool.execute as any;
+      const result = await execute({
         command: 'echo "hello world"'
       });
 
@@ -103,7 +105,9 @@ describe('shellTools', () => {
     it('should reject when no project is set', async () => {
       vi.spyOn(projectConfig, 'getCurrentProject').mockResolvedValue(null);
 
-      const result = await runShellCommandTool.execute!({
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const execute = runShellCommandTool.execute as any;
+      const result = await execute({
         command: 'echo test'
       });
 
@@ -122,7 +126,9 @@ describe('shellTools', () => {
         }))
       }));
 
-      const result = await runShellCommandTool.execute!({
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const execute = runShellCommandTool.execute as any;
+      const result = await execute({
         command: 'sleep 10',
         timeout: 100
       });
@@ -140,7 +146,9 @@ describe('shellTools', () => {
       }
 
       // Without config, shell should be disabled by default
-      const result = await runShellCommandTool.execute!({
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const execute = runShellCommandTool.execute as any;
+      const result = await execute({
         command: 'echo test'
       });
 
@@ -154,7 +162,9 @@ describe('shellTools', () => {
       writeFileSync(configPath, '{ invalid json }');
 
       // Should fall back to defaults (shell disabled)
-      const result = await runShellCommandTool.execute!({
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const execute = runShellCommandTool.execute as any;
+      const result = await execute({
         command: 'echo test'
       });
 
@@ -170,7 +180,9 @@ describe('shellTools', () => {
         JSON.stringify({ enabled: true, defaultTimeout: 5000, maxTimeout: 30000, auditEnabled: true })
       );
 
-      const result = await runShellCommandTool.execute!({
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const execute = runShellCommandTool.execute as any;
+      const result = await execute({
         command: 'echo "hello"'
       });
 
@@ -188,7 +200,9 @@ describe('shellTools', () => {
 
       // The audit logger will try to write, which may or may not succeed
       // depending on the environment, but the command should still succeed
-      const result = await runShellCommandTool.execute!({
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const execute = runShellCommandTool.execute as any;
+      const result = await execute({
         command: 'echo "hello"'
       });
 
