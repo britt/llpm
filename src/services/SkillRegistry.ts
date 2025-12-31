@@ -1,6 +1,9 @@
 /**
  * SkillRegistry: Central service for managing Skills in LLPM
  *
+ * Implements the Agent Skills specification from agentskills.io
+ * https://agentskills.io/specification
+ *
  * Responsibilities:
  * - Discover skills from configured paths
  * - Parse and validate SKILL.md files
@@ -17,19 +20,29 @@ import type {
   SkillsConfig,
   SkillActivationContext,
   SkillActivationResult,
-  SkillEvent
+  SkillEvent,
+  SkillMetadata,
+  SkillSource
 } from '../types/skills';
-import { parseSkillFile, applyVariableSubstitution } from '../utils/skillParser';
+import { parseSkillFile, parseSkillMetadata } from '../utils/skillParser';
 import { EventEmitter } from 'events';
 
 /**
- * Default skills configuration
+ * Default skills configuration per Agent Skills spec
+ * Discovery paths (in order of priority):
+ * - Project-local: .skills/ or skills/
+ * - User-global: ~/.config/llpm/skills/ or ~/.llpm/skills/
  */
 const DEFAULT_CONFIG: SkillsConfig = {
   enabled: true,
   maxSkillsPerPrompt: 3,
-  paths: ['~/.llpm/skills', '~/.llpm/skills/user', '.llpm/skills'],
-  requireConfirmationOnDeniedTool: true
+  paths: [
+    '.skills',           // Project-local (Agent Skills spec)
+    'skills',            // Project-local alternative
+    '~/.config/llpm/skills',  // User-global (XDG standard)
+    '~/.llpm/skills'     // User-global fallback
+  ],
+  enforceAllowedTools: true
 };
 
 /**
@@ -37,11 +50,70 @@ const DEFAULT_CONFIG: SkillsConfig = {
  */
 export class SkillRegistry extends EventEmitter {
   private skills: Map<string, Skill> = new Map();
+  private skillMetadata: Map<string, SkillMetadata> = new Map();
   private config: SkillsConfig;
 
   constructor(config: Partial<SkillsConfig> = {}) {
     super();
     this.config = { ...DEFAULT_CONFIG, ...config };
+  }
+
+  /**
+   * Determine source type based on path
+   * Per Agent Skills spec:
+   * - 'project': .skills/ or skills/ in current directory
+   * - 'user': ~/.config/llpm/skills/ or ~/.llpm/skills/
+   * - 'system': /usr/share/llpm/skills/ (optional)
+   */
+  private determineSource(path: string): SkillSource {
+    const expandedPath = path.replace(/^~/, homedir());
+
+    // System-level skills
+    if (expandedPath.startsWith('/usr/share/') || expandedPath.startsWith('/opt/')) {
+      return 'system';
+    }
+
+    // User-level skills (in home directory)
+    if (expandedPath.includes('.config/llpm/skills') || expandedPath.includes('.llpm/skills')) {
+      return 'user';
+    }
+
+    // Project-level skills (relative paths or in current project)
+    return 'project';
+  }
+
+  /**
+   * Quick scan to load only skill metadata (progressive disclosure)
+   * This is called at startup to minimize token usage (~100 tokens per skill)
+   */
+  async scanMetadata(): Promise<void> {
+    this.skillMetadata.clear();
+
+    for (const configPath of this.config.paths) {
+      const expandedPath = configPath.replace(/^~/, homedir());
+      const source = this.determineSource(configPath);
+
+      if (!existsSync(expandedPath)) {
+        continue;
+      }
+
+      try {
+        const entries = await readdir(expandedPath, { withFileTypes: true });
+
+        for (const entry of entries) {
+          if (!entry.isDirectory()) continue;
+
+          const skillPath = join(expandedPath, entry.name);
+          const metadata = await parseSkillMetadata(skillPath, source);
+
+          if (metadata) {
+            this.skillMetadata.set(metadata.name, metadata);
+          }
+        }
+      } catch (error) {
+        // Silent fail for metadata scanning
+      }
+    }
   }
 
   /**
@@ -52,11 +124,7 @@ export class SkillRegistry extends EventEmitter {
 
     for (const configPath of this.config.paths) {
       const expandedPath = configPath.replace(/^~/, homedir());
-
-      // Determine source type based on path
-      const source = expandedPath.includes('.llpm/skills')
-        ? 'project'
-        : 'personal';
+      const source = this.determineSource(configPath);
 
       if (!existsSync(expandedPath)) {
         continue; // Skip non-existent paths
@@ -83,7 +151,7 @@ export class SkillRegistry extends EventEmitter {
    */
   private async loadSkill(
     skillPath: string,
-    source: 'personal' | 'project'
+    source: SkillSource
   ): Promise<void> {
     // Check if SKILL.md exists - if not, skip silently (allows organizational directories)
     const skillFilePath = join(skillPath, 'SKILL.md');
@@ -99,6 +167,15 @@ export class SkillRegistry extends EventEmitter {
         skillName: skillPath,
         errors: result.errors
       } as SkillEvent);
+
+      // Also emit warnings if present
+      if (result.warnings?.length) {
+        this.emit('skill.validation_warning', {
+          type: 'skill.validation_warning',
+          skillName: skillPath,
+          warnings: result.warnings
+        } as SkillEvent);
+      }
       return;
     }
 
@@ -147,6 +224,7 @@ export class SkillRegistry extends EventEmitter {
 
   /**
    * Check if a skill matches the context (binary yes/no)
+   * Agent Skills spec relies on description keywords for matching
    */
   private checkMatch(
     skill: Skill,
@@ -159,26 +237,27 @@ export class SkillRegistry extends EventEmitter {
       return { reason: 'name match' };
     }
 
-    // Check 2: Any tag in message
-    if (skill.tags) {
-      for (const tag of skill.tags) {
-        if (userMessageLower.includes(tag.toLowerCase())) {
-          return { reason: `tag: ${tag}` };
-        }
-      }
+    // Check 2: Description keyword overlap
+    // Extract meaningful words from description (>3 chars, not common words)
+    const commonWords = new Set(['the', 'this', 'that', 'with', 'from', 'have', 'been', 'will', 'when', 'what', 'which', 'your', 'they', 'them', 'then', 'than', 'into', 'some', 'such', 'only', 'also', 'over', 'more', 'most', 'just', 'each', 'both', 'here', 'there', 'where', 'about', 'after', 'before', 'because', 'through', 'should', 'could', 'would', 'these', 'those', 'other', 'first', 'second', 'third']);
+
+    const descriptionWords = skill.description
+      .toLowerCase()
+      .split(/\s+/)
+      .map(w => w.replace(/[^a-z]/g, ''))
+      .filter(w => w.length > 3 && !commonWords.has(w));
+
+    const messageWords = new Set(
+      userMessageLower
+        .split(/\s+/)
+        .map(w => w.replace(/[^a-z]/g, ''))
+        .filter(w => w.length > 3)
+    );
+
+    const matchedKeyword = descriptionWords.find(word => messageWords.has(word));
+    if (matchedKeyword) {
+      return { reason: `keyword: ${matchedKeyword}` };
     }
-
-    // Check 3: Description keyword overlap
-    // const descriptionWords = skill.description
-    //   .toLowerCase()
-    //   .split(/\s+/)
-    //   .filter(w => w.length > 3);
-    // const messageWords = userMessageLower.split(/\s+/);
-    // const hasOverlap = descriptionWords.some(word => messageWords.includes(word));
-
-    // if (hasOverlap) {
-    //   return { reason: 'description keywords' };
-    // }
 
     return null;
   }
@@ -221,20 +300,27 @@ export class SkillRegistry extends EventEmitter {
   /**
    * Check if a tool is allowed for given skills
    *
+   * Per Agent Skills spec, allowed-tools is an experimental feature.
    * Returns:
    * - true: tool is allowed
-   * - false: tool is denied (requires confirmation)
+   * - false: tool is denied (requires confirmation if enforceAllowedTools is true)
    */
   isToolAllowed(toolName: string, selectedSkills: Skill[] = []): boolean {
-    // If no skills have allowed_tools restrictions, allow all
-    const skillsWithRestrictions = selectedSkills.filter(s => s.allowed_tools);
+    // Skip enforcement if disabled in config
+    if (!this.config.enforceAllowedTools) {
+      return true;
+    }
+
+    // If no skills have allowedTools restrictions, allow all
+    const skillsWithRestrictions = selectedSkills.filter(s => s.allowedTools && s.allowedTools.length > 0);
     if (skillsWithRestrictions.length === 0) {
       return true;
     }
 
     // Check if ANY selected skill allows this tool
+    // Supports exact match and pattern matching (e.g., "Bash(git:*)")
     for (const skill of skillsWithRestrictions) {
-      if (skill.allowed_tools?.includes(toolName)) {
+      if (this.matchesTool(toolName, skill.allowedTools!)) {
         return true;
       }
     }
@@ -252,7 +338,36 @@ export class SkillRegistry extends EventEmitter {
   }
 
   /**
+   * Check if a tool name matches any of the allowed tool patterns
+   * Supports:
+   * - Exact match: "Read" matches "Read"
+   * - Pattern match: "Bash(git:*)" matches "Bash" with git commands
+   */
+  private matchesTool(toolName: string, allowedTools: string[]): boolean {
+    for (const pattern of allowedTools) {
+      // Exact match
+      if (pattern === toolName) {
+        return true;
+      }
+
+      // Pattern match for tool with command restrictions like "Bash(git:*)"
+      const patternMatch = pattern.match(/^(\w+)\((.+)\)$/);
+      if (patternMatch) {
+        const [, baseTool, commandPattern] = patternMatch;
+        if (baseTool === toolName) {
+          // For now, if the base tool matches, allow it
+          // Full command pattern matching would require more context
+          return true;
+        }
+      }
+    }
+
+    return false;
+  }
+
+  /**
    * Generate augmented prompt content for selected skills
+   * Per Agent Skills spec, this includes the full skill content
    */
   async generatePromptAugmentation(selectedSkills: Skill[]): Promise<string> {
     if (selectedSkills.length === 0) {
@@ -264,25 +379,70 @@ export class SkillRegistry extends EventEmitter {
     for (const skill of selectedSkills) {
       sections.push(`## ${skill.name}`);
       sections.push(`${skill.description}\n`);
-
-      // Apply variable substitution
-      let content = skill.content;
-      if (skill.vars) {
-        content = applyVariableSubstitution(content, skill.vars);
-      }
-
-      sections.push(content);
+      sections.push(skill.content);
       sections.push(''); // Empty line between skills
 
       // Emit event
       this.emit('skill.applied_to_prompt', {
         type: 'skill.applied_to_prompt',
-        skillName: skill.name,
-        promptSection: 'assistant'
+        skillName: skill.name
       } as SkillEvent);
     }
 
     return sections.join('\n').trim();
+  }
+
+  /**
+   * Get all skill metadata (for progressive disclosure)
+   * This returns lightweight metadata loaded at startup
+   */
+  getAllMetadata(): SkillMetadata[] {
+    return Array.from(this.skillMetadata.values());
+  }
+
+  /**
+   * Get skill metadata by name
+   */
+  getMetadata(name: string): SkillMetadata | undefined {
+    return this.skillMetadata.get(name);
+  }
+
+  /**
+   * Load a skill on demand by name (progressive disclosure)
+   * Returns the full skill content when needed
+   */
+  async loadSkillByName(name: string): Promise<Skill | null> {
+    // Check if already loaded
+    const existing = this.skills.get(name);
+    if (existing) {
+      this.emit('skill.loaded', {
+        type: 'skill.loaded',
+        skillName: name
+      } as SkillEvent);
+      return existing;
+    }
+
+    // Check if we have metadata for this skill
+    const metadata = this.skillMetadata.get(name);
+    if (!metadata) {
+      return null;
+    }
+
+    // Load the full skill
+    const result = await parseSkillFile(metadata.path, metadata.source);
+    if (!result.valid || !result.skill) {
+      return null;
+    }
+
+    // Cache the loaded skill
+    this.skills.set(name, result.skill);
+
+    this.emit('skill.loaded', {
+      type: 'skill.loaded',
+      skillName: name
+    } as SkillEvent);
+
+    return result.skill;
   }
 
   /**

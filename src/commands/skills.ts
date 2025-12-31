@@ -1,9 +1,11 @@
 /**
  * /skills command - Manage and interact with Agent Skills
+ *
+ * Implements the Agent Skills specification from agentskills.io
+ * https://agentskills.io/specification
  */
 import type { Command, CommandResult } from './types';
 import { getSkillRegistry } from '../services/SkillRegistry';
-import { applyVariableSubstitution } from '../utils/skillParser';
 
 export const skillsCommand: Command = {
   name: 'skills',
@@ -52,37 +54,54 @@ async function listSkills(_args: string[]): Promise<CommandResult> {
   const lines: string[] = [];
   lines.push('# Discovered Skills\n');
 
-  // Group by source
-  const personalSkills = skills.filter(s => s.source === 'personal');
+  // Group by source per Agent Skills spec
+  const userSkills = skills.filter(s => s.source === 'user');
   const projectSkills = skills.filter(s => s.source === 'project');
+  const systemSkills = skills.filter(s => s.source === 'system');
 
-  if (personalSkills.length > 0) {
-    lines.push('## Personal Skills (~/.llpm/skills)\n');
-    for (const skill of personalSkills) {
+  if (userSkills.length > 0) {
+    lines.push('## User Skills (~/.config/llpm/skills or ~/.llpm/skills)\n');
+    for (const skill of userSkills) {
       const status = skill.enabled ? '✓ enabled' : '✗ disabled';
       lines.push(`**${skill.name}** [${status}]`);
       lines.push(`  ${skill.description}`);
-      if (skill.tags && skill.tags.length > 0) {
-        lines.push(`  Tags: ${skill.tags.join(', ')}`);
+      if (skill.license) {
+        lines.push(`  License: ${skill.license}`);
       }
-      if (skill.allowed_tools && skill.allowed_tools.length > 0) {
-        lines.push(`  Allowed tools: ${skill.allowed_tools.join(', ')}`);
+      if (skill.allowedTools && skill.allowedTools.length > 0) {
+        lines.push(`  Allowed tools: ${skill.allowedTools.join(', ')}`);
       }
       lines.push('');
     }
   }
 
   if (projectSkills.length > 0) {
-    lines.push('## Project Skills (.llpm/skills)\n');
+    lines.push('## Project Skills (.skills or skills)\n');
     for (const skill of projectSkills) {
       const status = skill.enabled ? '✓ enabled' : '✗ disabled';
       lines.push(`**${skill.name}** [${status}]`);
       lines.push(`  ${skill.description}`);
-      if (skill.tags && skill.tags.length > 0) {
-        lines.push(`  Tags: ${skill.tags.join(', ')}`);
+      if (skill.license) {
+        lines.push(`  License: ${skill.license}`);
       }
-      if (skill.allowed_tools && skill.allowed_tools.length > 0) {
-        lines.push(`  Allowed tools: ${skill.allowed_tools.join(', ')}`);
+      if (skill.allowedTools && skill.allowedTools.length > 0) {
+        lines.push(`  Allowed tools: ${skill.allowedTools.join(', ')}`);
+      }
+      lines.push('');
+    }
+  }
+
+  if (systemSkills.length > 0) {
+    lines.push('## System Skills (/usr/share/llpm/skills)\n');
+    for (const skill of systemSkills) {
+      const status = skill.enabled ? '✓ enabled' : '✗ disabled';
+      lines.push(`**${skill.name}** [${status}]`);
+      lines.push(`  ${skill.description}`);
+      if (skill.license) {
+        lines.push(`  License: ${skill.license}`);
+      }
+      if (skill.allowedTools && skill.allowedTools.length > 0) {
+        lines.push(`  Allowed tools: ${skill.allowedTools.join(', ')}`);
       }
       lines.push('');
     }
@@ -109,7 +128,7 @@ async function testSkill(args: string[]): Promise<CommandResult> {
     };
   }
 
-  const skillName = args[0];
+  const skillName = args[0]!;
   const registry = getSkillRegistry();
   const skill = registry.getSkill(skillName);
 
@@ -123,43 +142,36 @@ async function testSkill(args: string[]): Promise<CommandResult> {
   const lines: string[] = [];
   lines.push(`# Skill Test: ${skill.name}\n`);
   lines.push(`**Source:** ${skill.source}`);
+  lines.push(`**Path:** ${skill.path}`);
   lines.push(`**Description:** ${skill.description}`);
   lines.push(`**Enabled:** ${skill.enabled ? 'yes' : 'no'}`);
   lines.push('');
 
-  if (skill.tags && skill.tags.length > 0) {
-    lines.push(`**Tags:** ${skill.tags.join(', ')}`);
+  if (skill.license) {
+    lines.push(`**License:** ${skill.license}`);
   }
 
-  if (skill.vars) {
-    lines.push(`\n**Variables:**`);
-    for (const [key, value] of Object.entries(skill.vars)) {
-      lines.push(`  - {{${key}}} = "${value}"`);
-    }
+  if (skill.compatibility) {
+    lines.push(`**Compatibility:** ${skill.compatibility}`);
   }
 
-  if (skill.allowed_tools) {
-    lines.push(`\n**Allowed Tools:** ${skill.allowed_tools.join(', ')}`);
+  if (skill.allowedTools && skill.allowedTools.length > 0) {
+    lines.push(`\n**Allowed Tools:** ${skill.allowedTools.join(', ')}`);
     lines.push(`\nWhen active, this skill will restrict tool usage to the above list.`);
   }
 
-  if (skill.resources && skill.resources.length > 0) {
-    lines.push(`\n**Resources:**`);
-    for (const resource of skill.resources) {
-      lines.push(`  - ${resource}`);
+  if (skill.metadata) {
+    lines.push(`\n**Metadata:**`);
+    for (const [key, value] of Object.entries(skill.metadata)) {
+      lines.push(`  - ${key}: ${value}`);
     }
   }
 
-  // Show content with variable substitution applied
-  lines.push(`\n## Content (with variables applied)\n`);
-
-  let content = skill.content;
-  if (skill.vars) {
-    content = applyVariableSubstitution(content, skill.vars);
-  }
+  // Show skill content
+  lines.push(`\n## Content\n`);
 
   lines.push('```markdown');
-  lines.push(content);
+  lines.push(skill.content);
   lines.push('```\n');
 
   return {
@@ -179,7 +191,7 @@ async function enableSkill(args: string[]): Promise<CommandResult> {
     };
   }
 
-  const skillName = args[0];
+  const skillName = args[0]!;
   const registry = getSkillRegistry();
   const skill = registry.getSkill(skillName);
 
@@ -216,7 +228,7 @@ async function disableSkill(args: string[]): Promise<CommandResult> {
     };
   }
 
-  const skillName = args[0];
+  const skillName = args[0]!;
   const registry = getSkillRegistry();
   const skill = registry.getSkill(skillName);
 
@@ -317,6 +329,8 @@ function showHelp(): CommandResult {
 
 Manage Agent Skills - reusable packages of instructions that the AI can invoke automatically.
 
+Implements the Agent Skills specification: https://agentskills.io/specification
+
 ## Usage
 
 \`/skills list\` - List all discovered skills and their status
@@ -326,11 +340,11 @@ Manage Agent Skills - reusable packages of instructions that the AI can invoke a
 \`/skills reload\` - Rescan skill directories and reload all skills
 \`/skills help\` - Show this help message
 
-## Skill Locations
+## Skill Locations (per Agent Skills spec)
 
-- **Personal Skills:** ~/.llpm/skills/*/SKILL.md
-- **Personal User Skills:** ~/.llpm/skills/user/*/SKILL.md
-- **Project Skills:** .llpm/skills/*/SKILL.md (user-specific by definition)
+- **Project Skills:** .skills/*/SKILL.md or skills/*/SKILL.md
+- **User Skills:** ~/.config/llpm/skills/*/SKILL.md or ~/.llpm/skills/*/SKILL.md
+- **System Skills:** /usr/share/llpm/skills/*/SKILL.md (optional)
 
 ## How Skills Work
 
@@ -338,26 +352,28 @@ Skills are discovered automatically from the above locations. When you send a me
 LLPM evaluates your intent and selects relevant skills based on:
 
 - **Name match**: Your message contains the skill name
-- **Tag match**: Your message contains any skill tag
 - **Description keywords**: Keyword overlap with the skill description
 
 Skills are selected fresh for each prompt (no persistent state). Selected skills augment
-the AI's system prompt with their instructions, and can optionally restrict tool usage
-to an allowed list.
+the AI's system prompt with their instructions.
 
 **Configuration**: Set \`maxSkillsPerPrompt\` in config to limit how many skills can be
 selected per message (default: 3).
 
-## Creating a Skill
+## Creating a Skill (Agent Skills Spec)
 
-Create a folder in ~/.llpm/skills/, ~/.llpm/skills/user/, or .llpm/skills/ with a SKILL.md file:
+Create a folder matching the skill name with a SKILL.md file:
 
 \`\`\`markdown
 ---
 name: my-skill
-description: "What this skill does and when to use it"
-tags: [tag1, tag2]
-allowed_tools: [github, shell]
+description: "What this skill does and when to use it (1-1024 chars)"
+license: MIT
+compatibility: "Requires Node.js 18+"
+allowed-tools: "Bash(git:*) Read Write"
+metadata:
+  author: "Your Name"
+  version: "1.0.0"
 ---
 
 # My Skill Instructions
@@ -365,7 +381,22 @@ allowed_tools: [github, shell]
 Your markdown instructions here...
 \`\`\`
 
-See the documentation for full schema and examples.
+### Frontmatter Fields
+
+- **name** (required): 1-64 chars, lowercase letters/numbers/hyphens, must match directory name
+- **description** (required): 1-1024 chars, include keywords for matching
+- **license** (optional): SPDX identifier or custom license
+- **compatibility** (optional): Environment requirements (1-500 chars)
+- **allowed-tools** (optional, experimental): Space-delimited list of pre-approved tools
+- **metadata** (optional): Key-value string mapping for additional properties
+
+### Optional Directories
+
+- \`scripts/\` - Helper scripts the skill can invoke
+- \`references/\` - Additional documentation or examples
+- \`assets/\` - Binary assets (images, templates, etc.)
+
+See https://agentskills.io/specification for full details.
 `
   };
 }
