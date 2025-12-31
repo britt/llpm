@@ -51,7 +51,9 @@ describe('ShellAuditLogger', () => {
 
       const files = readdirSync(auditDir);
       const content = readFileSync(join(auditDir, files[0]), 'utf-8');
-      const logged = JSON.parse(content.trim().split('\n').pop()!);
+      const lines = content.trim().split('\n');
+      const lastLine = lines[lines.length - 1];
+      const logged = JSON.parse(lastLine);
 
       expect(logged.command).toBe('echo test');
       expect(logged.exitCode).toBe(0);
