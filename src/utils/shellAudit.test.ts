@@ -50,9 +50,13 @@ describe('ShellAuditLogger', () => {
       await logger.log(entry);
 
       const files = readdirSync(auditDir);
-      const content = readFileSync(join(auditDir, files[0]), 'utf-8');
+      expect(files.length).toBeGreaterThan(0);
+      const firstFile = files[0];
+      expect(firstFile).toBeDefined();
+      const content = readFileSync(join(auditDir, firstFile), 'utf-8');
       const lines = content.trim().split('\n');
       const lastLine = lines[lines.length - 1];
+      expect(lastLine).toBeDefined();
       const logged = JSON.parse(lastLine);
 
       expect(logged.command).toBe('echo test');
@@ -117,7 +121,10 @@ describe('ShellAuditLogger', () => {
 
       // Write a malformed entry directly to the file
       const files = readdirSync(auditDir);
-      const filePath = join(auditDir, files[0]);
+      expect(files.length).toBeGreaterThan(0);
+      const firstFile = files[0];
+      expect(firstFile).toBeDefined();
+      const filePath = join(auditDir, firstFile);
       writeFileSync(filePath, '{ invalid json\n', { flag: 'a' });
 
       await logger.log({
@@ -131,8 +138,12 @@ describe('ShellAuditLogger', () => {
       const recent = await logger.getRecentEntries(10);
       // Should only get the valid entries, skipping the malformed one
       expect(recent.length).toBe(2);
-      expect(recent[0].command).toBe('another good command');
-      expect(recent[1].command).toBe('good command');
+      const firstEntry = recent[0];
+      const secondEntry = recent[1];
+      expect(firstEntry).toBeDefined();
+      expect(secondEntry).toBeDefined();
+      expect(firstEntry.command).toBe('another good command');
+      expect(secondEntry.command).toBe('good command');
     });
   });
 

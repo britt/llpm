@@ -5,8 +5,7 @@ import {
   isPathAllowed,
   validateShellExecution
 } from './shellPermissions';
-import type { ShellConfig } from '../types/shell';
-import { DEFAULT_SHELL_CONFIG } from '../types/shell';
+import { DEFAULT_SHELL_CONFIG, type ShellConfig } from '../types/shell';
 
 describe('shellPermissions', () => {
   describe('isShellEnabled', () => {

@@ -43,9 +43,17 @@ export class ShellExecutor {
     try {
       // Use Promise.race for timeout handling
       const executeCommand = async () => {
+        // Filter out undefined values from process.env
+        const envVars: Record<string, string> = {};
+        for (const [key, value] of Object.entries(process.env)) {
+          if (value !== undefined) {
+            envVars[key] = value;
+          }
+        }
+
         const result = await $`${{ raw: command }}`
           .cwd(cwd)
-          .env({ ...process.env, ...options.env })
+          .env({ ...envVars, ...options.env })
           .quiet()
           .nothrow();
 
