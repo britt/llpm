@@ -42,11 +42,6 @@ import {
   getProjectScanTool,
   listProjectScansTool
 } from './projectScanTools';
-import {
-  indexProjectFiles,
-  semanticSearchProject,
-  getProjectVectorStats
-} from './vectorSearchTools';
 import { takeScreenshotTool, checkScreenshotSetupTool } from './screenshotTools';
 import {
   setProjectAgentConfigTool,
@@ -93,10 +88,6 @@ const toolRegistry: ToolRegistry = {
   scan_project: scanProjectTool,
   get_project_scan: getProjectScanTool,
   list_project_scans: listProjectScansTool,
-  // Vector Search
-  index_project_files: indexProjectFiles,
-  semantic_search_project: semanticSearchProject,
-  get_project_vector_stats: getProjectVectorStats,
   // Screenshots
   take_screenshot: takeScreenshotTool,
   check_screenshot_setup: checkScreenshotSetupTool,
