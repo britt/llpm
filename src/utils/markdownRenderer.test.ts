@@ -82,5 +82,57 @@ Some **bold** and *italic* text.
       // Result depends on test environment's TTY status
       expect(typeof result).toBe('boolean');
     });
+
+    it('should return false when stdout is not a TTY', () => {
+      delete process.env.NO_COLOR;
+      delete process.env.CI;
+
+      // Save original isTTY
+      const originalIsTTY = process.stdout.isTTY;
+
+      // Mock stdout.isTTY as false
+      Object.defineProperty(process.stdout, 'isTTY', {
+        value: false,
+        writable: true,
+        configurable: true
+      });
+
+      const result = isASCIICapableTerminal();
+
+      // Restore original
+      Object.defineProperty(process.stdout, 'isTTY', {
+        value: originalIsTTY,
+        writable: true,
+        configurable: true
+      });
+
+      expect(result).toBe(false);
+    });
+
+    it('should return true when stdout is TTY and no env restrictions', () => {
+      delete process.env.NO_COLOR;
+      delete process.env.CI;
+
+      // Save original isTTY
+      const originalIsTTY = process.stdout.isTTY;
+
+      // Mock stdout.isTTY as true
+      Object.defineProperty(process.stdout, 'isTTY', {
+        value: true,
+        writable: true,
+        configurable: true
+      });
+
+      const result = isASCIICapableTerminal();
+
+      // Restore original
+      Object.defineProperty(process.stdout, 'isTTY', {
+        value: originalIsTTY,
+        writable: true,
+        configurable: true
+      });
+
+      expect(result).toBe(true);
+    });
   });
 });

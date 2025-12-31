@@ -5,6 +5,8 @@ import * as projectConfig from '../utils/projectConfig';
 import { modelRegistry } from '../services/modelRegistry';
 import * as systemPrompt from '../utils/systemPrompt';
 import * as markdownHighlight from '../utils/markdownHighlight';
+import * as chatHistory from '../utils/chatHistory';
+import { embeddingsFactory } from '../services/embeddings';
 
 describe('infoCommand', () => {
   beforeEach(() => {
@@ -115,6 +117,52 @@ describe('infoCommand', () => {
     await expect(infoCommand.execute([])).rejects.toThrow('Config error');
   });
 
+  describe('help sub-command', () => {
+    it('should show help when help argument is passed', async () => {
+      const result = await infoCommand.execute(['help']);
+
+      expect(result.success).toBe(true);
+      expect(result.content).toContain('Information Commands');
+      expect(result.content).toContain('/info prompt');
+      expect(result.content).toContain('/info debug');
+    });
+  });
+
+  describe('debug sub-command', () => {
+    it('should show debug information', async () => {
+      vi.spyOn(chatHistory, 'loadChatHistory').mockResolvedValue([]);
+
+      const result = await infoCommand.execute(['debug']);
+
+      expect(result.success).toBe(true);
+      expect(result.content).toContain('Debug Information');
+      expect(result.content).toContain('Messages in Current Session');
+      expect(result.content).toContain('Verbose Mode');
+      expect(result.content).toContain('Platform');
+    });
+
+    it('should show message count from context', async () => {
+      vi.spyOn(chatHistory, 'loadChatHistory').mockResolvedValue([]);
+
+      const result = await infoCommand.execute(['debug'], { messageCount: 15 } as any);
+
+      expect(result.success).toBe(true);
+      expect(result.content).toContain('15');
+    });
+
+    it('should show saved message count', async () => {
+      vi.spyOn(chatHistory, 'loadChatHistory').mockResolvedValue([
+        { role: 'user', content: 'Hello' },
+        { role: 'assistant', content: 'Hi' }
+      ] as any);
+
+      const result = await infoCommand.execute(['debug']);
+
+      expect(result.success).toBe(true);
+      expect(result.content).toContain('Messages in Saved History: 2');
+    });
+  });
+
   describe('prompt sub-command', () => {
     it('should return system prompt when prompt sub-command is used', async () => {
       const mockPrompt = 'Test system prompt content for testing';
@@ -187,5 +235,20 @@ describe('infoCommand', () => {
 
     expect(result.success).toBe(true);
     expect(result.content).toContain('📱 LLPM v0.14.0');
+  });
+
+  it('should show "Not available" when embeddings provider fails', async () => {
+    vi.spyOn(projectConfig, 'getCurrentProject').mockResolvedValue(null);
+    vi.spyOn(modelRegistry, 'getCurrentModel').mockReturnValue({
+      displayName: 'Test Model',
+      provider: 'openai',
+      modelId: 'test-model'
+    });
+    vi.spyOn(embeddingsFactory, 'getProvider').mockRejectedValue(new Error('Provider not initialized'));
+
+    const result = await infoCommand.execute([]);
+
+    expect(result.success).toBe(true);
+    expect(result.content).toContain('🔍 Embeddings: Not available');
   });
 });

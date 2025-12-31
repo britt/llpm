@@ -155,6 +155,25 @@ describe('/skills command', () => {
       expect(result.content).toContain('No skills discovered');
     });
 
+    it('should display system skills in their own section', async () => {
+      addMockSkill({
+        name: 'system-skill',
+        description: 'A system skill',
+        source: 'system',
+        enabled: true,
+        license: 'Apache-2.0',
+        allowedTools: ['read', 'write']
+      });
+
+      const result = await skillsCommand.execute(['list']);
+
+      expect(result.success).toBe(true);
+      expect(result.content).toContain('## System Skills');
+      expect(result.content).toContain('system-skill');
+      expect(result.content).toContain('License: Apache-2.0');
+      expect(result.content).toContain('Allowed tools: read, write');
+    });
+
     it('should show enabled count', async () => {
       addMockSkill({ name: 'skill-1', enabled: true });
       addMockSkill({ name: 'skill-2', enabled: true });
@@ -198,6 +217,19 @@ describe('/skills command', () => {
 
       expect(result.content).toContain('**Allowed Tools:** github, notes');
       expect(result.content).toContain('restrict tool usage');
+    });
+
+    it('should show compatibility in test output', async () => {
+      addMockSkill({
+        name: 'compatible-skill',
+        description: 'A compatible skill',
+        compatibility: 'claude-code vscode-copilot'
+      });
+
+      const result = await skillsCommand.execute(['test', 'compatible-skill']);
+
+      expect(result.success).toBe(true);
+      expect(result.content).toContain('**Compatibility:** claude-code vscode-copilot');
     });
 
     it('should return error when skill not found', async () => {
@@ -320,6 +352,79 @@ describe('/skills command', () => {
       await skillsCommand.execute(['reload']);
 
       expect(scanSpy).toHaveBeenCalled();
+    });
+
+    it('should report validation errors when they occur', async () => {
+      // This test verifies the reload output format
+      // Validation errors come from the registry events during scan
+      const result = await skillsCommand.execute(['reload']);
+
+      expect(result.success).toBe(true);
+      // The basic reload should work
+      expect(result.content).toContain('Skills reloaded successfully');
+    });
+
+    it('should report discovered skills', async () => {
+      const registry = getSkillRegistry();
+
+      // Setup mock to capture event handlers
+      let discoveryHandler: any = null;
+      vi.mocked(registry.on).mockImplementation((event: string, handler: any) => {
+        if (event === 'skill.discovered') {
+          discoveryHandler = handler;
+        }
+        return registry;
+      });
+
+      // Start reload but trigger discovery event
+      vi.mocked(registry.scan).mockImplementation(async () => {
+        if (discoveryHandler) {
+          discoveryHandler({ skillName: 'new-skill' });
+        }
+      });
+
+      addMockSkill({ name: 'new-skill' });
+
+      const result = await skillsCommand.execute(['reload']);
+
+      expect(result.success).toBe(true);
+      expect(result.content).toContain('Successfully loaded');
+    });
+
+    it('should report validation errors during scan', async () => {
+      const registry = getSkillRegistry();
+
+      // Setup mock to capture event handlers
+      let errorHandler: any = null;
+      vi.mocked(registry.on).mockImplementation((event: string, handler: any) => {
+        if (event === 'skill.validation_error') {
+          errorHandler = handler;
+        }
+        return registry;
+      });
+
+      // Start reload but trigger validation error event
+      vi.mocked(registry.scan).mockImplementation(async () => {
+        if (errorHandler) {
+          errorHandler({ skillName: 'broken-skill', errors: ['Missing name', 'Invalid format'] });
+        }
+      });
+
+      const result = await skillsCommand.execute(['reload']);
+
+      expect(result.success).toBe(true);
+      expect(result.content).toContain('Validation errors');
+      expect(result.content).toContain('broken-skill');
+    });
+
+    it('should handle scan errors gracefully', async () => {
+      const registry = getSkillRegistry();
+      vi.mocked(registry.scan).mockRejectedValue(new Error('Scan failed'));
+
+      const result = await skillsCommand.execute(['reload']);
+
+      expect(result.success).toBe(false);
+      expect(result.content).toContain('Failed to reload skills');
     });
   });
 

@@ -574,6 +574,75 @@ ${lines}
       expect(result.warnings?.some(w => w.includes('lines'))).toBe(true);
     });
 
+    it('should warn about large token count', async () => {
+      const skillPath = join(testDir, 'large-tokens');
+      await mkdir(skillPath, { recursive: true });
+
+      // Create content with > 20000 characters (> 5000 tokens at ~4 chars/token)
+      const largeContent = 'x'.repeat(21000);
+
+      const skillContent = `---
+name: large-tokens
+description: "Has large token count"
+---
+
+${largeContent}
+`;
+
+      await writeFile(join(skillPath, 'SKILL.md'), skillContent, 'utf-8');
+
+      const result = await validateSkillDirectory(skillPath);
+
+      expect(result.valid).toBe(true);
+      expect(result.warnings).toBeDefined();
+      expect(result.warnings?.some(w => w.includes('tokens'))).toBe(true);
+    });
+
+    it('should parse allowed-tools from frontmatter', async () => {
+      const skillPath = join(testDir, 'allowed-tools-skill');
+      await mkdir(skillPath, { recursive: true });
+
+      // allowed-tools must be a space-delimited string, not an array
+      const skillContent = `---
+name: allowed-tools-skill
+description: "Has allowed tools"
+allowed-tools: "Read Write Bash(git:*)"
+---
+
+# Skill with allowed tools
+`;
+
+      await writeFile(join(skillPath, 'SKILL.md'), skillContent, 'utf-8');
+
+      const result = await validateSkillDirectory(skillPath);
+
+      expect(result.valid).toBe(true);
+      expect(result.skill).toBeDefined();
+      expect(result.skill?.allowedTools).toEqual(['Read', 'Write', 'Bash(git:*)']);
+    });
+
+    it('should detect optional directories (scripts, references, assets)', async () => {
+      const skillPath = join(testDir, 'optional-dirs-skill');
+      await mkdir(skillPath, { recursive: true });
+      await mkdir(join(skillPath, 'scripts'), { recursive: true });
+      await mkdir(join(skillPath, 'references'), { recursive: true });
+      await mkdir(join(skillPath, 'assets'), { recursive: true });
+
+      const skillContent = `---
+name: optional-dirs-skill
+description: "Has optional directories"
+---
+
+# Skill with optional directories
+`;
+
+      await writeFile(join(skillPath, 'SKILL.md'), skillContent, 'utf-8');
+
+      const result = await validateSkillDirectory(skillPath);
+
+      expect(result.valid).toBe(true);
+    });
+
     it('should return validation errors for invalid frontmatter', async () => {
       const skillPath = join(testDir, 'invalid-frontmatter');
       await mkdir(skillPath, { recursive: true });
@@ -592,6 +661,28 @@ description: "Name doesn't match directory"
 
       expect(result.valid).toBe(false);
       expect(result.errors.length).toBeGreaterThan(0);
+    });
+
+    it('should handle corrupted YAML gracefully', async () => {
+      const skillPath = join(testDir, 'corrupted-yaml');
+      await mkdir(skillPath, { recursive: true });
+
+      // Create content with invalid YAML syntax
+      const skillContent = `---
+name: corrupted-yaml
+description: "Description with unclosed quote
+invalid_key: [unclosed array
+---
+
+# Corrupted
+`;
+
+      await writeFile(join(skillPath, 'SKILL.md'), skillContent, 'utf-8');
+
+      const result = await validateSkillDirectory(skillPath);
+
+      expect(result.valid).toBe(false);
+      expect(result.errors.some(e => e.includes('Failed to parse'))).toBe(true);
     });
   });
 

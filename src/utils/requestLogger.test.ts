@@ -1,5 +1,12 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { RequestLogger, type LoggingConfig, type RequestLogEntry } from './requestLogger';
+import {
+  RequestLogger,
+  type LoggingConfig,
+  type RequestLogEntry,
+  createRequestLogger,
+  getCurrentRequestLogger,
+  clearRequestLogger
+} from './requestLogger';
 
 describe('RequestLogger', () => {
   let logger: RequestLogger;
@@ -227,12 +234,37 @@ describe('RequestLogger', () => {
     it('should log tool errors', () => {
       RequestLogger.configure({ level: 'debug', piiRedaction: false });
       logger = createLoggerWithCapture();
-      
+
       logger.logToolCall('test_tool', 'end', {}, undefined, 'Tool execution failed');
-      
+
       const log = capturedLogs[0];
       expect(log.metadata?.error).toBe('Tool execution failed');
       expect(log.metadata?.status).toBe('failed');
+    });
+
+    it('should log resultSize when result has length property', () => {
+      RequestLogger.configure({ level: 'debug', piiRedaction: false });
+      logger = createLoggerWithCapture();
+
+      // Pass an array as the result to trigger the length check
+      logger.logToolCall('test_tool', 'end', { param: 'value' }, ['item1', 'item2', 'item3']);
+
+      const log = capturedLogs[0];
+      expect(log.metadata?.status).toBe('success');
+      expect(log.metadata?.resultSize).toBe(3);
+    });
+
+    it('should log result without resultSize for primitive types', () => {
+      RequestLogger.configure({ level: 'debug', piiRedaction: false });
+      logger = createLoggerWithCapture();
+
+      // Pass a string as the result - strings are not typeof 'object'
+      logger.logToolCall('test_tool', 'end', { param: 'value' }, 'Hello World');
+
+      const log = capturedLogs[0];
+      expect(log.metadata?.status).toBe('success');
+      // Strings don't have resultSize because typeof 'string' !== 'object'
+      expect(log.metadata?.resultSize).toBeUndefined();
     });
   });
 
@@ -312,29 +344,117 @@ describe('RequestLogger', () => {
       RequestLogger.configure({ piiRedaction: false });
       logger = createLoggerWithCapture();
       const requestId = logger.getRequestId();
-      
+
       logger.logStep('test_step', 'start', 'info', {
         key1: 'value1',
         key2: 123
       });
-      
+
       const log = capturedLogs[0];
-      
+
       // Check for timestamp
       expect(log.timestamp).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/);
-      
+
       // Check for request ID
       expect(log.requestId).toBe(requestId);
-      
+
       // Check for step name
       expect(log.step).toBe('test_step');
-      
+
       // Check for phase
       expect(log.phase).toBe('start');
-      
+
       // Check for metadata
       expect(log.metadata?.key1).toBe('value1');
       expect(log.metadata?.key2).toBe(123);
+    });
+  });
+
+  describe('clearLogs', () => {
+    it('should emit clear event', () => {
+      logger = new RequestLogger();
+      let clearCalled = false;
+
+      logger.on('clear', () => {
+        clearCalled = true;
+      });
+
+      logger.clearLogs();
+
+      expect(clearCalled).toBe(true);
+    });
+  });
+
+  describe('logError', () => {
+    it('should log errors from Error objects', () => {
+      RequestLogger.configure({ level: 'error', piiRedaction: false });
+      logger = createLoggerWithCapture();
+
+      logger.logError('error_step', new Error('Something went wrong'));
+
+      const log = capturedLogs[0];
+      expect(log.step).toBe('error_step');
+      expect(log.phase).toBe('end');
+      expect(log.metadata?.error).toBe('Something went wrong');
+      expect(log.metadata?.status).toBe('failed');
+    });
+
+    it('should log errors from string messages', () => {
+      RequestLogger.configure({ level: 'error', piiRedaction: false });
+      logger = createLoggerWithCapture();
+
+      logger.logError('error_step', 'String error message');
+
+      const log = capturedLogs[0];
+      expect(log.metadata?.error).toBe('String error message');
+      expect(log.metadata?.status).toBe('failed');
+    });
+  });
+});
+
+describe('Module-level logger functions', () => {
+  beforeEach(() => {
+    clearRequestLogger();
+  });
+
+  describe('createRequestLogger', () => {
+    it('should create and return a new RequestLogger', () => {
+      const logger = createRequestLogger();
+      expect(logger).toBeInstanceOf(RequestLogger);
+    });
+
+    it('should accept a custom request ID', () => {
+      const customId = 'custom-module-id-456';
+      const logger = createRequestLogger(customId);
+      expect(logger.getRequestId()).toBe(customId);
+    });
+  });
+
+  describe('getCurrentRequestLogger', () => {
+    it('should return null when no logger is created', () => {
+      clearRequestLogger();
+      expect(getCurrentRequestLogger()).toBeNull();
+    });
+
+    it('should return the current logger after creation', () => {
+      const logger = createRequestLogger();
+      expect(getCurrentRequestLogger()).toBe(logger);
+    });
+  });
+
+  describe('clearRequestLogger', () => {
+    it('should clear the current logger', () => {
+      createRequestLogger();
+      expect(getCurrentRequestLogger()).not.toBeNull();
+
+      clearRequestLogger();
+      expect(getCurrentRequestLogger()).toBeNull();
+    });
+
+    it('should be idempotent (safe to call multiple times)', () => {
+      clearRequestLogger();
+      clearRequestLogger();
+      expect(getCurrentRequestLogger()).toBeNull();
     });
   });
 });

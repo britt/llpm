@@ -95,10 +95,28 @@ describe('filesystemTools', () => {
 
     it('should handle no active project', async () => {
       vi.spyOn(projectConfig, 'getCurrentProject').mockResolvedValue(null);
-      
+
       const result = await readProjectFile.execute({ path: 'README.md' });
-      
+
       expect(result).toContain('No active project set');
+    });
+
+    it('should handle binary file reading', async () => {
+      const result = await readProjectFile.execute({ path: 'README.md', encoding: 'binary' });
+
+      expect(result).toContain('Binary file content');
+      expect(result).toContain('bytes');
+    });
+
+    it('should handle project without path', async () => {
+      vi.spyOn(projectConfig, 'getCurrentProject').mockResolvedValue({
+        ...mockProject,
+        path: ''
+      });
+
+      const result = await readProjectFile.execute({ path: 'README.md' });
+
+      expect(result).toContain('Error');
     });
   });
 
@@ -143,13 +161,42 @@ describe('filesystemTools', () => {
     it('should include hidden files when requested', async () => {
       // Create a hidden file
       await writeFile(join(mockProjectDir, '.hidden'), 'hidden content');
-      
-      const result = await listProjectDirectory.execute({ 
-        path: '.', 
-        includeHidden: true 
+
+      const result = await listProjectDirectory.execute({
+        path: '.',
+        includeHidden: true
       });
-      
+
       expect(result).toContain('📄 .hidden');
+    });
+
+    it('should handle no active project', async () => {
+      vi.spyOn(projectConfig, 'getCurrentProject').mockResolvedValue(null);
+
+      const result = await listProjectDirectory.execute({ path: '.' });
+
+      expect(result).toContain('No active project set');
+    });
+
+    it('should handle non-existent directory', async () => {
+      const result = await listProjectDirectory.execute({ path: 'nonexistent-dir' });
+
+      expect(result).toContain('Error');
+    });
+
+    it('should respect maxDepth for recursive listing', async () => {
+      // Create nested directories
+      mkdirSync(join(mockProjectDir, 'level1', 'level2', 'level3'), { recursive: true });
+      await writeFile(join(mockProjectDir, 'level1', 'level2', 'level3', 'deep.txt'), 'deep content');
+
+      const result = await listProjectDirectory.execute({
+        path: '.',
+        recursive: true,
+        maxDepth: 1
+      });
+
+      // Should not contain files deeper than maxDepth
+      expect(result).not.toContain('deep.txt');
     });
   });
 
@@ -166,9 +213,45 @@ describe('filesystemTools', () => {
 
     it('should get info for a directory', async () => {
       const result = await getProjectFileInfo.execute({ path: 'src' });
-      
+
       expect(result).toContain('File Info: src');
       expect(result).toContain('Type: directory');
+    });
+
+    it('should handle no active project', async () => {
+      vi.spyOn(projectConfig, 'getCurrentProject').mockResolvedValue(null);
+
+      const result = await getProjectFileInfo.execute({ path: 'README.md' });
+
+      expect(result).toContain('No active project set');
+    });
+
+    it('should handle non-existent path', async () => {
+      const result = await getProjectFileInfo.execute({ path: 'nonexistent.txt' });
+
+      expect(result).toContain('Error');
+    });
+
+    it('should format size in KB for medium files', async () => {
+      // Create a file larger than 1KB but less than 1MB
+      const content = 'x'.repeat(2 * 1024); // 2KB
+      await writeFile(join(mockProjectDir, 'medium-file.txt'), content);
+
+      const result = await getProjectFileInfo.execute({ path: 'medium-file.txt' });
+
+      expect(result).toContain('File Info: medium-file.txt');
+      expect(result).toContain('KB');
+    });
+
+    it('should format size in MB for large files', async () => {
+      // Create a file larger than 1MB
+      const content = 'x'.repeat(1.5 * 1024 * 1024); // 1.5MB
+      await writeFile(join(mockProjectDir, 'large-file.txt'), content);
+
+      const result = await getProjectFileInfo.execute({ path: 'large-file.txt' });
+
+      expect(result).toContain('File Info: large-file.txt');
+      expect(result).toContain('MB');
     });
   });
 
@@ -189,13 +272,46 @@ describe('filesystemTools', () => {
     });
 
     it('should limit results', async () => {
-      const result = await findProjectFiles.execute({ 
-        pattern: '*', 
-        maxResults: 2 
+      const result = await findProjectFiles.execute({
+        pattern: '*',
+        maxResults: 2
       });
-      
+
       const lines = result.split('\n').filter(line => line.includes('📄'));
       expect(lines.length).toBeLessThanOrEqual(2);
+    });
+
+    it('should handle no active project', async () => {
+      vi.spyOn(projectConfig, 'getCurrentProject').mockResolvedValue(null);
+
+      const result = await findProjectFiles.execute({ pattern: '*.ts' });
+
+      expect(result).toContain('No active project set');
+    });
+
+    it('should find all files with * pattern', async () => {
+      const result = await findProjectFiles.execute({ pattern: '*' });
+
+      expect(result).toContain('Found');
+      expect(result).toContain('📄');
+    });
+
+    it('should handle exact filename match', async () => {
+      const result = await findProjectFiles.execute({ pattern: 'README.md' });
+
+      expect(result).toContain('README.md');
+    });
+
+    it('should handle errors during file search', async () => {
+      // Mock the project to use a directory that doesn't exist
+      vi.spyOn(projectConfig, 'getCurrentProject').mockResolvedValue({
+        ...mockProject,
+        path: '/nonexistent/path/that/does/not/exist'
+      });
+
+      const result = await findProjectFiles.execute({ pattern: '*.ts' });
+
+      expect(result).toContain('Error');
     });
   });
 

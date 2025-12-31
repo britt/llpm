@@ -46,11 +46,29 @@ global.fetch = async (url: RequestInfo | URL): Promise<Response> => {
   }
   
   if (urlString.includes('timeout-test')) {
-    return new Promise((_, reject) => 
+    return new Promise((_, reject) =>
       setTimeout(() => reject(new Error('Network timeout')), 200)
     );
   }
-  
+
+  if (urlString.includes('unknown-type-test')) {
+    return new Response('<html><head><title>Unknown Type</title></head><body>Unknown content type page</body></html>', {
+      status: 200,
+      headers: { 'content-type': 'application/octet-stream' }
+    });
+  }
+
+  if (urlString.includes('throw-non-error')) {
+    // eslint-disable-next-line @typescript-eslint/no-throw-literal
+    throw 'String error instead of Error object';
+  }
+
+  if (urlString.includes('abort-test')) {
+    const abortError = new Error('The operation was aborted');
+    abortError.name = 'AbortError';
+    throw abortError;
+  }
+
   return new Response('Default content', {
     status: 200,
     headers: { 'content-type': 'text/html' }
@@ -130,14 +148,52 @@ describe('WebContentTools', () => {
     });
     
     it('should handle timeout', async () => {
-      const result = await readWebPageTool.execute({ 
+      const result = await readWebPageTool.execute({
         url: 'https://example.com/timeout-test',
-        timeout: 50 
+        timeout: 50
       });
-      
+
       expect(result.success).toBe(false);
       expect(result.error).toContain('Network timeout');
     }, 1000);
+
+    it('should handle AbortError (request aborted)', async () => {
+      const result = await readWebPageTool.execute({
+        url: 'https://example.com/abort-test'
+      });
+
+      expect(result.success).toBe(false);
+      expect(result.error).toContain('Request timeout');
+    });
+
+    it('should handle unknown content types by extracting text', async () => {
+      const result = await readWebPageTool.execute({
+        url: 'https://example.com/unknown-type-test'
+      });
+
+      expect(result.success).toBe(true);
+      expect(result.title).toBe('Unknown Type');
+      expect(result.content).toContain('Unknown content type page');
+      expect(result.contentType).toBe('application/octet-stream');
+    });
+
+    it('should handle empty URL', async () => {
+      const result = await readWebPageTool.execute({
+        url: ''
+      });
+
+      expect(result.success).toBe(false);
+      expect(result.error).toContain('Invalid URL');
+    });
+
+    it('should handle non-Error thrown exceptions', async () => {
+      const result = await readWebPageTool.execute({
+        url: 'https://example.com/throw-non-error'
+      });
+
+      expect(result.success).toBe(false);
+      expect(result.error).toBeDefined();
+    });
   });
   
   describe('summarizeWebPageTool', () => {
@@ -169,12 +225,33 @@ describe('WebContentTools', () => {
     });
     
     it('should handle errors from readWebPageTool', async () => {
-      const result = await summarizeWebPageTool.execute({ 
-        url: 'https://example.com/error-test' 
+      const result = await summarizeWebPageTool.execute({
+        url: 'https://example.com/error-test'
       });
-      
+
       expect(result.success).toBe(false);
       expect(result.error).toContain('Failed to read web page');
+    });
+
+    it('should summarize page without focus areas', async () => {
+      const result = await summarizeWebPageTool.execute({
+        url: 'https://example.com/html-test',
+        maxContentLength: 1000
+      });
+
+      expect(result.success).toBe(true);
+      expect(result.title).toBeDefined();
+      expect(result.keyPoints).toBeDefined();
+      expect(result.focusAreaFindings).toEqual({});
+    });
+
+    it('should handle non-Error thrown during summarization', async () => {
+      const result = await summarizeWebPageTool.execute({
+        url: 'https://example.com/throw-non-error'
+      });
+
+      expect(result.success).toBe(false);
+      expect(result.error).toBeDefined();
     });
   });
 

@@ -771,5 +771,91 @@ describe('systemPrompt', () => {
       expect(skillsStartPos).toBeGreaterThan(toolsEndPos);
       expect(responsesStartPos).toBeGreaterThan(skillsStartPos);
     });
+
+    it('should append skills to end when no </Tools> section found', async () => {
+      const skills: Skill[] = [
+        {
+          name: 'test-skill',
+          description: 'Test',
+          instructions: 'When testing',
+          content: 'Content',
+          source: 'project',
+          path: '/path',
+          enabled: true
+        }
+      ];
+
+      mockSkills.push(...skills);
+
+      // Use a custom prompt without </Tools> tag
+      vi.mocked(fs.existsSync).mockReturnValue(true);
+      vi.mocked(fsPromises.readFile).mockResolvedValue('Custom prompt without tools section');
+
+      const prompt = await getSystemPrompt();
+
+      // Skills section should be appended at the end
+      expect(prompt).toContain('<Skills>');
+      expect(prompt).toContain('test-skill');
+    });
+
+    it('should handle errors during skills context insertion', async () => {
+      const skills: Skill[] = [
+        {
+          name: 'test-skill',
+          description: 'Test',
+          instructions: 'When testing',
+          content: 'Content',
+          source: 'project',
+          path: '/path',
+          enabled: true
+        }
+      ];
+
+      mockSkills.push(...skills);
+
+      // Create a prompt that will cause the split operation to throw
+      // We'll use a custom prompt and override split to throw
+      vi.mocked(fs.existsSync).mockReturnValue(true);
+
+      // Create a string object that throws when split is called
+      const badPrompt = 'Some prompt with </Tools>';
+      const originalSplit = String.prototype.split;
+      let splitCallCount = 0;
+      String.prototype.split = function(separator) {
+        splitCallCount++;
+        // Throw on the second split call (in injectSkillsContext)
+        if (splitCallCount > 1 && this.includes('</Tools>')) {
+          throw new Error('Split error in skills injection');
+        }
+        return originalSplit.call(this, separator);
+      };
+
+      vi.mocked(fsPromises.readFile).mockResolvedValue(badPrompt);
+
+      const prompt = await getSystemPrompt();
+
+      // Restore original split
+      String.prototype.split = originalSplit;
+
+      // Should gracefully fall back to base prompt
+      expect(prompt).toContain('Some prompt');
+    });
+
+    it('should handle errors when getting skill registry', async () => {
+      const { getSkillRegistry } = await import('../services/SkillRegistry');
+
+      // Mock getSkillRegistry to throw
+      vi.mocked(getSkillRegistry).mockImplementation(() => {
+        throw new Error('Registry error');
+      });
+
+      vi.mocked(fs.existsSync).mockReturnValue(false);
+
+      const prompt = await getSystemPrompt();
+
+      // Should gracefully fall back to default prompt
+      expect(prompt).toContain('LLPM');
+      expect(prompt).not.toContain('<Skills>');
+    });
   });
 });

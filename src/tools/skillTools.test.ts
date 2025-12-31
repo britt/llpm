@@ -210,6 +210,29 @@ describe('Skill Tools', () => {
       expect(result.failed_count).toBe(2);
       expect(result.results).toHaveLength(3);
     });
+
+    it('should include skill instructions in output when present', async () => {
+      const skill: Skill = {
+        name: 'skill-with-instructions',
+        description: 'A skill with instructions',
+        content: 'Skill content here',
+        source: 'personal',
+        path: '/test/path',
+        enabled: true,
+        instructions: 'Use when creating diagrams'
+      };
+
+      const skillsMap = new Map<string, Skill>();
+      skillsMap.set('skill-with-instructions', skill);
+      (getSkillRegistry() as any)._setMockSkills(skillsMap);
+
+      const result = await loadSkillsTool.execute({
+        skill_names: ['skill-with-instructions']
+      });
+
+      expect(result.success).toBe(true);
+      expect(result.message).toContain('Instructions: Use when creating diagrams');
+    });
   });
 
   describe('list_available_skills', () => {
@@ -325,6 +348,28 @@ describe('Skill Tools', () => {
       expect(result.total_count).toBe(0);
       expect(result.enabled_count).toBe(0);
       expect(result.message).toContain('No skills available');
+    });
+
+    it('should display skill instructions when present', async () => {
+      const skill: Skill = {
+        name: 'skill-with-instructions',
+        description: 'A skill with usage instructions',
+        content: 'Content',
+        source: 'personal',
+        path: '/test/path',
+        enabled: true,
+        instructions: 'Use when generating documentation'
+      };
+
+      const skillsMap = new Map<string, Skill>();
+      skillsMap.set('skill-with-instructions', skill);
+      (getSkillRegistry() as any)._setMockSkills(skillsMap);
+
+      const result = await listAvailableSkillsTool.execute({});
+
+      expect(result.success).toBe(true);
+      expect(result.message).toContain('When to use: Use when generating documentation');
+      expect(result.skills[0].instructions).toBe('Use when generating documentation');
     });
   });
 });
