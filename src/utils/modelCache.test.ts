@@ -9,6 +9,12 @@ import { describe, it, expect } from 'vitest';
 import {
   createEmptyCache,
   formatCacheAge,
+  getCachedModelsForProvider,
+  getRecommendedModels,
+  getModelCachePath,
+  getModelCacheBackupPath,
+  type CachedModels,
+  type NormalizedModel,
 } from './modelCache';
 
 describe('modelCache', () => {
@@ -63,6 +69,128 @@ describe('modelCache', () => {
       expect(formatCacheAge(26 * 60 * 60 * 1000)).toBe('1 day ago');
       // 2 hours and 30 minutes should show hours
       expect(formatCacheAge(150 * 60 * 1000)).toBe('2 hours ago');
+    });
+  });
+
+  describe('getModelCachePath', () => {
+    it('should return path ending with models.json', () => {
+      const path = getModelCachePath();
+      expect(path).toContain('models.json');
+    });
+  });
+
+  describe('getModelCacheBackupPath', () => {
+    it('should return path ending with models.json.bak', () => {
+      const path = getModelCacheBackupPath();
+      expect(path).toContain('models.json.bak');
+    });
+  });
+
+  describe('getCachedModelsForProvider', () => {
+    it('should return models for specific provider', () => {
+      const cache: CachedModels = {
+        version: '1.0.0',
+        fetchedAt: new Date().toISOString(),
+        sourceUrls: {},
+        providerCounts: {},
+        models: [
+          { provider: 'openai', id: 'gpt-4', displayName: 'GPT-4', recommendedRank: 1, supportsChat: true },
+          { provider: 'openai', id: 'gpt-3.5', displayName: 'GPT-3.5', recommendedRank: 2, supportsChat: true },
+          { provider: 'anthropic', id: 'claude-3', displayName: 'Claude 3', recommendedRank: 1, supportsChat: true },
+        ]
+      };
+
+      const openaiModels = getCachedModelsForProvider(cache, 'openai');
+      expect(openaiModels).toHaveLength(2);
+      expect(openaiModels.every(m => m.provider === 'openai')).toBe(true);
+    });
+
+    it('should sort models by recommendedRank', () => {
+      const cache: CachedModels = {
+        version: '1.0.0',
+        fetchedAt: new Date().toISOString(),
+        sourceUrls: {},
+        providerCounts: {},
+        models: [
+          { provider: 'openai', id: 'gpt-3.5', displayName: 'GPT-3.5', recommendedRank: 3, supportsChat: true },
+          { provider: 'openai', id: 'gpt-4-turbo', displayName: 'GPT-4 Turbo', recommendedRank: 1, supportsChat: true },
+          { provider: 'openai', id: 'gpt-4', displayName: 'GPT-4', recommendedRank: 2, supportsChat: true },
+        ]
+      };
+
+      const models = getCachedModelsForProvider(cache, 'openai');
+      expect(models[0].recommendedRank).toBe(1);
+      expect(models[1].recommendedRank).toBe(2);
+      expect(models[2].recommendedRank).toBe(3);
+    });
+
+    it('should return empty array for provider with no models', () => {
+      const cache: CachedModels = {
+        version: '1.0.0',
+        fetchedAt: new Date().toISOString(),
+        sourceUrls: {},
+        providerCounts: {},
+        models: [
+          { provider: 'openai', id: 'gpt-4', displayName: 'GPT-4', recommendedRank: 1, supportsChat: true },
+        ]
+      };
+
+      const groqModels = getCachedModelsForProvider(cache, 'groq');
+      expect(groqModels).toHaveLength(0);
+    });
+  });
+
+  describe('getRecommendedModels', () => {
+    it('should return top models from each provider', () => {
+      const cache: CachedModels = {
+        version: '1.0.0',
+        fetchedAt: new Date().toISOString(),
+        sourceUrls: {},
+        providerCounts: {},
+        models: [
+          { provider: 'openai', id: 'gpt-4', displayName: 'GPT-4', recommendedRank: 1, supportsChat: true },
+          { provider: 'openai', id: 'gpt-3.5', displayName: 'GPT-3.5', recommendedRank: 2, supportsChat: true },
+          { provider: 'anthropic', id: 'claude-3', displayName: 'Claude 3', recommendedRank: 1, supportsChat: true },
+          { provider: 'anthropic', id: 'claude-2', displayName: 'Claude 2', recommendedRank: 2, supportsChat: true },
+        ]
+      };
+
+      const recommended = getRecommendedModels(cache, 1);
+
+      // Should have 1 model per provider (only openai and anthropic have models)
+      const openaiModels = recommended.filter(m => m.provider === 'openai');
+      const anthropicModels = recommended.filter(m => m.provider === 'anthropic');
+
+      expect(openaiModels).toHaveLength(1);
+      expect(anthropicModels).toHaveLength(1);
+      expect(openaiModels[0].id).toBe('gpt-4');
+      expect(anthropicModels[0].id).toBe('claude-3');
+    });
+
+    it('should return multiple models per provider when maxPerProvider > 1', () => {
+      const cache: CachedModels = {
+        version: '1.0.0',
+        fetchedAt: new Date().toISOString(),
+        sourceUrls: {},
+        providerCounts: {},
+        models: [
+          { provider: 'openai', id: 'gpt-4', displayName: 'GPT-4', recommendedRank: 1, supportsChat: true },
+          { provider: 'openai', id: 'gpt-3.5', displayName: 'GPT-3.5', recommendedRank: 2, supportsChat: true },
+          { provider: 'openai', id: 'davinci', displayName: 'Davinci', recommendedRank: 3, supportsChat: true },
+        ]
+      };
+
+      const recommended = getRecommendedModels(cache, 2);
+      const openaiModels = recommended.filter(m => m.provider === 'openai');
+
+      expect(openaiModels).toHaveLength(2);
+    });
+
+    it('should return empty array for empty cache', () => {
+      const cache = createEmptyCache();
+      const recommended = getRecommendedModels(cache);
+
+      expect(recommended).toHaveLength(0);
     });
   });
 });

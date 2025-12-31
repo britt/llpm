@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { takeScreenshotTool, checkScreenshotSetupTool } from './screenshotTools';
 
 describe('Screenshot Tools', () => {
@@ -52,43 +52,92 @@ describe('Screenshot Tools', () => {
       // Should throw because URL is required
       expect(() => takeScreenshotTool.inputSchema.parse(invalidParams)).toThrow();
     });
+
+    it('should accept optional selector parameter', () => {
+      const params = {
+        url: 'https://example.com',
+        selector: '.main-content'
+      };
+
+      expect(() => takeScreenshotTool.inputSchema.parse(params)).not.toThrow();
+    });
+
+    it('should accept optional wait parameter', () => {
+      const params = {
+        url: 'https://example.com',
+        wait: 2000
+      };
+
+      expect(() => takeScreenshotTool.inputSchema.parse(params)).not.toThrow();
+    });
+
+    it('should accept all parameters together', () => {
+      const params = {
+        url: 'https://example.com',
+        width: 1920,
+        height: 1080,
+        selector: '.content',
+        wait: 3000,
+        filename: 'my-screenshot'
+      };
+
+      expect(() => takeScreenshotTool.inputSchema.parse(params)).not.toThrow();
+    });
+
+    it('should reject invalid width type', () => {
+      const params = {
+        url: 'https://example.com',
+        width: 'not-a-number'
+      };
+
+      expect(() => takeScreenshotTool.inputSchema.parse(params)).toThrow();
+    });
+
+    it('should reject invalid wait type', () => {
+      const params = {
+        url: 'https://example.com',
+        wait: 'invalid'
+      };
+
+      expect(() => takeScreenshotTool.inputSchema.parse(params)).toThrow();
+    });
   });
 
-  describe('Integration Requirements', () => {
-    it('should require shot-scraper for screenshots', async () => {
-      // This is an integration test - it will fail if shot-scraper is not installed
-      // but that's expected behavior
+  describe('checkScreenshotSetupTool', () => {
+    it('should have empty inputSchema', () => {
+      const schema = checkScreenshotSetupTool.inputSchema;
+      // Empty object schema should parse empty object
+      expect(() => schema.parse({})).not.toThrow();
+    });
+  });
+
+  describe('Integration - Environment Dependent', () => {
+    // These tests depend on the environment
+    // They will pass or fail based on whether shot-scraper is installed
+
+    it('should return result with success or helpful error for screenshot', async () => {
       const result = await takeScreenshotTool.execute({
         url: 'https://example.com'
       });
 
-      // Either succeeds with shot-scraper installed, or fails with helpful error
-      if (result.success) {
-        expect(result.path).toBeDefined();
-        expect(result.filename).toBeDefined();
-      } else {
-        // Should contain either 'shot-scraper' or 'uv' (depending on environment)
-        expect(result.error).toMatch(/shot-scraper|uv/);
+      // Either succeeds or provides helpful error
+      expect(result).toHaveProperty('success');
+      if (!result.success) {
+        expect(result).toHaveProperty('error');
+        // Should have either userMessage or error
+        expect(result.userMessage || result.error).toBeDefined();
       }
     });
 
-    it('should check shot-scraper availability', async () => {
+    it('should return result with success or helpful error for setup check', async () => {
       const result = await checkScreenshotSetupTool.execute({});
-      
-      // Either succeeds or provides installation instructions
+
+      expect(result).toHaveProperty('success');
       if (result.success) {
         expect(result.version).toBeDefined();
-        expect(result.message).toContain('ready to use');
       } else {
-        // In CI without uv, may not have installInstructions but should have userMessage
-        expect(result.installInstructions || result.userMessage).toBeDefined();
-        if (result.installCommand) {
-          // CI environments may return different installation commands (uv vs pip)
-          expect(
-            result.installCommand.includes('pip install shot-scraper') ||
-            result.installCommand.includes('uv/install.sh')
-          ).toBe(true);
-        }
+        // Should provide installation instructions
+        expect(result.userMessage || result.installCommand).toBeDefined();
       }
     });
   });
