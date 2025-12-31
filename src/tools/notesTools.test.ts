@@ -1,7 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 // Mock dependencies before importing tools
-vi.mock('../utils/projectDatabase');
+vi.mock('../services/notesBackend');
+vi.mock('../utils/projectConfig');
 vi.mock('../utils/logger', () => ({
   debug: vi.fn()
 }));
@@ -15,23 +16,31 @@ import {
   searchNotesTool
 } from './notesTools';
 
-import * as projectDatabase from '../utils/projectDatabase';
+import * as notesBackend from '../services/notesBackend';
+import * as projectConfig from '../utils/projectConfig';
 
-// Mock database instance
-const mockDb = {
+// Mock project
+const mockProject = {
+  id: 'test-project',
+  name: 'Test Project',
+  path: '/test/path'
+};
+
+// Mock NotesBackend instance
+const mockBackend = {
   addNote: vi.fn(),
   getNote: vi.fn(),
-  getNotes: vi.fn(),
   updateNote: vi.fn(),
   deleteNote: vi.fn(),
-  searchNotes: vi.fn(),
-  searchNotesSemantica: vi.fn(),
-  close: vi.fn()
+  listNotes: vi.fn(),
+  searchNotes: vi.fn()
 };
 
 describe('Notes Tools', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.mocked(projectConfig.getCurrentProject).mockResolvedValue(mockProject as any);
+    vi.mocked(notesBackend.getNotesBackend).mockResolvedValue(mockBackend as any);
   });
 
   describe('Schema Validation', () => {
@@ -55,7 +64,7 @@ describe('Notes Tools', () => {
 
   describe('addNoteTool', () => {
     it('should fail when no active project', async () => {
-      vi.mocked(projectDatabase.getCurrentProjectDatabase).mockResolvedValue(null);
+      vi.mocked(projectConfig.getCurrentProject).mockResolvedValue(null);
 
       const result = await addNoteTool.execute({
         title: 'Test Note',
@@ -68,15 +77,15 @@ describe('Notes Tools', () => {
 
     it('should add a note successfully', async () => {
       const mockNote = {
-        id: 1,
+        id: '20251231-120000-test-note',
         title: 'Test Note',
         content: 'Test content',
         tags: ['test'],
-        createdAt: '2024-01-01',
-        updatedAt: '2024-01-01'
+        createdAt: '2024-01-01T00:00:00Z',
+        updatedAt: '2024-01-01T00:00:00Z',
+        source: 'user'
       };
-      mockDb.addNote.mockResolvedValue(mockNote);
-      vi.mocked(projectDatabase.getCurrentProjectDatabase).mockResolvedValue(mockDb as any);
+      mockBackend.addNote.mockResolvedValue(mockNote);
 
       const result = await addNoteTool.execute({
         title: 'Test Note',
@@ -85,15 +94,13 @@ describe('Notes Tools', () => {
       });
 
       expect(result.success).toBe(true);
-      expect(result.note.id).toBe(1);
+      expect(result.note.id).toBe('20251231-120000-test-note');
       expect(result.note.title).toBe('Test Note');
       expect(result.message).toContain('Successfully added');
-      expect(mockDb.close).toHaveBeenCalled();
     });
 
     it('should handle errors gracefully', async () => {
-      mockDb.addNote.mockRejectedValue(new Error('Database error'));
-      vi.mocked(projectDatabase.getCurrentProjectDatabase).mockResolvedValue(mockDb as any);
+      mockBackend.addNote.mockRejectedValue(new Error('Backend error'));
 
       const result = await addNoteTool.execute({
         title: 'Test Note',
@@ -107,9 +114,9 @@ describe('Notes Tools', () => {
 
   describe('getNoteTool', () => {
     it('should fail when no active project', async () => {
-      vi.mocked(projectDatabase.getCurrentProjectDatabase).mockResolvedValue(null);
+      vi.mocked(projectConfig.getCurrentProject).mockResolvedValue(null);
 
-      const result = await getNoteTool.execute({ id: 1 });
+      const result = await getNoteTool.execute({ id: 'test-id' });
 
       expect(result.success).toBe(false);
       expect(result.error).toBe('No active project. Set a current project first.');
@@ -117,40 +124,35 @@ describe('Notes Tools', () => {
 
     it('should get a note successfully', async () => {
       const mockNote = {
-        id: 1,
+        id: '20251231-120000-test-note',
         title: 'Test Note',
         content: 'Test content',
         tags: ['test'],
-        createdAt: '2024-01-01',
-        updatedAt: '2024-01-01'
+        createdAt: '2024-01-01T00:00:00Z',
+        updatedAt: '2024-01-01T00:00:00Z',
+        source: 'user'
       };
-      mockDb.getNote.mockReturnValue(mockNote);
-      vi.mocked(projectDatabase.getCurrentProjectDatabase).mockResolvedValue(mockDb as any);
+      mockBackend.getNote.mockResolvedValue(mockNote);
 
-      const result = await getNoteTool.execute({ id: 1 });
+      const result = await getNoteTool.execute({ id: '20251231-120000-test-note' });
 
       expect(result.success).toBe(true);
-      expect(result.note.id).toBe(1);
-      expect(mockDb.close).toHaveBeenCalled();
+      expect(result.note.id).toBe('20251231-120000-test-note');
     });
 
     it('should return error when note not found', async () => {
-      mockDb.getNote.mockReturnValue(null);
-      vi.mocked(projectDatabase.getCurrentProjectDatabase).mockResolvedValue(mockDb as any);
+      mockBackend.getNote.mockResolvedValue(null);
 
-      const result = await getNoteTool.execute({ id: 999 });
+      const result = await getNoteTool.execute({ id: 'nonexistent' });
 
       expect(result.success).toBe(false);
       expect(result.error).toContain('not found');
     });
 
     it('should handle errors gracefully', async () => {
-      mockDb.getNote.mockImplementation(() => {
-        throw new Error('Database error');
-      });
-      vi.mocked(projectDatabase.getCurrentProjectDatabase).mockResolvedValue(mockDb as any);
+      mockBackend.getNote.mockRejectedValue(new Error('Backend error'));
 
-      const result = await getNoteTool.execute({ id: 1 });
+      const result = await getNoteTool.execute({ id: 'test-id' });
 
       expect(result.success).toBe(false);
       expect(result.error).toContain('Failed to get note');
@@ -159,7 +161,7 @@ describe('Notes Tools', () => {
 
   describe('listNotesTool', () => {
     it('should fail when no active project', async () => {
-      vi.mocked(projectDatabase.getCurrentProjectDatabase).mockResolvedValue(null);
+      vi.mocked(projectConfig.getCurrentProject).mockResolvedValue(null);
 
       const result = await listNotesTool.execute({});
 
@@ -168,29 +170,26 @@ describe('Notes Tools', () => {
     });
 
     it('should list notes successfully', async () => {
-      const mockNotes = [
-        { id: 1, title: 'Note 1', content: 'Content 1', tags: [], createdAt: '2024-01-01', updatedAt: '2024-01-01' },
-        { id: 2, title: 'Note 2', content: 'Content 2', tags: [], createdAt: '2024-01-02', updatedAt: '2024-01-02' }
+      const mockSummaries = [
+        { id: '1', title: 'Note 1', tags: [], createdAt: '2024-01-01', updatedAt: '2024-01-01' },
+        { id: '2', title: 'Note 2', tags: [], createdAt: '2024-01-02', updatedAt: '2024-01-02' }
       ];
-      mockDb.getNotes.mockReturnValue(mockNotes);
-      vi.mocked(projectDatabase.getCurrentProjectDatabase).mockResolvedValue(mockDb as any);
+      mockBackend.listNotes.mockResolvedValue(mockSummaries);
 
       const result = await listNotesTool.execute({});
 
       expect(result.success).toBe(true);
       expect(result.notes).toHaveLength(2);
       expect(result.totalNotes).toBe(2);
-      expect(mockDb.close).toHaveBeenCalled();
     });
 
     it('should respect limit parameter', async () => {
-      const mockNotes = [
-        { id: 1, title: 'Note 1', content: 'Content 1', tags: [], createdAt: '2024-01-01', updatedAt: '2024-01-01' },
-        { id: 2, title: 'Note 2', content: 'Content 2', tags: [], createdAt: '2024-01-02', updatedAt: '2024-01-02' },
-        { id: 3, title: 'Note 3', content: 'Content 3', tags: [], createdAt: '2024-01-03', updatedAt: '2024-01-03' }
+      const mockSummaries = [
+        { id: '1', title: 'Note 1', tags: [], createdAt: '2024-01-01', updatedAt: '2024-01-01' },
+        { id: '2', title: 'Note 2', tags: [], createdAt: '2024-01-02', updatedAt: '2024-01-02' },
+        { id: '3', title: 'Note 3', tags: [], createdAt: '2024-01-03', updatedAt: '2024-01-03' }
       ];
-      mockDb.getNotes.mockReturnValue(mockNotes);
-      vi.mocked(projectDatabase.getCurrentProjectDatabase).mockResolvedValue(mockDb as any);
+      mockBackend.listNotes.mockResolvedValue(mockSummaries);
 
       const result = await listNotesTool.execute({ limit: 2 });
 
@@ -201,10 +200,7 @@ describe('Notes Tools', () => {
     });
 
     it('should handle errors gracefully', async () => {
-      mockDb.getNotes.mockImplementation(() => {
-        throw new Error('Database error');
-      });
-      vi.mocked(projectDatabase.getCurrentProjectDatabase).mockResolvedValue(mockDb as any);
+      mockBackend.listNotes.mockRejectedValue(new Error('Backend error'));
 
       const result = await listNotesTool.execute({});
 
@@ -215,9 +211,9 @@ describe('Notes Tools', () => {
 
   describe('updateNoteTool', () => {
     it('should fail when no active project', async () => {
-      vi.mocked(projectDatabase.getCurrentProjectDatabase).mockResolvedValue(null);
+      vi.mocked(projectConfig.getCurrentProject).mockResolvedValue(null);
 
-      const result = await updateNoteTool.execute({ id: 1, title: 'New Title' });
+      const result = await updateNoteTool.execute({ id: 'test-id', title: 'New Title' });
 
       expect(result.success).toBe(false);
       expect(result.error).toBe('No active project. Set a current project first.');
@@ -225,33 +221,31 @@ describe('Notes Tools', () => {
 
     it('should update a note successfully', async () => {
       const mockUpdatedNote = {
-        id: 1,
+        id: '20251231-120000-test-note',
         title: 'Updated Title',
         content: 'Original content',
         tags: [],
-        createdAt: '2024-01-01',
-        updatedAt: '2024-01-02'
+        createdAt: '2024-01-01T00:00:00Z',
+        updatedAt: '2024-01-02T00:00:00Z',
+        source: 'user'
       };
-      mockDb.updateNote.mockResolvedValue(mockUpdatedNote);
-      vi.mocked(projectDatabase.getCurrentProjectDatabase).mockResolvedValue(mockDb as any);
+      mockBackend.updateNote.mockResolvedValue(mockUpdatedNote);
 
       const result = await updateNoteTool.execute({
-        id: 1,
+        id: '20251231-120000-test-note',
         title: 'Updated Title'
       });
 
       expect(result.success).toBe(true);
       expect(result.note.title).toBe('Updated Title');
       expect(result.message).toContain('Successfully updated');
-      expect(mockDb.close).toHaveBeenCalled();
     });
 
     it('should return error when note not found', async () => {
-      mockDb.updateNote.mockResolvedValue(null);
-      vi.mocked(projectDatabase.getCurrentProjectDatabase).mockResolvedValue(mockDb as any);
+      mockBackend.updateNote.mockResolvedValue(null);
 
       const result = await updateNoteTool.execute({
-        id: 999,
+        id: 'nonexistent',
         title: 'New Title'
       });
 
@@ -260,11 +254,10 @@ describe('Notes Tools', () => {
     });
 
     it('should handle errors gracefully', async () => {
-      mockDb.updateNote.mockRejectedValue(new Error('Database error'));
-      vi.mocked(projectDatabase.getCurrentProjectDatabase).mockResolvedValue(mockDb as any);
+      mockBackend.updateNote.mockRejectedValue(new Error('Backend error'));
 
       const result = await updateNoteTool.execute({
-        id: 1,
+        id: 'test-id',
         title: 'New Title'
       });
 
@@ -275,42 +268,36 @@ describe('Notes Tools', () => {
 
   describe('deleteNoteTool', () => {
     it('should fail when no active project', async () => {
-      vi.mocked(projectDatabase.getCurrentProjectDatabase).mockResolvedValue(null);
+      vi.mocked(projectConfig.getCurrentProject).mockResolvedValue(null);
 
-      const result = await deleteNoteTool.execute({ id: 1 });
+      const result = await deleteNoteTool.execute({ id: 'test-id' });
 
       expect(result.success).toBe(false);
       expect(result.error).toBe('No active project. Set a current project first.');
     });
 
     it('should delete a note successfully', async () => {
-      mockDb.deleteNote.mockReturnValue(true);
-      vi.mocked(projectDatabase.getCurrentProjectDatabase).mockResolvedValue(mockDb as any);
+      mockBackend.deleteNote.mockResolvedValue(true);
 
-      const result = await deleteNoteTool.execute({ id: 1 });
+      const result = await deleteNoteTool.execute({ id: 'test-id' });
 
       expect(result.success).toBe(true);
       expect(result.message).toContain('Successfully deleted');
-      expect(mockDb.close).toHaveBeenCalled();
     });
 
     it('should return error when note not found', async () => {
-      mockDb.deleteNote.mockReturnValue(false);
-      vi.mocked(projectDatabase.getCurrentProjectDatabase).mockResolvedValue(mockDb as any);
+      mockBackend.deleteNote.mockResolvedValue(false);
 
-      const result = await deleteNoteTool.execute({ id: 999 });
+      const result = await deleteNoteTool.execute({ id: 'nonexistent' });
 
       expect(result.success).toBe(false);
       expect(result.error).toContain('not found');
     });
 
     it('should handle errors gracefully', async () => {
-      mockDb.deleteNote.mockImplementation(() => {
-        throw new Error('Database error');
-      });
-      vi.mocked(projectDatabase.getCurrentProjectDatabase).mockResolvedValue(mockDb as any);
+      mockBackend.deleteNote.mockRejectedValue(new Error('Backend error'));
 
-      const result = await deleteNoteTool.execute({ id: 1 });
+      const result = await deleteNoteTool.execute({ id: 'test-id' });
 
       expect(result.success).toBe(false);
       expect(result.error).toContain('Failed to delete note');
@@ -319,7 +306,7 @@ describe('Notes Tools', () => {
 
   describe('searchNotesTool', () => {
     it('should fail when no active project', async () => {
-      vi.mocked(projectDatabase.getCurrentProjectDatabase).mockResolvedValue(null);
+      vi.mocked(projectConfig.getCurrentProject).mockResolvedValue(null);
 
       const result = await searchNotesTool.execute({ query: 'test' });
 
@@ -327,47 +314,26 @@ describe('Notes Tools', () => {
       expect(result.error).toBe('No active project. Set a current project first.');
     });
 
-    it('should search notes with semantic search by default', async () => {
+    it('should search notes using ripgrep', async () => {
       const mockResults = [
-        { id: 1, title: 'Matching Note', content: 'Content', tags: [], createdAt: '2024-01-01', updatedAt: '2024-01-01', similarity: 0.9 }
+        { id: 'note-1', title: 'Matching Note', matches: ['line with match'], matchCount: 1 }
       ];
-      mockDb.searchNotesSemantica.mockResolvedValue(mockResults);
-      vi.mocked(projectDatabase.getCurrentProjectDatabase).mockResolvedValue(mockDb as any);
+      mockBackend.searchNotes.mockResolvedValue(mockResults);
 
       const result = await searchNotesTool.execute({ query: 'test query' });
 
       expect(result.success).toBe(true);
-      expect(result.searchType).toBe('semantic');
       expect(result.results).toHaveLength(1);
-      expect(mockDb.searchNotesSemantica).toHaveBeenCalledWith('test query', 10);
-      expect(mockDb.close).toHaveBeenCalled();
-    });
-
-    it('should use text search when semantic is disabled', async () => {
-      const mockResults = [
-        { id: 1, title: 'Matching Note', content: 'Content', tags: [], createdAt: '2024-01-01', updatedAt: '2024-01-01' }
-      ];
-      mockDb.searchNotes.mockReturnValue(mockResults);
-      vi.mocked(projectDatabase.getCurrentProjectDatabase).mockResolvedValue(mockDb as any);
-
-      const result = await searchNotesTool.execute({
-        query: 'test query',
-        useSemanticSearch: false
-      });
-
-      expect(result.success).toBe(true);
-      expect(result.searchType).toBe('text');
-      expect(result.results).toHaveLength(1);
-      expect(mockDb.searchNotes).toHaveBeenCalledWith('test query');
+      expect(result.results[0].matches).toContain('line with match');
+      expect(mockBackend.searchNotes).toHaveBeenCalledWith('test query', { limit: 10 });
     });
 
     it('should respect limit parameter', async () => {
       const mockResults = [
-        { id: 1, title: 'Note 1', content: 'Content', tags: [], createdAt: '2024-01-01', updatedAt: '2024-01-01', similarity: 0.9 },
-        { id: 2, title: 'Note 2', content: 'Content', tags: [], createdAt: '2024-01-01', updatedAt: '2024-01-01', similarity: 0.8 }
+        { id: 'note-1', title: 'Note 1', matches: ['match'], matchCount: 1 },
+        { id: 'note-2', title: 'Note 2', matches: ['match'], matchCount: 1 }
       ];
-      mockDb.searchNotesSemantica.mockResolvedValue(mockResults);
-      vi.mocked(projectDatabase.getCurrentProjectDatabase).mockResolvedValue(mockDb as any);
+      mockBackend.searchNotes.mockResolvedValue(mockResults);
 
       const result = await searchNotesTool.execute({
         query: 'test',
@@ -375,12 +341,11 @@ describe('Notes Tools', () => {
       });
 
       expect(result.success).toBe(true);
-      expect(mockDb.searchNotesSemantica).toHaveBeenCalledWith('test', 5);
+      expect(mockBackend.searchNotes).toHaveBeenCalledWith('test', { limit: 5 });
     });
 
     it('should handle errors gracefully', async () => {
-      mockDb.searchNotesSemantica.mockRejectedValue(new Error('Search error'));
-      vi.mocked(projectDatabase.getCurrentProjectDatabase).mockResolvedValue(mockDb as any);
+      mockBackend.searchNotes.mockRejectedValue(new Error('Search error'));
 
       const result = await searchNotesTool.execute({ query: 'test' });
 
