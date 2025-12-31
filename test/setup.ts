@@ -14,12 +14,12 @@ beforeAll(() => {
     const window = new Window({
       url: 'http://localhost'
     });
-    
+
     (global as any).window = window;
     (global as any).document = window.document;
     (global as any).navigator = window.navigator;
     (global as any).HTMLElement = window.HTMLElement;
-    
+
     // Ensure process is available for React
     if (typeof (global as any).process === 'undefined') {
       (global as any).process = {
@@ -29,7 +29,7 @@ beforeAll(() => {
       };
     }
   }
-  
+
   // Set NODE_ENV to test for all test runs to ensure temp config dirs are used
   if (typeof process !== 'undefined' && process.env) {
     process.env.NODE_ENV = 'test';

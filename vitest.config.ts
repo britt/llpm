@@ -7,7 +7,7 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      'bun:sqlite': new URL('./test/mocks/bun-sqlite.js', import.meta.url).pathname
+      'bun:sqlite': new URL('./test/mocks/bun-sqlite.js', import.meta.url).pathname,
     }
   },
   test: {
@@ -23,7 +23,7 @@ export default defineConfig({
       '**/*.d.ts',
       '**/*.performance.test.*',
       'docker/**/*.test.*',
-      '.worktrees/**'
+      '.worktrees/**',
     ],
     // Force tests to run in single thread in CI to avoid resource contention
     // threads: process.env.CI === 'true' ? false : true,

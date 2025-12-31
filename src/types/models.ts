@@ -5,6 +5,8 @@ export interface ModelConfig {
   modelId: string;
   displayName: string;
   description?: string;
+  recommendedRank?: number;
+  family?: string;
 }
 
 export interface ModelProviderConfig {
@@ -17,60 +19,20 @@ export interface ModelProviderConfig {
 
 export const DEFAULT_MODELS: Record<ModelProvider, ModelConfig[]> = {
   openai: [
-    {
-      provider: 'openai',
-      modelId: 'o4-mini',
-      displayName: 'o4 Mini',
-      description: 'Fast and efficient reasoning model'
-    },
-    {
-      provider: 'openai',
-      modelId: 'gpt-5',
-      displayName: 'GPT-5',
-      description: 'Next-generation OpenAI model'
-    },
-    {
-      provider: 'openai',
-      modelId: 'gpt-5-mini',
-      displayName: 'GPT-5 Mini',
-      description: 'Fast and efficient GPT-5 model'
-    },
-    {
-      provider: 'openai',
-      modelId: 'gpt-5-nano',
-      displayName: 'GPT-5 Nano',
-      description: 'Ultra-lightweight GPT-5 model'
-    },
-    {
-      provider: 'openai',
-      modelId: 'gpt-4o',
-      displayName: 'GPT-4o',
-      description: 'Most capable GPT-4 model'
-    },
-    {
-      provider: 'openai',
-      modelId: 'gpt-4o-mini',
-      displayName: 'GPT-4o Mini',
-      description: 'Fast and efficient model'
-    },
-    {
-      provider: 'openai',
-      modelId: 'gpt-4.1-mini',
-      displayName: 'GPT-4.1 Mini',
-      description: 'Improved GPT-4 model'
-    },
-    {
-      provider: 'openai',
-      modelId: 'gpt-4.1-turbo',
-      displayName: 'GPT-4.1 Turbo',
-      description: 'High-performance GPT-4.1 model'
-    },
-    {
-      provider: 'openai',
-      modelId: 'gpt-4-turbo',
-      displayName: 'GPT-4 Turbo',
-      description: 'High-performance GPT-4 model'
-    }
+    // GPT-5.2 family
+    { provider: 'openai', modelId: 'gpt-5.2', displayName: 'GPT-5.2', family: 'gpt-5.2' },
+    { provider: 'openai', modelId: 'gpt-5.2-mini', displayName: 'GPT-5.2 Mini', family: 'gpt-5.2' },
+    { provider: 'openai', modelId: 'gpt-5.2-turbo', displayName: 'GPT-5.2 Turbo', family: 'gpt-5.2' },
+    // GPT-5.1 family
+    { provider: 'openai', modelId: 'gpt-5.1', displayName: 'GPT-5.1', family: 'gpt-5.1' },
+    { provider: 'openai', modelId: 'gpt-5.1-mini', displayName: 'GPT-5.1 Mini', family: 'gpt-5.1' },
+    { provider: 'openai', modelId: 'gpt-5.1-turbo', displayName: 'GPT-5.1 Turbo', family: 'gpt-5.1' },
+    // GPT-4o family
+    { provider: 'openai', modelId: 'gpt-4o', displayName: 'GPT-4o', family: 'gpt-4o' },
+    { provider: 'openai', modelId: 'gpt-4o-mini', displayName: 'GPT-4o Mini', family: 'gpt-4o' },
+    // O-series
+    { provider: 'openai', modelId: 'o4-mini', displayName: 'o4 Mini', family: 'o4' },
+    { provider: 'openai', modelId: 'o3-mini', displayName: 'o3 Mini', family: 'o3' },
   ],
   anthropic: [
     {
@@ -204,4 +166,6 @@ export type Model = {
   id: string;
   label: string;
   value: string;
+  provider?: ModelProvider;
+  recommendedRank?: number;
 }
