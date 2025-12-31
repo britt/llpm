@@ -27,7 +27,7 @@ async function getShellConfig(): Promise<ShellConfig> {
       return { ...DEFAULT_SHELL_CONFIG, ...config.shell };
     }
     return DEFAULT_SHELL_CONFIG;
-  } catch (error) {
+  } catch {
     return DEFAULT_SHELL_CONFIG;
   }
 }
@@ -119,7 +119,7 @@ Please confirm you want me to execute this command. Reply with "yes" or "approve
         };
 
         await auditLogger.log(auditEntry);
-      } catch (error) {
+      } catch {
         // Don't fail if audit logging fails
       }
     }

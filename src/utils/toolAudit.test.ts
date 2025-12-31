@@ -3,8 +3,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 // Mock dependencies
 vi.mock('./projectDatabase');
 
-import { auditToolCall, getAuditLogs, getAuditStats } from './toolAudit';
-import type { ToolAuditEntry } from './toolAudit';
+import { auditToolCall, getAuditLogs, getAuditStats, type ToolAuditEntry } from './toolAudit';
 import * as projectDatabase from './projectDatabase';
 
 // Mock database instance
