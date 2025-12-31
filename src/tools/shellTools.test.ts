@@ -146,6 +146,63 @@ describe('shellTools', () => {
         expect(result.stdout.trim()).toBe('hello world');
         expect(result.exitCode).toBe(0);
       });
+
+      it('should include execution notice showing command that was run', async () => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const execute = runShellCommandTool.execute as any;
+        const result = await execute({
+          command: 'echo "hello world"',
+          confirmed: true
+        });
+
+        expect(result.executionNotice).toContain('echo "hello world"');
+        expect(result.executionNotice).toContain('Executing shell command');
+      });
+    });
+
+    describe('skipConfirmation mode', () => {
+      it('should skip confirmation when skipConfirmation is enabled', async () => {
+        // Enable skipConfirmation in config
+        const configPath = join(globalConfigDir, 'config.json');
+        writeFileSync(
+          configPath,
+          JSON.stringify({
+            shell: { enabled: true, skipConfirmation: true, auditEnabled: false }
+          })
+        );
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const execute = runShellCommandTool.execute as any;
+        const result = await execute({
+          command: 'echo "hello world"'
+          // Note: no confirmed parameter needed
+        });
+
+        expect(result.success).toBe(true);
+        expect(result.requiresConfirmation).toBeUndefined();
+        expect(result.stdout.trim()).toBe('hello world');
+      });
+
+      it('should still show execution notice when skipConfirmation is enabled', async () => {
+        // Enable skipConfirmation in config
+        const configPath = join(globalConfigDir, 'config.json');
+        writeFileSync(
+          configPath,
+          JSON.stringify({
+            shell: { enabled: true, skipConfirmation: true, auditEnabled: false }
+          })
+        );
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const execute = runShellCommandTool.execute as any;
+        const result = await execute({
+          command: 'git status'
+        });
+
+        expect(result.executionNotice).toContain('git status');
+        expect(result.executionNotice).toContain('Executing shell command');
+        expect(result.executionNotice).toContain('Working directory');
+      });
     });
 
     it('should reject when no project is set', async () => {

@@ -35,6 +35,8 @@ async function getShellConfig(): Promise<ShellConfig> {
 export interface ShellToolResult extends ShellResult {
   requiresConfirmation?: boolean;
   confirmationMessage?: string;
+  /** Message shown when command is executed (for skipConfirmation mode) */
+  executionNotice?: string;
 }
 
 export const runShellCommandTool = tool({
@@ -63,10 +65,10 @@ export const runShellCommandTool = tool({
 
     // Load shell config from global config
     const config = await getShellConfig();
+    const workingDir = cwd || project.path;
 
-    // Require explicit confirmation before executing
-    if (!confirmed) {
-      const workingDir = cwd || project.path;
+    // Require explicit confirmation before executing (unless skipConfirmation is enabled)
+    if (!confirmed && !config.skipConfirmation) {
       return {
         success: false,
         stdout: '',
@@ -122,6 +124,18 @@ Please confirm you want me to execute this command. Reply with "yes" or "approve
       }
     }
 
-    return result;
+    // Add execution notice so user can see what command was run
+    const executionNotice = `**Executing shell command:**
+
+\`\`\`
+${command}
+\`\`\`
+
+**Working directory:** ${workingDir}`;
+
+    return {
+      ...result,
+      executionNotice
+    };
   }
 });

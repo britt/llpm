@@ -16,6 +16,8 @@ export interface ShellConfig {
   allowedPaths?: string[];
   /** Whether to log all command executions for audit */
   auditEnabled: boolean;
+  /** Skip confirmation prompt and execute immediately (still prints command) */
+  skipConfirmation?: boolean;
 }
 
 /**

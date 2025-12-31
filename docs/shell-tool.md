@@ -41,6 +41,31 @@ git status
 Please confirm you want me to execute this command. Reply with "yes" or "approved" to proceed, or "no" to cancel.
 ```
 
+### Skip Confirmation Mode
+
+If you trust the AI and want commands to execute immediately without confirmation, enable `skipConfirmation`:
+
+```json
+{
+  "shell": {
+    "enabled": true,
+    "skipConfirmation": true
+  }
+}
+```
+
+Even with `skipConfirmation` enabled, the AI will still display what command is being executed:
+
+```
+**Executing shell command:**
+
+```
+git status
+```
+
+**Working directory:** /Users/you/project
+```
+
 ## Configuration
 
 Add a `shell` section to `~/.llpm/config.json`:
@@ -63,6 +88,7 @@ Add a `shell` section to `~/.llpm/config.json`:
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
 | `enabled` | boolean | `false` | Enable shell execution |
+| `skipConfirmation` | boolean | `false` | Skip confirmation prompt (still shows command) |
 | `allowedCommands` | string[] | `[]` | Command prefixes to allow (empty = all) |
 | `deniedCommands` | string[] | `[...]` | Commands to always deny |
 | `defaultTimeout` | number | `30000` | Default timeout in ms |
