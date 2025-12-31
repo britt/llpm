@@ -54,13 +54,13 @@ describe('/skills command', () => {
       name: skill.name || 'test-skill',
       description: skill.description || 'Test skill description',
       content: skill.content || '# Test Content',
-      source: skill.source || 'personal',
+      source: skill.source || 'user',
       path: skill.path || '/test/path',
       enabled: skill.enabled !== undefined ? skill.enabled : true,
-      tags: skill.tags,
-      allowed_tools: skill.allowed_tools,
-      vars: skill.vars,
-      resources: skill.resources
+      license: skill.license,
+      compatibility: skill.compatibility,
+      metadata: skill.metadata,
+      allowedTools: skill.allowedTools
     };
 
     const registry = getSkillRegistry() as any;
@@ -74,7 +74,7 @@ describe('/skills command', () => {
       addMockSkill({
         name: 'skill-1',
         description: 'First skill',
-        source: 'personal',
+        source: 'user',
         enabled: true
       });
       addMockSkill({
@@ -112,8 +112,8 @@ describe('/skills command', () => {
 
     it('should group skills by source', async () => {
       addMockSkill({
-        name: 'personal-skill',
-        source: 'personal'
+        name: 'user-skill',
+        source: 'user'
       });
       addMockSkill({
         name: 'project-skill',
@@ -122,25 +122,25 @@ describe('/skills command', () => {
 
       const result = await skillsCommand.execute(['list']);
 
-      expect(result.content).toContain('## Personal Skills');
+      expect(result.content).toContain('## User Skills');
       expect(result.content).toContain('## Project Skills');
     });
 
-    it('should display tags when present', async () => {
+    it('should display license when present', async () => {
       addMockSkill({
-        name: 'tagged-skill',
-        tags: ['tag1', 'tag2', 'tag3']
+        name: 'licensed-skill',
+        license: 'MIT'
       });
 
       const result = await skillsCommand.execute(['list']);
 
-      expect(result.content).toContain('Tags: tag1, tag2, tag3');
+      expect(result.content).toContain('License: MIT');
     });
 
-    it('should display allowed_tools when present', async () => {
+    it('should display allowedTools when present', async () => {
       addMockSkill({
         name: 'restricted-skill',
-        allowed_tools: ['github', 'shell']
+        allowedTools: ['github', 'shell']
       });
 
       const result = await skillsCommand.execute(['list']);
@@ -173,8 +173,8 @@ describe('/skills command', () => {
         name: 'test-skill',
         description: 'A test skill',
         content: '# Instructions\n\nFollow these steps...',
-        tags: ['test', 'demo'],
-        vars: { projectName: 'MyProject' },
+        license: 'MIT',
+        metadata: { author: 'Test Author' },
         enabled: true
       });
 
@@ -183,15 +183,15 @@ describe('/skills command', () => {
       expect(result.success).toBe(true);
       expect(result.content).toContain('test-skill');
       expect(result.content).toContain('A test skill');
-      expect(result.content).toContain('**Tags:** test, demo');
-      expect(result.content).toContain('{{projectName}}');
+      expect(result.content).toContain('**License:** MIT');
+      expect(result.content).toContain('author: Test Author');
       expect(result.content).toContain('# Instructions');
     });
 
-    it('should show allowed_tools in test output', async () => {
+    it('should show allowedTools in test output', async () => {
       addMockSkill({
         name: 'restricted-skill',
-        allowed_tools: ['github', 'notes']
+        allowedTools: ['github', 'notes']
       });
 
       const result = await skillsCommand.execute(['test', 'restricted-skill']);
@@ -342,8 +342,8 @@ describe('/skills command', () => {
 
       expect(result.content).toContain('How Skills Work');
       expect(result.content).toContain('Name match');
-      expect(result.content).toContain('Tag match');
       expect(result.content).toContain('Description keywords');
+      expect(result.content).toContain('agentskills.io');
     });
 
     it('should show default when no subcommand provided', async () => {

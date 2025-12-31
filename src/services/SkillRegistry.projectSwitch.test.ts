@@ -1,5 +1,7 @@
 /**
  * Tests for skill discovery on project switch
+ *
+ * Updated for Agent Skills specification (agentskills.io)
  */
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { SkillRegistry } from './SkillRegistry';
@@ -9,8 +11,8 @@ import { existsSync } from 'fs';
 
 describe('SkillRegistry - Project Switch Discovery', () => {
   const testProjectPath = join(process.cwd(), '.llpm-test-project');
-  const skillsPath = join(testProjectPath, '.llpm', 'skills');
-  const userSkillsPath = join(testProjectPath, '.llpm', 'skills', 'user');
+  const skillsPath = join(testProjectPath, '.skills');
+  const altSkillsPath = join(testProjectPath, 'skills');
 
   beforeEach(async () => {
     // Clean up test directory if it exists
@@ -26,8 +28,8 @@ describe('SkillRegistry - Project Switch Discovery', () => {
     }
   });
 
-  it('should discover skills from .llpm/skills on startup', async () => {
-    // Create test skill in .llpm/skills
+  it('should discover skills from .skills on startup', async () => {
+    // Create test skill in .skills
     const skillDir = join(skillsPath, 'test-skill');
     await mkdir(skillDir, { recursive: true });
     await writeFile(
@@ -35,87 +37,91 @@ describe('SkillRegistry - Project Switch Discovery', () => {
       `---
 name: test-skill
 description: "Test skill for project"
-instructions: "When testing skill discovery, use this test skill"
 ---
 
 # Test Skill
+
+When testing skill discovery, use this test skill.
 `
     );
 
     const registry = new SkillRegistry({
       enabled: true,
       maxSkillsPerPrompt: 3,
-      paths: [join(testProjectPath, '.llpm', 'skills')],
-      requireConfirmationOnDeniedTool: false
+      paths: [join(testProjectPath, '.skills')],
+      enforceAllowedTools: false
     });
 
     await registry.scan();
     const skills = registry.getAllSkills();
 
     expect(skills).toHaveLength(1);
-    expect(skills[0].name).toBe('test-skill');
-    expect(skills[0].source).toBe('project');
+    expect(skills[0]?.name).toBe('test-skill');
+    expect(skills[0]?.source).toBe('project');
   });
 
-  it('should discover skills from .llpm/skills/user on startup', async () => {
-    // Create test skill in .llpm/skills/user
-    const skillDir = join(userSkillsPath, 'user-specific-skill');
+  it('should discover skills from skills/ on startup', async () => {
+    // Create test skill in skills/
+    const skillDir = join(altSkillsPath, 'alt-skill');
     await mkdir(skillDir, { recursive: true });
     await writeFile(
       join(skillDir, 'SKILL.md'),
       `---
-name: user-specific-skill
-description: "User-specific test skill"
-instructions: "When testing user-specific skills, use this skill"
+name: alt-skill
+description: "Alternative project skill"
 ---
 
-# User Specific Skill
+# Alternative Skill
+
+When testing alternative skills directory, use this skill.
 `
     );
 
     const registry = new SkillRegistry({
       enabled: true,
       maxSkillsPerPrompt: 3,
-      paths: [join(testProjectPath, '.llpm', 'skills', 'user')],
-      requireConfirmationOnDeniedTool: false
+      paths: [join(testProjectPath, 'skills')],
+      enforceAllowedTools: false
     });
 
     await registry.scan();
     const skills = registry.getAllSkills();
 
     expect(skills).toHaveLength(1);
-    expect(skills[0].name).toBe('user-specific-skill');
-    expect(skills[0].source).toBe('project');
+    expect(skills[0]?.name).toBe('alt-skill');
+    expect(skills[0]?.source).toBe('project');
   });
 
-  it('should discover skills from both .llpm/skills and .llpm/skills/user', async () => {
-    // Create skill in .llpm/skills
+  it('should discover skills from both .skills and skills/', async () => {
+    // Create skill in .skills
     const projectSkillDir = join(skillsPath, 'project-skill');
     await mkdir(projectSkillDir, { recursive: true });
     await writeFile(
       join(projectSkillDir, 'SKILL.md'),
       `---
 name: project-skill
-description: "Project-wide skill"
-instructions: "When testing project-wide skills, use this skill"
+description: "Project-wide skill from .skills"
 ---
 
 # Project Skill
+
+When testing project-wide skills, use this skill.
 `
     );
 
-    // Create skill in .llpm/skills/user
-    const userSkillDir = join(userSkillsPath, 'user-skill');
-    await mkdir(userSkillDir, { recursive: true });
+    // Create skill in skills/
+    const altSkillDir = join(altSkillsPath, 'alt-skill');
+    await mkdir(altSkillDir, { recursive: true });
     await writeFile(
-      join(userSkillDir, 'SKILL.md'),
+      join(altSkillDir, 'SKILL.md'),
       `---
-name: user-skill
-description: "User-specific skill"
-instructions: "When testing user skills, use this skill"
+name: alt-skill
+description: "Alternative skill from skills/"
 ---
 
-# User Skill
+# Alt Skill
+
+When testing alternative skills, use this skill.
 `
     );
 
@@ -123,17 +129,17 @@ instructions: "When testing user skills, use this skill"
       enabled: true,
       maxSkillsPerPrompt: 3,
       paths: [
-        join(testProjectPath, '.llpm', 'skills'),
-        join(testProjectPath, '.llpm', 'skills', 'user')
+        join(testProjectPath, '.skills'),
+        join(testProjectPath, 'skills')
       ],
-      requireConfirmationOnDeniedTool: false
+      enforceAllowedTools: false
     });
 
     await registry.scan();
     const skills = registry.getAllSkills();
 
     expect(skills).toHaveLength(2);
-    expect(skills.map(s => s.name).sort()).toEqual(['project-skill', 'user-skill']);
+    expect(skills.map(s => s.name).sort()).toEqual(['alt-skill', 'project-skill']);
   });
 
   it('should rescan and pick up new skills after project switch', async () => {
@@ -142,27 +148,28 @@ instructions: "When testing user skills, use this skill"
       enabled: true,
       maxSkillsPerPrompt: 3,
       paths: [
-        join(testProjectPath, '.llpm', 'skills'),
-        join(testProjectPath, '.llpm', 'skills', 'user')
+        join(testProjectPath, '.skills'),
+        join(testProjectPath, 'skills')
       ],
-      requireConfirmationOnDeniedTool: false
+      enforceAllowedTools: false
     });
 
     await registry.scan();
     expect(registry.getAllSkills()).toHaveLength(0);
 
     // Add a new skill (simulating project switch to a project with skills)
-    const skillDir = join(userSkillsPath, 'new-skill');
+    const skillDir = join(skillsPath, 'new-skill');
     await mkdir(skillDir, { recursive: true });
     await writeFile(
       join(skillDir, 'SKILL.md'),
       `---
 name: new-skill
 description: "Newly discovered skill"
-instructions: "When testing newly discovered skills, use this skill"
 ---
 
 # New Skill
+
+When testing newly discovered skills, use this skill.
 `
     );
 
@@ -171,7 +178,7 @@ instructions: "When testing newly discovered skills, use this skill"
     const skills = registry.getAllSkills();
 
     expect(skills).toHaveLength(1);
-    expect(skills[0].name).toBe('new-skill');
+    expect(skills[0]?.name).toBe('new-skill');
   });
 
   it('should clear old skills when rescanning', async () => {
@@ -182,24 +189,25 @@ instructions: "When testing newly discovered skills, use this skill"
       join(skillDir1, 'SKILL.md'),
       `---
 name: old-skill
-description: "Old skill"
-instructions: "When testing old skills, use this skill"
+description: "Old skill to be replaced"
 ---
 
 # Old Skill
+
+When testing old skills, use this skill.
 `
     );
 
     const registry = new SkillRegistry({
       enabled: true,
       maxSkillsPerPrompt: 3,
-      paths: [join(testProjectPath, '.llpm', 'skills')],
-      requireConfirmationOnDeniedTool: false
+      paths: [join(testProjectPath, '.skills')],
+      enforceAllowedTools: false
     });
 
     await registry.scan();
     expect(registry.getAllSkills()).toHaveLength(1);
-    expect(registry.getAllSkills()[0].name).toBe('old-skill');
+    expect(registry.getAllSkills()[0]?.name).toBe('old-skill');
 
     // Remove old skill and add new skill (simulating switch to different project)
     await rm(skillDir1, { recursive: true, force: true });
@@ -210,11 +218,12 @@ instructions: "When testing old skills, use this skill"
       join(skillDir2, 'SKILL.md'),
       `---
 name: new-skill
-description: "New skill"
-instructions: "When testing new skills after clearing old ones, use this skill"
+description: "New skill after clearing old ones"
 ---
 
 # New Skill
+
+When testing new skills after clearing old ones, use this skill.
 `
     );
 
@@ -223,7 +232,7 @@ instructions: "When testing new skills after clearing old ones, use this skill"
     const skills = registry.getAllSkills();
 
     expect(skills).toHaveLength(1);
-    expect(skills[0].name).toBe('new-skill');
+    expect(skills[0]?.name).toBe('new-skill');
     expect(skills.find(s => s.name === 'old-skill')).toBeUndefined();
   });
 });
