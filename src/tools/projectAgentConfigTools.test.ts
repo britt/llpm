@@ -1,11 +1,24 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+
+// Mock dependencies before importing tools
+vi.mock('../utils/projectConfig');
+vi.mock('../utils/config', () => ({
+  getProjectAgentsYamlPath: vi.fn().mockReturnValue('/path/to/agents.yaml')
+}));
+
 import {
   setProjectAgentConfigTool,
   getProjectAgentConfigTool,
   removeProjectAgentConfigTool
 } from './projectAgentConfigTools';
 
+import * as projectConfig from '../utils/projectConfig';
+
 describe('Project Agent Config Tools', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
   describe('Schema Validation', () => {
     it('should have valid Zod schemas for all tools', () => {
       const tools = [
@@ -156,6 +169,326 @@ describe('Project Agent Config Tools', () => {
       expect(shape.aider).toBeDefined();
       expect(shape.opencode).toBeDefined();
       expect(shape.authType).toBeDefined();
+    });
+  });
+
+  describe('setProjectAgentConfigTool execution', () => {
+    it('should fail when no current project is set', async () => {
+      vi.mocked(projectConfig.loadProjectConfig).mockResolvedValue({
+        currentProject: null,
+        projects: {}
+      });
+
+      const result = await setProjectAgentConfigTool.execute({ defaultPreset: 'dev' });
+
+      expect(result).toContain('No current project set');
+    });
+
+    it('should fail when project not found', async () => {
+      vi.mocked(projectConfig.loadProjectConfig).mockResolvedValue({
+        currentProject: 'missing-project',
+        projects: {}
+      });
+
+      const result = await setProjectAgentConfigTool.execute({ defaultPreset: 'dev' });
+
+      expect(result).toContain('Current project not found');
+    });
+
+    it('should set agent config successfully with preset', async () => {
+      vi.mocked(projectConfig.loadProjectConfig).mockResolvedValue({
+        currentProject: 'test-project',
+        projects: {
+          'test-project': {
+            id: 'test-project',
+            name: 'Test Project',
+            repository: 'https://github.com/test/repo',
+            github_repo: 'test/repo',
+            createdAt: '2024-01-01',
+            updatedAt: '2024-01-01'
+          }
+        }
+      });
+      vi.mocked(projectConfig.loadProjectAgentConfig).mockResolvedValue(null);
+      vi.mocked(projectConfig.saveProjectAgentConfig).mockResolvedValue(undefined);
+
+      const result = await setProjectAgentConfigTool.execute({ defaultPreset: 'dev' });
+
+      expect(result).toContain('Agent Configuration Updated');
+      expect(result).toContain('Default Preset');
+      expect(result).toContain('dev');
+      expect(projectConfig.saveProjectAgentConfig).toHaveBeenCalledWith(
+        'test-project',
+        expect.objectContaining({ defaultPreset: 'dev' })
+      );
+    });
+
+    it('should set agent config with custom counts', async () => {
+      vi.mocked(projectConfig.loadProjectConfig).mockResolvedValue({
+        currentProject: 'test-project',
+        projects: {
+          'test-project': {
+            id: 'test-project',
+            name: 'Test Project',
+            repository: 'https://github.com/test/repo',
+            github_repo: 'test/repo',
+            createdAt: '2024-01-01',
+            updatedAt: '2024-01-01'
+          }
+        }
+      });
+      vi.mocked(projectConfig.loadProjectAgentConfig).mockResolvedValue(null);
+      vi.mocked(projectConfig.saveProjectAgentConfig).mockResolvedValue(undefined);
+
+      const result = await setProjectAgentConfigTool.execute({
+        claudeCode: 2,
+        aider: 1
+      });
+
+      expect(result).toContain('Agent Configuration Updated');
+      expect(result).toContain('Custom Counts');
+      expect(result).toContain('Claude Code: 2');
+      expect(result).toContain('Aider: 1');
+    });
+
+    it('should set agent config with authType', async () => {
+      vi.mocked(projectConfig.loadProjectConfig).mockResolvedValue({
+        currentProject: 'test-project',
+        projects: {
+          'test-project': {
+            id: 'test-project',
+            name: 'Test Project',
+            repository: 'https://github.com/test/repo',
+            github_repo: 'test/repo',
+            createdAt: '2024-01-01',
+            updatedAt: '2024-01-01'
+          }
+        }
+      });
+      vi.mocked(projectConfig.loadProjectAgentConfig).mockResolvedValue(null);
+      vi.mocked(projectConfig.saveProjectAgentConfig).mockResolvedValue(undefined);
+
+      const result = await setProjectAgentConfigTool.execute({ authType: 'subscription' });
+
+      expect(result).toContain('Auth Type');
+      expect(result).toContain('subscription');
+    });
+
+    it('should update existing config', async () => {
+      vi.mocked(projectConfig.loadProjectConfig).mockResolvedValue({
+        currentProject: 'test-project',
+        projects: {
+          'test-project': {
+            id: 'test-project',
+            name: 'Test Project',
+            repository: 'https://github.com/test/repo',
+            github_repo: 'test/repo',
+            createdAt: '2024-01-01',
+            updatedAt: '2024-01-01'
+          }
+        }
+      });
+      vi.mocked(projectConfig.loadProjectAgentConfig).mockResolvedValue({
+        defaultPreset: 'minimal',
+        customCounts: { claudeCode: 1 }
+      });
+      vi.mocked(projectConfig.saveProjectAgentConfig).mockResolvedValue(undefined);
+
+      const result = await setProjectAgentConfigTool.execute({
+        defaultPreset: 'team',
+        openaiCodex: 2
+      });
+
+      expect(result).toContain('Agent Configuration Updated');
+      expect(projectConfig.saveProjectAgentConfig).toHaveBeenCalledWith(
+        'test-project',
+        expect.objectContaining({
+          defaultPreset: 'team',
+          customCounts: expect.objectContaining({
+            claudeCode: 1,
+            openaiCodex: 2
+          })
+        })
+      );
+    });
+
+    it('should handle errors gracefully', async () => {
+      vi.mocked(projectConfig.loadProjectConfig).mockRejectedValue(new Error('Database error'));
+
+      const result = await setProjectAgentConfigTool.execute({ defaultPreset: 'dev' });
+
+      expect(result).toContain('Failed to set agent config');
+      expect(result).toContain('Database error');
+    });
+  });
+
+  describe('getProjectAgentConfigTool execution', () => {
+    it('should fail when no current project is set', async () => {
+      vi.mocked(projectConfig.loadProjectConfig).mockResolvedValue({
+        currentProject: null,
+        projects: {}
+      });
+
+      const result = await getProjectAgentConfigTool.execute({});
+
+      expect(result).toContain('No current project set');
+    });
+
+    it('should fail when project not found', async () => {
+      vi.mocked(projectConfig.loadProjectConfig).mockResolvedValue({
+        currentProject: 'missing-project',
+        projects: {}
+      });
+
+      const result = await getProjectAgentConfigTool.execute({});
+
+      expect(result).toContain('Current project not found');
+    });
+
+    it('should return message when no config exists', async () => {
+      vi.mocked(projectConfig.loadProjectConfig).mockResolvedValue({
+        currentProject: 'test-project',
+        projects: {
+          'test-project': {
+            id: 'test-project',
+            name: 'Test Project',
+            repository: 'https://github.com/test/repo',
+            github_repo: 'test/repo',
+            createdAt: '2024-01-01',
+            updatedAt: '2024-01-01'
+          }
+        }
+      });
+      vi.mocked(projectConfig.loadProjectAgentConfig).mockResolvedValue(null);
+
+      const result = await getProjectAgentConfigTool.execute({});
+
+      expect(result).toContain('No Agent Configuration Set');
+      expect(result).toContain('set_project_agent_config');
+    });
+
+    it('should return config when it exists', async () => {
+      vi.mocked(projectConfig.loadProjectConfig).mockResolvedValue({
+        currentProject: 'test-project',
+        projects: {
+          'test-project': {
+            id: 'test-project',
+            name: 'Test Project',
+            repository: 'https://github.com/test/repo',
+            github_repo: 'test/repo',
+            createdAt: '2024-01-01',
+            updatedAt: '2024-01-01'
+          }
+        }
+      });
+      vi.mocked(projectConfig.loadProjectAgentConfig).mockResolvedValue({
+        defaultPreset: 'dev',
+        customCounts: {
+          claudeCode: 2,
+          aider: 1
+        },
+        authType: 'api_key'
+      });
+
+      const result = await getProjectAgentConfigTool.execute({});
+
+      expect(result).toContain('Agent Configuration for Test Project');
+      expect(result).toContain('Default Preset');
+      expect(result).toContain('dev');
+      expect(result).toContain('Custom Counts');
+      expect(result).toContain('Claude Code: 2');
+      expect(result).toContain('Aider: 1');
+      expect(result).toContain('Auth Type');
+      expect(result).toContain('api_key');
+    });
+
+    it('should handle errors gracefully', async () => {
+      vi.mocked(projectConfig.loadProjectConfig).mockRejectedValue(new Error('Config error'));
+
+      const result = await getProjectAgentConfigTool.execute({});
+
+      expect(result).toContain('Failed to get agent config');
+      expect(result).toContain('Config error');
+    });
+  });
+
+  describe('removeProjectAgentConfigTool execution', () => {
+    it('should fail when no current project is set', async () => {
+      vi.mocked(projectConfig.loadProjectConfig).mockResolvedValue({
+        currentProject: null,
+        projects: {}
+      });
+
+      const result = await removeProjectAgentConfigTool.execute({});
+
+      expect(result).toContain('No current project set');
+    });
+
+    it('should fail when project not found', async () => {
+      vi.mocked(projectConfig.loadProjectConfig).mockResolvedValue({
+        currentProject: 'missing-project',
+        projects: {}
+      });
+
+      const result = await removeProjectAgentConfigTool.execute({});
+
+      expect(result).toContain('Current project not found');
+    });
+
+    it('should return message when no config to remove', async () => {
+      vi.mocked(projectConfig.loadProjectConfig).mockResolvedValue({
+        currentProject: 'test-project',
+        projects: {
+          'test-project': {
+            id: 'test-project',
+            name: 'Test Project',
+            repository: 'https://github.com/test/repo',
+            github_repo: 'test/repo',
+            createdAt: '2024-01-01',
+            updatedAt: '2024-01-01'
+          }
+        }
+      });
+      vi.mocked(projectConfig.loadProjectAgentConfig).mockResolvedValue(null);
+
+      const result = await removeProjectAgentConfigTool.execute({});
+
+      expect(result).toContain('No agent configuration to remove');
+    });
+
+    it('should remove config successfully', async () => {
+      vi.mocked(projectConfig.loadProjectConfig).mockResolvedValue({
+        currentProject: 'test-project',
+        projects: {
+          'test-project': {
+            id: 'test-project',
+            name: 'Test Project',
+            repository: 'https://github.com/test/repo',
+            github_repo: 'test/repo',
+            createdAt: '2024-01-01',
+            updatedAt: '2024-01-01'
+          }
+        }
+      });
+      vi.mocked(projectConfig.loadProjectAgentConfig).mockResolvedValue({
+        defaultPreset: 'dev'
+      });
+      vi.mocked(projectConfig.removeProjectAgentConfig).mockResolvedValue(undefined);
+
+      const result = await removeProjectAgentConfigTool.execute({});
+
+      expect(result).toContain('Agent configuration removed');
+      expect(result).toContain('Test Project');
+      expect(projectConfig.removeProjectAgentConfig).toHaveBeenCalledWith('test-project');
+    });
+
+    it('should handle errors gracefully', async () => {
+      vi.mocked(projectConfig.loadProjectConfig).mockRejectedValue(new Error('Remove error'));
+
+      const result = await removeProjectAgentConfigTool.execute({});
+
+      expect(result).toContain('Failed to remove agent config');
+      expect(result).toContain('Remove error');
     });
   });
 });

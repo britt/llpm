@@ -58,4 +58,20 @@ describe('clearCommand', () => {
     expect(result.success).toBe(false);
     expect(result.content).toContain('❌ Failed to clear session');
   });
+
+  it('should show help when help argument is passed', async () => {
+    const result = await clearCommand.execute(['help']);
+
+    expect(result.success).toBe(true);
+    expect(result.content).toContain('Clear Command');
+    expect(result.content).toContain('/clear');
+    expect(result.content).toContain('clears current conversation');
+  });
+
+  it('should be case insensitive for help argument', async () => {
+    const result = await clearCommand.execute(['HELP']);
+
+    expect(result.success).toBe(true);
+    expect(result.content).toContain('Clear Command');
+  });
 });

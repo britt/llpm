@@ -73,4 +73,20 @@ describe('quitCommand', () => {
 
     expect(result.content).toBe('✌️ Peace out!');
   });
+
+  it('should show help when help argument is passed', async () => {
+    const result = await resolveCommandResult(quitCommand.execute(['help']));
+
+    expect(result.success).toBe(true);
+    expect(result.content).toContain('Quit Command');
+    expect(result.content).toContain('/quit');
+    expect(result.content).toContain('Ctrl+C');
+  });
+
+  it('should be case insensitive for help', async () => {
+    const result = await resolveCommandResult(quitCommand.execute(['HELP']));
+
+    expect(result.success).toBe(true);
+    expect(result.content).toContain('Quit Command');
+  });
 });

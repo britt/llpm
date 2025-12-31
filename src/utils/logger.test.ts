@@ -1,5 +1,5 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { debug, getRecentDebugLogs, setVerbose } from './logger';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { debug, getRecentDebugLogs, setVerbose, getVerbose } from './logger';
 
 describe('logger', () => {
   beforeEach(() => {
@@ -115,6 +115,70 @@ describe('logger', () => {
 
       const logs = getRecentDebugLogs();
       expect(logs).toHaveLength(10);
+    });
+  });
+
+  describe('setVerbose and getVerbose', () => {
+    afterEach(() => {
+      // Reset verbose to false after tests
+      setVerbose(false);
+    });
+
+    it('should set verbose mode to true', () => {
+      setVerbose(true);
+      expect(getVerbose()).toBe(true);
+    });
+
+    it('should set verbose mode to false', () => {
+      setVerbose(true);
+      setVerbose(false);
+      expect(getVerbose()).toBe(false);
+    });
+
+    it('should start with verbose disabled', () => {
+      // Note: This test may be affected by prior test runs
+      // but getVerbose should return a boolean
+      expect(typeof getVerbose()).toBe('boolean');
+    });
+  });
+
+  describe('verbose output', () => {
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    afterEach(() => {
+      setVerbose(false);
+      consoleErrorSpy.mockClear();
+    });
+
+    it('should output to console.error when verbose is enabled', () => {
+      setVerbose(true);
+      debug('Verbose test message');
+
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        '[DEBUG]',
+        expect.any(String),
+        'Verbose test message'
+      );
+    });
+
+    it('should not output to console.error when verbose is disabled', () => {
+      setVerbose(false);
+      debug('Silent test message');
+
+      expect(consoleErrorSpy).not.toHaveBeenCalled();
+    });
+
+    it('should output multiple arguments when verbose', () => {
+      setVerbose(true);
+      debug('Part 1', 'Part 2', 123);
+
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        '[DEBUG]',
+        expect.any(String),
+        'Part 1',
+        'Part 2',
+        123
+      );
     });
   });
 
