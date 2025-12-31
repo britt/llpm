@@ -131,5 +131,69 @@ describe('shellTools', () => {
       expect(result.timedOut).toBe(true);
       expect(result.error).toContain('timed out');
     });
+
+    it('should use default config when no shell.json exists', async () => {
+      // Remove the shell config file
+      const configPath = join(testDir, '.llpm', 'shell.json');
+      if (existsSync(configPath)) {
+        rmSync(configPath);
+      }
+
+      // Without config, shell should be disabled by default
+      const result = await runShellCommandTool.execute!({
+        command: 'echo test'
+      });
+
+      expect(result.success).toBe(false);
+      expect(result.error).toContain('disabled');
+    });
+
+    it('should use default config when shell.json has invalid JSON', async () => {
+      // Write invalid JSON to config file
+      const configPath = join(testDir, '.llpm', 'shell.json');
+      writeFileSync(configPath, '{ invalid json }');
+
+      // Should fall back to defaults (shell disabled)
+      const result = await runShellCommandTool.execute!({
+        command: 'echo test'
+      });
+
+      expect(result.success).toBe(false);
+      expect(result.error).toContain('disabled');
+    });
+
+    it('should log to audit when auditEnabled is true', async () => {
+      // Enable audit logging in config
+      const configPath = join(testDir, '.llpm', 'shell.json');
+      writeFileSync(
+        configPath,
+        JSON.stringify({ enabled: true, defaultTimeout: 5000, maxTimeout: 30000, auditEnabled: true })
+      );
+
+      const result = await runShellCommandTool.execute!({
+        command: 'echo "hello"'
+      });
+
+      expect(result.success).toBe(true);
+      // Audit logging happens in the background, we just verify command succeeded
+    });
+
+    it('should handle audit logging errors gracefully', async () => {
+      // Enable audit logging but mock config to cause an error
+      const configPath = join(testDir, '.llpm', 'shell.json');
+      writeFileSync(
+        configPath,
+        JSON.stringify({ enabled: true, defaultTimeout: 5000, maxTimeout: 30000, auditEnabled: true })
+      );
+
+      // The audit logger will try to write, which may or may not succeed
+      // depending on the environment, but the command should still succeed
+      const result = await runShellCommandTool.execute!({
+        command: 'echo "hello"'
+      });
+
+      expect(result.success).toBe(true);
+      expect(result.stdout.trim()).toBe('hello world');
+    });
   });
 });

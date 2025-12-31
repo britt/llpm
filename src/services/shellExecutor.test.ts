@@ -1,6 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import type { ShellConfig } from '../types/shell';
-import { DEFAULT_SHELL_CONFIG } from '../types/shell';
+import { DEFAULT_SHELL_CONFIG, type ShellConfig } from '../types/shell';
 import { tmpdir } from 'os';
 import { mkdirSync, rmSync, existsSync } from 'fs';
 import { join } from 'path';
@@ -159,6 +158,39 @@ describe('ShellExecutor', () => {
 
       expect(result.durationMs).toBeGreaterThanOrEqual(0);
       expect(result.durationMs).toBeLessThan(5000);
+    });
+
+    it('should handle shell execution errors gracefully', async () => {
+      // Mock the shell to throw an error
+      mockShell.mockImplementationOnce(() => ({
+        cwd: vi.fn().mockReturnThis(),
+        env: vi.fn().mockReturnThis(),
+        quiet: vi.fn().mockReturnThis(),
+        nothrow: vi.fn().mockRejectedValue(new Error('Shell execution failed'))
+      }));
+
+      const result = await executor.execute('some-command');
+
+      expect(result.success).toBe(false);
+      expect(result.exitCode).toBe(-1);
+      expect(result.error).toContain('Shell execution failed');
+      expect(result.durationMs).toBeGreaterThanOrEqual(0);
+    });
+
+    it('should handle non-Error throws gracefully', async () => {
+      // Mock the shell to throw a string (non-Error)
+      mockShell.mockImplementationOnce(() => ({
+        cwd: vi.fn().mockReturnThis(),
+        env: vi.fn().mockReturnThis(),
+        quiet: vi.fn().mockReturnThis(),
+        nothrow: vi.fn().mockRejectedValue('string error')
+      }));
+
+      const result = await executor.execute('some-command');
+
+      expect(result.success).toBe(false);
+      expect(result.exitCode).toBe(-1);
+      expect(result.error).toBe('string error');
     });
   });
 });
