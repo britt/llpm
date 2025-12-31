@@ -52,19 +52,33 @@
 - TypeCheck: Shell files clean (no errors)
 
 ### Task 9: Move Shell Config to Global Configuration - COMPLETE
-- Changed config location from per-project `.llpm/shell.json` to global `~/.llpm/shell.json`
-- Updated shellTools.ts to read from global config
-- Updated tests to mock getConfigDir
+- Changed config location to `~/.llpm/config.json` (shell section)
+- Updated shellTools.ts to read from config.json shell section
+- Updated tests to mock getConfigDir and use config.json
 - Updated documentation
 - Lint: Shell files clean (no errors)
+
+### Task 10: Add Confirmation Flow - COMPLETE
+- Shell tool now requires explicit user confirmation before executing
+- Shows exact command and working directory in confirmation prompt
+- User must respond with "yes" or "approved" to execute
+- Added `confirmed` parameter to tool schema
+- Added tests for confirmation flow
+- Updated documentation with confirmation flow section
 
 ## Manual Verification Steps Required
 
 Per VERIFICATION_PLAN.md, run these acceptance tests:
 
-1. **Enable shell globally**:
-   ```bash
-   echo '{"enabled": true}' > ~/.llpm/shell.json
+1. **Enable shell in config.json** (already done):
+   ```json
+   // In ~/.llpm/config.json
+   {
+     "shell": {
+       "enabled": true,
+       "auditEnabled": true
+     }
+   }
    ```
 2. **Start LLPM**: `bun run start`
 3. **Add project in LLPM**: `/project add "Test Project" "test/repo" "/tmp/llpm-test-project" "Test"`

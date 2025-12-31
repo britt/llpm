@@ -55,10 +55,12 @@ describe('shellTools', () => {
     // Set the global config directory for this test (used by mocked getConfigDir)
     testGlobalConfigDir = globalConfigDir;
 
-    // Create a shell config file in global config that enables shell
+    // Create config.json with shell section that enables shell
     writeFileSync(
-      join(globalConfigDir, 'shell.json'),
-      JSON.stringify({ enabled: true, defaultTimeout: 5000, maxTimeout: 30000, auditEnabled: false })
+      join(globalConfigDir, 'config.json'),
+      JSON.stringify({
+        shell: { enabled: true, defaultTimeout: 5000, maxTimeout: 30000, auditEnabled: false }
+      })
     );
 
     mockProject = {
@@ -105,18 +107,45 @@ describe('shellTools', () => {
       expect(runShellCommandTool.inputSchema).toBeDefined();
     });
 
-    it('should execute command and return structured result', async () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const execute = runShellCommandTool.execute as any;
-      const result = await execute({
-        command: 'echo "hello world"'
+    describe('confirmation flow', () => {
+      it('should require confirmation when confirmed is not set', async () => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const execute = runShellCommandTool.execute as any;
+        const result = await execute({
+          command: 'echo "hello world"'
+        });
+
+        expect(result.requiresConfirmation).toBe(true);
+        expect(result.confirmationMessage).toContain('echo "hello world"');
+        expect(result.confirmationMessage).toContain('Shell Command Confirmation Required');
+        expect(result.success).toBe(false);
       });
 
-      expect(result.success).toBe(true);
-      expect(result.stdout.trim()).toBe('hello world');
-      expect(result.stderr).toBe('');
-      expect(result.exitCode).toBe(0);
-      expect(result.command).toBe('echo "hello world"');
+      it('should show working directory in confirmation message', async () => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const execute = runShellCommandTool.execute as any;
+        const result = await execute({
+          command: 'ls -la',
+          cwd: '/custom/path'
+        });
+
+        expect(result.requiresConfirmation).toBe(true);
+        expect(result.confirmationMessage).toContain('/custom/path');
+      });
+
+      it('should execute command when confirmed is true', async () => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const execute = runShellCommandTool.execute as any;
+        const result = await execute({
+          command: 'echo "hello world"',
+          confirmed: true
+        });
+
+        expect(result.success).toBe(true);
+        expect(result.requiresConfirmation).toBeUndefined();
+        expect(result.stdout.trim()).toBe('hello world');
+        expect(result.exitCode).toBe(0);
+      });
     });
 
     it('should reject when no project is set', async () => {
@@ -147,7 +176,8 @@ describe('shellTools', () => {
       const execute = runShellCommandTool.execute as any;
       const result = await execute({
         command: 'sleep 10',
-        timeout: 100
+        timeout: 100,
+        confirmed: true
       });
 
       expect(result.success).toBe(false);
@@ -155,9 +185,9 @@ describe('shellTools', () => {
       expect(result.error).toContain('timed out');
     });
 
-    it('should use default config when no shell.json exists', async () => {
-      // Remove the shell config file from global config
-      const configPath = join(globalConfigDir, 'shell.json');
+    it('should use default config when no config.json exists', async () => {
+      // Remove the config file from global config
+      const configPath = join(globalConfigDir, 'config.json');
       if (existsSync(configPath)) {
         rmSync(configPath);
       }
@@ -166,23 +196,42 @@ describe('shellTools', () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const execute = runShellCommandTool.execute as any;
       const result = await execute({
-        command: 'echo test'
+        command: 'echo test',
+        confirmed: true
       });
 
       expect(result.success).toBe(false);
       expect(result.error).toContain('disabled');
     });
 
-    it('should use default config when shell.json has invalid JSON', async () => {
+    it('should use default config when config.json has no shell section', async () => {
+      // Write config without shell section
+      const configPath = join(globalConfigDir, 'config.json');
+      writeFileSync(configPath, JSON.stringify({ model: {} }));
+
+      // Should fall back to defaults (shell disabled)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const execute = runShellCommandTool.execute as any;
+      const result = await execute({
+        command: 'echo test',
+        confirmed: true
+      });
+
+      expect(result.success).toBe(false);
+      expect(result.error).toContain('disabled');
+    });
+
+    it('should use default config when config.json has invalid JSON', async () => {
       // Write invalid JSON to global config file
-      const configPath = join(globalConfigDir, 'shell.json');
+      const configPath = join(globalConfigDir, 'config.json');
       writeFileSync(configPath, '{ invalid json }');
 
       // Should fall back to defaults (shell disabled)
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const execute = runShellCommandTool.execute as any;
       const result = await execute({
-        command: 'echo test'
+        command: 'echo test',
+        confirmed: true
       });
 
       expect(result.success).toBe(false);
@@ -191,16 +240,19 @@ describe('shellTools', () => {
 
     it('should log to audit when auditEnabled is true', async () => {
       // Enable audit logging in global config
-      const configPath = join(globalConfigDir, 'shell.json');
+      const configPath = join(globalConfigDir, 'config.json');
       writeFileSync(
         configPath,
-        JSON.stringify({ enabled: true, defaultTimeout: 5000, maxTimeout: 30000, auditEnabled: true })
+        JSON.stringify({
+          shell: { enabled: true, defaultTimeout: 5000, maxTimeout: 30000, auditEnabled: true }
+        })
       );
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const execute = runShellCommandTool.execute as any;
       const result = await execute({
-        command: 'echo "hello"'
+        command: 'echo "hello"',
+        confirmed: true
       });
 
       expect(result.success).toBe(true);
@@ -209,10 +261,12 @@ describe('shellTools', () => {
 
     it('should handle audit logging errors gracefully', async () => {
       // Enable audit logging in global config
-      const configPath = join(globalConfigDir, 'shell.json');
+      const configPath = join(globalConfigDir, 'config.json');
       writeFileSync(
         configPath,
-        JSON.stringify({ enabled: true, defaultTimeout: 5000, maxTimeout: 30000, auditEnabled: true })
+        JSON.stringify({
+          shell: { enabled: true, defaultTimeout: 5000, maxTimeout: 30000, auditEnabled: true }
+        })
       );
 
       // The audit logger will try to write, which may or may not succeed
@@ -220,7 +274,8 @@ describe('shellTools', () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const execute = runShellCommandTool.execute as any;
       const result = await execute({
-        command: 'echo "hello"'
+        command: 'echo "hello"',
+        confirmed: true
       });
 
       expect(result.success).toBe(true);

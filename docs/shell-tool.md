@@ -4,24 +4,57 @@ The shell tool allows LLPM to execute shell commands in project directories.
 
 ## Security
 
-**Shell execution is disabled by default.** To enable it, create a global config file:
+**Shell execution is disabled by default.** The tool also requires explicit user confirmation before executing any command.
+
+To enable shell execution, add a `shell` section to your global config:
 
 ```bash
-echo '{"enabled": true}' > ~/.llpm/shell.json
+# Edit ~/.llpm/config.json and add:
+{
+  "shell": {
+    "enabled": true
+  }
+}
+```
+
+## Confirmation Flow
+
+When the AI wants to run a shell command, it will:
+
+1. Show you the exact command it wants to run
+2. Show the working directory
+3. Ask for your explicit approval
+4. Only execute after you confirm with "yes" or "approved"
+
+Example:
+```
+**Shell Command Confirmation Required**
+
+I want to run the following command:
+
+```
+git status
+```
+
+**Working directory:** /Users/you/project
+
+Please confirm you want me to execute this command. Reply with "yes" or "approved" to proceed, or "no" to cancel.
 ```
 
 ## Configuration
 
-Create `~/.llpm/shell.json` (global configuration):
+Add a `shell` section to `~/.llpm/config.json`:
 
 ```json
 {
-  "enabled": true,
-  "allowedCommands": ["git", "npm", "bun", "yarn"],
-  "deniedCommands": ["rm -rf", "sudo"],
-  "defaultTimeout": 30000,
-  "maxTimeout": 300000,
-  "auditEnabled": true
+  "shell": {
+    "enabled": true,
+    "allowedCommands": ["git", "npm", "bun", "yarn"],
+    "deniedCommands": ["rm -rf", "sudo"],
+    "defaultTimeout": 30000,
+    "maxTimeout": 300000,
+    "auditEnabled": true
+  }
 }
 ```
 
@@ -52,12 +85,14 @@ The AI can use the shell tool like this:
 ```
 User: What's the git status of this project?
 AI: I'll check the git status for you.
-[uses run_shell_command with "git status"]
+[Shows confirmation prompt with "git status" command]
+User: yes
+[Executes and returns output]
 ```
 
 ## Audit Logs
 
-When `auditEnabled` is true, all commands are logged to:
+When `auditEnabled` is true, all executed commands are logged to:
 `~/.llpm/audit/shell-audit-YYYY-MM-DD.jsonl`
 
 Each entry contains:

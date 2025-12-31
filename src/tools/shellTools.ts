@@ -10,10 +10,10 @@ import { existsSync } from 'fs';
 import { join } from 'path';
 
 /**
- * Load shell config from global config directory (~/.llpm/shell.json)
+ * Load shell config from global config.json (~/.llpm/config.json)
  */
 async function getShellConfig(): Promise<ShellConfig> {
-  const configPath = join(getConfigDir(), 'shell.json');
+  const configPath = join(getConfigDir(), 'config.json');
 
   if (!existsSync(configPath)) {
     return DEFAULT_SHELL_CONFIG;
@@ -22,21 +22,30 @@ async function getShellConfig(): Promise<ShellConfig> {
   try {
     const content = await readFile(configPath, 'utf-8');
     const config = JSON.parse(content);
-    // Merge with defaults to ensure all required fields are present
-    return { ...DEFAULT_SHELL_CONFIG, ...config };
+    // Shell config is nested under "shell" key in config.json
+    if (config.shell) {
+      return { ...DEFAULT_SHELL_CONFIG, ...config.shell };
+    }
+    return DEFAULT_SHELL_CONFIG;
   } catch (error) {
     return DEFAULT_SHELL_CONFIG;
   }
 }
 
+export interface ShellToolResult extends ShellResult {
+  requiresConfirmation?: boolean;
+  confirmationMessage?: string;
+}
+
 export const runShellCommandTool = tool({
-  description: 'Execute a shell command in the current project directory. Returns structured output with stdout, stderr, and exit code. Shell must be enabled in global settings (~/.llpm/shell.json).',
+  description: 'Execute a shell command in the current project directory. Returns structured output with stdout, stderr, and exit code. Shell must be enabled in global settings (~/.llpm/config.json). IMPORTANT: You must first call this tool WITHOUT the confirmed parameter to show the user what command will run. Only after the user explicitly approves should you call again WITH confirmed=true.',
   inputSchema: z.object({
     command: z.string().describe('The shell command to execute'),
     cwd: z.string().optional().describe('Working directory (defaults to project root)'),
-    timeout: z.number().optional().describe('Timeout in milliseconds (default: 30000, max: 300000)')
+    timeout: z.number().optional().describe('Timeout in milliseconds (default: 30000, max: 300000)'),
+    confirmed: z.boolean().optional().describe('Set to true ONLY after user has explicitly approved the command. First call without this to show confirmation prompt.')
   }),
-  execute: async ({ command, cwd, timeout }): Promise<ShellResult> => {
+  execute: async ({ command, cwd, timeout, confirmed }): Promise<ShellToolResult> => {
     // Get current project
     const project = await getCurrentProject();
     if (!project) {
@@ -54,6 +63,32 @@ export const runShellCommandTool = tool({
 
     // Load shell config from global config
     const config = await getShellConfig();
+
+    // Require explicit confirmation before executing
+    if (!confirmed) {
+      const workingDir = cwd || project.path;
+      return {
+        success: false,
+        stdout: '',
+        stderr: '',
+        exitCode: -1,
+        command,
+        cwd: workingDir,
+        durationMs: 0,
+        requiresConfirmation: true,
+        confirmationMessage: `**Shell Command Confirmation Required**
+
+I want to run the following command:
+
+\`\`\`
+${command}
+\`\`\`
+
+**Working directory:** ${workingDir}
+
+Please confirm you want me to execute this command. Reply with "yes" or "approved" to proceed, or "no" to cancel.`
+      };
+    }
 
     // Create executor
     const executor = new ShellExecutor(config, project.path);
