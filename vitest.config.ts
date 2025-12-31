@@ -8,6 +8,7 @@ export default defineConfig({
   resolve: {
     alias: {
       'bun:sqlite': new URL('./test/mocks/bun-sqlite.js', import.meta.url).pathname,
+      'bun': new URL('./test/mocks/bun.js', import.meta.url).pathname,
     }
   },
   test: {
