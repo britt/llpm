@@ -10,10 +10,10 @@ import { existsSync } from 'fs';
 import { join } from 'path';
 
 /**
- * Load shell config for the current project
+ * Load shell config from global config directory (~/.llpm/shell.json)
  */
-async function getShellConfig(projectPath: string): Promise<ShellConfig> {
-  const configPath = join(projectPath, '.llpm', 'shell.json');
+async function getShellConfig(): Promise<ShellConfig> {
+  const configPath = join(getConfigDir(), 'shell.json');
 
   if (!existsSync(configPath)) {
     return DEFAULT_SHELL_CONFIG;
@@ -30,7 +30,7 @@ async function getShellConfig(projectPath: string): Promise<ShellConfig> {
 }
 
 export const runShellCommandTool = tool({
-  description: 'Execute a shell command in the current project directory. Returns structured output with stdout, stderr, and exit code. Shell must be enabled in project settings.',
+  description: 'Execute a shell command in the current project directory. Returns structured output with stdout, stderr, and exit code. Shell must be enabled in global settings (~/.llpm/shell.json).',
   inputSchema: z.object({
     command: z.string().describe('The shell command to execute'),
     cwd: z.string().optional().describe('Working directory (defaults to project root)'),
@@ -52,8 +52,8 @@ export const runShellCommandTool = tool({
       };
     }
 
-    // Load shell config
-    const config = await getShellConfig(project.path);
+    // Load shell config from global config
+    const config = await getShellConfig();
 
     // Create executor
     const executor = new ShellExecutor(config, project.path);

@@ -5,9 +5,19 @@ import { tmpdir } from 'os';
 import { mkdirSync, rmSync, existsSync, writeFileSync } from 'fs';
 import { join } from 'path';
 
+// Global config dir set by each test
+let testGlobalConfigDir = '';
+
+// Mock the config module to return our test config dir
+vi.mock('../utils/config', async () => {
+  return {
+    getConfigDir: () => testGlobalConfigDir
+  };
+});
+
 // Mock the Bun $ shell function
 const { mockShell, mockShellResult } = vi.hoisted(() => {
-  let mockShellResult = {
+  const mockShellResult = {
     exitCode: 0,
     stdout: Buffer.from('hello world\n'),
     stderr: Buffer.from('')
@@ -33,17 +43,21 @@ import { runShellCommandTool } from './shellTools';
 
 describe('shellTools', () => {
   let testDir: string;
+  let globalConfigDir: string;
   let mockProject: Project;
 
   beforeEach(() => {
     testDir = join(tmpdir(), 'llpm-shell-tool-test-' + Date.now());
+    globalConfigDir = join(tmpdir(), 'llpm-global-config-' + Date.now());
     mkdirSync(testDir, { recursive: true });
+    mkdirSync(globalConfigDir, { recursive: true });
 
-    // Create a shell config file that enables shell
-    const configDir = join(testDir, '.llpm');
-    mkdirSync(configDir, { recursive: true });
+    // Set the global config directory for this test (used by mocked getConfigDir)
+    testGlobalConfigDir = globalConfigDir;
+
+    // Create a shell config file in global config that enables shell
     writeFileSync(
-      join(configDir, 'shell.json'),
+      join(globalConfigDir, 'shell.json'),
       JSON.stringify({ enabled: true, defaultTimeout: 5000, maxTimeout: 30000, auditEnabled: false })
     );
 
@@ -80,6 +94,9 @@ describe('shellTools', () => {
     vi.restoreAllMocks();
     if (existsSync(testDir)) {
       rmSync(testDir, { recursive: true, force: true });
+    }
+    if (existsSync(globalConfigDir)) {
+      rmSync(globalConfigDir, { recursive: true, force: true });
     }
   });
 
@@ -139,8 +156,8 @@ describe('shellTools', () => {
     });
 
     it('should use default config when no shell.json exists', async () => {
-      // Remove the shell config file
-      const configPath = join(testDir, '.llpm', 'shell.json');
+      // Remove the shell config file from global config
+      const configPath = join(globalConfigDir, 'shell.json');
       if (existsSync(configPath)) {
         rmSync(configPath);
       }
@@ -157,8 +174,8 @@ describe('shellTools', () => {
     });
 
     it('should use default config when shell.json has invalid JSON', async () => {
-      // Write invalid JSON to config file
-      const configPath = join(testDir, '.llpm', 'shell.json');
+      // Write invalid JSON to global config file
+      const configPath = join(globalConfigDir, 'shell.json');
       writeFileSync(configPath, '{ invalid json }');
 
       // Should fall back to defaults (shell disabled)
@@ -173,8 +190,8 @@ describe('shellTools', () => {
     });
 
     it('should log to audit when auditEnabled is true', async () => {
-      // Enable audit logging in config
-      const configPath = join(testDir, '.llpm', 'shell.json');
+      // Enable audit logging in global config
+      const configPath = join(globalConfigDir, 'shell.json');
       writeFileSync(
         configPath,
         JSON.stringify({ enabled: true, defaultTimeout: 5000, maxTimeout: 30000, auditEnabled: true })
@@ -191,8 +208,8 @@ describe('shellTools', () => {
     });
 
     it('should handle audit logging errors gracefully', async () => {
-      // Enable audit logging but mock config to cause an error
-      const configPath = join(testDir, '.llpm', 'shell.json');
+      // Enable audit logging in global config
+      const configPath = join(globalConfigDir, 'shell.json');
       writeFileSync(
         configPath,
         JSON.stringify({ enabled: true, defaultTimeout: 5000, maxTimeout: 30000, auditEnabled: true })

@@ -6,7 +6,7 @@ import { join } from 'path';
 
 // Mock the Bun $ shell function using vi.hoisted to avoid reference errors
 const { mockShell, mockShellResult } = vi.hoisted(() => {
-  let mockShellResult = {
+  const mockShellResult = {
     exitCode: 0,
     stdout: Buffer.from('hello world\n'),
     stderr: Buffer.from('')

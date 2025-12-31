@@ -4,16 +4,15 @@ The shell tool allows LLPM to execute shell commands in project directories.
 
 ## Security
 
-**Shell execution is disabled by default.** To enable it, create a config file in your project:
+**Shell execution is disabled by default.** To enable it, create a global config file:
 
 ```bash
-mkdir -p .llpm
-echo '{"enabled": true}' > .llpm/shell.json
+echo '{"enabled": true}' > ~/.llpm/shell.json
 ```
 
 ## Configuration
 
-Create `.llpm/shell.json` in your project root:
+Create `~/.llpm/shell.json` (global configuration):
 
 ```json
 {
@@ -37,6 +36,14 @@ Create `.llpm/shell.json` in your project root:
 | `maxTimeout` | number | `300000` | Maximum allowed timeout |
 | `allowedPaths` | string[] | `[]` | Extra paths where commands can run |
 | `auditEnabled` | boolean | `true` | Log all commands to audit |
+
+### Default Denied Commands
+
+The following commands are denied by default for security:
+- `rm -rf /`
+- `sudo`
+- `su `
+- Fork bombs (`:(){ :|:& };:`)
 
 ## Usage
 

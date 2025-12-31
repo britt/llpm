@@ -51,26 +51,33 @@
 - Lint: Shell files clean (no errors)
 - TypeCheck: Shell files clean (no errors)
 
+### Task 9: Move Shell Config to Global Configuration - COMPLETE
+- Changed config location from per-project `.llpm/shell.json` to global `~/.llpm/shell.json`
+- Updated shellTools.ts to read from global config
+- Updated tests to mock getConfigDir
+- Updated documentation
+- Lint: Shell files clean (no errors)
+
 ## Manual Verification Steps Required
 
 Per VERIFICATION_PLAN.md, run these acceptance tests:
 
-1. **Start LLPM**: `bun run start`
-2. **Set up test project**:
+1. **Enable shell globally**:
    ```bash
-   mkdir -p /tmp/llpm-test-project/.llpm
-   echo '{"enabled": true}' > /tmp/llpm-test-project/.llpm/shell.json
+   echo '{"enabled": true}' > ~/.llpm/shell.json
    ```
+2. **Start LLPM**: `bun run start`
 3. **Add project in LLPM**: `/project add "Test Project" "test/repo" "/tmp/llpm-test-project" "Test"`
 4. **Switch to project**: `/project switch <project-id>`
 5. **Ask AI to run shell command**: "Run git status in the project"
 6. **Verify**: AI uses `run_shell_command` tool and returns output
 
 ## Summary
-All 8 tasks completed successfully. Shell tool feature fully implemented with:
+All 9 tasks completed successfully. Shell tool feature fully implemented with:
 - Type definitions with safe defaults
 - Permission validation (command/path restrictions)
 - Shell executor with timeout support
-- Audit logging to JSONL files
+- Audit logging to JSONL files (~/.llpm/audit/)
 - AI tool registered in tool registry
+- Global configuration (~/.llpm/shell.json)
 - Documentation for configuration
