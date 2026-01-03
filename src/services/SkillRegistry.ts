@@ -31,7 +31,7 @@ import { EventEmitter } from 'events';
  * Default skills configuration per Agent Skills spec
  * Discovery paths (in order of priority):
  * - Project-local: .skills/ or skills/
- * - User-global: ~/.config/llpm/skills/ or ~/.llpm/skills/
+ * - User-global: ~/.llpm/skills/
  */
 const DEFAULT_CONFIG: SkillsConfig = {
   enabled: true,
@@ -39,8 +39,7 @@ const DEFAULT_CONFIG: SkillsConfig = {
   paths: [
     '.skills',           // Project-local (Agent Skills spec)
     'skills',            // Project-local alternative
-    '~/.config/llpm/skills',  // User-global (XDG standard)
-    '~/.llpm/skills'     // User-global fallback
+    '~/.llpm/skills'     // User-global
   ],
   enforceAllowedTools: true
 };
@@ -62,7 +61,7 @@ export class SkillRegistry extends EventEmitter {
    * Determine source type based on path
    * Per Agent Skills spec:
    * - 'project': .skills/ or skills/ in current directory
-   * - 'user': ~/.config/llpm/skills/ or ~/.llpm/skills/
+   * - 'user': ~/.llpm/skills/
    * - 'system': /usr/share/llpm/skills/ (optional)
    */
   private determineSource(path: string): SkillSource {
@@ -74,7 +73,7 @@ export class SkillRegistry extends EventEmitter {
     }
 
     // User-level skills (in home directory)
-    if (expandedPath.includes('.config/llpm/skills') || expandedPath.includes('.llpm/skills')) {
+    if (expandedPath.includes('.llpm/skills')) {
       return 'user';
     }
 

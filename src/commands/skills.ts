@@ -64,7 +64,7 @@ async function listSkills(_args: string[]): Promise<CommandResult> {
   const systemSkills = skills.filter(s => s.source === 'system');
 
   if (userSkills.length > 0) {
-    lines.push('## User Skills (~/.config/llpm/skills or ~/.llpm/skills)\n');
+    lines.push('## User Skills (~/.llpm/skills)\n');
     for (const skill of userSkills) {
       const status = skill.enabled ? '✓ enabled' : '✗ disabled';
       lines.push(`**${skill.name}** [${status}]`);
@@ -376,7 +376,7 @@ Implements the Agent Skills specification: https://agentskills.io/specification
 ## Skill Locations (per Agent Skills spec)
 
 - **Project Skills:** .skills/*/SKILL.md or skills/*/SKILL.md
-- **User Skills:** ~/.config/llpm/skills/*/SKILL.md or ~/.llpm/skills/*/SKILL.md
+- **User Skills:** ~/.llpm/skills/*/SKILL.md
 - **System Skills:** /usr/share/llpm/skills/*/SKILL.md (optional)
 
 ## How Skills Work

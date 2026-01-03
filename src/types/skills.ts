@@ -167,7 +167,7 @@ export interface SkillsConfig {
    * Paths to scan for skills (in order of priority)
    * Standard paths per Agent Skills spec:
    * - Project-local: .skills/ or skills/
-   * - User-global: ~/.config/llpm/skills/ or ~/.llpm/skills/
+   * - User-global: ~/.llpm/skills/
    * - System: /usr/share/llpm/skills/ (optional)
    */
   paths: string[];
