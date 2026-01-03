@@ -10,6 +10,7 @@ import { OpenAIAdapter } from './openai';
 import { AnthropicAdapter } from './anthropic';
 import { GroqAdapter } from './groq';
 import { GoogleVertexAdapter } from './googleVertex';
+import { CerebrasAdapter } from './cerebras';
 
 describe('Model Provider Factory', () => {
   describe('getProviderAdapter', () => {
@@ -37,6 +38,12 @@ describe('Model Provider Factory', () => {
       expect(adapter.provider).toBe('google-vertex');
     });
 
+    it('should return Cerebras adapter for cerebras provider', () => {
+      const adapter = getProviderAdapter('cerebras');
+      expect(adapter).toBeInstanceOf(CerebrasAdapter);
+      expect(adapter.provider).toBe('cerebras');
+    });
+
     it('should throw error for unknown provider', () => {
       expect(() => getProviderAdapter('unknown' as any)).toThrow('Unknown provider: unknown');
     });
@@ -46,13 +53,14 @@ describe('Model Provider Factory', () => {
     it('should return all available provider adapters', () => {
       const adapters = getAllProviderAdapters();
 
-      expect(adapters).toHaveLength(4);
+      expect(adapters).toHaveLength(5);
 
       // Check each adapter type is present
       expect(adapters.some(a => a instanceof OpenAIAdapter)).toBe(true);
       expect(adapters.some(a => a instanceof AnthropicAdapter)).toBe(true);
       expect(adapters.some(a => a instanceof GroqAdapter)).toBe(true);
       expect(adapters.some(a => a instanceof GoogleVertexAdapter)).toBe(true);
+      expect(adapters.some(a => a instanceof CerebrasAdapter)).toBe(true);
     });
 
     it('should return adapters with correct provider names', () => {
@@ -63,6 +71,7 @@ describe('Model Provider Factory', () => {
       expect(providerNames).toContain('anthropic');
       expect(providerNames).toContain('groq');
       expect(providerNames).toContain('google-vertex');
+      expect(providerNames).toContain('cerebras');
     });
 
     it('should return new instances each time', () => {

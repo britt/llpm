@@ -9,7 +9,7 @@ Perfect for developers who want to organize multiple projects, interact with Git
 ### Core Features
 
 - 🤖 Chat with AI assistant (GPT-4.1 Mini by default) with multi-provider support
-- 🔄 Dynamic model switching between OpenAI, Anthropic, Groq, and Google Vertex AI
+- 🔄 Dynamic model switching between OpenAI, Anthropic, Groq, Google Vertex AI, and Cerebras
 - 💬 Interactive terminal chat interface with real-time input handling
 - 🎨 Clean, styled terminal UI built with Ink
 - 📝 Persistent chat history per session
@@ -94,6 +94,7 @@ Perfect for developers who want to organize multiple projects, interact with Git
    OPENAI_API_KEY=your-openai-api-key-here
    ANTHROPIC_API_KEY=your-anthropic-api-key-here
    GROQ_API_KEY=your-groq-api-key-here
+   CEREBRAS_API_KEY=your-cerebras-api-key-here
    GOOGLE_VERTEX_PROJECT_ID=your-google-cloud-project-id
    GOOGLE_VERTEX_REGION=us-central1  # Optional, defaults to us-central1
 

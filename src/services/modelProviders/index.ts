@@ -10,6 +10,7 @@ import { OpenAIAdapter } from './openai';
 import { AnthropicAdapter } from './anthropic';
 import { GroqAdapter } from './groq';
 import { GoogleVertexAdapter } from './googleVertex';
+import { CerebrasAdapter } from './cerebras';
 
 /**
  * Credentials for provider authentication
@@ -52,6 +53,8 @@ export function getProviderAdapter(provider: ModelProvider): ModelProviderAdapte
       return new GroqAdapter();
     case 'google-vertex':
       return new GoogleVertexAdapter();
+    case 'cerebras':
+      return new CerebrasAdapter();
     default:
       throw new Error(`Unknown provider: ${provider}`);
   }
@@ -66,6 +69,7 @@ export function getAllProviderAdapters(): ModelProviderAdapter[] {
     new AnthropicAdapter(),
     new GroqAdapter(),
     new GoogleVertexAdapter(),
+    new CerebrasAdapter(),
   ];
 }
 
@@ -73,3 +77,4 @@ export { OpenAIAdapter } from './openai';
 export { AnthropicAdapter } from './anthropic';
 export { GroqAdapter } from './groq';
 export { GoogleVertexAdapter } from './googleVertex';
+export { CerebrasAdapter } from './cerebras';

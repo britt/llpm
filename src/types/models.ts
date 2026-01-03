@@ -1,4 +1,4 @@
-export type ModelProvider = 'openai' | 'anthropic' | 'groq' | 'google-vertex';
+export type ModelProvider = 'openai' | 'anthropic' | 'groq' | 'google-vertex' | 'cerebras';
 
 export interface ModelConfig {
   provider: ModelProvider;
@@ -152,6 +152,36 @@ export const DEFAULT_MODELS: Record<ModelProvider, ModelConfig[]> = {
       modelId: 'gemini-2.5-ultra',
       displayName: 'Gemini 2.5 Ultra',
       description: 'Highest performance Gemini model'
+    }
+  ],
+  cerebras: [
+    {
+      provider: 'cerebras',
+      modelId: 'qwen-3-235b-a22b-instruct-2507',
+      displayName: 'Qwen 3 235B Instruct',
+      description: 'Alibaba Qwen 3 235B instruction-tuned model on Cerebras',
+      family: 'qwen-3'
+    },
+    {
+      provider: 'cerebras',
+      modelId: 'llama-3.3-70b',
+      displayName: 'Llama 3.3 70B',
+      description: 'Meta Llama 3.3 70B on Cerebras',
+      family: 'llama-3.3'
+    },
+    {
+      provider: 'cerebras',
+      modelId: 'llama3.1-8b',
+      displayName: 'Llama 3.1 8B',
+      description: 'Meta Llama 3.1 8B on Cerebras',
+      family: 'llama-3.1'
+    },
+    {
+      provider: 'cerebras',
+      modelId: 'llama3.1-70b',
+      displayName: 'Llama 3.1 70B',
+      description: 'Meta Llama 3.1 70B on Cerebras',
+      family: 'llama-3.1'
     }
   ]
 };

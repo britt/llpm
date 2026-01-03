@@ -236,6 +236,50 @@ Google Vertex AI requires a Google Cloud project and proper authentication.
 
 ---
 
+### Cerebras
+
+Cerebras provides ultra-fast inference using their Wafer-Scale Engine hardware, optimized for large language models including Qwen and Llama series.
+
+#### Available Models
+
+- **Qwen 3 235B Instruct** (`qwen-3-235b-a22b-instruct-2507`) - Largest Qwen 3 model with exceptional performance
+- **Qwen 3 32B Instruct** (`qwen-3-32b-a3b-instruct-2507`) - Fast Qwen 3 model with excellent capabilities
+- **Llama 4 Scout 17B** (`llama-4-scout-17b-16e-instruct`) - Meta Llama 4 Scout model
+- **Llama 3.3 70B** (`llama-3.3-70b`) - Large Llama 3.3 model
+- **Llama 3.1 8B** (`llama-3.1-8b`) - Fast Llama model
+
+#### Configuration
+
+1. **Get an API key**:
+   - Visit [Cerebras Cloud Console](https://cloud.cerebras.ai/)
+   - Sign in or create an account
+   - Navigate to API Keys and generate a new key
+
+2. **Add to your `.env` file**:
+   ```bash
+   CEREBRAS_API_KEY=your-cerebras-api-key-here
+   ```
+
+3. **Verify configuration**:
+   ```bash
+   /model providers  # Check if Cerebras shows as configured
+   ```
+
+#### Usage Examples
+
+```bash
+# Switch to Qwen 3 235B for maximum performance
+/model switch cerebras/qwen-3-235b-a22b-instruct-2507
+
+# Switch to Qwen 3 32B for faster responses
+/model switch cerebras/qwen-3-32b-a3b-instruct-2507
+
+# Switch to Llama 4 Scout
+/model switch cerebras/llama-4-scout-17b-16e-instruct
+```
+
+---
+
 ## Model Management Commands
 
 ### View Available Models
@@ -305,6 +349,7 @@ Use arrow keys to navigate, Enter to select, ESC to cancel.
 - **OpenAI GPT-4o Mini** - Fast and efficient
 - **Anthropic Claude 3.5 Haiku** - Quick responses
 - **Groq models** - Ultra-fast inference
+- **Cerebras models** - Ultra-fast inference with Wafer-Scale Engine
 
 ### For Latest Capabilities
 - **OpenAI GPT-5** series - Next-generation models
@@ -321,12 +366,14 @@ Use arrow keys to navigate, Enter to select, ESC to cancel.
    ```bash
    echo $OPENAI_API_KEY      # Should show your key
    echo $ANTHROPIC_API_KEY   # Should show your key
+   echo $CEREBRAS_API_KEY    # Should show your key
    ```
 
 2. **Verify API key format**:
    - OpenAI: starts with `sk-`
    - Anthropic: starts with `sk-ant-`
    - Groq: format varies
+   - Cerebras: format varies
    - Vertex: Project ID (not a key)
 
 3. **Check .env file**:
@@ -383,6 +430,7 @@ Use arrow keys to navigate, Enter to select, ESC to cancel.
 OPENAI_API_KEY=sk-...                    # OpenAI API key
 ANTHROPIC_API_KEY=sk-ant-...             # Anthropic API key
 GROQ_API_KEY=...                         # Groq API key
+CEREBRAS_API_KEY=...                     # Cerebras API key
 GOOGLE_VERTEX_PROJECT_ID=...             # Google Cloud project ID
 
 # Optional

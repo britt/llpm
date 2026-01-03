@@ -18,17 +18,20 @@ export interface CredentialConfig {
     projectId?: string;
     region?: string;
   };
-  
+  cerebras?: {
+    apiKey?: string;
+  };
+
   // GitHub Integration
   github?: {
     token?: string;
   };
-  
+
   // Web Search
   arcade?: {
     apiKey?: string;
   };
-  
+
 }
 
 export interface ProfileConfig {
@@ -211,6 +214,13 @@ export class CredentialManager {
     return this.getCredential('arcade', 'apiKey', 'ARCADE_API_KEY');
   }
 
+  /**
+   * Get Cerebras API key (env: CEREBRAS_API_KEY)
+   */
+  public async getCerebrasAPIKey(): Promise<string | undefined> {
+    return this.getCredential('cerebras', 'apiKey', 'CEREBRAS_API_KEY');
+  }
+
 
   /**
    * Set a credential in the specified profile (or current profile)
@@ -382,14 +392,16 @@ export class CredentialManager {
     const vertexProjectId = await this.getGoogleVertexProjectId();
     const githubToken = await this.getGitHubToken();
     const arcadeKey = await this.getArcadeAPIKey();
+    const cerebrasKey = await this.getCerebrasAPIKey();
 
     status.openai = { apiKey: !!openaiKey };
     status.anthropic = { apiKey: !!anthropicKey };
     status.groq = { apiKey: !!groqKey };
-    status.googleVertex = { 
+    status.googleVertex = {
       projectId: !!vertexProjectId,
       region: true // Region always has default value
     };
+    status.cerebras = { apiKey: !!cerebrasKey };
     status.github = { token: !!githubToken };
     status.arcade = { apiKey: !!arcadeKey };
 
