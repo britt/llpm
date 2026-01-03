@@ -1,25 +1,28 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 // Mock dependencies before importing command
-vi.mock('../utils/projectDatabase');
+vi.mock('../utils/projectConfig', () => ({
+  getCurrentProject: vi.fn()
+}));
+vi.mock('../services/notesBackend', () => ({
+  getNotesBackend: vi.fn()
+}));
 vi.mock('../utils/logger', () => ({
   debug: vi.fn()
 }));
 
 import { notesCommand } from './notes';
-import * as projectDatabase from '../utils/projectDatabase';
+import { getCurrentProject } from '../utils/projectConfig';
+import { getNotesBackend } from '../services/notesBackend';
 
-// Mock database instance
-const mockDb = {
-  getNotes: vi.fn(),
+// Mock backend instance
+const mockBackend = {
+  listNotes: vi.fn(),
   getNote: vi.fn(),
   addNote: vi.fn(),
   updateNote: vi.fn(),
   deleteNote: vi.fn(),
-  searchNotes: vi.fn(),
-  getStats: vi.fn(),
-  getAllMetadata: vi.fn(),
-  close: vi.fn()
+  searchNotes: vi.fn()
 };
 
 describe('Notes Command', () => {
@@ -35,8 +38,8 @@ describe('Notes Command', () => {
   });
 
   describe('No active project', () => {
-    it('should fail when no database available', async () => {
-      vi.mocked(projectDatabase.getCurrentProjectDatabase).mockResolvedValue(null);
+    it('should fail when no project available', async () => {
+      vi.mocked(getCurrentProject).mockResolvedValue(null);
 
       const result = await notesCommand.execute([]);
 
@@ -47,7 +50,8 @@ describe('Notes Command', () => {
 
   describe('Help subcommand', () => {
     it('should show help when help argument is passed', async () => {
-      vi.mocked(projectDatabase.getCurrentProjectDatabase).mockResolvedValue(mockDb as any);
+      vi.mocked(getCurrentProject).mockResolvedValue({ id: 'test-project', name: 'Test', path: '/test' });
+      vi.mocked(getNotesBackend).mockResolvedValue(mockBackend as any);
 
       const result = await notesCommand.execute(['help']);
 
@@ -55,16 +59,16 @@ describe('Notes Command', () => {
       expect(result.content).toContain('Notes Management Commands');
       expect(result.content).toContain('/notes add');
       expect(result.content).toContain('/notes list');
-      expect(mockDb.close).toHaveBeenCalled();
     });
   });
 
   describe('List subcommand', () => {
     it('should list notes when no arguments (default)', async () => {
-      vi.mocked(projectDatabase.getCurrentProjectDatabase).mockResolvedValue(mockDb as any);
-      mockDb.getNotes.mockReturnValue([
-        { id: 1, title: 'Note 1', content: 'Content 1', tags: 'tag1', createdAt: '2024-01-01', updatedAt: '2024-01-01' },
-        { id: 2, title: 'Note 2', content: 'Content 2', tags: '', createdAt: '2024-01-02', updatedAt: '2024-01-02' }
+      vi.mocked(getCurrentProject).mockResolvedValue({ id: 'test-project', name: 'Test', path: '/test' });
+      vi.mocked(getNotesBackend).mockResolvedValue(mockBackend as any);
+      mockBackend.listNotes.mockResolvedValue([
+        { id: 'note-1', title: 'Note 1', tags: ['tag1'], createdAt: '2024-01-01', updatedAt: '2024-01-01' },
+        { id: 'note-2', title: 'Note 2', tags: [], createdAt: '2024-01-02', updatedAt: '2024-01-02' }
       ]);
 
       const result = await notesCommand.execute([]);
@@ -75,38 +79,29 @@ describe('Notes Command', () => {
     });
 
     it('should show message when no notes exist', async () => {
-      vi.mocked(projectDatabase.getCurrentProjectDatabase).mockResolvedValue(mockDb as any);
-      mockDb.getNotes.mockReturnValue([]);
+      vi.mocked(getCurrentProject).mockResolvedValue({ id: 'test-project', name: 'Test', path: '/test' });
+      vi.mocked(getNotesBackend).mockResolvedValue(mockBackend as any);
+      mockBackend.listNotes.mockResolvedValue([]);
 
       const result = await notesCommand.execute([]);
 
       expect(result.success).toBe(true);
       expect(result.content).toContain('No notes found');
     });
-
-    it('should truncate long content in list', async () => {
-      vi.mocked(projectDatabase.getCurrentProjectDatabase).mockResolvedValue(mockDb as any);
-      mockDb.getNotes.mockReturnValue([
-        { id: 1, title: 'Note', content: 'a'.repeat(100), tags: '', createdAt: '2024-01-01', updatedAt: '2024-01-01' }
-      ]);
-
-      const result = await notesCommand.execute(['list']);
-
-      expect(result.success).toBe(true);
-      expect(result.content).toContain('...');
-    });
   });
 
   describe('Add subcommand', () => {
     it('should add a note successfully', async () => {
-      vi.mocked(projectDatabase.getCurrentProjectDatabase).mockResolvedValue(mockDb as any);
-      mockDb.addNote.mockResolvedValue({
-        id: 1,
+      vi.mocked(getCurrentProject).mockResolvedValue({ id: 'test-project', name: 'Test', path: '/test' });
+      vi.mocked(getNotesBackend).mockResolvedValue(mockBackend as any);
+      mockBackend.addNote.mockResolvedValue({
+        id: 'note-1',
         title: 'Test Note',
         content: 'Test content',
-        tags: '',
+        tags: [],
         createdAt: '2024-01-01',
-        updatedAt: '2024-01-01'
+        updatedAt: '2024-01-01',
+        source: 'user'
       });
 
       const result = await notesCommand.execute(['add', 'Test Note', 'Test content']);
@@ -117,7 +112,8 @@ describe('Notes Command', () => {
     });
 
     it('should fail when no title provided', async () => {
-      vi.mocked(projectDatabase.getCurrentProjectDatabase).mockResolvedValue(mockDb as any);
+      vi.mocked(getCurrentProject).mockResolvedValue({ id: 'test-project', name: 'Test', path: '/test' });
+      vi.mocked(getNotesBackend).mockResolvedValue(mockBackend as any);
 
       const result = await notesCommand.execute(['add']);
 
@@ -126,7 +122,8 @@ describe('Notes Command', () => {
     });
 
     it('should fail when title is empty string', async () => {
-      vi.mocked(projectDatabase.getCurrentProjectDatabase).mockResolvedValue(mockDb as any);
+      vi.mocked(getCurrentProject).mockResolvedValue({ id: 'test-project', name: 'Test', path: '/test' });
+      vi.mocked(getNotesBackend).mockResolvedValue(mockBackend as any);
 
       const result = await notesCommand.execute(['add', '']);
 
@@ -135,14 +132,16 @@ describe('Notes Command', () => {
     });
 
     it('should add a note with only title (no content)', async () => {
-      vi.mocked(projectDatabase.getCurrentProjectDatabase).mockResolvedValue(mockDb as any);
-      mockDb.addNote.mockResolvedValue({
-        id: 2,
+      vi.mocked(getCurrentProject).mockResolvedValue({ id: 'test-project', name: 'Test', path: '/test' });
+      vi.mocked(getNotesBackend).mockResolvedValue(mockBackend as any);
+      mockBackend.addNote.mockResolvedValue({
+        id: 'note-2',
         title: 'Title Only',
         content: '',
-        tags: '',
+        tags: [],
         createdAt: '2024-01-01',
-        updatedAt: '2024-01-01'
+        updatedAt: '2024-01-01',
+        source: 'user'
       });
 
       const result = await notesCommand.execute(['add', 'Title Only']);
@@ -155,17 +154,19 @@ describe('Notes Command', () => {
 
   describe('Show subcommand', () => {
     it('should show a note by ID', async () => {
-      vi.mocked(projectDatabase.getCurrentProjectDatabase).mockResolvedValue(mockDb as any);
-      mockDb.getNote.mockReturnValue({
-        id: 1,
+      vi.mocked(getCurrentProject).mockResolvedValue({ id: 'test-project', name: 'Test', path: '/test' });
+      vi.mocked(getNotesBackend).mockResolvedValue(mockBackend as any);
+      mockBackend.getNote.mockResolvedValue({
+        id: 'note-1',
         title: 'Test Note',
         content: 'Test content',
-        tags: 'important',
+        tags: ['important'],
         createdAt: '2024-01-01',
-        updatedAt: '2024-01-02'
+        updatedAt: '2024-01-02',
+        source: 'user'
       });
 
-      const result = await notesCommand.execute(['show', '1']);
+      const result = await notesCommand.execute(['show', 'note-1']);
 
       expect(result.success).toBe(true);
       expect(result.content).toContain('Test Note');
@@ -174,7 +175,8 @@ describe('Notes Command', () => {
     });
 
     it('should fail when no ID provided', async () => {
-      vi.mocked(projectDatabase.getCurrentProjectDatabase).mockResolvedValue(mockDb as any);
+      vi.mocked(getCurrentProject).mockResolvedValue({ id: 'test-project', name: 'Test', path: '/test' });
+      vi.mocked(getNotesBackend).mockResolvedValue(mockBackend as any);
 
       const result = await notesCommand.execute(['show']);
 
@@ -182,20 +184,12 @@ describe('Notes Command', () => {
       expect(result.content).toContain('Usage');
     });
 
-    it('should fail when ID is not a number', async () => {
-      vi.mocked(projectDatabase.getCurrentProjectDatabase).mockResolvedValue(mockDb as any);
-
-      const result = await notesCommand.execute(['show', 'abc']);
-
-      expect(result.success).toBe(false);
-      expect(result.content).toContain('Invalid note ID');
-    });
-
     it('should fail when note not found', async () => {
-      vi.mocked(projectDatabase.getCurrentProjectDatabase).mockResolvedValue(mockDb as any);
-      mockDb.getNote.mockReturnValue(null);
+      vi.mocked(getCurrentProject).mockResolvedValue({ id: 'test-project', name: 'Test', path: '/test' });
+      vi.mocked(getNotesBackend).mockResolvedValue(mockBackend as any);
+      mockBackend.getNote.mockResolvedValue(null);
 
-      const result = await notesCommand.execute(['show', '999']);
+      const result = await notesCommand.execute(['show', 'nonexistent-note']);
 
       expect(result.success).toBe(false);
       expect(result.content).toContain('not found');
@@ -204,9 +198,10 @@ describe('Notes Command', () => {
 
   describe('Search subcommand', () => {
     it('should search notes successfully', async () => {
-      vi.mocked(projectDatabase.getCurrentProjectDatabase).mockResolvedValue(mockDb as any);
-      mockDb.searchNotes.mockReturnValue([
-        { id: 1, title: 'Meeting Notes', content: 'Architecture discussion', tags: '', createdAt: '2024-01-01', updatedAt: '2024-01-01' }
+      vi.mocked(getCurrentProject).mockResolvedValue({ id: 'test-project', name: 'Test', path: '/test' });
+      vi.mocked(getNotesBackend).mockResolvedValue(mockBackend as any);
+      mockBackend.searchNotes.mockResolvedValue([
+        { id: 'note-1', title: 'Meeting Notes', matches: ['Architecture discussion'], matchCount: 1 }
       ]);
 
       const result = await notesCommand.execute(['search', 'architecture']);
@@ -217,8 +212,9 @@ describe('Notes Command', () => {
     });
 
     it('should show message when no results found', async () => {
-      vi.mocked(projectDatabase.getCurrentProjectDatabase).mockResolvedValue(mockDb as any);
-      mockDb.searchNotes.mockReturnValue([]);
+      vi.mocked(getCurrentProject).mockResolvedValue({ id: 'test-project', name: 'Test', path: '/test' });
+      vi.mocked(getNotesBackend).mockResolvedValue(mockBackend as any);
+      mockBackend.searchNotes.mockResolvedValue([]);
 
       const result = await notesCommand.execute(['search', 'nonexistent']);
 
@@ -227,7 +223,8 @@ describe('Notes Command', () => {
     });
 
     it('should fail when no query provided', async () => {
-      vi.mocked(projectDatabase.getCurrentProjectDatabase).mockResolvedValue(mockDb as any);
+      vi.mocked(getCurrentProject).mockResolvedValue({ id: 'test-project', name: 'Test', path: '/test' });
+      vi.mocked(getNotesBackend).mockResolvedValue(mockBackend as any);
 
       const result = await notesCommand.execute(['search']);
 
@@ -235,115 +232,91 @@ describe('Notes Command', () => {
       expect(result.content).toContain('Usage');
     });
 
-    it('should truncate long content in search results', async () => {
-      vi.mocked(projectDatabase.getCurrentProjectDatabase).mockResolvedValue(mockDb as any);
-      mockDb.searchNotes.mockReturnValue([
+    it('should show match preview in search results', async () => {
+      vi.mocked(getCurrentProject).mockResolvedValue({ id: 'test-project', name: 'Test', path: '/test' });
+      vi.mocked(getNotesBackend).mockResolvedValue(mockBackend as any);
+      mockBackend.searchNotes.mockResolvedValue([
         {
-          id: 1,
+          id: 'note-1',
           title: 'Long Content Note',
-          content: 'This is a very long content string that exceeds 40 characters and should be truncated',
-          tags: 'test',
-          createdAt: '2024-01-01',
-          updatedAt: '2024-01-01'
+          matches: ['This is a very long content string that exceeds 40 characters'],
+          matchCount: 1
         }
       ]);
 
       const result = await notesCommand.execute(['search', 'long']);
 
       expect(result.success).toBe(true);
-      expect(result.content).toContain('...');
       expect(result.content).toContain('Long Content Note');
-      expect(result.content).toContain('[test]');
-    });
-
-    it('should not truncate short content in search results', async () => {
-      vi.mocked(projectDatabase.getCurrentProjectDatabase).mockResolvedValue(mockDb as any);
-      mockDb.searchNotes.mockReturnValue([
-        {
-          id: 1,
-          title: 'Short Note',
-          content: 'Short content',
-          tags: '',
-          createdAt: '2024-01-01',
-          updatedAt: '2024-01-01'
-        }
-      ]);
-
-      const result = await notesCommand.execute(['search', 'short']);
-
-      expect(result.success).toBe(true);
-      expect(result.content).toContain('Short content');
-      expect(result.content).not.toMatch(/Short content\.\.\./);
+      expect(result.content).toContain('1 match');
     });
   });
 
   describe('Update subcommand', () => {
     it('should update a note successfully', async () => {
-      vi.mocked(projectDatabase.getCurrentProjectDatabase).mockResolvedValue(mockDb as any);
-      mockDb.updateNote.mockResolvedValue({
-        id: 1,
+      vi.mocked(getCurrentProject).mockResolvedValue({ id: 'test-project', name: 'Test', path: '/test' });
+      vi.mocked(getNotesBackend).mockResolvedValue(mockBackend as any);
+      mockBackend.updateNote.mockResolvedValue({
+        id: 'note-1',
         title: 'Updated Title',
         content: 'Updated content',
-        tags: '',
+        tags: [],
         createdAt: '2024-01-01',
-        updatedAt: '2024-01-02'
+        updatedAt: '2024-01-02',
+        source: 'user'
       });
 
-      const result = await notesCommand.execute(['update', '1', 'Updated Title', 'Updated content']);
+      const result = await notesCommand.execute(['update', 'note-1', 'Updated Title', 'Updated content']);
 
       expect(result.success).toBe(true);
       expect(result.content).toContain('Updated note');
     });
 
     it('should fail when not enough arguments', async () => {
-      vi.mocked(projectDatabase.getCurrentProjectDatabase).mockResolvedValue(mockDb as any);
+      vi.mocked(getCurrentProject).mockResolvedValue({ id: 'test-project', name: 'Test', path: '/test' });
+      vi.mocked(getNotesBackend).mockResolvedValue(mockBackend as any);
 
-      const result = await notesCommand.execute(['update', '1']);
+      const result = await notesCommand.execute(['update', 'note-1']);
 
       expect(result.success).toBe(false);
       expect(result.content).toContain('Usage');
     });
 
     it('should fail when title is empty string', async () => {
-      vi.mocked(projectDatabase.getCurrentProjectDatabase).mockResolvedValue(mockDb as any);
+      vi.mocked(getCurrentProject).mockResolvedValue({ id: 'test-project', name: 'Test', path: '/test' });
+      vi.mocked(getNotesBackend).mockResolvedValue(mockBackend as any);
 
-      const result = await notesCommand.execute(['update', '1', '']);
+      const result = await notesCommand.execute(['update', 'note-1', '']);
 
       expect(result.success).toBe(false);
       expect(result.content).toContain('Title is required');
     });
 
     it('should update note without content', async () => {
-      vi.mocked(projectDatabase.getCurrentProjectDatabase).mockResolvedValue(mockDb as any);
-      mockDb.updateNote.mockResolvedValue({
-        id: 1,
+      vi.mocked(getCurrentProject).mockResolvedValue({ id: 'test-project', name: 'Test', path: '/test' });
+      vi.mocked(getNotesBackend).mockResolvedValue(mockBackend as any);
+      mockBackend.updateNote.mockResolvedValue({
+        id: 'note-1',
         title: 'Title Only Update',
         content: '',
-        tags: '',
+        tags: [],
         createdAt: '2024-01-01',
-        updatedAt: '2024-01-02'
+        updatedAt: '2024-01-02',
+        source: 'user'
       });
 
-      const result = await notesCommand.execute(['update', '1', 'Title Only Update']);
+      const result = await notesCommand.execute(['update', 'note-1', 'Title Only Update']);
 
       expect(result.success).toBe(true);
       expect(result.content).toContain('Updated note');
     });
 
-    it('should fail when ID is not a number', async () => {
-      vi.mocked(projectDatabase.getCurrentProjectDatabase).mockResolvedValue(mockDb as any);
-
-      const result = await notesCommand.execute(['update', 'abc', 'Title']);
-
-      expect(result.success).toBe(false);
-      expect(result.content).toContain('Invalid note ID');
-    });
-
     it('should fail when note not found', async () => {
-      vi.mocked(projectDatabase.getCurrentProjectDatabase).mockResolvedValue(mockDb as any);
-      mockDb.updateNote.mockResolvedValue(null);
+      vi.mocked(getCurrentProject).mockResolvedValue({ id: 'test-project', name: 'Test', path: '/test' });
+      vi.mocked(getNotesBackend).mockResolvedValue(mockBackend as any);
+      mockBackend.updateNote.mockResolvedValue(null);
 
-      const result = await notesCommand.execute(['update', '999', 'Title']);
+      const result = await notesCommand.execute(['update', 'nonexistent-note', 'Title']);
 
       expect(result.success).toBe(false);
       expect(result.content).toContain('not found');
@@ -352,17 +325,19 @@ describe('Notes Command', () => {
 
   describe('Delete subcommand', () => {
     it('should delete a note successfully', async () => {
-      vi.mocked(projectDatabase.getCurrentProjectDatabase).mockResolvedValue(mockDb as any);
-      mockDb.deleteNote.mockReturnValue(true);
+      vi.mocked(getCurrentProject).mockResolvedValue({ id: 'test-project', name: 'Test', path: '/test' });
+      vi.mocked(getNotesBackend).mockResolvedValue(mockBackend as any);
+      mockBackend.deleteNote.mockResolvedValue(true);
 
-      const result = await notesCommand.execute(['delete', '1']);
+      const result = await notesCommand.execute(['delete', 'note-1']);
 
       expect(result.success).toBe(true);
       expect(result.content).toContain('Deleted note');
     });
 
     it('should fail when no ID provided', async () => {
-      vi.mocked(projectDatabase.getCurrentProjectDatabase).mockResolvedValue(mockDb as any);
+      vi.mocked(getCurrentProject).mockResolvedValue({ id: 'test-project', name: 'Test', path: '/test' });
+      vi.mocked(getNotesBackend).mockResolvedValue(mockBackend as any);
 
       const result = await notesCommand.execute(['delete']);
 
@@ -370,56 +345,22 @@ describe('Notes Command', () => {
       expect(result.content).toContain('Usage');
     });
 
-    it('should fail when ID is not a number', async () => {
-      vi.mocked(projectDatabase.getCurrentProjectDatabase).mockResolvedValue(mockDb as any);
-
-      const result = await notesCommand.execute(['delete', 'abc']);
-
-      expect(result.success).toBe(false);
-      expect(result.content).toContain('Invalid note ID');
-    });
-
     it('should fail when note not found', async () => {
-      vi.mocked(projectDatabase.getCurrentProjectDatabase).mockResolvedValue(mockDb as any);
-      mockDb.deleteNote.mockReturnValue(false);
+      vi.mocked(getCurrentProject).mockResolvedValue({ id: 'test-project', name: 'Test', path: '/test' });
+      vi.mocked(getNotesBackend).mockResolvedValue(mockBackend as any);
+      mockBackend.deleteNote.mockResolvedValue(false);
 
-      const result = await notesCommand.execute(['delete', '999']);
+      const result = await notesCommand.execute(['delete', 'nonexistent-note']);
 
       expect(result.success).toBe(false);
       expect(result.content).toContain('not found');
     });
   });
 
-  describe('Stats subcommand', () => {
-    it('should show database stats', async () => {
-      vi.mocked(projectDatabase.getCurrentProjectDatabase).mockResolvedValue(mockDb as any);
-      mockDb.getStats.mockReturnValue({ notesCount: 5, metadataCount: 2 });
-      mockDb.getAllMetadata.mockReturnValue({ key1: 'value1', key2: 'value2' });
-
-      const result = await notesCommand.execute(['stats']);
-
-      expect(result.success).toBe(true);
-      expect(result.content).toContain('Notes: 5');
-      expect(result.content).toContain('Metadata entries: 2');
-      expect(result.content).toContain('key1');
-      expect(result.content).toContain('value1');
-    });
-
-    it('should show stats without metadata when empty', async () => {
-      vi.mocked(projectDatabase.getCurrentProjectDatabase).mockResolvedValue(mockDb as any);
-      mockDb.getStats.mockReturnValue({ notesCount: 0, metadataCount: 0 });
-      mockDb.getAllMetadata.mockReturnValue({});
-
-      const result = await notesCommand.execute(['stats']);
-
-      expect(result.success).toBe(true);
-      expect(result.content).toContain('Notes: 0');
-    });
-  });
-
   describe('Unknown subcommand', () => {
     it('should fail for unknown subcommand', async () => {
-      vi.mocked(projectDatabase.getCurrentProjectDatabase).mockResolvedValue(mockDb as any);
+      vi.mocked(getCurrentProject).mockResolvedValue({ id: 'test-project', name: 'Test', path: '/test' });
+      vi.mocked(getNotesBackend).mockResolvedValue(mockBackend as any);
 
       const result = await notesCommand.execute(['unknown']);
 

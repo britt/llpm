@@ -1,16 +1,22 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 // Mock dependencies
-vi.mock('./projectDatabase');
+vi.mock('./projectConfig', () => ({
+  getCurrentProject: vi.fn()
+}));
+vi.mock('../services/notesBackend', () => ({
+  getNotesBackend: vi.fn()
+}));
 
 import { auditToolCall, getAuditLogs, getAuditStats, type ToolAuditEntry } from './toolAudit';
-import * as projectDatabase from './projectDatabase';
+import { getCurrentProject } from './projectConfig';
+import { getNotesBackend } from '../services/notesBackend';
 
-// Mock database instance
-const mockDb = {
-  addNote: vi.fn().mockResolvedValue({ id: 1 }),
-  searchNotes: vi.fn().mockReturnValue([]),
-  close: vi.fn()
+// Mock backend instance
+const mockBackend = {
+  addNote: vi.fn().mockResolvedValue({ id: 'note-1', title: 'Tool Audit: test', content: '', tags: ['tool-audit'], createdAt: '2024-01-01', updatedAt: '2024-01-01', source: 'user' }),
+  searchNotes: vi.fn().mockResolvedValue([]),
+  listNotes: vi.fn().mockResolvedValue([])
 };
 
 describe('Tool Audit Utils', () => {
@@ -21,8 +27,8 @@ describe('Tool Audit Utils', () => {
   });
 
   describe('auditToolCall', () => {
-    it('should log to console when no database available', async () => {
-      vi.mocked(projectDatabase.getCurrentProjectDatabase).mockResolvedValue(null);
+    it('should log to console when no project available', async () => {
+      vi.mocked(getCurrentProject).mockResolvedValue(null);
 
       const entry: ToolAuditEntry = {
         timestamp: '2024-01-01T00:00:00Z',
@@ -38,8 +44,9 @@ describe('Tool Audit Utils', () => {
       );
     });
 
-    it('should create audit note in database', async () => {
-      vi.mocked(projectDatabase.getCurrentProjectDatabase).mockResolvedValue(mockDb as any);
+    it('should create audit note in backend', async () => {
+      vi.mocked(getCurrentProject).mockResolvedValue({ id: 'test-project', name: 'Test', path: '/test' });
+      vi.mocked(getNotesBackend).mockResolvedValue(mockBackend as any);
 
       const entry: ToolAuditEntry = {
         timestamp: '2024-01-01T00:00:00Z',
@@ -49,16 +56,16 @@ describe('Tool Audit Utils', () => {
 
       await auditToolCall(entry);
 
-      expect(mockDb.addNote).toHaveBeenCalledWith(
+      expect(mockBackend.addNote).toHaveBeenCalledWith(
         'Tool Audit: test_tool',
         expect.any(String),
-        'tool-audit'
+        ['tool-audit']
       );
-      expect(mockDb.close).toHaveBeenCalled();
     });
 
     it('should include result in audit note', async () => {
-      vi.mocked(projectDatabase.getCurrentProjectDatabase).mockResolvedValue(mockDb as any);
+      vi.mocked(getCurrentProject).mockResolvedValue({ id: 'test-project', name: 'Test', path: '/test' });
+      vi.mocked(getNotesBackend).mockResolvedValue(mockBackend as any);
 
       const entry: ToolAuditEntry = {
         timestamp: '2024-01-01T00:00:00Z',
@@ -69,15 +76,16 @@ describe('Tool Audit Utils', () => {
 
       await auditToolCall(entry);
 
-      expect(mockDb.addNote).toHaveBeenCalledWith(
+      expect(mockBackend.addNote).toHaveBeenCalledWith(
         'Tool Audit: test_tool',
         expect.stringContaining('### Result'),
-        'tool-audit'
+        ['tool-audit']
       );
     });
 
     it('should include error in audit note', async () => {
-      vi.mocked(projectDatabase.getCurrentProjectDatabase).mockResolvedValue(mockDb as any);
+      vi.mocked(getCurrentProject).mockResolvedValue({ id: 'test-project', name: 'Test', path: '/test' });
+      vi.mocked(getNotesBackend).mockResolvedValue(mockBackend as any);
 
       const entry: ToolAuditEntry = {
         timestamp: '2024-01-01T00:00:00Z',
@@ -88,15 +96,16 @@ describe('Tool Audit Utils', () => {
 
       await auditToolCall(entry);
 
-      expect(mockDb.addNote).toHaveBeenCalledWith(
+      expect(mockBackend.addNote).toHaveBeenCalledWith(
         'Tool Audit: test_tool',
         expect.stringContaining('### Error'),
-        'tool-audit'
+        ['tool-audit']
       );
     });
 
     it('should include userId in audit note', async () => {
-      vi.mocked(projectDatabase.getCurrentProjectDatabase).mockResolvedValue(mockDb as any);
+      vi.mocked(getCurrentProject).mockResolvedValue({ id: 'test-project', name: 'Test', path: '/test' });
+      vi.mocked(getNotesBackend).mockResolvedValue(mockBackend as any);
 
       const entry: ToolAuditEntry = {
         timestamp: '2024-01-01T00:00:00Z',
@@ -107,15 +116,16 @@ describe('Tool Audit Utils', () => {
 
       await auditToolCall(entry);
 
-      expect(mockDb.addNote).toHaveBeenCalledWith(
+      expect(mockBackend.addNote).toHaveBeenCalledWith(
         'Tool Audit: test_tool',
         expect.stringContaining('**User**: user123'),
-        'tool-audit'
+        ['tool-audit']
       );
     });
 
     it('should include sessionId in audit note', async () => {
-      vi.mocked(projectDatabase.getCurrentProjectDatabase).mockResolvedValue(mockDb as any);
+      vi.mocked(getCurrentProject).mockResolvedValue({ id: 'test-project', name: 'Test', path: '/test' });
+      vi.mocked(getNotesBackend).mockResolvedValue(mockBackend as any);
 
       const entry: ToolAuditEntry = {
         timestamp: '2024-01-01T00:00:00Z',
@@ -126,15 +136,16 @@ describe('Tool Audit Utils', () => {
 
       await auditToolCall(entry);
 
-      expect(mockDb.addNote).toHaveBeenCalledWith(
+      expect(mockBackend.addNote).toHaveBeenCalledWith(
         'Tool Audit: test_tool',
         expect.stringContaining('**Session**: session456'),
-        'tool-audit'
+        ['tool-audit']
       );
     });
 
     it('should include duration in audit note', async () => {
-      vi.mocked(projectDatabase.getCurrentProjectDatabase).mockResolvedValue(mockDb as any);
+      vi.mocked(getCurrentProject).mockResolvedValue({ id: 'test-project', name: 'Test', path: '/test' });
+      vi.mocked(getNotesBackend).mockResolvedValue(mockBackend as any);
 
       const entry: ToolAuditEntry = {
         timestamp: '2024-01-01T00:00:00Z',
@@ -145,15 +156,15 @@ describe('Tool Audit Utils', () => {
 
       await auditToolCall(entry);
 
-      expect(mockDb.addNote).toHaveBeenCalledWith(
+      expect(mockBackend.addNote).toHaveBeenCalledWith(
         'Tool Audit: test_tool',
         expect.stringContaining('**Duration**: 150ms'),
-        'tool-audit'
+        ['tool-audit']
       );
     });
 
-    it('should handle database errors gracefully', async () => {
-      vi.mocked(projectDatabase.getCurrentProjectDatabase).mockRejectedValue(new Error('DB error'));
+    it('should handle backend errors gracefully', async () => {
+      vi.mocked(getCurrentProject).mockRejectedValue(new Error('Backend error'));
 
       const entry: ToolAuditEntry = {
         timestamp: '2024-01-01T00:00:00Z',
@@ -174,7 +185,8 @@ describe('Tool Audit Utils', () => {
     });
 
     it('should handle string result', async () => {
-      vi.mocked(projectDatabase.getCurrentProjectDatabase).mockResolvedValue(mockDb as any);
+      vi.mocked(getCurrentProject).mockResolvedValue({ id: 'test-project', name: 'Test', path: '/test' });
+      vi.mocked(getNotesBackend).mockResolvedValue(mockBackend as any);
 
       const entry: ToolAuditEntry = {
         timestamp: '2024-01-01T00:00:00Z',
@@ -185,33 +197,32 @@ describe('Tool Audit Utils', () => {
 
       await auditToolCall(entry);
 
-      expect(mockDb.addNote).toHaveBeenCalledWith(
+      expect(mockBackend.addNote).toHaveBeenCalledWith(
         'Tool Audit: test_tool',
         expect.stringContaining('String result value'),
-        'tool-audit'
+        ['tool-audit']
       );
     });
   });
 
   describe('getAuditLogs', () => {
-    it('should return empty array when no database available', async () => {
-      vi.mocked(projectDatabase.getCurrentProjectDatabase).mockResolvedValue(null);
+    it('should return empty array when no project available', async () => {
+      vi.mocked(getCurrentProject).mockResolvedValue(null);
 
       const logs = await getAuditLogs();
 
       expect(logs).toEqual([]);
     });
 
-    it('should return audit logs from database', async () => {
-      vi.mocked(projectDatabase.getCurrentProjectDatabase).mockResolvedValue(mockDb as any);
-      mockDb.searchNotes.mockReturnValue([
+    it('should return audit logs from backend', async () => {
+      vi.mocked(getCurrentProject).mockResolvedValue({ id: 'test-project', name: 'Test', path: '/test' });
+      vi.mocked(getNotesBackend).mockResolvedValue(mockBackend as any);
+      mockBackend.searchNotes.mockResolvedValue([
         {
-          id: 1,
+          id: 'note-1',
           title: 'Tool Audit: test_tool',
-          content: 'Audit content',
-          tags: 'tool-audit',
-          createdAt: '2024-01-01T00:00:00Z',
-          updatedAt: '2024-01-01T00:00:00Z'
+          matches: ['Audit content'],
+          matchCount: 1
         }
       ]);
 
@@ -219,26 +230,24 @@ describe('Tool Audit Utils', () => {
 
       expect(logs).toHaveLength(1);
       expect(logs[0].toolName).toBe('test_tool');
-      expect(mockDb.searchNotes).toHaveBeenCalledWith('tool-audit');
-      expect(mockDb.close).toHaveBeenCalled();
+      expect(mockBackend.searchNotes).toHaveBeenCalledWith('tool-audit');
     });
 
     it('should filter logs by tool name', async () => {
-      vi.mocked(projectDatabase.getCurrentProjectDatabase).mockResolvedValue(mockDb as any);
-      mockDb.searchNotes.mockReturnValue([
+      vi.mocked(getCurrentProject).mockResolvedValue({ id: 'test-project', name: 'Test', path: '/test' });
+      vi.mocked(getNotesBackend).mockResolvedValue(mockBackend as any);
+      mockBackend.listNotes.mockResolvedValue([
         {
-          id: 1,
+          id: 'note-1',
           title: 'Tool Audit: test_tool_a',
-          content: 'Content A',
-          tags: 'tool-audit',
+          tags: ['tool-audit'],
           createdAt: '2024-01-01T00:00:00Z',
           updatedAt: '2024-01-01T00:00:00Z'
         },
         {
-          id: 2,
+          id: 'note-2',
           title: 'Tool Audit: test_tool_b',
-          content: 'Content B',
-          tags: 'tool-audit',
+          tags: ['tool-audit'],
           createdAt: '2024-01-02T00:00:00Z',
           updatedAt: '2024-01-02T00:00:00Z'
         }
@@ -251,11 +260,12 @@ describe('Tool Audit Utils', () => {
     });
 
     it('should respect limit parameter', async () => {
-      vi.mocked(projectDatabase.getCurrentProjectDatabase).mockResolvedValue(mockDb as any);
-      mockDb.searchNotes.mockReturnValue([
-        { id: 1, title: 'Tool Audit: tool1', createdAt: '2024-01-01', content: '', tags: '', updatedAt: '' },
-        { id: 2, title: 'Tool Audit: tool2', createdAt: '2024-01-02', content: '', tags: '', updatedAt: '' },
-        { id: 3, title: 'Tool Audit: tool3', createdAt: '2024-01-03', content: '', tags: '', updatedAt: '' }
+      vi.mocked(getCurrentProject).mockResolvedValue({ id: 'test-project', name: 'Test', path: '/test' });
+      vi.mocked(getNotesBackend).mockResolvedValue(mockBackend as any);
+      mockBackend.searchNotes.mockResolvedValue([
+        { id: 'note-1', title: 'Tool Audit: tool1', matches: [], matchCount: 1 },
+        { id: 'note-2', title: 'Tool Audit: tool2', matches: [], matchCount: 1 },
+        { id: 'note-3', title: 'Tool Audit: tool3', matches: [], matchCount: 1 }
       ]);
 
       const logs = await getAuditLogs(undefined, 2);
@@ -263,8 +273,8 @@ describe('Tool Audit Utils', () => {
       expect(logs).toHaveLength(2);
     });
 
-    it('should handle database errors gracefully', async () => {
-      vi.mocked(projectDatabase.getCurrentProjectDatabase).mockRejectedValue(new Error('DB error'));
+    it('should handle backend errors gracefully', async () => {
+      vi.mocked(getCurrentProject).mockRejectedValue(new Error('Backend error'));
 
       const logs = await getAuditLogs();
 
@@ -277,8 +287,8 @@ describe('Tool Audit Utils', () => {
   });
 
   describe('getAuditStats', () => {
-    it('should return empty stats when no database available', async () => {
-      vi.mocked(projectDatabase.getCurrentProjectDatabase).mockResolvedValue(null);
+    it('should return empty stats when no project available', async () => {
+      vi.mocked(getCurrentProject).mockResolvedValue(null);
 
       const stats = await getAuditStats();
 
@@ -290,23 +300,29 @@ describe('Tool Audit Utils', () => {
     });
 
     it('should return audit statistics', async () => {
-      vi.mocked(projectDatabase.getCurrentProjectDatabase).mockResolvedValue(mockDb as any);
-      mockDb.searchNotes.mockReturnValue([
-        { id: 1, title: 'Tool Audit: tool_a', content: 'Content without error', tags: 'tool-audit', createdAt: '', updatedAt: '' },
-        { id: 2, title: 'Tool Audit: tool_a', content: 'More content', tags: 'tool-audit', createdAt: '', updatedAt: '' },
-        { id: 3, title: 'Tool Audit: tool_b', content: '### Error\nSomething broke', tags: 'tool-audit', createdAt: '', updatedAt: '' }
+      vi.mocked(getCurrentProject).mockResolvedValue({ id: 'test-project', name: 'Test', path: '/test' });
+      vi.mocked(getNotesBackend).mockResolvedValue(mockBackend as any);
+      mockBackend.listNotes.mockResolvedValue([
+        { id: 'note-1', title: 'Tool Audit: tool_a', tags: ['tool-audit'], createdAt: '2024-01-01', updatedAt: '2024-01-01' },
+        { id: 'note-2', title: 'Tool Audit: tool_a', tags: ['tool-audit'], createdAt: '2024-01-02', updatedAt: '2024-01-02' },
+        { id: 'note-3', title: 'Tool Audit: tool_b', tags: ['tool-audit'], createdAt: '2024-01-03', updatedAt: '2024-01-03' }
       ]);
+
+      // Need to mock getNote to return full notes with content
+      mockBackend.getNote = vi.fn()
+        .mockResolvedValueOnce({ id: 'note-1', title: 'Tool Audit: tool_a', content: 'Content without error', tags: ['tool-audit'], createdAt: '', updatedAt: '', source: 'user' })
+        .mockResolvedValueOnce({ id: 'note-2', title: 'Tool Audit: tool_a', content: 'More content', tags: ['tool-audit'], createdAt: '', updatedAt: '', source: 'user' })
+        .mockResolvedValueOnce({ id: 'note-3', title: 'Tool Audit: tool_b', content: '### Error\nSomething broke', tags: ['tool-audit'], createdAt: '', updatedAt: '', source: 'user' });
 
       const stats = await getAuditStats();
 
       expect(stats.totalCalls).toBe(3);
       expect(stats.toolCounts).toEqual({ tool_a: 2, tool_b: 1 });
       expect(stats.errorCount).toBe(1);
-      expect(mockDb.close).toHaveBeenCalled();
     });
 
-    it('should handle database errors gracefully', async () => {
-      vi.mocked(projectDatabase.getCurrentProjectDatabase).mockRejectedValue(new Error('DB error'));
+    it('should handle backend errors gracefully', async () => {
+      vi.mocked(getCurrentProject).mockRejectedValue(new Error('Backend error'));
 
       const stats = await getAuditStats();
 
@@ -322,10 +338,14 @@ describe('Tool Audit Utils', () => {
     });
 
     it('should return zero error count when no errors', async () => {
-      vi.mocked(projectDatabase.getCurrentProjectDatabase).mockResolvedValue(mockDb as any);
-      mockDb.searchNotes.mockReturnValue([
-        { id: 1, title: 'Tool Audit: tool_a', content: 'Success content', tags: 'tool-audit', createdAt: '', updatedAt: '' }
+      vi.mocked(getCurrentProject).mockResolvedValue({ id: 'test-project', name: 'Test', path: '/test' });
+      vi.mocked(getNotesBackend).mockResolvedValue(mockBackend as any);
+      mockBackend.listNotes.mockResolvedValue([
+        { id: 'note-1', title: 'Tool Audit: tool_a', tags: ['tool-audit'], createdAt: '2024-01-01', updatedAt: '2024-01-01' }
       ]);
+
+      mockBackend.getNote = vi.fn()
+        .mockResolvedValueOnce({ id: 'note-1', title: 'Tool Audit: tool_a', content: 'Success content', tags: ['tool-audit'], createdAt: '', updatedAt: '', source: 'user' });
 
       const stats = await getAuditStats();
 

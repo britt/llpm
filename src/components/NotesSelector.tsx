@@ -1,19 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Box, Text, useInput } from 'ink';
-import { getCurrentProjectDatabase } from '../utils/projectDatabase';
+import { getCurrentProject } from '../utils/projectConfig';
+import { getNotesBackend } from '../services/notesBackend';
+import type { Note } from '../types/note';
 
-interface ProjectNote {
-  id: number;
-  title: string;
-  content: string;
-  tags?: string;
-  createdAt: string;
-  updatedAt: string;
-}
+type ProjectNote = Note;
 
 export type NotesSelectorProps = {
   onClose?: () => void;
-  onInsertNote?: (noteContent: string, noteId: number) => void;
+  onInsertNote?: (noteContent: string, noteId: string) => void;
 }
 
 type ViewMode = 'list' | 'detail';
@@ -43,18 +38,30 @@ export default function NotesSelector({
 
   const loadAllNotes = async () => {
     try {
-      const db = await getCurrentProjectDatabase();
-      if (!db) {
+      const currentProject = await getCurrentProject();
+      if (!currentProject) {
         setError('No active project');
         return;
       }
 
-      const notes = db.getNotes();
-      setAllNotes(notes);
-      setFilteredNotes(notes);
+      const backend = await getNotesBackend(currentProject.id);
+
+      // Get note summaries first
+      const summaries = await backend.listNotes();
+
+      // Load full notes (with content) for display
+      const fullNotes: ProjectNote[] = [];
+      for (const summary of summaries) {
+        const fullNote = await backend.getNote(summary.id);
+        if (fullNote) {
+          fullNotes.push(fullNote);
+        }
+      }
+
+      setAllNotes(fullNotes);
+      setFilteredNotes(fullNotes);
       setWindowStart(0);
-      setNotes(notes.slice(0, WINDOW_SIZE));
-      db.close();
+      setNotes(fullNotes.slice(0, WINDOW_SIZE));
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load notes');
     }
@@ -75,7 +82,7 @@ export default function NotesSelector({
     const filtered = allNotes.filter(note =>
       note.title.toLowerCase().includes(lowerQuery) ||
       note.content.toLowerCase().includes(lowerQuery) ||
-      note.tags?.toLowerCase().includes(lowerQuery)
+      note.tags.some(tag => tag.toLowerCase().includes(lowerQuery))
     );
     setFilteredNotes(filtered);
     setWindowStart(0);
@@ -192,11 +199,11 @@ export default function NotesSelector({
       <Box paddingX={1} borderStyle="single" borderColor="magenta" borderLeft={false} borderRight={false}>
         <Box flexDirection="column">
           <Text color="cyan" bold>
-            📝 Note #{selectedNote.id}: {selectedNote.title}
+            📝 {selectedNote.title}
           </Text>
-          {selectedNote.tags && (
+          {selectedNote.tags.length > 0 && (
             <Text color="yellow">
-              🏷️  {selectedNote.tags}
+              🏷️  {selectedNote.tags.join(', ')}
             </Text>
           )}
           <Box marginTop={1}>
@@ -252,11 +259,11 @@ export default function NotesSelector({
               const preview = note.content.length > 50
                 ? note.content.substring(0, 50) + '...'
                 : note.content;
-              const tags = note.tags ? ` [${note.tags}]` : '';
+              const tags = note.tags.length > 0 ? ` [${note.tags.join(', ')}]` : '';
 
               // Limit title length to prevent overflow
               const maxTitleLength = 60;
-              const titleText = `${note.id}: ${note.title}${tags}`;
+              const titleText = `${note.title}${tags}`;
               const displayTitle = titleText.length > maxTitleLength
                 ? titleText.substring(0, maxTitleLength) + '...'
                 : titleText;
