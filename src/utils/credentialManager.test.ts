@@ -41,6 +41,7 @@ describe('CredentialManager', () => {
     delete process.env.GITHUB_TOKEN;
     delete process.env.GH_TOKEN;
     delete process.env.ARCADE_API_KEY;
+    delete process.env.CEREBRAS_API_KEY;
 
     // Reset singleton state
     const manager = CredentialManager.getInstance();
@@ -206,6 +207,31 @@ describe('CredentialManager', () => {
 
       const key = await manager.getArcadeAPIKey();
       expect(key).toBe('arcade-key');
+    });
+
+    it('getCerebrasAPIKey should return CEREBRAS_API_KEY from env', async () => {
+      process.env.CEREBRAS_API_KEY = 'cerebras-key';
+      const manager = CredentialManager.getInstance();
+      (manager as any).profileConfig = null;
+
+      const key = await manager.getCerebrasAPIKey();
+      expect(key).toBe('cerebras-key');
+    });
+
+    it('getCerebrasAPIKey should return profile credential when env not set', async () => {
+      const manager = CredentialManager.getInstance();
+      (manager as any).profileConfig = {
+        profiles: {
+          default: {
+            cerebras: { apiKey: 'profile-cerebras-key' }
+          }
+        },
+        currentProfile: 'default',
+        metadata: { version: '2.0.0', lastUpdated: '2024-01-01' }
+      };
+
+      const key = await manager.getCerebrasAPIKey();
+      expect(key).toBe('profile-cerebras-key');
     });
   });
 

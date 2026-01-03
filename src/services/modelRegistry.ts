@@ -16,6 +16,7 @@ const FALLBACK_MODELS: ModelConfig[] = [
   { provider: 'anthropic', modelId: 'claude-sonnet-4-5', displayName: 'Claude Sonnet 4.5', description: 'Latest Claude model', family: 'claude-sonnet-4-5' },
   { provider: 'groq', modelId: 'llama-3.3-70b-versatile', displayName: 'Llama 3.3 70B', description: 'Large Llama model on Groq', family: 'llama-3.3-70b' },
   { provider: 'google-vertex', modelId: 'gemini-2.5-pro', displayName: 'Gemini 2.5 Pro', description: 'Most capable Gemini model', family: 'gemini-2.5-pro' },
+  { provider: 'cerebras', modelId: 'qwen-3-235b-a22b-instruct-2507', displayName: 'Qwen 3 235B Instruct', description: 'Qwen 3 on Cerebras', family: 'qwen-3' },
 ];
 
 class ModelRegistry {
@@ -33,7 +34,8 @@ class ModelRegistry {
       openai: { provider: 'openai' },
       anthropic: { provider: 'anthropic' },
       groq: { provider: 'groq' },
-      'google-vertex': { provider: 'google-vertex' }
+      'google-vertex': { provider: 'google-vertex' },
+      cerebras: { provider: 'cerebras' }
     };
   }
 
@@ -112,7 +114,7 @@ class ModelRegistry {
    * Get recommended models (top N per provider)
    */
   public getRecommendedModels(maxPerProvider: number = 1): ModelConfig[] {
-    const providers: ModelProvider[] = ['openai', 'anthropic', 'groq', 'google-vertex'];
+    const providers: ModelProvider[] = ['openai', 'anthropic', 'groq', 'google-vertex', 'cerebras'];
     const recommended: ModelConfig[] = [];
 
     for (const provider of providers) {
@@ -189,6 +191,18 @@ class ModelRegistry {
         return vertexProvider(config.modelId);
       }
 
+      case 'cerebras': {
+        if (!providerConfig.apiKey) {
+          throw new Error('Cerebras API key not configured');
+        }
+        // Cerebras uses an OpenAI-compatible API
+        const cerebrasProvider = createOpenAI({
+          apiKey: providerConfig.apiKey,
+          baseURL: 'https://api.cerebras.ai/v1'
+        });
+        return cerebrasProvider(config.modelId);
+      }
+
       default:
         throw new Error(`Unsupported model provider: ${config.provider}`);
     }
@@ -196,11 +210,12 @@ class ModelRegistry {
 
   public isProviderConfigured(provider: ModelProvider): boolean {
     const config = this.providerConfigs[provider];
-    
+
     switch (provider) {
       case 'openai':
       case 'anthropic':
       case 'groq':
+      case 'cerebras':
         return !!config.apiKey;
       case 'google-vertex':
         return !!config.projectId;
@@ -242,6 +257,12 @@ class ModelRegistry {
     if (vertexProjectId) {
       this.providerConfigs['google-vertex'].projectId = vertexProjectId;
       this.providerConfigs['google-vertex'].region = vertexRegion;
+    }
+
+    // Load Cerebras credentials
+    const cerebrasKey = await credentialManager.getCerebrasAPIKey();
+    if (cerebrasKey) {
+      this.providerConfigs.cerebras.apiKey = cerebrasKey;
     }
 
     debug('Provider credentials loaded');

@@ -104,6 +104,7 @@ export const modelCommand: Command = {
 • /model anthropic [model] - Switch to Anthropic model
 • /model groq [model] - Switch to Groq model
 • /model google-vertex [model] - Switch to Google Vertex model
+• /model cerebras [model] - Switch to Cerebras model
 
 📝 Examples:
 • /model switch openai/gpt-4o
@@ -156,8 +157,8 @@ function showModelInfo(): CommandResult {
   }
   
   content += `\n📊 **Available Providers**\n`;
-  const allProviders: ModelProvider[] = ['openai', 'anthropic', 'groq', 'google-vertex'];
-  
+  const allProviders: ModelProvider[] = ['openai', 'anthropic', 'groq', 'google-vertex', 'cerebras'];
+
   for (const provider of allProviders) {
     const isConfigured = configuredProviders.includes(provider);
     const status = isConfigured ? '✅' : '❌';
@@ -212,6 +213,9 @@ const GENERATION_PRIORITY: Record<ModelProvider, Record<string, number>> = {
   },
   'google-vertex': {
     '2.5': 1, '2.0': 2, '1.5': 3, '1.0': 4,
+  },
+  'cerebras': {
+    'qwen-3': 1, 'llama-3.3': 2, 'llama-3.1': 3,
   },
 };
 
@@ -268,6 +272,19 @@ function extractGeneration(family: string, provider: ModelProvider): { id: strin
     if (match) return { id: match[1]!, display: `Gemini ${match[1]}` };
   }
 
+  if (provider === 'cerebras') {
+    // Qwen models: qwen-3-235b -> qwen-3
+    if (lower.includes('qwen')) {
+      const match = lower.match(/qwen[.-]?(\d+)/);
+      if (match) return { id: `qwen-${match[1]}`, display: `Qwen ${match[1]}` };
+    }
+    // Llama models: llama-3.3-70b -> llama-3.3
+    if (lower.includes('llama')) {
+      const match = lower.match(/llama[.-]?(\d+(?:\.\d+)?)/);
+      if (match) return { id: `llama-${match[1]}`, display: `Llama ${match[1]}` };
+    }
+  }
+
   // Fallback: use family as-is
   return { id: family, display: family };
 }
@@ -297,7 +314,7 @@ function groupModelsByGeneration(models: ModelConfig[], provider: ModelProvider)
 
 function listAvailableModels(showAll: boolean = false): CommandResult {
   const configuredProviders = modelRegistry.getConfiguredProviders();
-  const allProviders: ModelProvider[] = ['openai', 'anthropic', 'groq', 'google-vertex'];
+  const allProviders: ModelProvider[] = ['openai', 'anthropic', 'groq', 'google-vertex', 'cerebras'];
 
   if (!showAll && configuredProviders.length === 0) {
     return {
@@ -363,18 +380,18 @@ function listAvailableModels(showAll: boolean = false): CommandResult {
 
 function showProviders(): CommandResult {
   const configuredProviders = modelRegistry.getConfiguredProviders();
-  const allProviders: ModelProvider[] = ['openai', 'anthropic', 'groq', 'google-vertex'];
-  
+  const allProviders: ModelProvider[] = ['openai', 'anthropic', 'groq', 'google-vertex', 'cerebras'];
+
   let content = `📊 **Provider Configuration Status**\n\n`;
-  
+
   for (const provider of allProviders) {
     const isConfigured = configuredProviders.includes(provider);
     const status = isConfigured ? '✅ Configured' : '❌ Not configured';
     const models = modelRegistry.getModelsForProvider(provider);
-    
+
     content += `**${provider.toUpperCase()}** - ${status}\n`;
     content += `   Models available: ${models.length}\n`;
-    
+
     // Show required env vars
     switch (provider) {
       case 'openai':
@@ -390,10 +407,13 @@ function showProviders(): CommandResult {
         content += `   Required: GOOGLE_VERTEX_PROJECT_ID\n`;
         content += `   Optional: GOOGLE_VERTEX_REGION (default: us-central1)\n`;
         break;
+      case 'cerebras':
+        content += `   Required: CEREBRAS_API_KEY\n`;
+        break;
     }
     content += '\n';
   }
-  
+
   return {
     content,
     success: true
@@ -503,7 +523,7 @@ async function updateModels(args: string[]): Promise<CommandResult> {
   const options = parseUpdateArgs(args);
   debug('Update models with options:', options);
 
-  const allProviders: ModelProvider[] = ['openai', 'anthropic', 'groq', 'google-vertex'];
+  const allProviders: ModelProvider[] = ['openai', 'anthropic', 'groq', 'google-vertex', 'cerebras'];
   const configuredProviders = modelRegistry.getConfiguredProviders();
 
   // Determine which providers to update

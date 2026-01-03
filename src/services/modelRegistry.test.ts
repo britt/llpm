@@ -17,7 +17,8 @@ vi.mock('../utils/credentialManager', () => ({
     getAnthropicAPIKey: vi.fn(),
     getGroqAPIKey: vi.fn(),
     getGoogleVertexProjectId: vi.fn(),
-    getGoogleVertexRegion: vi.fn()
+    getGoogleVertexRegion: vi.fn(),
+    getCerebrasAPIKey: vi.fn()
   }
 }));
 
@@ -67,7 +68,8 @@ async function createFreshRegistry() {
       getAnthropicAPIKey: vi.fn(),
       getGroqAPIKey: vi.fn(),
       getGoogleVertexProjectId: vi.fn(),
-      getGoogleVertexRegion: vi.fn()
+      getGoogleVertexRegion: vi.fn(),
+      getCerebrasAPIKey: vi.fn()
     }
   }));
   vi.doMock('../utils/modelCache', () => ({ readModelCache: vi.fn() }));
@@ -196,6 +198,7 @@ describe('ModelRegistry', () => {
       expect(registry.isProviderConfigured('openai')).toBe(false);
       expect(registry.isProviderConfigured('anthropic')).toBe(false);
       expect(registry.isProviderConfigured('groq')).toBe(false);
+      expect(registry.isProviderConfigured('cerebras')).toBe(false);
     });
   });
 
@@ -226,6 +229,7 @@ describe('ModelRegistry', () => {
       expect(creds.anthropic).toBeDefined();
       expect(creds.groq).toBeDefined();
       expect(creds['google-vertex']).toBeDefined();
+      expect(creds.cerebras).toBeDefined();
     });
   });
 
@@ -276,7 +280,8 @@ describe('ModelRegistry', () => {
           getAnthropicAPIKey: vi.fn().mockResolvedValue(null),
           getGroqAPIKey: vi.fn().mockResolvedValue(null),
           getGoogleVertexProjectId: vi.fn().mockResolvedValue(null),
-          getGoogleVertexRegion: vi.fn().mockResolvedValue(null)
+          getGoogleVertexRegion: vi.fn().mockResolvedValue(null),
+          getCerebrasAPIKey: vi.fn().mockResolvedValue(null)
         }
       }));
       vi.doMock('../utils/modelCache', () => ({ readModelCache: vi.fn() }));
@@ -323,7 +328,8 @@ describe('ModelRegistry', () => {
           getAnthropicAPIKey: vi.fn().mockResolvedValue(null),
           getGroqAPIKey: vi.fn().mockResolvedValue(null),
           getGoogleVertexProjectId: vi.fn().mockResolvedValue(null),
-          getGoogleVertexRegion: vi.fn().mockResolvedValue(null)
+          getGoogleVertexRegion: vi.fn().mockResolvedValue(null),
+          getCerebrasAPIKey: vi.fn().mockResolvedValue(null)
         }
       }));
       vi.doMock('../utils/modelCache', () => ({ readModelCache: vi.fn() }));
@@ -367,7 +373,8 @@ describe('ModelRegistry', () => {
           getAnthropicAPIKey: vi.fn().mockResolvedValue(null),
           getGroqAPIKey: vi.fn().mockResolvedValue(null),
           getGoogleVertexProjectId: vi.fn().mockResolvedValue(null),
-          getGoogleVertexRegion: vi.fn().mockResolvedValue(null)
+          getGoogleVertexRegion: vi.fn().mockResolvedValue(null),
+          getCerebrasAPIKey: vi.fn().mockResolvedValue(null)
         }
       }));
       vi.doMock('../utils/modelCache', () => ({
@@ -411,7 +418,8 @@ describe('ModelRegistry', () => {
           getAnthropicAPIKey: vi.fn().mockResolvedValue(null),
           getGroqAPIKey: vi.fn().mockResolvedValue(null),
           getGoogleVertexProjectId: vi.fn().mockResolvedValue(null),
-          getGoogleVertexRegion: vi.fn().mockResolvedValue(null)
+          getGoogleVertexRegion: vi.fn().mockResolvedValue(null),
+          getCerebrasAPIKey: vi.fn().mockResolvedValue(null)
         }
       }));
       vi.doMock('../utils/modelCache', () => ({ readModelCache: vi.fn() }));
@@ -494,6 +502,19 @@ describe('ModelRegistry', () => {
       await expect(registry.createLanguageModel(model)).rejects.toThrow('Google Vertex project ID not configured');
     });
 
+    it('should throw when Cerebras is not configured', async () => {
+      const registry = await createFreshRegistry();
+      await registry.init();
+
+      const model: ModelConfig = {
+        provider: 'cerebras',
+        modelId: 'qwen-3-235b-a22b-instruct-2507',
+        displayName: 'Qwen 3 235B Instruct'
+      };
+
+      await expect(registry.createLanguageModel(model)).rejects.toThrow('Cerebras API key not configured');
+    });
+
     it('should create OpenAI model when configured', async () => {
       vi.resetModules();
       vi.doMock('../utils/logger', () => ({ debug: vi.fn() }));
@@ -507,7 +528,8 @@ describe('ModelRegistry', () => {
           getAnthropicAPIKey: vi.fn().mockResolvedValue(null),
           getGroqAPIKey: vi.fn().mockResolvedValue(null),
           getGoogleVertexProjectId: vi.fn().mockResolvedValue(null),
-          getGoogleVertexRegion: vi.fn().mockResolvedValue(null)
+          getGoogleVertexRegion: vi.fn().mockResolvedValue(null),
+          getCerebrasAPIKey: vi.fn().mockResolvedValue(null)
         }
       }));
       vi.doMock('../utils/modelCache', () => ({ readModelCache: vi.fn() }));
@@ -570,7 +592,8 @@ describe('ModelRegistry', () => {
           getAnthropicAPIKey: vi.fn().mockResolvedValue(null),
           getGroqAPIKey: vi.fn().mockResolvedValue('test-groq-key'),
           getGoogleVertexProjectId: vi.fn().mockResolvedValue(null),
-          getGoogleVertexRegion: vi.fn().mockResolvedValue(null)
+          getGoogleVertexRegion: vi.fn().mockResolvedValue(null),
+          getCerebrasAPIKey: vi.fn().mockResolvedValue(null)
         }
       }));
       vi.doMock('../utils/modelCache', () => ({ readModelCache: vi.fn() }));
@@ -619,7 +642,8 @@ describe('ModelRegistry', () => {
           getAnthropicAPIKey: vi.fn().mockResolvedValue(null),
           getGroqAPIKey: vi.fn().mockResolvedValue(null),
           getGoogleVertexProjectId: vi.fn().mockResolvedValue('test-project-id'),
-          getGoogleVertexRegion: vi.fn().mockResolvedValue('us-central1')
+          getGoogleVertexRegion: vi.fn().mockResolvedValue('us-central1'),
+          getCerebrasAPIKey: vi.fn().mockResolvedValue(null)
         }
       }));
       vi.doMock('../utils/modelCache', () => ({ readModelCache: vi.fn() }));
@@ -653,6 +677,56 @@ describe('ModelRegistry', () => {
 
       expect(result).toBeDefined();
       expect(mockModelFn).toHaveBeenCalledWith('gemini-pro');
+    });
+
+    it('should create Cerebras model when configured', async () => {
+      vi.resetModules();
+      vi.doMock('../utils/logger', () => ({ debug: vi.fn() }));
+      vi.doMock('../utils/modelStorage', () => ({
+        saveCurrentModel: vi.fn(),
+        loadCurrentModel: vi.fn().mockResolvedValue(null)
+      }));
+      vi.doMock('../utils/credentialManager', () => ({
+        credentialManager: {
+          getOpenAIAPIKey: vi.fn().mockResolvedValue(null),
+          getAnthropicAPIKey: vi.fn().mockResolvedValue(null),
+          getGroqAPIKey: vi.fn().mockResolvedValue(null),
+          getGoogleVertexProjectId: vi.fn().mockResolvedValue(null),
+          getGoogleVertexRegion: vi.fn().mockResolvedValue(null),
+          getCerebrasAPIKey: vi.fn().mockResolvedValue('test-cerebras-key')
+        }
+      }));
+      vi.doMock('../utils/modelCache', () => ({ readModelCache: vi.fn() }));
+      vi.doMock('../utils/modelMapping', () => ({
+        normalizeAnthropicModel: vi.fn((id: string) => id)
+      }));
+
+      const mockModelFn = vi.fn(() => ({ modelId: 'mock-cerebras-model' }));
+      vi.doMock('@ai-sdk/openai', () => ({
+        createOpenAI: vi.fn(() => mockModelFn)
+      }));
+      vi.doMock('@ai-sdk/anthropic', () => ({
+        createAnthropic: vi.fn(() => vi.fn(() => ({ modelId: 'mock-anthropic-model' })))
+      }));
+      vi.doMock('@ai-sdk/groq', () => ({
+        createGroq: vi.fn(() => vi.fn(() => ({ modelId: 'mock-groq-model' })))
+      }));
+      vi.doMock('@ai-sdk/google-vertex', () => ({
+        createVertex: vi.fn(() => vi.fn(() => ({ modelId: 'mock-vertex-model' })))
+      }));
+
+      const { modelRegistry } = await import('./modelRegistry');
+
+      const model: ModelConfig = {
+        provider: 'cerebras',
+        modelId: 'qwen-3-235b-a22b-instruct-2507',
+        displayName: 'Qwen 3 235B Instruct'
+      };
+
+      const result = await modelRegistry.createLanguageModel(model);
+
+      expect(result).toBeDefined();
+      expect(mockModelFn).toHaveBeenCalledWith('qwen-3-235b-a22b-instruct-2507');
     });
   });
 
