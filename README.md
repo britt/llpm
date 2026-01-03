@@ -348,22 +348,20 @@ LLPM includes a powerful skills system that allows the AI to load specialized in
 
 ### Core Skills
 
-LLPM comes with three core skills installed by default in `~/.llpm/skills/`:
+LLPM comes with 10 core skills installed by default in `~/.llpm/skills/`:
 
-1. **mermaid-diagrams** - Create syntactically correct Mermaid diagrams for GitHub
-   - Flowcharts, sequence diagrams, class diagrams, ERDs
-   - Critical syntax rules to prevent rendering errors
-   - Best practices and common patterns
-
-2. **stakeholder-updates** - Craft clear stakeholder communications
-   - Templates for executives, management, peers, and team members
-   - Status updates, delay communications, launch announcements
-   - Best practices for effective communication
-
-3. **user-story-template** - Write well-formed user stories
-   - Proper user story format with acceptance criteria
-   - Given-When-Then structure
-   - INVEST quality checklist
+| Skill | Description |
+|-------|-------------|
+| **build-faq-from-issues** | Generate FAQ documents from GitHub issues |
+| **consolidate-notes-summary** | Consolidate and summarize project notes |
+| **markdown-formatting** | Best practices for markdown document formatting |
+| **mermaid-diagrams** | Create syntactically correct Mermaid diagrams for GitHub |
+| **prepare-meeting-agenda** | Structure effective meeting agendas |
+| **research-topic-summarize** | Summarize research on technical topics |
+| **stakeholder-updates** | Craft clear stakeholder communications |
+| **summarize-conversation-thread** | Summarize long conversation threads |
+| **triage-new-issues** | Triage and categorize new GitHub issues |
+| **user-story-template** | Write well-formed user stories with acceptance criteria |
 
 ### Using Skills
 
@@ -386,11 +384,12 @@ AI: I'll load the mermaid-diagrams skill to help create a syntactically correct 
 /skills enable <name>     # Enable a skill
 /skills disable <name>    # Disable a skill
 /skills reload            # Rescan skill directories and reload all skills
+/skills reinstall         # Reinstall core skills from bundled directory
 ```
 
 ### Creating Custom Skills
 
-Create your own skills in `~/.llpm/skills/` or `.llpm/skills/` (project-specific):
+Create your own skills in `~/.llpm/skills/` (personal) or `.skills/` (project-specific):
 
 ```markdown
 # ~/.llpm/skills/my-skill/SKILL.md
@@ -422,8 +421,7 @@ Your markdown instructions here...
 
 **Skill Locations:**
 - `~/.llpm/skills/` - Personal skills (shared across all projects)
-- `~/.llpm/skills/user/` - User-specific personal skills
-- `.llpm/skills/` - Project-specific skills (not shared)
+- `.skills/` or `skills/` - Project-specific skills (not shared)
 
 **How Skills Work:**
 1. Skills are scanned on startup and when `/skills reload` is called
