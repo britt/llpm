@@ -52,8 +52,8 @@ async function installCoreSkills(force = false): Promise<number> {
     await mkdir(skillsDir, { recursive: true });
   }
 
-  // Path to bundled core skills (relative to LLPM installation)
-  const coreSkillsPath = join(LLPM_ROOT, 'skills', 'core');
+  // Path to bundled skills (relative to LLPM installation)
+  const coreSkillsPath = join(LLPM_ROOT, 'skills');
 
   if (!existsSync(coreSkillsPath)) {
     debug('Core skills directory not found:', coreSkillsPath);
@@ -70,20 +70,24 @@ async function installCoreSkills(force = false): Promise<number> {
       if (!entry.isDirectory()) continue;
 
       const skillName = entry.name;
+
+      // Skip the 'user' directory - it's a placeholder for user-created skills
+      if (skillName === 'user') continue;
+
       const sourcePath = join(coreSkillsPath, skillName);
       const targetPath = join(skillsDir, skillName);
 
       // Install if not present, or if force=true
       if (!existsSync(targetPath) || force) {
-        debug(force ? 'Reinstalling core skill:' : 'Installing core skill:', skillName);
+        debug(force ? 'Reinstalling skill:' : 'Installing skill:', skillName);
         await cp(sourcePath, targetPath, { recursive: true, force: true });
-        debug(force ? 'Reinstalled core skill:' : 'Installed core skill:', skillName);
+        debug(force ? 'Reinstalled skill:' : 'Installed skill:', skillName);
         installedCount++;
       }
     }
 
-    // Install user skills directory with README
-    const userSkillsSourcePath = join(LLPM_ROOT, 'skills', 'user');
+    // Install user skills directory with README (only if it doesn't exist)
+    const userSkillsSourcePath = join(coreSkillsPath, 'user');
     const userSkillsTargetPath = join(skillsDir, 'user');
 
     if (existsSync(userSkillsSourcePath) && !existsSync(userSkillsTargetPath)) {
