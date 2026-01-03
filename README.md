@@ -344,7 +344,9 @@ The default system prompt focuses on project management, GitHub integration, and
 
 ## Skills System
 
-LLPM includes a powerful skills system that allows the AI to load specialized instruction sets on demand. Skills are automatically injected into the system prompt, making the AI aware of when and how to use them.
+LLPM implements the [Agent Skills](https://agentskills.io/home) standard, allowing you to create reusable instruction sets that work across multiple AI coding assistants including Claude Code, Cursor, and other compatible tools.
+
+Skills are automatically injected into the system prompt, making the AI aware of when and how to use them. Because LLPM uses the Agent Skills standard, you can share skills between tools or use community skill packs like [Superpowers](https://github.com/anthropics/claude-code/tree/main/.claude/plugins/superpowers-marketplace) which provides battle-tested workflows for TDD, debugging, code review, and more.
 
 ### Core Skills
 
