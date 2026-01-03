@@ -199,7 +199,7 @@ export default function NotesSelector({
       <Box paddingX={1} borderStyle="single" borderColor="magenta" borderLeft={false} borderRight={false}>
         <Box flexDirection="column">
           <Text color="cyan" bold>
-            📝 Note #{selectedNote.id}: {selectedNote.title}
+            📝 {selectedNote.title}
           </Text>
           {selectedNote.tags.length > 0 && (
             <Text color="yellow">
@@ -263,7 +263,7 @@ export default function NotesSelector({
 
               // Limit title length to prevent overflow
               const maxTitleLength = 60;
-              const titleText = `${note.id}: ${note.title}${tags}`;
+              const titleText = `${note.title}${tags}`;
               const displayTitle = titleText.length > maxTitleLength
                 ? titleText.substring(0, maxTitleLength) + '...'
                 : titleText;
