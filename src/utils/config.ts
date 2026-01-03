@@ -1,8 +1,15 @@
 import { existsSync } from 'fs';
 import { mkdir, cp, readdir } from 'fs/promises';
-import { join } from 'path';
+import { join, dirname } from 'path';
 import { homedir, tmpdir } from 'os';
+import { fileURLToPath } from 'url';
 import { debug } from './logger';
+
+// Get the LLPM installation directory (where the package is installed)
+// This file is at src/utils/config.ts, so go up 2 levels to get to project root
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const LLPM_ROOT = join(__dirname, '..', '..');
 
 // Allow override for testing
 function getBaseConfigDir(): string {
@@ -45,8 +52,8 @@ async function installCoreSkills(force = false): Promise<number> {
     await mkdir(skillsDir, { recursive: true });
   }
 
-  // Path to bundled core skills (relative to project root)
-  const coreSkillsPath = join(process.cwd(), 'skills', 'core');
+  // Path to bundled core skills (relative to LLPM installation)
+  const coreSkillsPath = join(LLPM_ROOT, 'skills', 'core');
 
   if (!existsSync(coreSkillsPath)) {
     debug('Core skills directory not found:', coreSkillsPath);
@@ -76,7 +83,7 @@ async function installCoreSkills(force = false): Promise<number> {
     }
 
     // Install user skills directory with README
-    const userSkillsSourcePath = join(process.cwd(), 'skills', 'user');
+    const userSkillsSourcePath = join(LLPM_ROOT, 'skills', 'user');
     const userSkillsTargetPath = join(skillsDir, 'user');
 
     if (existsSync(userSkillsSourcePath) && !existsSync(userSkillsTargetPath)) {
