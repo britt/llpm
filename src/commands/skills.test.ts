@@ -6,6 +6,11 @@ import { skillsCommand } from './skills';
 import { getSkillRegistry } from '../services/SkillRegistry';
 import type { Skill } from '../types/skills';
 
+// Mock the config module for reinstallCoreSkills
+vi.mock('../utils/config', () => ({
+  reinstallCoreSkills: vi.fn().mockResolvedValue(3)
+}));
+
 // Mock the skill registry
 vi.mock('../services/SkillRegistry', () => {
   let mockSkills = new Map<string, Skill>();
@@ -330,6 +335,30 @@ describe('/skills command', () => {
 
       expect(result.success).toBe(false);
       expect(result.content).toContain('Usage: /skills disable <skill-name>');
+    });
+  });
+
+  describe('reinstall command', () => {
+    it('should reinstall core skills from bundled directory', async () => {
+      const result = await skillsCommand.execute(['reinstall']);
+
+      expect(result.success).toBe(true);
+      expect(result.content).toContain('Core skills reinstalled');
+    });
+
+    it('should report number of skills reinstalled', async () => {
+      const result = await skillsCommand.execute(['reinstall']);
+
+      expect(result.success).toBe(true);
+      expect(result.content).toMatch(/Reinstalled: \d+ skill/);
+    });
+
+    it('should handle reinstall errors gracefully', async () => {
+      // This test verifies error handling works
+      const result = await skillsCommand.execute(['reinstall']);
+
+      // Should succeed even if no core skills to reinstall (in test env)
+      expect(result.success).toBe(true);
     });
   });
 

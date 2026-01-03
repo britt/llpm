@@ -34,8 +34,10 @@ export const SYSTEM_PROMPT_FILE = join(CONFIG_DIR, 'system_prompt.txt');
 
 /**
  * Install core skills from the bundled skills directory to user's config
+ * @param force - If true, reinstall even if skills already exist
+ * @returns Number of skills installed/reinstalled
  */
-async function installCoreSkills(): Promise<void> {
+async function installCoreSkills(force = false): Promise<number> {
   const skillsDir = join(CONFIG_DIR, 'skills');
 
   // Create skills directory if it doesn't exist
@@ -48,8 +50,10 @@ async function installCoreSkills(): Promise<void> {
 
   if (!existsSync(coreSkillsPath)) {
     debug('Core skills directory not found:', coreSkillsPath);
-    return;
+    return 0;
   }
+
+  let installedCount = 0;
 
   try {
     // Read all core skill directories
@@ -62,11 +66,12 @@ async function installCoreSkills(): Promise<void> {
       const sourcePath = join(coreSkillsPath, skillName);
       const targetPath = join(skillsDir, skillName);
 
-      // Only install if not already present
-      if (!existsSync(targetPath)) {
-        debug('Installing core skill:', skillName);
-        await cp(sourcePath, targetPath, { recursive: true });
-        debug('Installed core skill:', skillName);
+      // Install if not present, or if force=true
+      if (!existsSync(targetPath) || force) {
+        debug(force ? 'Reinstalling core skill:' : 'Installing core skill:', skillName);
+        await cp(sourcePath, targetPath, { recursive: true, force: true });
+        debug(force ? 'Reinstalled core skill:' : 'Installed core skill:', skillName);
+        installedCount++;
       }
     }
 
@@ -91,6 +96,16 @@ async function installCoreSkills(): Promise<void> {
     debug('Error installing core skills:', error);
     // Don't fail config creation if skills installation fails
   }
+
+  return installedCount;
+}
+
+/**
+ * Reinstall all core skills from the bundled directory, overwriting existing ones
+ * @returns Number of skills reinstalled
+ */
+export async function reinstallCoreSkills(): Promise<number> {
+  return installCoreSkills(true);
 }
 
 export async function ensureConfigDir(): Promise<void> {
