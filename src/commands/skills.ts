@@ -6,10 +6,11 @@
  */
 import type { Command, CommandResult } from './types';
 import { getSkillRegistry } from '../services/SkillRegistry';
+import { reinstallCoreSkills } from '../utils/config';
 
 export const skillsCommand: Command = {
   name: 'skills',
-  description: 'Manage Agent Skills (list, test, enable, disable, reload)',
+  description: 'Manage Agent Skills (list, test, enable, disable, reload, reinstall)',
 
   async execute(args: string[]): Promise<CommandResult> {
     const subcommand = args[0] || 'list';
@@ -29,6 +30,9 @@ export const skillsCommand: Command = {
 
       case 'reload':
         return await reloadSkills();
+
+      case 'reinstall':
+        return await reinstallSkills();
 
       case 'help':
       default:
@@ -60,7 +64,7 @@ async function listSkills(_args: string[]): Promise<CommandResult> {
   const systemSkills = skills.filter(s => s.source === 'system');
 
   if (userSkills.length > 0) {
-    lines.push('## User Skills (~/.config/llpm/skills or ~/.llpm/skills)\n');
+    lines.push('## User Skills (~/.llpm/skills)\n');
     for (const skill of userSkills) {
       const status = skill.enabled ? '✓ enabled' : '✗ disabled';
       lines.push(`**${skill.name}** [${status}]`);
@@ -319,6 +323,34 @@ async function reloadSkills(): Promise<CommandResult> {
 }
 
 /**
+ * Reinstall core skills from bundled directory
+ */
+async function reinstallSkills(): Promise<CommandResult> {
+  try {
+    const count = await reinstallCoreSkills();
+    const registry = getSkillRegistry();
+
+    // Rescan after reinstalling
+    await registry.scan();
+
+    const lines: string[] = [];
+    lines.push(`✓ Core skills reinstalled successfully\n`);
+    lines.push(`Reinstalled: ${count} skill(s)`);
+    lines.push(`\nUse \`/skills list\` to see all loaded skills.`);
+
+    return {
+      success: true,
+      content: lines.join('\n')
+    };
+  } catch (error) {
+    return {
+      success: false,
+      content: `Failed to reinstall skills: ${error instanceof Error ? error.message : String(error)}`
+    };
+  }
+}
+
+/**
  * Show help for /skills command
  */
 function showHelp(): CommandResult {
@@ -338,12 +370,13 @@ Implements the Agent Skills specification: https://agentskills.io/specification
 \`/skills enable <name>\` - Enable a skill (eligible for automatic selection)
 \`/skills disable <name>\` - Disable a skill (won't be selected)
 \`/skills reload\` - Rescan skill directories and reload all skills
+\`/skills reinstall\` - Reinstall core skills from bundled directory (overwrites existing)
 \`/skills help\` - Show this help message
 
 ## Skill Locations (per Agent Skills spec)
 
 - **Project Skills:** .skills/*/SKILL.md or skills/*/SKILL.md
-- **User Skills:** ~/.config/llpm/skills/*/SKILL.md or ~/.llpm/skills/*/SKILL.md
+- **User Skills:** ~/.llpm/skills/*/SKILL.md
 - **System Skills:** /usr/share/llpm/skills/*/SKILL.md (optional)
 
 ## How Skills Work
