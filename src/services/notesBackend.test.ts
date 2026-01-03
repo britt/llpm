@@ -12,11 +12,12 @@ vi.mock('../utils/config', () => ({
 // Mock search (tested separately)
 vi.mock('../utils/notesSearch', () => ({
   searchNotesWithRipgrep: vi.fn().mockResolvedValue([]),
-  ensureRipgrep: vi.fn().mockResolvedValue(undefined)
+  ensureRipgrep: vi.fn().mockResolvedValue(undefined),
+  commandExists: vi.fn().mockResolvedValue(true)
 }));
 
-import { NotesBackend } from './notesBackend';
-import { searchNotesWithRipgrep } from '../utils/notesSearch';
+import { NotesBackend, resetRipgrepWarning } from './notesBackend';
+import { searchNotesWithRipgrep, commandExists } from '../utils/notesSearch';
 
 describe('NotesBackend', () => {
   let testDir: string;
@@ -47,6 +48,54 @@ describe('NotesBackend', () => {
   describe('initialize', () => {
     it('should create notes directory if not exists', async () => {
       expect(existsSync(notesDir)).toBe(true);
+    });
+
+    it('should warn when ripgrep is not installed', async () => {
+      // Reset warning flag and mock ripgrep as not installed
+      resetRipgrepWarning();
+      vi.mocked(commandExists).mockResolvedValue(false);
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+      // Create a new backend to trigger initialize
+      const newBackend = new NotesBackend('ripgrep-test-project');
+      mkdirSync(join(testDir, 'projects', 'ripgrep-test-project'), { recursive: true });
+      await newBackend.initialize();
+
+      expect(warnSpy).toHaveBeenCalledWith(
+        expect.stringContaining('ripgrep (rg) is not installed')
+      );
+      expect(warnSpy).toHaveBeenCalledWith(
+        expect.stringContaining('brew install ripgrep')
+      );
+
+      warnSpy.mockRestore();
+      vi.mocked(commandExists).mockResolvedValue(true);
+    });
+
+    it('should only warn about ripgrep once per session', async () => {
+      // Reset warning flag and mock ripgrep as not installed
+      resetRipgrepWarning();
+      vi.mocked(commandExists).mockResolvedValue(false);
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+      // Create first backend
+      const backend1 = new NotesBackend('project1');
+      mkdirSync(join(testDir, 'projects', 'project1'), { recursive: true });
+      await backend1.initialize();
+
+      // Create second backend
+      const backend2 = new NotesBackend('project2');
+      mkdirSync(join(testDir, 'projects', 'project2'), { recursive: true });
+      await backend2.initialize();
+
+      // Should only warn once
+      const ripgrepWarnings = warnSpy.mock.calls.filter(
+        call => String(call[0]).includes('ripgrep')
+      );
+      expect(ripgrepWarnings.length).toBe(1);
+
+      warnSpy.mockRestore();
+      vi.mocked(commandExists).mockResolvedValue(true);
     });
   });
 

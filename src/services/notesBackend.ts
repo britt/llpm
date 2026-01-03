@@ -6,8 +6,18 @@ import {
   serializeNote,
   generateNoteFilename
 } from '../utils/notesFrontmatter';
-import { searchNotesWithRipgrep, ensureRipgrep } from '../utils/notesSearch';
+import { searchNotesWithRipgrep, ensureRipgrep, commandExists } from '../utils/notesSearch';
 import type { Note, NoteSummary, NoteInput, SearchOptions, SearchResult } from '../types/note';
+
+// Track if we've already warned about ripgrep
+let ripgrepWarningShown = false;
+
+/**
+ * Reset the ripgrep warning flag (for testing)
+ */
+export function resetRipgrepWarning(): void {
+  ripgrepWarningShown = false;
+}
 
 export class NotesBackend {
   private projectId: string;
@@ -31,6 +41,22 @@ export class NotesBackend {
     } else if (!existsSync(this.notesDir)) {
       // Create empty notes directory
       mkdirSync(this.notesDir, { recursive: true });
+    }
+
+    // Check for ripgrep and warn if not installed (only once per session)
+    if (!ripgrepWarningShown) {
+      const hasRipgrep = await commandExists('rg');
+      if (!hasRipgrep) {
+        ripgrepWarningShown = true;
+        console.warn(
+          '\n⚠️  ripgrep (rg) is not installed. Notes search will not work.\n\n' +
+          'Install ripgrep to enable search:\n' +
+          '  macOS:   brew install ripgrep\n' +
+          '  Ubuntu:  sudo apt-get install ripgrep\n' +
+          '  Windows: choco install ripgrep\n' +
+          '  Cargo:   cargo install ripgrep\n'
+        );
+      }
     }
   }
 
