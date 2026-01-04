@@ -1,3 +1,11 @@
+/**
+ * Project Scan Tools
+ *
+ * These tools are exposed to the LLM for scanning and analyzing project codebases.
+ * Each tool's `description` field is a @prompt that instructs the LLM
+ * on when and how to use the tool. The `inputSchema` descriptions are
+ * also @prompt content that guide the LLM on parameter usage.
+ */
 import { tool } from './instrumentedTool';
 import * as z from "zod";
 import { projectScanCommand } from '../commands/project-scan';
@@ -30,6 +38,10 @@ interface ProjectScanMemory {
 // In-memory storage for project scan results
 const projectScans = new Map<string, ProjectScanMemory>();
 
+/**
+ * @prompt Tool: scan_project
+ * Description and parameter descriptions sent to LLM explaining tool usage.
+ */
 export const scanProjectTool = tool({
   description: `Scan and analyze the current project codebase. This tool will:
 1. Analyze the project directory structure, file types, and languages
@@ -188,6 +200,10 @@ Results are cached in memory and can be referenced in future conversations.`,
   }
 });
 
+/**
+ * @prompt Tool: get_project_scan
+ * Description and parameter descriptions sent to LLM explaining tool usage.
+ */
 export const getProjectScanTool = tool({
   description: `Retrieve previously cached project scan results from memory. 
 This tool returns the stored analysis without re-scanning the project.
@@ -244,6 +260,10 @@ Useful for referencing project structure and metrics from previous scans.`,
   }
 });
 
+/**
+ * @prompt Tool: list_project_scans
+ * Description sent to LLM explaining when to use this tool.
+ */
 export const listProjectScansTool = tool({
   description: `List all cached project scans in memory.
 Shows which projects have been scanned and when, allowing you to see what analysis data is available.`,

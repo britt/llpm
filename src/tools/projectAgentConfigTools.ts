@@ -1,9 +1,18 @@
+/**
+ * Project Agent Configuration Tools
+ *
+ * These tools are exposed to the LLM for managing project-specific agent configurations.
+ * Each tool's `description` field is a @prompt that instructs the LLM
+ * on when and how to use the tool. The `inputSchema` descriptions are
+ * also @prompt content that guide the LLM on parameter usage.
+ */
 import { tool } from './instrumentedTool';
 import { z } from 'zod';
 import { loadProjectConfig, loadProjectAgentConfig, saveProjectAgentConfig, removeProjectAgentConfig as removeProjectAgentConfigFile } from '../utils/projectConfig';
 
 /**
- * Set project-specific agent configuration
+ * @prompt Tool: set_project_agent_config
+ * Description and parameter descriptions sent to LLM explaining tool usage.
  */
 export const setProjectAgentConfigTool = tool({
   description: 'Set agent configuration for the current project. This allows you to define default agent scaling preferences per project.',
@@ -102,7 +111,8 @@ export const setProjectAgentConfigTool = tool({
 });
 
 /**
- * Get project-specific agent configuration
+ * @prompt Tool: get_project_agent_config
+ * Description sent to LLM explaining when to use this tool.
  */
 export const getProjectAgentConfigTool = tool({
   description: 'Get the agent configuration for the current project.',
@@ -165,7 +175,8 @@ export const getProjectAgentConfigTool = tool({
 });
 
 /**
- * Remove project-specific agent configuration
+ * @prompt Tool: remove_project_agent_config
+ * Description sent to LLM explaining when to use this tool.
  */
 export const removeProjectAgentConfigTool = tool({
   description: 'Remove the agent configuration from the current project, reverting to global defaults.',

@@ -1,3 +1,11 @@
+/**
+ * Filesystem Tools
+ *
+ * These tools are exposed to the LLM for reading and exploring project files.
+ * Each tool's `description` field is a @prompt that instructs the LLM
+ * on when and how to use the tool. The `inputSchema` descriptions are
+ * also @prompt content that guide the LLM on parameter usage.
+ */
 import { readFile, readdir, stat } from 'fs/promises';
 import { existsSync } from 'fs';
 import { join, relative, resolve, sep } from 'path';
@@ -38,7 +46,8 @@ async function validateProjectPath(requestedPath: string): Promise<string> {
 }
 
 /**
- * Reads the contents of a file within the current project
+ * @prompt Tool: read_project_file
+ * Description and parameter descriptions sent to LLM explaining tool usage.
  */
 export const readProjectFile = tool({
   description: 'Read the contents of a file within the current project directory. Useful for understanding code structure, configuration files, documentation, etc.',
@@ -74,7 +83,8 @@ export const readProjectFile = tool({
 });
 
 /**
- * Lists files and directories within the current project
+ * @prompt Tool: list_project_directory
+ * Description and parameter descriptions sent to LLM explaining tool usage.
  */
 export const listProjectDirectory = tool({
   description: 'List files and directories within the current project. Useful for exploring project structure and finding relevant files.',
@@ -138,7 +148,8 @@ export const listProjectDirectory = tool({
 });
 
 /**
- * Gets file information and statistics within the current project
+ * @prompt Tool: get_project_file_info
+ * Description and parameter descriptions sent to LLM explaining tool usage.
  */
 export const getProjectFileInfo = tool({
   description: 'Get detailed information about a file or directory within the current project (size, modification time, type, etc.).',
@@ -197,7 +208,8 @@ export const getProjectFileInfo = tool({
 });
 
 /**
- * Searches for files within the current project by name pattern
+ * @prompt Tool: find_project_files
+ * Description and parameter descriptions sent to LLM explaining tool usage.
  */
 export const findProjectFiles = tool({
   description: 'Search for files within the current project by name pattern. Useful for finding specific files or file types.',

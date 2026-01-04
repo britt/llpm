@@ -419,6 +419,45 @@ export const existingTool = tool({
 export const newTool1 = tool({ ... }); // Your new tool
 ```
 
+### Prompt Documentation with @prompt
+
+**MANDATORY: All prompts sent to LLMs must be documented with `@prompt` comments.**
+
+When creating or modifying any text that will be sent to an LLM, add a JSDoc comment with `@prompt` to make it searchable and identifiable:
+
+```typescript
+/**
+ * @prompt Tool: my_tool_name
+ * Description and parameter descriptions sent to LLM explaining tool usage.
+ */
+export const myTool = tool({
+  description: 'This description is sent to the LLM...',
+  inputSchema: z.object({
+    param: z.string().describe('This is also sent to the LLM')
+  }),
+  execute: async ({ param }) => { ... }
+});
+```
+
+**What counts as a prompt:**
+- Tool `description` fields (sent to LLM as tool instructions)
+- Parameter `.describe()` strings (sent to LLM as parameter guidance)
+- System prompts and templates (`DEFAULT_SYSTEM_PROMPT`, etc.)
+- Context injection functions that generate LLM-bound text
+- User-facing message templates shown before LLM actions
+- Setup/instruction messages that guide LLM behavior
+
+**Comment format:**
+- For tools: `@prompt Tool: tool_name`
+- For system prompts: `@prompt PROMPT_CONSTANT_NAME`
+- For template functions: `@prompt functionName`
+
+**Why this matters:**
+- Makes prompts searchable: `grep -r "@prompt" src/`
+- Helps with prompt maintenance and updates
+- Documents which strings affect LLM behavior
+- Enables prompt auditing and optimization
+
 ### TypeScript Best Practices
 
 - **Always use `import type` for type-only imports**: Use `import type { MyType } from './types'` instead of `import { MyType } from './types'` when importing interfaces, types, or other TypeScript-only constructs

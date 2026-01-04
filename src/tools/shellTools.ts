@@ -1,3 +1,14 @@
+/**
+ * Shell Execution Tools
+ *
+ * These tools are exposed to the LLM for executing shell commands.
+ * Each tool's `description` field is a @prompt that instructs the LLM
+ * on when and how to use the tool. The `inputSchema` descriptions are
+ * also @prompt content that guide the LLM on parameter usage.
+ *
+ * The confirmation message template at line ~81-91 is also a @prompt
+ * that is shown to the user before command execution.
+ */
 import { tool } from './instrumentedTool';
 import { z } from 'zod';
 import { getCurrentProject } from '../utils/projectConfig';
@@ -39,6 +50,11 @@ export interface ShellToolResult extends ShellResult {
   executionNotice?: string;
 }
 
+/**
+ * @prompt Tool: run_shell_command
+ * Description and parameter descriptions sent to LLM explaining tool usage.
+ * The confirmationMessage template (lines ~91-101) is also a @prompt shown to users.
+ */
 export const runShellCommandTool = tool({
   description: 'Execute a shell command in the current project directory. Returns structured output with stdout, stderr, and exit code. Shell must be enabled in global settings (~/.llpm/config.json). IMPORTANT: You must first call this tool WITHOUT the confirmed parameter to show the user what command will run. Only after the user explicitly approves should you call again WITH confirmed=true.',
   inputSchema: z.object({

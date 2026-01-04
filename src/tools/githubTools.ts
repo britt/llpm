@@ -1,8 +1,20 @@
+/**
+ * GitHub Repository Tools
+ *
+ * These tools are exposed to the LLM for interacting with GitHub repositories.
+ * Each tool's `description` field is a @prompt that instructs the LLM
+ * on when and how to use the tool. The `inputSchema` descriptions are
+ * also @prompt content that guide the LLM on parameter usage.
+ */
 import { tool } from './instrumentedTool';
 import * as z from "zod";
 import { getUserRepos, searchRepos, getRepo } from '../services/github';
 import { debug } from '../utils/logger';
 
+/**
+ * @prompt Tool: list_github_repos
+ * Description and parameter descriptions sent to LLM explaining tool usage.
+ */
 export const listGitHubReposTool = tool({
   description: 'List GitHub repositories for the authenticated user',
   inputSchema: z.object({
@@ -52,6 +64,10 @@ export const listGitHubReposTool = tool({
   }
 });
 
+/**
+ * @prompt Tool: search_github_repos
+ * Description and parameter descriptions sent to LLM explaining tool usage.
+ */
 export const searchGitHubReposTool = tool({
   description: 'Search for GitHub repositories',
   inputSchema: z.object({
@@ -97,6 +113,10 @@ export const searchGitHubReposTool = tool({
   }
 });
 
+/**
+ * @prompt Tool: get_github_repo
+ * Description and parameter descriptions sent to LLM explaining tool usage.
+ */
 export const getGitHubRepoTool = tool({
   description: 'Get detailed information about a specific GitHub repository',
   inputSchema: z.object({

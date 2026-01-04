@@ -8,6 +8,13 @@ import { traced } from './tracing';
 import { SpanKind } from '@opentelemetry/api';
 import { getSkillRegistry } from '../services/SkillRegistry';
 
+/**
+ * @prompt DEFAULT_SYSTEM_PROMPT
+ * Main system prompt sent to the LLM at the start of each conversation.
+ * This prompt defines LLPM's persona, capabilities, available tools, and response guidelines.
+ * Dynamic content (project context, skills) is injected at runtime via injectProjectContext()
+ * and injectSkillsContext().
+ */
 const DEFAULT_SYSTEM_PROMPT = `You are LLPM (Large Language Model Product Manager), an AI-powered project management assistant that operates within an interactive terminal interface. You help users manage multiple projects, interact with GitHub repositories, and coordinate development workflows through natural language conversation.
 
 <Core Context>
@@ -219,6 +226,12 @@ export async function getSystemPrompt(): Promise<string> {
   });
 }
 
+/**
+ * @prompt formatProjectContext
+ * Generates a prompt template section containing the current project's context.
+ * This context is injected into the system prompt to give the LLM awareness of
+ * the active project, its repository, local path, and operational instructions.
+ */
 function formatProjectContext(project: Project): string {
   try {
     // Safely extract project properties with fallbacks
@@ -369,7 +382,10 @@ async function injectProjectContext(basePrompt: string): Promise<string> {
 }
 
 /**
- * Inject available skills section into system prompt
+ * @prompt injectSkillsContext
+ * Inject available skills section into system prompt.
+ * Generates a prompt template section listing all enabled skills with their
+ * trigger conditions, instructing the LLM when to load each skill.
  */
 function injectSkillsContext(basePrompt: string): string {
   try {
