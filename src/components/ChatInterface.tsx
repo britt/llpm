@@ -7,7 +7,7 @@ import {
 } from '../utils/projectConfig';
 import type { Project } from '../types/project';
 import type { Model, ModelConfig } from '../types/models';
-import { loadCurrentModel } from '../utils/modelStorage';
+import { modelRegistry } from '../services/modelRegistry';
 import HybridInput from './HybridInput';
 import ProjectSelector from './ProjectSelector';
 import ModelSelector from './ModelSelector';
@@ -341,11 +341,13 @@ export const ChatInterface = memo(function ChatInterface({
     loadCurrentProject();
   }, []);
 
-  // Load current model on mount and when messages change (to detect model switches)
+  // Load current model on mount - uses modelRegistry to ensure model is from a configured provider
+  // This fixes Issue #176: prevents showing unconfigured provider models in the footer
   useEffect(() => {
     const loadModel = async () => {
       try {
-        const model = await loadCurrentModel();
+        await modelRegistry.init();
+        const model = modelRegistry.getCurrentModel();
         setCurrentModel(model);
       } catch (error) {
         console.error('Failed to load current model:', error);
@@ -446,9 +448,10 @@ export const ChatInterface = memo(function ChatInterface({
             setActiveInput('main');
             // Await the model switch to complete before reloading
             await onModelSelect?.(modelValue);
-            // Reload model from storage after selection to update display
+            // Reload model from registry after selection to update display
+            // Uses modelRegistry to ensure model is from a configured provider (Issue #176)
             try {
-              const model = await loadCurrentModel();
+              const model = modelRegistry.getCurrentModel();
               setCurrentModel(model);
             } catch (error) {
               console.error('Failed to reload model after selection:', error);

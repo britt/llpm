@@ -741,4 +741,303 @@ describe('ModelRegistry', () => {
       await expect(registry.reloadModelsFromCache()).resolves.not.toThrow();
     });
   });
+
+  /**
+   * Tests for Issue #176: Model provider appears as active in footer while missing
+   * from model selector when API key not configured
+   *
+   * Bug: When a provider's API key is removed after a model was selected,
+   * the stored model can still appear in the footer even though it's not
+   * available in the model selector.
+   */
+  describe('Issue #176: Unconfigured provider model handling', () => {
+    it('should NOT return stored model when its provider is unconfigured', async () => {
+      // Scenario: User previously selected an OpenAI model, then removed the API key
+      const storedModel: ModelConfig = {
+        provider: 'openai',
+        modelId: 'gpt-4o',
+        displayName: 'GPT-4o'
+      };
+
+      vi.resetModules();
+      vi.doMock('../utils/logger', () => ({ debug: vi.fn() }));
+      vi.doMock('../utils/modelStorage', () => ({
+        saveCurrentModel: vi.fn(),
+        // Stored model is from OpenAI
+        loadCurrentModel: vi.fn().mockResolvedValue(storedModel)
+      }));
+      vi.doMock('../utils/credentialManager', () => ({
+        credentialManager: {
+          // OpenAI is NOT configured (API key removed)
+          getOpenAIAPIKey: vi.fn().mockResolvedValue(null),
+          // But Anthropic IS configured
+          getAnthropicAPIKey: vi.fn().mockResolvedValue('test-anthropic-key'),
+          getGroqAPIKey: vi.fn().mockResolvedValue(null),
+          getGoogleVertexProjectId: vi.fn().mockResolvedValue(null),
+          getGoogleVertexRegion: vi.fn().mockResolvedValue(null),
+          getCerebrasAPIKey: vi.fn().mockResolvedValue(null)
+        }
+      }));
+      vi.doMock('../utils/modelCache', () => ({ readModelCache: vi.fn() }));
+      vi.doMock('../utils/modelMapping', () => ({
+        normalizeAnthropicModel: vi.fn((id: string) => id)
+      }));
+      vi.doMock('@ai-sdk/openai', () => ({
+        createOpenAI: vi.fn(() => vi.fn(() => ({ modelId: 'mock-openai-model' })))
+      }));
+      vi.doMock('@ai-sdk/anthropic', () => ({
+        createAnthropic: vi.fn(() => vi.fn(() => ({ modelId: 'mock-anthropic-model' })))
+      }));
+      vi.doMock('@ai-sdk/groq', () => ({
+        createGroq: vi.fn(() => vi.fn(() => ({ modelId: 'mock-groq-model' })))
+      }));
+      vi.doMock('@ai-sdk/google-vertex', () => ({
+        createVertex: vi.fn(() => vi.fn(() => ({ modelId: 'mock-vertex-model' })))
+      }));
+
+      const { modelRegistry } = await import('./modelRegistry');
+      await modelRegistry.init();
+
+      const currentModel = modelRegistry.getCurrentModel();
+
+      // The current model should NOT be the stored OpenAI model
+      // because OpenAI is not configured
+      expect(currentModel.provider).not.toBe('openai');
+      // It should fall back to a configured provider (Anthropic)
+      expect(currentModel.provider).toBe('anthropic');
+    });
+
+    it('should return stored model when its provider IS configured', async () => {
+      // Scenario: User selected an OpenAI model and OpenAI is still configured
+      const storedModel: ModelConfig = {
+        provider: 'openai',
+        modelId: 'gpt-5.2',
+        displayName: 'GPT-5.2'
+      };
+
+      vi.resetModules();
+      vi.doMock('../utils/logger', () => ({ debug: vi.fn() }));
+      vi.doMock('../utils/modelStorage', () => ({
+        saveCurrentModel: vi.fn(),
+        loadCurrentModel: vi.fn().mockResolvedValue(storedModel)
+      }));
+      vi.doMock('../utils/credentialManager', () => ({
+        credentialManager: {
+          // OpenAI IS configured
+          getOpenAIAPIKey: vi.fn().mockResolvedValue('test-openai-key'),
+          getAnthropicAPIKey: vi.fn().mockResolvedValue(null),
+          getGroqAPIKey: vi.fn().mockResolvedValue(null),
+          getGoogleVertexProjectId: vi.fn().mockResolvedValue(null),
+          getGoogleVertexRegion: vi.fn().mockResolvedValue(null),
+          getCerebrasAPIKey: vi.fn().mockResolvedValue(null)
+        }
+      }));
+      vi.doMock('../utils/modelCache', () => ({ readModelCache: vi.fn() }));
+      vi.doMock('../utils/modelMapping', () => ({
+        normalizeAnthropicModel: vi.fn((id: string) => id)
+      }));
+      vi.doMock('@ai-sdk/openai', () => ({
+        createOpenAI: vi.fn(() => vi.fn(() => ({ modelId: 'mock-openai-model' })))
+      }));
+      vi.doMock('@ai-sdk/anthropic', () => ({
+        createAnthropic: vi.fn(() => vi.fn(() => ({ modelId: 'mock-anthropic-model' })))
+      }));
+      vi.doMock('@ai-sdk/groq', () => ({
+        createGroq: vi.fn(() => vi.fn(() => ({ modelId: 'mock-groq-model' })))
+      }));
+      vi.doMock('@ai-sdk/google-vertex', () => ({
+        createVertex: vi.fn(() => vi.fn(() => ({ modelId: 'mock-vertex-model' })))
+      }));
+
+      const { modelRegistry } = await import('./modelRegistry');
+      await modelRegistry.init();
+
+      const currentModel = modelRegistry.getCurrentModel();
+
+      // The current model SHOULD be the stored OpenAI model
+      // because OpenAI is configured
+      expect(currentModel.provider).toBe('openai');
+      expect(currentModel.modelId).toBe('gpt-5.2');
+    });
+
+    it('should only include configured providers in getConfiguredProviders', async () => {
+      vi.resetModules();
+      vi.doMock('../utils/logger', () => ({ debug: vi.fn() }));
+      vi.doMock('../utils/modelStorage', () => ({
+        saveCurrentModel: vi.fn(),
+        loadCurrentModel: vi.fn().mockResolvedValue(null)
+      }));
+      vi.doMock('../utils/credentialManager', () => ({
+        credentialManager: {
+          // Only Anthropic and Groq are configured
+          getOpenAIAPIKey: vi.fn().mockResolvedValue(null),
+          getAnthropicAPIKey: vi.fn().mockResolvedValue('test-anthropic-key'),
+          getGroqAPIKey: vi.fn().mockResolvedValue('test-groq-key'),
+          getGoogleVertexProjectId: vi.fn().mockResolvedValue(null),
+          getGoogleVertexRegion: vi.fn().mockResolvedValue(null),
+          getCerebrasAPIKey: vi.fn().mockResolvedValue(null)
+        }
+      }));
+      vi.doMock('../utils/modelCache', () => ({ readModelCache: vi.fn() }));
+      vi.doMock('../utils/modelMapping', () => ({
+        normalizeAnthropicModel: vi.fn((id: string) => id)
+      }));
+      vi.doMock('@ai-sdk/openai', () => ({
+        createOpenAI: vi.fn(() => vi.fn(() => ({ modelId: 'mock-openai-model' })))
+      }));
+      vi.doMock('@ai-sdk/anthropic', () => ({
+        createAnthropic: vi.fn(() => vi.fn(() => ({ modelId: 'mock-anthropic-model' })))
+      }));
+      vi.doMock('@ai-sdk/groq', () => ({
+        createGroq: vi.fn(() => vi.fn(() => ({ modelId: 'mock-groq-model' })))
+      }));
+      vi.doMock('@ai-sdk/google-vertex', () => ({
+        createVertex: vi.fn(() => vi.fn(() => ({ modelId: 'mock-vertex-model' })))
+      }));
+
+      const { modelRegistry } = await import('./modelRegistry');
+      await modelRegistry.init();
+
+      const configuredProviders = modelRegistry.getConfiguredProviders();
+
+      // Only Anthropic and Groq should be in the list
+      expect(configuredProviders).toContain('anthropic');
+      expect(configuredProviders).toContain('groq');
+      expect(configuredProviders).not.toContain('openai');
+      expect(configuredProviders).not.toContain('google-vertex');
+      expect(configuredProviders).not.toContain('cerebras');
+    });
+
+    it('getCurrentModel provider should always be in getConfiguredProviders list', async () => {
+      // This is the KEY test for Issue #176
+      // The bug: footer shows a model whose provider is NOT in the selector list
+      const storedModel: ModelConfig = {
+        provider: 'openai',
+        modelId: 'gpt-4o',
+        displayName: 'GPT-4o'
+      };
+
+      vi.resetModules();
+      vi.doMock('../utils/logger', () => ({ debug: vi.fn() }));
+      vi.doMock('../utils/modelStorage', () => ({
+        saveCurrentModel: vi.fn(),
+        loadCurrentModel: vi.fn().mockResolvedValue(storedModel)
+      }));
+      vi.doMock('../utils/credentialManager', () => ({
+        credentialManager: {
+          // OpenAI NOT configured, Anthropic IS
+          getOpenAIAPIKey: vi.fn().mockResolvedValue(null),
+          getAnthropicAPIKey: vi.fn().mockResolvedValue('test-anthropic-key'),
+          getGroqAPIKey: vi.fn().mockResolvedValue(null),
+          getGoogleVertexProjectId: vi.fn().mockResolvedValue(null),
+          getGoogleVertexRegion: vi.fn().mockResolvedValue(null),
+          getCerebrasAPIKey: vi.fn().mockResolvedValue(null)
+        }
+      }));
+      vi.doMock('../utils/modelCache', () => ({ readModelCache: vi.fn() }));
+      vi.doMock('../utils/modelMapping', () => ({
+        normalizeAnthropicModel: vi.fn((id: string) => id)
+      }));
+      vi.doMock('@ai-sdk/openai', () => ({
+        createOpenAI: vi.fn(() => vi.fn(() => ({ modelId: 'mock-openai-model' })))
+      }));
+      vi.doMock('@ai-sdk/anthropic', () => ({
+        createAnthropic: vi.fn(() => vi.fn(() => ({ modelId: 'mock-anthropic-model' })))
+      }));
+      vi.doMock('@ai-sdk/groq', () => ({
+        createGroq: vi.fn(() => vi.fn(() => ({ modelId: 'mock-groq-model' })))
+      }));
+      vi.doMock('@ai-sdk/google-vertex', () => ({
+        createVertex: vi.fn(() => vi.fn(() => ({ modelId: 'mock-vertex-model' })))
+      }));
+
+      const { modelRegistry } = await import('./modelRegistry');
+      await modelRegistry.init();
+
+      const currentModel = modelRegistry.getCurrentModel();
+      const configuredProviders = modelRegistry.getConfiguredProviders();
+
+      // CRITICAL: The current model's provider MUST be in the configured list
+      // This ensures the footer model is always selectable in the model selector
+      expect(configuredProviders).toContain(currentModel.provider);
+    });
+
+    it('BUG DEMONSTRATION: loadCurrentModel can return model from unconfigured provider', async () => {
+      // This test demonstrates the actual bug in Issue #176
+      // ChatInterface.tsx uses loadCurrentModel() directly, which doesn't validate
+      // against configured providers. This causes the footer to show a model
+      // that doesn't appear in the model selector.
+      const storedModel: ModelConfig = {
+        provider: 'openai',
+        modelId: 'gpt-4o',
+        displayName: 'GPT-4o'
+      };
+
+      vi.resetModules();
+      vi.doMock('../utils/logger', () => ({ debug: vi.fn() }));
+
+      // Mock loadCurrentModel to return the stored model directly
+      const mockLoadCurrentModel = vi.fn().mockResolvedValue(storedModel);
+      vi.doMock('../utils/modelStorage', () => ({
+        saveCurrentModel: vi.fn(),
+        loadCurrentModel: mockLoadCurrentModel
+      }));
+      vi.doMock('../utils/credentialManager', () => ({
+        credentialManager: {
+          // OpenAI NOT configured
+          getOpenAIAPIKey: vi.fn().mockResolvedValue(null),
+          getAnthropicAPIKey: vi.fn().mockResolvedValue('test-anthropic-key'),
+          getGroqAPIKey: vi.fn().mockResolvedValue(null),
+          getGoogleVertexProjectId: vi.fn().mockResolvedValue(null),
+          getGoogleVertexRegion: vi.fn().mockResolvedValue(null),
+          getCerebrasAPIKey: vi.fn().mockResolvedValue(null)
+        }
+      }));
+      vi.doMock('../utils/modelCache', () => ({ readModelCache: vi.fn() }));
+      vi.doMock('../utils/modelMapping', () => ({
+        normalizeAnthropicModel: vi.fn((id: string) => id)
+      }));
+      vi.doMock('@ai-sdk/openai', () => ({
+        createOpenAI: vi.fn(() => vi.fn(() => ({ modelId: 'mock-openai-model' })))
+      }));
+      vi.doMock('@ai-sdk/anthropic', () => ({
+        createAnthropic: vi.fn(() => vi.fn(() => ({ modelId: 'mock-anthropic-model' })))
+      }));
+      vi.doMock('@ai-sdk/groq', () => ({
+        createGroq: vi.fn(() => vi.fn(() => ({ modelId: 'mock-groq-model' })))
+      }));
+      vi.doMock('@ai-sdk/google-vertex', () => ({
+        createVertex: vi.fn(() => vi.fn(() => ({ modelId: 'mock-vertex-model' })))
+      }));
+
+      const { modelRegistry } = await import('./modelRegistry');
+      const { loadCurrentModel } = await import('../utils/modelStorage');
+      await modelRegistry.init();
+
+      // What the footer would show (directly from storage)
+      const footerModel = await loadCurrentModel();
+
+      // What the model selector shows (configured providers only)
+      const configuredProviders = modelRegistry.getConfiguredProviders();
+
+      // What modelRegistry.getCurrentModel() returns (validated)
+      const validatedModel = modelRegistry.getCurrentModel();
+
+      // THE BUG: loadCurrentModel returns OpenAI model even though OpenAI is not configured
+      // This is what ChatInterface.tsx uses for the footer
+      expect(footerModel?.provider).toBe('openai');
+
+      // But OpenAI is NOT in configured providers (what model selector shows)
+      expect(configuredProviders).not.toContain('openai');
+
+      // The CORRECT behavior: modelRegistry.getCurrentModel() falls back properly
+      expect(validatedModel.provider).toBe('anthropic');
+      expect(configuredProviders).toContain(validatedModel.provider);
+
+      // This demonstrates the inconsistency:
+      // - Footer shows: GPT-4o (OpenAI) - from loadCurrentModel()
+      // - Model selector shows: only Anthropic models
+      // - The footer model is NOT selectable in the model selector!
+    });
+  });
 });
