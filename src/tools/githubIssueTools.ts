@@ -1,3 +1,11 @@
+/**
+ * GitHub Issue Management Tools
+ *
+ * These tools are exposed to the LLM for managing GitHub issues.
+ * Each tool's `description` field is a @prompt that instructs the LLM
+ * on when and how to use the tool. The `inputSchema` descriptions are
+ * also @prompt content that guide the LLM on parameter usage.
+ */
 import { tool } from './instrumentedTool';
 import * as z from "zod";
 import { getCurrentProject, loadProjectConfig } from '../utils/projectConfig';
@@ -32,6 +40,10 @@ async function getProjectRepoInfo() {
   return { owner, repo, projectName: project.name };
 }
 
+/**
+ * @prompt Tool: create_github_issue
+ * Description and parameter descriptions sent to LLM explaining tool usage.
+ */
 export const createGitHubIssueTool = tool({
   description: "Create a new GitHub issue in the active project's repository with optional file attachments",
   inputSchema: z.object({
@@ -95,6 +107,10 @@ export const createGitHubIssueTool = tool({
   }
 });
 
+/**
+ * @prompt Tool: list_github_issues
+ * Description and parameter descriptions sent to LLM explaining tool usage.
+ */
 export const listGitHubIssuesTool = tool({
   description: "List GitHub issues in the active project's repository",
   inputSchema: z.object({
@@ -141,6 +157,10 @@ export const listGitHubIssuesTool = tool({
   }
 });
 
+/**
+ * @prompt Tool: update_github_issue
+ * Description and parameter descriptions sent to LLM explaining tool usage.
+ */
 export const updateGitHubIssueTool = tool({
   description: "Update a GitHub issue in the active project's repository",
   inputSchema: z.object({
@@ -184,6 +204,10 @@ export const updateGitHubIssueTool = tool({
   }
 });
 
+/**
+ * @prompt Tool: comment_on_github_issue
+ * Description and parameter descriptions sent to LLM explaining tool usage.
+ */
 export const commentOnGitHubIssueTool = tool({
   description: "Add a comment to a GitHub issue in the active project's repository with optional file attachments",
   inputSchema: z.object({
@@ -247,6 +271,10 @@ export const commentOnGitHubIssueTool = tool({
   }
 });
 
+/**
+ * @prompt Tool: search_github_issues
+ * Description and parameter descriptions sent to LLM explaining tool usage.
+ */
 export const searchGitHubIssuesTool = tool({
   description: "Search GitHub issues in the active project's repository",
   inputSchema: z.object({
@@ -294,6 +322,10 @@ export const searchGitHubIssuesTool = tool({
   }
 });
 
+/**
+ * @prompt Tool: get_github_issue_with_comments
+ * Description and parameter descriptions sent to LLM explaining tool usage.
+ */
 export const getGitHubIssueWithCommentsTool = tool({
   description: "Get a GitHub issue with all its comments from the active project's repository. Returns full issue details including metadata, body, and all comments with pagination support.",
   inputSchema: z.object({

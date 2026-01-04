@@ -1,9 +1,21 @@
+/**
+ * Notes Management Tools
+ *
+ * These tools are exposed to the LLM for managing project notes.
+ * Each tool's `description` field is a @prompt that instructs the LLM
+ * on when and how to use the tool. The `inputSchema` descriptions are
+ * also @prompt content that guide the LLM on parameter usage.
+ */
 import { tool } from './instrumentedTool';
 import * as z from "zod";
 import { getNotesBackend } from '../services/notesBackend';
 import { getCurrentProject } from '../utils/projectConfig';
 import { debug } from '../utils/logger';
 
+/**
+ * @prompt Tool: add_note
+ * Description and parameter descriptions sent to LLM explaining tool usage.
+ */
 export const addNoteTool = tool({
   description: 'Add a new note to the current project',
   inputSchema: z.object({
@@ -47,6 +59,10 @@ export const addNoteTool = tool({
   }
 });
 
+/**
+ * @prompt Tool: update_note
+ * Description and parameter descriptions sent to LLM explaining tool usage.
+ */
 export const updateNoteTool = tool({
   description: 'Update an existing note in the current project',
   inputSchema: z.object({
@@ -98,6 +114,10 @@ export const updateNoteTool = tool({
   }
 });
 
+/**
+ * @prompt Tool: search_notes
+ * Description and parameter descriptions sent to LLM explaining tool usage.
+ */
 export const searchNotesTool = tool({
   description: 'Search notes in the current project using ripgrep text search',
   inputSchema: z.object({
@@ -140,6 +160,10 @@ export const searchNotesTool = tool({
   }
 });
 
+/**
+ * @prompt Tool: list_notes
+ * Description and parameter descriptions sent to LLM explaining tool usage.
+ */
 export const listNotesTool = tool({
   description: 'List all notes in the current project',
   inputSchema: z.object({
@@ -183,6 +207,10 @@ export const listNotesTool = tool({
   }
 });
 
+/**
+ * @prompt Tool: get_note
+ * Description and parameter descriptions sent to LLM explaining tool usage.
+ */
 export const getNoteTool = tool({
   description: 'Get a specific note by ID from the current project',
   inputSchema: z.object({
@@ -231,6 +259,10 @@ export const getNoteTool = tool({
   }
 });
 
+/**
+ * @prompt Tool: delete_note
+ * Description and parameter descriptions sent to LLM explaining tool usage.
+ */
 export const deleteNoteTool = tool({
   description: 'Delete a note from the current project',
   inputSchema: z.object({

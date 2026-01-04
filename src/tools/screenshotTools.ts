@@ -1,3 +1,14 @@
+/**
+ * Screenshot Tools
+ *
+ * These tools are exposed to the LLM for taking web page screenshots.
+ * Each tool's `description` field is a @prompt that instructs the LLM
+ * on when and how to use the tool. The `inputSchema` descriptions are
+ * also @prompt content that guide the LLM on parameter usage.
+ *
+ * The setup instruction messages (~lines 33-48, 60-72, 188-200) are also
+ * @prompt content shown to users when tools need configuration.
+ */
 import { tool } from './instrumentedTool';
 import * as z from "zod";
 import { exec } from 'node:child_process';
@@ -10,7 +21,8 @@ import { debug } from '../utils/logger';
 const execAsync = promisify(exec);
 
 /**
- * Take a screenshot of a web page using shot-scraper
+ * @prompt Tool: take_screenshot
+ * Description and parameter descriptions sent to LLM explaining tool usage.
  */
 export const takeScreenshotTool = tool({
   description: 'Take a screenshot of a web page using the shot-scraper CLI tool. Returns the path to the saved screenshot file.',
@@ -172,7 +184,8 @@ export const takeScreenshotTool = tool({
 });
 
 /**
- * Check if shot-scraper is installed and ready to use
+ * @prompt Tool: check_screenshot_setup
+ * Description sent to LLM explaining when to use this tool.
  */
 export const checkScreenshotSetupTool = tool({
   description: 'Check if shot-scraper is properly installed and configured for taking screenshots',

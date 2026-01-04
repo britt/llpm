@@ -1,3 +1,11 @@
+/**
+ * Project Management Tools
+ *
+ * These tools are exposed to the LLM for managing projects.
+ * Each tool's `description` field is a @prompt that instructs the LLM
+ * on when and how to use the tool. The `inputSchema` descriptions are
+ * also @prompt content that guide the LLM on parameter usage.
+ */
 import { tool } from './instrumentedTool';
 import * as z from "zod";
 import {
@@ -30,6 +38,10 @@ function normalizeRepository(repository: string): string {
   return repository;
 }
 
+/**
+ * @prompt Tool: get_current_project
+ * Description sent to LLM explaining when to use this tool.
+ */
 export const getCurrentProjectTool = tool({
   description: 'Get information about the currently active project. ALWAYS use this tool when determining the current project.',
   inputSchema: z.object({}),
@@ -61,6 +73,10 @@ export const getCurrentProjectTool = tool({
   }
 });
 
+/**
+ * @prompt Tool: list_projects
+ * Description sent to LLM explaining when to use this tool.
+ */
 export const listProjectsTool = tool({
   description: 'List all available projects',
   inputSchema: z.object({}),
@@ -96,6 +112,10 @@ export const listProjectsTool = tool({
   }
 });
 
+/**
+ * @prompt Tool: add_project
+ * Description and parameter descriptions sent to LLM explaining tool usage.
+ */
 export const addProjectTool = tool({
   description: 'Add a new project to the system. Repository can be a full URL or GitHub owner/repo format (e.g., "user/repo")',
   inputSchema: z.object({
@@ -135,6 +155,10 @@ export const addProjectTool = tool({
   }
 });
 
+/**
+ * @prompt Tool: set_current_project
+ * Description and parameter descriptions sent to LLM explaining tool usage.
+ */
 export const setCurrentProjectTool = tool({
   description: 'Set the currently active project',
   inputSchema: z.object({
@@ -160,6 +184,10 @@ export const setCurrentProjectTool = tool({
   }
 });
 
+/**
+ * @prompt Tool: remove_project
+ * Description and parameter descriptions sent to LLM explaining tool usage.
+ */
 export const removeProjectTool = tool({
   description: 'Remove a project from the system',
   inputSchema: z.object({
@@ -185,6 +213,10 @@ export const removeProjectTool = tool({
   }
 });
 
+/**
+ * @prompt Tool: update_project
+ * Description and parameter descriptions sent to LLM explaining tool usage.
+ */
 export const updateProjectTool = tool({
   description: 'Update a project\'s information (currently supports updating description)',
   inputSchema: z.object({

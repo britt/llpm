@@ -1,3 +1,11 @@
+/**
+ * GitHub Pull Request Tools
+ *
+ * These tools are exposed to the LLM for managing GitHub pull requests.
+ * Each tool's `description` field is a @prompt that instructs the LLM
+ * on when and how to use the tool. The `inputSchema` descriptions are
+ * also @prompt content that guide the LLM on parameter usage.
+ */
 import { tool } from './instrumentedTool';
 import * as z from "zod";
 import { listPullRequests, createPullRequest } from '../services/github';
@@ -6,6 +14,10 @@ import { debug } from '../utils/logger';
 import { loadProjectConfig } from '../utils/projectConfig';
 import { composeWithSalutation, getSalutationConfig } from '../utils/salutation';
 
+/**
+ * @prompt Tool: list_github_pull_requests
+ * Description and parameter descriptions sent to LLM explaining tool usage.
+ */
 export const listGitHubPullRequestsTool = tool({
   description: 'List pull requests for a GitHub repository',
   inputSchema: z.object({
@@ -85,6 +97,10 @@ export const listGitHubPullRequestsTool = tool({
   }
 });
 
+/**
+ * @prompt Tool: create_github_pull_request
+ * Description and parameter descriptions sent to LLM explaining tool usage.
+ */
 export const createGitHubPullRequestTool = tool({
   description: 'Create a new pull request in a GitHub repository with optional file attachments',
   inputSchema: z.object({

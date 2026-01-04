@@ -1,3 +1,11 @@
+/**
+ * Web Search Tools
+ *
+ * These tools are exposed to the LLM for searching the web.
+ * Each tool's `description` field is a @prompt that instructs the LLM
+ * on when and how to use the tool. The `inputSchema` descriptions are
+ * also @prompt content that guide the LLM on parameter usage.
+ */
 import { tool } from './instrumentedTool';
 import * as z from "zod";
 import { debug } from '../utils/logger';
@@ -13,6 +21,10 @@ async function getArcadeClient() {
   return new Arcade({ apiKey });
 }
 
+/**
+ * @prompt Tool: web_search
+ * Description and parameter descriptions sent to LLM explaining tool usage.
+ */
 export const webSearchTool = tool({
   description: 'Search the web using Google Search to find current information, news, and web content',
   inputSchema: z.object({

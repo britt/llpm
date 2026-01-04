@@ -1,10 +1,14 @@
+/**
+ * Web Content Tools
+ *
+ * These tools are exposed to the LLM for reading and processing web content.
+ * Each tool's `description` field is a @prompt that instructs the LLM
+ * on when and how to use the tool. The `inputSchema` descriptions are
+ * also @prompt content that guide the LLM on parameter usage.
+ */
 import { tool } from './instrumentedTool';
 import * as z from "zod";
 import { debug } from '../utils/logger';
-
-/**
- * Web content reading tools for extracting and processing content from URLs
- */
 
 interface ParsedContent {
   title?: string;
@@ -150,6 +154,10 @@ async function fetchWebContent(url: string, timeout: number = 10000): Promise<{ 
   }
 }
 
+/**
+ * @prompt Tool: read_web_page
+ * Description and parameter descriptions sent to LLM explaining tool usage.
+ */
 export const readWebPageTool = tool({
   description: 'Read and extract text content from a web page URL. Supports HTML pages, plain text, and basic content extraction.',
   inputSchema: z.object({
@@ -242,6 +250,10 @@ export const readWebPageTool = tool({
   }
 });
 
+/**
+ * @prompt Tool: summarize_web_page
+ * Description and parameter descriptions sent to LLM explaining tool usage.
+ */
 export const summarizeWebPageTool = tool({
   description: 'Read a web page and provide a structured summary with key information extracted.',
   inputSchema: z.object({

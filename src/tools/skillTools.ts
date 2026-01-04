@@ -1,5 +1,10 @@
 /**
- * Tools for managing and loading skills
+ * Skills Management Tools
+ *
+ * These tools are exposed to the LLM for managing and loading skills.
+ * Each tool's `description` field is a @prompt that instructs the LLM
+ * on when and how to use the tool. The `inputSchema` descriptions are
+ * also @prompt content that guide the LLM on parameter usage.
  */
 import { z } from 'zod';
 import { tool } from './instrumentedTool';
@@ -7,15 +12,10 @@ import { getSkillRegistry } from '../services/SkillRegistry';
 import { debug } from '../utils/logger';
 
 /**
- * load_skills - Explicitly load one or more skills to augment current context
- *
+ * @prompt Tool: load_skills
+ * Description and parameter descriptions sent to LLM explaining tool usage.
  * Use this tool when you need specific skills that weren't automatically selected,
  * or when you want to ensure certain skills are available for the current task.
- *
- * Example use cases:
- * - Loading specialized skills for a specific task
- * - Ensuring critical guidelines are included
- * - Loading multiple related skills together
  */
 export const loadSkillsTool = tool({
   name: 'load_skills',
@@ -131,8 +131,8 @@ Skills are injected as additional context and their instructions become part of 
 });
 
 /**
- * list_available_skills - List all available skills that can be loaded
- *
+ * @prompt Tool: list_available_skills
+ * Description and parameter descriptions sent to LLM explaining tool usage.
  * Use this to discover what skills are available before loading them.
  */
 export const listAvailableSkillsTool = tool({

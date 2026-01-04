@@ -1,5 +1,10 @@
 /**
- * Interactive user input tool - allows LLM to ask questions in chat
+ * Ask User Tool
+ *
+ * This tool is exposed to the LLM for interacting with the user.
+ * The tool's `description` field is a @prompt that instructs the LLM
+ * on when and how to use the tool. The `inputSchema` descriptions are
+ * also @prompt content that guide the LLM on parameter usage.
  *
  * The LLM calls this tool to format a question, which appears in its response.
  * The user's next chat message is interpreted as the answer.
@@ -89,6 +94,9 @@ function formatQuestion(input: { question: string; type?: 'text' | 'confirm' | '
  * 1. Include the formatted question in your response
  * 2. Stop and wait for the user's answer
  * 3. Their next message will contain the answer - interpret it accordingly
+ *
+ * @prompt Tool: ask_user
+ * Description and parameter descriptions sent to LLM explaining tool usage.
  */
 export const askUserTool = tool({
   name: 'ask_user',
