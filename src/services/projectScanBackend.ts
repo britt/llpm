@@ -6,14 +6,14 @@
 import { existsSync } from 'fs';
 import { mkdir, readFile, writeFile, readdir, rm } from 'fs/promises';
 import { join } from 'path';
-import { getLlpmConfigDir } from '../utils/config';
+import { getConfigDir } from '../utils/config';
 import { isProjectScan, type ProjectScan } from '../types/projectScan';
 
 /**
  * Get the directory path for a project's data
  */
 export function getProjectDir(projectId: string): string {
-  return join(getLlpmConfigDir(), 'projects', projectId);
+  return join(getConfigDir(), 'projects', projectId);
 }
 
 /**
@@ -109,7 +109,7 @@ export function projectScanExists(projectId: string): boolean {
  * @returns Array of project IDs
  */
 export async function listProjectScans(): Promise<string[]> {
-  const projectsDir = join(getLlpmConfigDir(), 'projects');
+  const projectsDir = join(getConfigDir(), 'projects');
 
   if (!existsSync(projectsDir)) {
     return [];

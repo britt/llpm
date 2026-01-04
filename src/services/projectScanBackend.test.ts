@@ -8,7 +8,7 @@ vi.mock('fs');
 
 // Mock config module
 vi.mock('../utils/config', () => ({
-  getLlpmConfigDir: vi.fn(() => '/home/user/.llpm'),
+  getConfigDir: vi.fn(() => '/home/user/.llpm'),
 }));
 
 import {
