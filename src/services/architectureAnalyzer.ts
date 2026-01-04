@@ -5,6 +5,7 @@
 
 import { generateText } from 'ai';
 import { modelRegistry } from './modelRegistry';
+import { debug } from '../utils/logger';
 import type { FileInfo } from './projectAnalyzer';
 import type { KeyFile, DirectoryEntry } from '../types/projectScan';
 
@@ -278,8 +279,9 @@ export async function analyzeArchitecture(
     }
 
     return analysis;
-  } catch {
-    // LLM call failed, return empty analysis
+  } catch (error) {
+    // LLM call failed, return empty analysis with graceful degradation
+    debug('Architecture analysis LLM call failed:', error instanceof Error ? error.message : String(error));
     return {
       description: '',
       components: [],
