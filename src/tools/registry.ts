@@ -40,7 +40,11 @@ import {
 import {
   scanProjectTool,
   getProjectScanTool,
-  listProjectScansTool
+  listProjectScansTool,
+  analyzeProjectFullTool,
+  getProjectArchitectureTool,
+  getProjectKeyFilesTool,
+  getProjectDependenciesTool
 } from './projectScanTools';
 import { takeScreenshotTool, checkScreenshotSetupTool } from './screenshotTools';
 import {
@@ -84,10 +88,15 @@ const toolRegistry: ToolRegistry = {
   list_project_directory: listProjectDirectory,
   get_project_file_info: getProjectFileInfo,
   find_project_files: findProjectFiles,
-  // Project Analysis
+  // Project Analysis (basic)
   scan_project: scanProjectTool,
   get_project_scan: getProjectScanTool,
   list_project_scans: listProjectScansTool,
+  // Project Analysis (full orchestrated)
+  analyze_project_full: analyzeProjectFullTool,
+  get_project_architecture: getProjectArchitectureTool,
+  get_project_key_files: getProjectKeyFilesTool,
+  get_project_dependencies: getProjectDependenciesTool,
   // Screenshots
   take_screenshot: takeScreenshotTool,
   check_screenshot_setup: checkScreenshotSetupTool,
