@@ -6,10 +6,11 @@ import { getSystemPrompt } from '../utils/systemPrompt';
 import { highlightMarkdown } from '../utils/markdownHighlight';
 import { loadChatHistory } from '../utils/chatHistory';
 import { embeddingsFactory } from '../services/embeddings';
+import packageJson from '../../package.json';
 
 const packageInfo = {
   name: 'LLPM',
-  version: '0.14.0',
+  version: packageJson.version,
   description: 'AI-powered Large Language Model Product Manager'
 };
 

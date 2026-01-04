@@ -7,6 +7,7 @@ import * as systemPrompt from '../utils/systemPrompt';
 import * as markdownHighlight from '../utils/markdownHighlight';
 import * as chatHistory from '../utils/chatHistory';
 import { embeddingsFactory } from '../services/embeddings';
+import packageJson from '../../package.json';
 
 describe('infoCommand', () => {
   beforeEach(() => {
@@ -32,7 +33,7 @@ describe('infoCommand', () => {
     const result = await infoCommand.execute([]);
 
     expect(result.success).toBe(true);
-    expect(result.content).toContain('📱 LLPM v0.14.0');
+    expect(result.content).toContain(`📱 LLPM v${packageJson.version}`);
     expect(result.content).toContain('📝 AI-powered Large Language Model Product Manager');
     expect(result.content).toContain('🤖 Model: GPT-4o Mini (openai)');
     expect(result.content).toContain('⚡ Runtime: Bun');
@@ -234,7 +235,7 @@ describe('infoCommand', () => {
     const result = await infoCommand.execute([]);
 
     expect(result.success).toBe(true);
-    expect(result.content).toContain('📱 LLPM v0.14.0');
+    expect(result.content).toContain(`📱 LLPM v${packageJson.version}`);
   });
 
   it('should show "Not available" when embeddings provider fails', async () => {

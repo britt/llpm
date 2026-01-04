@@ -3,6 +3,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { getCommandRegistry, parseCommand, executeCommand } from './registry';
 import * as systemPrompt from '../utils/systemPrompt';
 import * as markdownHighlight from '../utils/markdownHighlight';
+import packageJson from '../../package.json';
 
 describe('commandRegistry', () => {
   let originalRegistry: any;
@@ -259,7 +260,7 @@ describe('commandRegistry', () => {
         const executeResult = await executeCommand(parseResult.command!, parseResult.args);
         
         expect(executeResult.success).toBe(true);
-        expect(executeResult.content).toContain('📱 LLPM v0.14.0');
+        expect(executeResult.content).toContain(`📱 LLPM v${packageJson.version}`);
         expect(executeResult.content).not.toContain('📋 Current System Prompt:');
       }, 10000); // 10 second timeout
     });
