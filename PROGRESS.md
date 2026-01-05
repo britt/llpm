@@ -95,3 +95,114 @@ All 9 tasks completed successfully. Shell tool feature fully implemented with:
 - AI tool registered in tool registry
 - Global configuration (~/.llpm/shell.json)
 - Documentation for configuration
+
+---
+
+## Feature: Project Codebase Parsing and Understanding (Issue #34)
+**Branch:** feature/issue-34-project-scanning
+**Started:** 2025-01-03
+**Completed:** 2025-01-04
+
+### Phase 1: Foundation - COMPLETE
+- Files: `src/types/projectScan.ts`, `src/utils/gitignore.ts`
+- Tests: 21 passing (gitignore)
+- Created: ProjectScan interface, DirectoryEntry, FileInfo, KeyFile, etc.
+- Created: createIgnoreFilter using `ignore` npm package
+- Supports nested .gitignore files and default ignore patterns
+
+### Phase 2: Storage Backend - COMPLETE
+- Files: `src/services/projectScanBackend.ts`, `src/services/projectScanBackend.test.ts`
+- Tests: 18 passing
+- Created: saveProjectScan, loadProjectScan, projectScanExists
+- Storage: `~/.llpm/projects/{id}/project.json` and `project.md`
+- Atomic writes and cache checking
+
+### Phase 3: Structure Analysis - COMPLETE
+- Files: `src/services/projectAnalyzer.ts`, `src/services/projectAnalyzer.test.ts`
+- Tests: 34 passing
+- Created: scanFiles, detectLanguages, detectFrameworks
+- Created: inferProjectType, identifyKeyFiles, analyzeDirectoryStructure
+- Supports 30+ languages, 15+ frameworks, 10+ project types
+
+### Phase 4: Documentation Analysis - COMPLETE
+- Files: `src/services/documentationAnalyzer.ts`, `src/services/documentationAnalyzer.test.ts`
+- Tests: 38 passing
+- Created: findReadmeFile, findDocumentationFiles, parseReadmeContent
+- Created: extractCodeComments, assessDocumentationCoverage, analyzeDocumentation
+- Supports README in multiple formats and doc folders
+
+### Phase 5: Dependency Analysis - COMPLETE
+- Files: `src/services/dependencyAnalyzer.ts`, `src/services/dependencyAnalyzer.test.ts`
+- Tests: 37 passing
+- Created: detectPackageManager, parsePackageJson, parseRequirementsTxt
+- Created: parsePyProjectToml, parseGoMod, parseCargoToml, analyzeDependencies
+- Supports npm, yarn, pnpm, bun, pip, poetry, cargo, go
+- Purpose inference for 50+ common packages
+
+### Phase 6: Architecture Analysis (LLM-Powered) - COMPLETE
+- Files: `src/services/architectureAnalyzer.ts`, `src/services/architectureAnalyzer.test.ts`
+- Tests: 15 passing
+- Created: buildArchitectureContext, parseArchitectureResponse
+- Created: generateMermaidDiagram, analyzeArchitecture
+- LLM-powered architecture descriptions with Mermaid diagrams
+- Optional skipLLM flag for faster scans
+
+### Phase 7: Scan Orchestrator - COMPLETE
+- Files: `src/services/projectScanOrchestrator.ts`, `src/services/projectScanOrchestrator.test.ts`
+- Tests: 17 passing
+- Created: ProjectScanOrchestrator class
+- Coordinates all analyzers with progress callbacks
+- Caching support with force refresh option
+
+### Phase 8: Tools and Registry - COMPLETE
+- Files: `src/tools/projectScanTools.ts` (updated), `src/tools/registry.ts` (updated)
+- Tests: Registry test passing
+- Added: analyzeProjectFullTool, getProjectArchitectureTool
+- Added: getProjectKeyFilesTool, getProjectDependenciesTool
+- All tools registered in tool registry
+
+### Phase 9: Project Analysis Skill - COMPLETE
+- Files: `~/.llpm/skills/project-analysis/SKILL.md`
+- Created skill with natural language triggers
+- Documents available tools and workflows
+- Triggers: "scan this project", "what does this project do", etc.
+
+## Summary - Issue #34
+All 9 phases completed successfully. Project codebase parsing feature fully implemented with:
+- **Type System**: Comprehensive ProjectScan schema
+- **Storage**: JSON + Markdown dual storage in ~/.llpm/projects/
+- **Analysis**: Files, languages, frameworks, project types
+- **Documentation**: README parsing and coverage assessment
+- **Dependencies**: Multi-package manager support with purpose inference
+- **Architecture**: LLM-powered descriptions and Mermaid diagrams
+- **Orchestration**: Coordinated analysis with progress callbacks
+- **Tools**: 7 AI tools for project analysis
+- **Skill**: Natural language interface for project analysis
+
+### Test Results
+- Total Tests: 1774 passing, 16 skipped
+- New Tests Added: ~180 tests across all new files
+- Coverage: All new code has comprehensive test coverage
+
+### Files Created
+1. `src/types/projectScan.ts` - Type definitions
+2. `src/utils/gitignore.ts` - Gitignore parsing
+3. `src/utils/gitignore.test.ts` - Tests
+4. `src/services/projectScanBackend.ts` - Storage
+5. `src/services/projectScanBackend.test.ts` - Tests
+6. `src/services/projectAnalyzer.ts` - Structure analysis
+7. `src/services/projectAnalyzer.test.ts` - Tests
+8. `src/services/documentationAnalyzer.ts` - Docs analysis
+9. `src/services/documentationAnalyzer.test.ts` - Tests
+10. `src/services/dependencyAnalyzer.ts` - Deps analysis
+11. `src/services/dependencyAnalyzer.test.ts` - Tests
+12. `src/services/architectureAnalyzer.ts` - Architecture
+13. `src/services/architectureAnalyzer.test.ts` - Tests
+14. `src/services/projectScanOrchestrator.ts` - Orchestrator
+15. `src/services/projectScanOrchestrator.test.ts` - Tests
+16. `~/.llpm/skills/project-analysis/SKILL.md` - Skill
+
+### Files Modified
+1. `src/tools/projectScanTools.ts` - Added 4 new tools
+2. `src/tools/registry.ts` - Registered new tools
+3. `package.json` - Added `ignore` dependency

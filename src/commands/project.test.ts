@@ -15,6 +15,44 @@ vi.mock('fs/promises', async (importOriginal) => {
   };
 });
 
+// Mock the ProjectScanOrchestrator
+vi.mock('../services/projectScanOrchestrator', () => ({
+  ProjectScanOrchestrator: vi.fn().mockImplementation(() => ({
+    onProgress: vi.fn(),
+    performFullScan: vi.fn().mockResolvedValue({
+      version: '1.1.0',
+      scannedAt: new Date().toISOString(),
+      projectId: 'proj-1',
+      projectName: 'Test Project',
+      projectPath: '/test/project',
+      overview: {
+        summary: 'Test project summary',
+        primaryLanguages: ['TypeScript'],
+        frameworks: ['React'],
+        projectType: 'web-app',
+        totalFiles: 10,
+        totalLines: 500,
+      },
+      keyFiles: [],
+      directoryStructure: [],
+      documentation: {
+        readmeSummary: null,
+        hasDocumentation: false,
+        docFiles: [],
+      },
+      dependencies: {
+        packageManager: 'npm',
+        runtime: [],
+        development: [],
+      },
+      architecture: {
+        description: '',
+        components: [],
+      },
+    }),
+  })),
+}));
+
 import { projectCommand } from './project';
 import * as projectConfig from '../utils/projectConfig';
 import * as fsPromises from 'fs/promises';

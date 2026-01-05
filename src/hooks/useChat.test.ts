@@ -18,12 +18,14 @@ vi.mock('../utils/telemetry', () => ({
 }));
 vi.mock('../utils/requestContext', () => ({
   RequestContext: {
-    getLogger: () => null
+    getLogger: () => null,
+    run: async (fn: () => Promise<unknown>) => fn()
   }
 }));
 vi.mock('../components/RequestLogDisplay', () => ({
   loggerRegistry: {
-    getLogger: () => null
+    getLogger: () => null,
+    setLogger: vi.fn()
   }
 }));
 

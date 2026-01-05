@@ -271,6 +271,121 @@ ${structure}${analysis.structure.length > 20 ? '\n  ... (truncated)' : ''}
 *Analysis completed. Use the filesystem tools (read_project_file, list_project_directory, find_project_files) to explore specific files and directories.*`;
 }
 
+// Import ProjectScan type for formatting
+import type { ProjectScan } from '../types/projectScan';
+
+function formatFullScanResult(scan: ProjectScan): string {
+  const lines: string[] = [];
+
+  // Header
+  lines.push(`🔍 **Project Analysis: ${scan.projectName}**`);
+  lines.push('');
+
+  // Overview
+  lines.push('## 📊 Overview');
+  if (scan.overview.summary) {
+    lines.push(scan.overview.summary);
+    lines.push('');
+  }
+  lines.push(`- **Project Type**: ${scan.overview.projectType}`);
+  lines.push(`- **Total Files**: ${scan.overview.totalFiles.toLocaleString()}`);
+  lines.push(`- **Lines of Code**: ${scan.overview.totalLines.toLocaleString()}`);
+  lines.push('');
+
+  // Languages & Frameworks
+  if (scan.overview.primaryLanguages.length > 0) {
+    lines.push('## 💻 Languages');
+    for (const lang of scan.overview.primaryLanguages) {
+      lines.push(`  - ${lang}`);
+    }
+    lines.push('');
+  }
+
+  if (scan.overview.frameworks.length > 0) {
+    lines.push('## 🛠️ Frameworks');
+    for (const framework of scan.overview.frameworks) {
+      lines.push(`  - ${framework}`);
+    }
+    lines.push('');
+  }
+
+  // Key Files
+  if (scan.keyFiles.length > 0) {
+    lines.push('## 📌 Key Files');
+    for (const file of scan.keyFiles.slice(0, 10)) {
+      lines.push(`  - **${file.path}** (${file.category}): ${file.reason}`);
+    }
+    if (scan.keyFiles.length > 10) {
+      lines.push(`  ... and ${scan.keyFiles.length - 10} more`);
+    }
+    lines.push('');
+  }
+
+  // Dependencies
+  if (scan.dependencies.packageManager || scan.dependencies.runtime.length > 0) {
+    lines.push('## 📦 Dependencies');
+    if (scan.dependencies.packageManager) {
+      lines.push(`  **Package Manager**: ${scan.dependencies.packageManager}`);
+    }
+    if (scan.dependencies.runtime.length > 0) {
+      lines.push(`  **Runtime**: ${scan.dependencies.runtime.length} packages`);
+      const topDeps = scan.dependencies.runtime.slice(0, 5);
+      for (const dep of topDeps) {
+        lines.push(`    - ${dep.name}@${dep.version}${dep.purpose ? ` - ${dep.purpose}` : ''}`);
+      }
+      if (scan.dependencies.runtime.length > 5) {
+        lines.push(`    ... and ${scan.dependencies.runtime.length - 5} more`);
+      }
+    }
+    if (scan.dependencies.development.length > 0) {
+      lines.push(`  **Development**: ${scan.dependencies.development.length} packages`);
+    }
+    lines.push('');
+  }
+
+  // Architecture
+  if (scan.architecture.description || scan.architecture.components.length > 0) {
+    lines.push('## 🏗️ Architecture');
+    if (scan.architecture.description) {
+      lines.push(scan.architecture.description);
+      lines.push('');
+    }
+    if (scan.architecture.components.length > 0) {
+      lines.push('**Components:**');
+      for (const component of scan.architecture.components) {
+        lines.push(`  - **${component.name}** (${component.type}): ${component.description}`);
+      }
+      lines.push('');
+    }
+    if (scan.architecture.mermaidDiagram) {
+      lines.push('**Diagram:**');
+      lines.push('```mermaid');
+      lines.push(scan.architecture.mermaidDiagram);
+      lines.push('```');
+      lines.push('');
+    }
+  }
+
+  // Documentation
+  if (scan.documentation.hasDocumentation) {
+    lines.push('## 📚 Documentation');
+    if (scan.documentation.readmeSummary) {
+      lines.push(scan.documentation.readmeSummary);
+    }
+    if (scan.documentation.docFiles.length > 0) {
+      lines.push(`  Found ${scan.documentation.docFiles.length} documentation file(s)`);
+    }
+    lines.push('');
+  }
+
+  // Footer
+  lines.push('---');
+  lines.push(`*Scan saved to ~/.llpm/projects/${scan.projectId}/project.json*`);
+  lines.push('*Use \`/project scan --force\` to rescan, or \`/project scan --no-llm\` for faster scan without architecture analysis.*');
+
+  return lines.join('\n');
+}
+
 export const projectCommand: Command = {
   name: 'project',
   description: 'Set the current project or manage projects',
@@ -535,7 +650,7 @@ export const projectCommand: Command = {
       case 'scan': {
         try {
           const currentProject = await getCurrentProject();
-          
+
           if (!currentProject) {
             return {
               content: '❌ No active project set. Use `/project switch <project-id>` to set an active project first.',
@@ -551,10 +666,53 @@ export const projectCommand: Command = {
           }
 
           debug('Analyzing project:', currentProject.name, 'at path:', currentProject.path);
-          
-          const analysis = await analyzeDirectory(currentProject.path);
-          const result = formatAnalysisResult(analysis, currentProject.name);
-          
+
+          // Check for --force and --no-llm flags
+          const force = args.includes('--force');
+          const skipLLM = args.includes('--no-llm');
+
+          // Import orchestrator and RequestContext dynamically
+          const { ProjectScanOrchestrator } = await import('../services/projectScanOrchestrator');
+          const { RequestContext } = await import('../utils/requestContext');
+
+          const orchestrator = new ProjectScanOrchestrator();
+
+          // Track progress for user feedback and emit to UI
+          const progressLines: string[] = [];
+          let currentPhase: string | null = null;
+
+          orchestrator.onProgress((progress) => {
+            progressLines.push(`[${progress.phase}] ${progress.message}`);
+
+            // End previous phase if there was one
+            if (currentPhase && currentPhase !== progress.phase) {
+              RequestContext.logStep(currentPhase, 'end');
+            }
+
+            // Start new phase - use message directly as step name (shows in brackets)
+            if (progress.phase !== 'complete') {
+              RequestContext.logStep(`[${progress.message}]`, 'start', 'info');
+              currentPhase = `[${progress.message}]`;
+            } else {
+              // End the last phase on complete
+              if (currentPhase) {
+                RequestContext.logStep(currentPhase, 'end');
+                currentPhase = null;
+              }
+            }
+          });
+
+          const scan = await orchestrator.performFullScan({
+            projectPath: currentProject.path,
+            projectId: currentProject.id,
+            projectName: currentProject.name,
+            force,
+            skipLLM,
+          });
+
+          // Format the result
+          const result = formatFullScanResult(scan);
+
           return {
             content: result,
             success: true
