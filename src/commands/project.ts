@@ -690,8 +690,11 @@ export const projectCommand: Command = {
             skipLLM,
           });
 
-          // Format the result
-          const result = formatFullScanResult(scan);
+          // Format the result with progress info
+          const progressHeader = progressLines.length > 0
+            ? `✅ Scan completed:\n${progressLines.map(l => `  ${l}`).join('\n')}\n\n`
+            : '';
+          const result = progressHeader + formatFullScanResult(scan);
 
           return {
             content: result,
