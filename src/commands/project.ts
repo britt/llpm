@@ -686,19 +686,17 @@ export const projectCommand: Command = {
 
             // End previous phase if there was one
             if (currentPhase && currentPhase !== progress.phase) {
-              RequestContext.logStep(`scan_${currentPhase}`, 'end');
+              RequestContext.logStep(currentPhase, 'end');
             }
 
-            // Start new phase
+            // Start new phase - use message directly as step name (shows in brackets)
             if (progress.phase !== 'complete') {
-              RequestContext.logStep(`scan_${progress.phase}`, 'start', 'info', {
-                name: progress.message
-              });
-              currentPhase = progress.phase;
+              RequestContext.logStep(`[${progress.message}]`, 'start', 'info');
+              currentPhase = `[${progress.message}]`;
             } else {
               // End the last phase on complete
               if (currentPhase) {
-                RequestContext.logStep(`scan_${currentPhase}`, 'end');
+                RequestContext.logStep(currentPhase, 'end');
                 currentPhase = null;
               }
             }

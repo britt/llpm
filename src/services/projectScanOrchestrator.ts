@@ -104,18 +104,18 @@ export class ProjectScanOrchestrator {
       }
     }
 
-    this.reportProgress('initializing', 0, 'Starting project scan...');
+    this.reportProgress('initializing', 0, 'Starting project scan');
 
     // Phase 1: Create ignore filter
-    this.reportProgress('scanning', 5, 'Creating ignore filter...');
+    this.reportProgress('scanning', 5, 'Creating ignore filter');
     const ignoreFilter = await createIgnoreFilter(projectPath);
 
     // Phase 2: Scan files
-    this.reportProgress('scanning', 10, 'Scanning project files...');
+    this.reportProgress('scanning', 10, 'Scanning project files');
     const files = await scanFiles(projectPath, ignoreFilter, maxFiles, maxFileSize);
 
     // Phase 3: Analyze structure
-    this.reportProgress('analyzing', 25, 'Analyzing project structure...');
+    this.reportProgress('analyzing', 25, 'Analyzing project structure');
     const languages = detectLanguages(files);
     const directories = analyzeDirectoryStructure(files);
 
@@ -137,7 +137,7 @@ export class ProjectScanOrchestrator {
     // Entry points are already included in keyFiles with category 'entry-point'
 
     // Phase 4: Analyze documentation
-    this.reportProgress('documentation', 40, 'Analyzing documentation...');
+    this.reportProgress('documentation', 40, 'Analyzing documentation');
     let documentation;
     try {
       documentation = await analyzeDocumentation(projectPath, files);
@@ -153,7 +153,7 @@ export class ProjectScanOrchestrator {
     }
 
     // Phase 5: Analyze dependencies
-    this.reportProgress('dependencies', 55, 'Analyzing dependencies...');
+    this.reportProgress('dependencies', 55, 'Analyzing dependencies');
     let dependencies;
     try {
       dependencies = await analyzeDependencies(projectPath, files);
@@ -168,7 +168,7 @@ export class ProjectScanOrchestrator {
     }
 
     // Phase 6: Architecture analysis (LLM-powered)
-    this.reportProgress('architecture', 70, 'Analyzing architecture...');
+    this.reportProgress('architecture', 70, 'Analyzing architecture');
     let architecture;
     try {
       architecture = await analyzeArchitecture(
@@ -187,7 +187,7 @@ export class ProjectScanOrchestrator {
     }
 
     // Phase 7: Build final scan result
-    this.reportProgress('finalizing', 90, 'Building scan result...');
+    this.reportProgress('finalizing', 90, 'Building scan result');
 
     const totalLines = files.reduce((sum, f) => sum + (f.lines || 0), 0);
 
@@ -230,10 +230,10 @@ export class ProjectScanOrchestrator {
     };
 
     // Phase 8: Save scan
-    this.reportProgress('saving', 95, 'Saving scan result...');
+    this.reportProgress('saving', 95, 'Saving scan result');
     await saveProjectScan(scan);
 
-    this.reportProgress('complete', 100, 'Scan complete!');
+    this.reportProgress('complete', 100, 'Scan complete');
 
     return scan;
   }
