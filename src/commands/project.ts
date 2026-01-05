@@ -671,15 +671,37 @@ export const projectCommand: Command = {
           const force = args.includes('--force');
           const skipLLM = args.includes('--no-llm');
 
-          // Import orchestrator dynamically to avoid circular dependencies
+          // Import orchestrator and RequestContext dynamically
           const { ProjectScanOrchestrator } = await import('../services/projectScanOrchestrator');
+          const { RequestContext } = await import('../utils/requestContext');
 
           const orchestrator = new ProjectScanOrchestrator();
 
-          // Track progress for user feedback
+          // Track progress for user feedback and emit to UI
           const progressLines: string[] = [];
+          let currentPhase: string | null = null;
+
           orchestrator.onProgress((progress) => {
             progressLines.push(`[${progress.phase}] ${progress.message}`);
+
+            // End previous phase if there was one
+            if (currentPhase && currentPhase !== progress.phase) {
+              RequestContext.logStep(`scan_${currentPhase}`, 'end');
+            }
+
+            // Start new phase
+            if (progress.phase !== 'complete') {
+              RequestContext.logStep(`scan_${progress.phase}`, 'start', 'info', {
+                name: progress.message
+              });
+              currentPhase = progress.phase;
+            } else {
+              // End the last phase on complete
+              if (currentPhase) {
+                RequestContext.logStep(`scan_${currentPhase}`, 'end');
+                currentPhase = null;
+              }
+            }
           });
 
           const scan = await orchestrator.performFullScan({
@@ -690,11 +712,8 @@ export const projectCommand: Command = {
             skipLLM,
           });
 
-          // Format the result with progress info
-          const progressHeader = progressLines.length > 0
-            ? `✅ Scan completed:\n${progressLines.map(l => `  ${l}`).join('\n')}\n\n`
-            : '';
-          const result = progressHeader + formatFullScanResult(scan);
+          // Format the result
+          const result = formatFullScanResult(scan);
 
           return {
             content: result,
