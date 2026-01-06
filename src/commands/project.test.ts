@@ -488,16 +488,29 @@ describe('Project Command', () => {
   });
 
   describe('Scan subcommand', () => {
-    it('should fail when no active project', async () => {
+    it('should use CWD when no active project is set', async () => {
       vi.mocked(projectConfig.getCurrentProject).mockResolvedValue(null);
+
+      // Mock readdir to return some files for the CWD scan
+      vi.mocked(fsPromises.readdir).mockResolvedValue([
+        { name: 'index.ts', isDirectory: () => false, isFile: () => true } as any,
+      ]);
+
+      vi.mocked(fsPromises.stat).mockResolvedValue({
+        size: 1000,
+        isFile: () => true,
+        isDirectory: () => false
+      } as any);
+
+      vi.mocked(fsPromises.readFile).mockResolvedValue('// test file content');
 
       const result = await projectCommand.execute(['scan']);
 
-      expect(result.success).toBe(false);
-      expect(result.content).toContain('No active project');
+      // Should succeed using CWD
+      expect(result.success).toBe(true);
     });
 
-    it('should fail when project has no path', async () => {
+    it('should use CWD when project has no path', async () => {
       vi.mocked(projectConfig.getCurrentProject).mockResolvedValue({
         id: 'proj-1',
         name: 'Project',
@@ -505,13 +518,26 @@ describe('Project Command', () => {
         github_repo: 'user/repo',
         createdAt: '2024-01-01',
         updatedAt: '2024-01-01'
-        // no path
+        // no path - should fall back to CWD
       });
+
+      // Mock readdir to return some files for the CWD scan
+      vi.mocked(fsPromises.readdir).mockResolvedValue([
+        { name: 'index.ts', isDirectory: () => false, isFile: () => true } as any,
+      ]);
+
+      vi.mocked(fsPromises.stat).mockResolvedValue({
+        size: 1000,
+        isFile: () => true,
+        isDirectory: () => false
+      } as any);
+
+      vi.mocked(fsPromises.readFile).mockResolvedValue('// test file content');
 
       const result = await projectCommand.execute(['scan']);
 
-      expect(result.success).toBe(false);
-      expect(result.content).toContain('does not have a path');
+      // Should succeed using CWD
+      expect(result.success).toBe(true);
     });
 
     it('should scan project successfully', async () => {
