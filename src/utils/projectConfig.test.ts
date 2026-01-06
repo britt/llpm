@@ -15,7 +15,9 @@ import {
   listProjects,
   loadProjectAgentConfig,
   saveProjectAgentConfig,
-  removeProjectAgentConfig
+  removeProjectAgentConfig,
+  findProjectByPath,
+  autoDetectProject
 } from './projectConfig';
 
 describe('Project Config Caching', () => {
@@ -579,6 +581,132 @@ describe('Agent Config Functions', () => {
 
       // Should not throw
       await expect(removeProjectAgentConfig(testProjectId)).resolves.not.toThrow();
+    });
+  });
+
+  describe('findProjectByPath', () => {
+    it('should find project by exact path match', async () => {
+      // Add a project with a specific path
+      const project = await addProject({
+        name: 'Path Test Project',
+        repository: 'https://github.com/test/path-test',
+        path: '/test/path/project'
+      });
+
+      const found = await findProjectByPath('/test/path/project');
+
+      expect(found).not.toBeNull();
+      expect(found?.id).toBe(project.id);
+
+      // Cleanup
+      await removeProject(project.id);
+    });
+
+    it('should find project when CWD is subdirectory of project', async () => {
+      // Add a project with a specific path
+      const project = await addProject({
+        name: 'Parent Project',
+        repository: 'https://github.com/test/parent',
+        path: '/test/parent'
+      });
+
+      const found = await findProjectByPath('/test/parent/src/components');
+
+      expect(found).not.toBeNull();
+      expect(found?.id).toBe(project.id);
+
+      // Cleanup
+      await removeProject(project.id);
+    });
+
+    it('should return null when no project matches', async () => {
+      const found = await findProjectByPath('/nonexistent/path');
+
+      expect(found).toBeNull();
+    });
+
+    it('should handle trailing slashes in paths', async () => {
+      const project = await addProject({
+        name: 'Trailing Slash Project',
+        repository: 'https://github.com/test/trailing',
+        path: '/test/trailing/'
+      });
+
+      // Should match without trailing slash
+      const found = await findProjectByPath('/test/trailing');
+
+      expect(found).not.toBeNull();
+      expect(found?.id).toBe(project.id);
+
+      // Cleanup
+      await removeProject(project.id);
+    });
+
+    it('should skip projects without path', async () => {
+      const project = await addProject({
+        name: 'No Path Project',
+        repository: 'https://github.com/test/nopath'
+        // No path set
+      });
+
+      // Should not find anything for a random path
+      const found = await findProjectByPath('/some/random/path');
+
+      expect(found).toBeNull();
+
+      // Cleanup
+      await removeProject(project.id);
+    });
+  });
+
+  describe('autoDetectProject', () => {
+    it('should switch to matching project based on CWD', async () => {
+      // Get current CWD
+      const cwd = process.cwd();
+
+      // Add a project matching CWD
+      const project = await addProject({
+        name: 'CWD Project',
+        repository: 'https://github.com/test/cwd',
+        path: cwd
+      });
+
+      // Clear current project first
+      const config = await loadProjectConfig();
+      config.currentProject = undefined;
+      await saveProjectConfig(config);
+
+      // Auto-detect should find and switch to the project
+      const switched = await autoDetectProject();
+
+      expect(switched).toBe(true);
+
+      const currentProject = await getCurrentProject();
+      expect(currentProject?.id).toBe(project.id);
+
+      // Cleanup
+      await removeProject(project.id);
+    });
+
+    it('should return false when no matching project', async () => {
+      // Save current state
+      const config = await loadProjectConfig();
+      const originalCurrent = config.currentProject;
+
+      // Clear all projects temporarily
+      const originalProjects = { ...config.projects };
+      config.projects = {};
+      config.currentProject = undefined;
+      await saveProjectConfig(config);
+
+      const switched = await autoDetectProject();
+
+      expect(switched).toBe(false);
+
+      // Restore original state
+      config.projects = originalProjects;
+      config.currentProject = originalCurrent;
+      await saveProjectConfig(config);
     });
   });
 });

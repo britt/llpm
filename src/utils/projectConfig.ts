@@ -1,5 +1,6 @@
 import { readFile, writeFile } from 'fs/promises';
-import { existsSync, statSync } from 'fs';
+import { existsSync, statSync, realpathSync } from 'fs';
+import { resolve } from 'path';
 import type { Project, ProjectConfig, AgentConfig } from '../types/project';
 import { getConfigFilePath, ensureConfigDir, getProjectAgentsYamlPath, ensureProjectDir } from './config';
 import { debug } from './logger';
@@ -396,4 +397,79 @@ export async function removeProjectAgentConfig(projectId: string): Promise<void>
     debug('Error removing agents.yaml:', error);
     throw error;
   }
+}
+
+/**
+ * Normalize a path for comparison:
+ * - Resolve to absolute path
+ * - Remove trailing slashes
+ * - Resolve symlinks if possible
+ */
+function normalizePath(path: string): string {
+  if (!path) return '';
+
+  // Resolve to absolute path and remove trailing slashes
+  let normalized = resolve(path).replace(/\/+$/, '');
+
+  // Try to resolve symlinks for accurate comparison
+  try {
+    if (existsSync(normalized)) {
+      normalized = realpathSync(normalized);
+    }
+  } catch {
+    // If realpath fails, use the resolved path
+  }
+
+  return normalized;
+}
+
+/**
+ * Find a project that matches the given directory path.
+ * Returns the project if CWD equals project.path or is within project.path.
+ */
+export async function findProjectByPath(directoryPath: string): Promise<Project | null> {
+  const projects = await listProjects();
+  const normalizedDir = normalizePath(directoryPath);
+
+  debug('Finding project for path:', normalizedDir);
+
+  for (const project of projects) {
+    if (!project.path) continue;
+
+    const normalizedProjectPath = normalizePath(project.path);
+
+    // Check exact match or if directory is within project
+    if (normalizedDir === normalizedProjectPath ||
+        normalizedDir.startsWith(normalizedProjectPath + '/')) {
+      debug('Found matching project:', project.name, 'at', normalizedProjectPath);
+      return project;
+    }
+  }
+
+  debug('No matching project found for:', normalizedDir);
+  return null;
+}
+
+/**
+ * Auto-detect and switch to project based on current working directory.
+ * Returns true if a project was found and switched to.
+ */
+export async function autoDetectProject(): Promise<boolean> {
+  const cwd = process.cwd();
+  const matchingProject = await findProjectByPath(cwd);
+
+  if (!matchingProject) {
+    return false;
+  }
+
+  const currentProject = await getCurrentProject();
+
+  // Only switch if different from current
+  if (!currentProject || currentProject.id !== matchingProject.id) {
+    await setCurrentProject(matchingProject.id);
+    debug('Auto-switched to project:', matchingProject.name);
+    return true;
+  }
+
+  return false;
 }
