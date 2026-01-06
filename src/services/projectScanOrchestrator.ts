@@ -6,7 +6,7 @@
 import { existsSync } from 'fs';
 import { readFile } from 'fs/promises';
 import { join } from 'path';
-import packageJson from '../../package.json';
+import llpmPackageJson from '../../package.json';
 import { createIgnoreFilter } from '../utils/gitignore';
 import {
   scanFiles,
@@ -192,7 +192,7 @@ export class ProjectScanOrchestrator {
     const totalLines = files.reduce((sum, f) => sum + (f.lines || 0), 0);
 
     const scan: ProjectScan = {
-      version: packageJson.version,
+      version: llpmPackageJson.version,
       scannedAt: new Date().toISOString(),
       projectId,
       projectName,
