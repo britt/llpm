@@ -284,3 +284,250 @@ All 9 phases completed successfully. Project codebase parsing feature fully impl
 1. `src/tools/projectScanTools.ts` - Added 4 new tools
 2. `src/tools/registry.ts` - Registered new tools
 3. `package.json` - Added `ignore` dependency
+
+---
+
+## Feature: Context-Aware Question Generator (Issue #28)
+**Branch:** britt/context-aware-questions
+**Started:** 2026-01-06
+
+### Task 1.1: Define Question Types - COMPLETE ✅
+- **Started**: 2026-01-06 16:17:00
+- **Completed**: 2026-01-06 16:19:30
+- **Commit**: db47241
+
+#### Implementation Summary
+
+Created type system for questions generated from project context analysis:
+
+**Files Created:**
+- `src/types/questions.ts` - Type definitions
+- `src/types/questions.test.ts` - Test suite
+
+**Types Implemented:**
+- `QuestionCategory` - 6 categories: requirements, technical, documentation, process, consistency, architecture
+- `QuestionPriority` - 3 levels: high, medium, low
+- `QuestionSourceType` - 7 source types: issue, pr, file, note, readme, project-scan, architecture
+- `QuestionSource` - Interface tracking question origin with type, reference, and optional URL
+- `Question` - Core question interface with id, category, priority, question text, context, source, optional suggested action
+- `QuestionInput` - Question type without id (for creating new questions)
+- `isQuestion()` - Type guard function for validating Question objects
+- `createQuestion()` - Factory function with unique ID generation
+- `SourcesAnalyzed` - Summary of analyzed sources
+- `QuestionsSummary` - Summary of generated questions by category and priority
+- `ProjectQuestionsResult` - Result structure for project-wide analysis
+- `IssueQuestionsResult` - Result structure for issue-specific analysis
+- `InformationGapsResult` - Result structure for information gaps
+- `ClarificationsResult` - Result structure for clarifications
+
+#### TDD Cycle
+
+**RED Phase:**
+- Created `src/types/questions.test.ts` with 7 test cases
+- Tests failed as expected: "Failed to resolve import ./questions"
+- Tests covered: QuestionCategory, QuestionPriority, isQuestion type guard, createQuestion factory
+
+**GREEN Phase:**
+- Implemented `src/types/questions.ts` with all required types and functions
+- All 7 tests passed
+- No modifications needed - minimal implementation passed all tests
+
+**REFACTOR Phase:**
+- N/A - Initial implementation was clean and complete
+
+#### Test Results
+
+```
+✓ src/types/questions.test.ts (7 tests) 2ms
+  ✓ QuestionCategory (1)
+  ✓ QuestionPriority (1)
+  ✓ isQuestion (3)
+  ✓ createQuestion (2)
+
+Test Files: 1 passed (1)
+Tests: 7 passed (7)
+```
+
+#### Coverage
+
+- **Lines**: 100%
+- **Functions**: 100%
+- **Branches**: 100%
+- **Statements**: 100%
+
+#### Build & Linting
+
+- **Build**: ✅ Not applicable (types only)
+- **Linting**: ✅ Clean - no errors or warnings
+- **Type Check**: ✅ New files pass type checking
+
+#### Notes
+
+- Used TDD strictly: wrote failing tests first, then implemented
+- All tests passed on first GREEN phase attempt
+- Type definitions are well-documented with JSDoc comments
+- Factory function (`createQuestion`) generates unique IDs using timestamp + counter
+- Type guard (`isQuestion`) validates all required fields
+- Ready for next task: Question Generator Service implementation
+
+### Task 2.1 & 2.2: Create Gap Analyzer Service - COMPLETE ✅
+- **Started**: 2026-01-06
+- **Completed**: 2026-01-06
+
+**Files Created:**
+- `src/services/gapAnalyzer.ts` - Gap analyzer service
+- `src/services/gapAnalyzer.test.ts` - Test suite (19 tests)
+
+**Implementation:**
+- `GapAnalyzer` class with `analyzeIssue()` method
+- Detects: missing acceptance criteria, vague descriptions, missing labels, missing assignees, stale issues (30+ days)
+- `checkAcceptanceCriteria()` - checkbox patterns, "done when" phrases
+- `checkVagueDescription()` - short content, vague words ("unclear", "might", "maybe")
+- `prioritizeQuestions()` - sorts by priority (high > medium > low)
+- `analyzeProjectContext()` - analyzes project scan data for documentation gaps
+- `analyzeProjectScan()` - extracts questions from architecture/docs coverage
+
+**Test Results:**
+```
+✓ src/services/gapAnalyzer.test.ts (19 tests) 4ms
+```
+
+**Coverage:**
+- Lines: 99.17%
+- Functions: 100%
+- Branches: 89.47%
+
+### Task 3.1-3.4: Create Question Tools - COMPLETE ✅
+- **Started**: 2026-01-06
+- **Completed**: 2026-01-06
+
+**Files Created/Modified:**
+- `src/tools/questionTools.ts` - 4 AI tools
+- `src/tools/questionTools.test.ts` - Test suite (22 tests)
+- `src/tools/registry.ts` - Registered all 4 tools
+
+**Tools Implemented:**
+1. `generateProjectQuestionsTool` - Analyze entire project context for gaps
+2. `generateIssueQuestionsTool` - Analyze specific GitHub issue
+3. `suggestClarificationsTool` - Review draft content before submission
+4. `identifyInformationGapsTool` - Scan specific target (README, docs, codebase)
+
+**Test Results:**
+```
+✓ src/tools/questionTools.test.ts (22 tests) 9ms
+```
+
+**Integration Tests:**
+- Test poorly written issues detect multiple gaps
+- Test well-written issues have minimal/no flags
+- Test combined project and issue analysis
+
+### Task 4.1: Create context-aware-questions Skill - COMPLETE ✅
+- **Started**: 2026-01-06
+- **Completed**: 2026-01-06
+
+**File Created:**
+- `skills/context-aware-questions/SKILL.md`
+
+**Skill Features:**
+- Describes when to use each tool
+- Provides example workflows for common scenarios
+- Documents question categories and priorities
+- Shows output structure and best practices
+
+### Task 5.1: Add Integration Tests - COMPLETE ✅
+- **Completed**: 2026-01-06
+- Added 3 integration tests to questionTools.test.ts
+- Tests verify end-to-end gap detection workflows
+
+### Task 6.1: Final Verification - COMPLETE ✅
+- **Completed**: 2026-01-06
+
+**All Tests Pass:**
+```
+Test Files: 3 passed (3)
+Tests: 48 passed (48)
+```
+
+**Coverage Summary:**
+- questions.ts: 100% (all metrics)
+- gapAnalyzer.ts: 99.17% lines, 89.47% branches, 100% functions
+- questionTools.ts: Tested via 22 tests
+
+**Lint: Clean** - No errors in new files
+**TypeCheck:** Pre-existing issues only (AI SDK tool type pattern)
+
+## Summary - Issue #28
+
+Context-Aware Question Generator feature fully implemented with:
+
+### Files Created
+1. `src/types/questions.ts` - Type definitions (7 tests)
+2. `src/types/questions.test.ts` - Type tests
+3. `src/services/gapAnalyzer.ts` - Gap analysis service (19 tests)
+4. `src/services/gapAnalyzer.test.ts` - Service tests
+5. `src/tools/questionTools.ts` - 4 AI tools (22 tests)
+6. `src/tools/questionTools.test.ts` - Tool tests
+7. `skills/context-aware-questions/SKILL.md` - Skill definition
+
+### Files Modified
+1. `src/tools/registry.ts` - Registered 4 new tools
+
+### Feature Summary
+- **Question Types**: Categories (6), Priorities (3), Sources (7)
+- **Gap Analyzer**: Issue analysis, project scan analysis, prioritization
+- **AI Tools**: 4 tools for project/issue/draft/target analysis
+- **Skill**: Natural language interface with example workflows
+
+### Total Tests Added: 48 tests
+- questions.test.ts: 7 tests
+- gapAnalyzer.test.ts: 19 tests
+- questionTools.test.ts: 22 tests
+## Feature: Stakeholder Tracking Bugfixes and Improvements
+**Branch:** britt/stakeholders-goals
+**Started:** 2026-01-06
+**Completed:** 2026-01-06
+
+### Code Review Issues Fixed
+
+| Issue | Description | Fix |
+|-------|-------------|-----|
+| #1 | Module-level mutable state caching | Changed to Map-based cache with `clearStakeholderCache()` |
+| #2 | Parsing fragility with special characters | Added `escapeMarkdownForLink`/`unescapeMarkdownForLink` methods |
+| #3 | Argument parsing for quoted strings | Added `parseQuotedArgs()` function |
+| #4 | Redundant fallback in date string | Simplified to `.slice(0, 10)` |
+| #5 | Empty Goal-Issue Links section | Changed condition to only write when `hasLinks` is true |
+| #6 | Link command argument order mismatch | Added goal fuzzy matching in link command |
+
+### New Features Added
+
+#### Fuzzy Matching for Stakeholder Names
+- `findStakeholder(query)` - Returns single best match using priority: exact > case-insensitive > prefix > contains
+- `findStakeholders(query)` - Returns all matches sorted by relevance score
+- Updated `show`, `remove`, and `link` commands to use fuzzy matching
+
+#### Quoted Argument Parsing
+- `parseQuotedArgs()` handles quoted strings in CLI arguments
+- Supports both single and double quotes
+- Handles multi-word quoted arguments (e.g., `"End User"`)
+
+### Integration Tests Created
+- File: `src/services/stakeholderBackend.integration.test.ts`
+- Uses `/tmp` directory for test files (automatically cleaned up)
+- Tests full round-trip serialization, special characters, unicode, edge cases
+
+### Test Results
+- Stakeholder Tests: 113 passing
+- Full Test Suite: 1894 passing
+- Lint: Stakeholder files clean
+- TypeCheck: Stakeholder files clean (pre-existing warnings in other files)
+
+### Files Modified
+1. `src/services/stakeholderBackend.ts` - Cache, fuzzy matching, escaping
+2. `src/services/stakeholderBackend.test.ts` - New tests
+3. `src/commands/stakeholder.ts` - Quoted args, fuzzy matching
+4. `src/commands/stakeholder.test.ts` - New tests
+5. `src/tools/stakeholderTools.ts` - Date fix
+
+### Files Created
+1. `src/services/stakeholderBackend.integration.test.ts` - Integration tests

@@ -17,6 +17,12 @@ import {
   getGitHubIssueWithCommentsTool
 } from './githubIssueTools';
 import {
+  generateProjectQuestionsTool,
+  generateIssueQuestionsTool,
+  suggestClarificationsTool,
+  identifyInformationGapsTool
+} from './questionTools';
+import {
   listGitHubPullRequestsTool,
   createGitHubPullRequestTool
 } from './githubPullRequestTools';
@@ -64,6 +70,17 @@ import {
   refineRequirementSection,
   generateRequirementsDocument
 } from './elicitationTools';
+import {
+  addStakeholderTool,
+  listStakeholdersTool,
+  getStakeholderTool,
+  updateStakeholderTool,
+  removeStakeholderTool,
+  linkIssueToGoalTool,
+  unlinkIssueFromGoalTool,
+  generateCoverageReportTool,
+  resolveConflictTool
+} from './stakeholderTools';
 
 const toolRegistry: ToolRegistry = {
   get_current_project: getCurrentProjectTool,
@@ -127,7 +144,22 @@ const toolRegistry: ToolRegistry = {
   advance_elicitation_section: advanceElicitationSection,
   skip_elicitation_section: skipElicitationSection,
   refine_requirement_section: refineRequirementSection,
-  generate_requirements_document: generateRequirementsDocument
+  generate_requirements_document: generateRequirementsDocument,
+  // Context-Aware Question Generation
+  generate_project_questions: generateProjectQuestionsTool,
+  generate_issue_questions: generateIssueQuestionsTool,
+  suggest_clarifications: suggestClarificationsTool,
+  identify_information_gaps: identifyInformationGapsTool,
+  // Stakeholder Management
+  add_stakeholder: addStakeholderTool,
+  list_stakeholders: listStakeholdersTool,
+  get_stakeholder: getStakeholderTool,
+  update_stakeholder: updateStakeholderTool,
+  remove_stakeholder: removeStakeholderTool,
+  link_issue_to_goal: linkIssueToGoalTool,
+  unlink_issue_from_goal: unlinkIssueFromGoalTool,
+  generate_coverage_report: generateCoverageReportTool,
+  resolve_stakeholder_conflict: resolveConflictTool
 };
 
 export async function getToolRegistry(): Promise<ToolRegistry> {
