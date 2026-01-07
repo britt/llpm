@@ -234,4 +234,91 @@ Some technical details here.`,
       expect(sorted).toEqual([]);
     });
   });
+
+  describe('analyzeProjectContext', () => {
+    it('should suggest running project scan when not available', async () => {
+      const { getCurrentProject } = await import('../utils/projectConfig');
+      const { loadProjectScan } = await import('./projectScanBackend');
+
+      vi.mocked(getCurrentProject).mockResolvedValue({
+        id: 'test-project',
+        name: 'Test Project',
+        path: '/path/to/project',
+        github_repo: 'owner/repo',
+      });
+      vi.mocked(loadProjectScan).mockResolvedValue(null);
+
+      const result = await analyzer.analyzeProjectContext();
+
+      expect(result.projectScanAvailable).toBe(false);
+      expect(result.questions.some(q =>
+        q.question.toLowerCase().includes('project scan') ||
+        q.suggestedAction?.toLowerCase().includes('scan')
+      )).toBe(true);
+    });
+
+    it('should analyze architecture when project scan available', async () => {
+      const { getCurrentProject } = await import('../utils/projectConfig');
+      const { loadProjectScan } = await import('./projectScanBackend');
+
+      vi.mocked(getCurrentProject).mockResolvedValue({
+        id: 'test-project',
+        name: 'Test Project',
+        path: '/path/to/project',
+        github_repo: 'owner/repo',
+      });
+      vi.mocked(loadProjectScan).mockResolvedValue({
+        version: '1.0.0',
+        scannedAt: '2025-01-01T00:00:00Z',
+        projectId: 'test-project',
+        projectName: 'Test Project',
+        projectPath: '/path/to/project',
+        overview: {
+          summary: '',
+          primaryLanguages: ['TypeScript'],
+          frameworks: [],
+          projectType: 'cli',
+          totalFiles: 100,
+          totalLines: 5000,
+          totalSize: 250000,
+        },
+        directoryStructure: [],
+        keyFiles: [
+          { path: 'src/index.ts', reason: 'Entry point', category: 'entry-point' },
+        ],
+        documentation: {
+          hasDocumentation: false,
+          docFiles: [],
+          inlineDocsCoverage: 'none',
+        },
+        dependencies: {
+          packageManager: 'bun',
+          runtime: [],
+          development: [],
+        },
+        architecture: {
+          description: '',
+          components: [],
+        },
+      });
+
+      const result = await analyzer.analyzeProjectContext();
+
+      expect(result.projectScanAvailable).toBe(true);
+      // Should generate questions about missing docs
+      expect(result.questions.some(q => q.category === 'documentation')).toBe(true);
+    });
+
+    it('should return error when no project is set', async () => {
+      const { getCurrentProject } = await import('../utils/projectConfig');
+      vi.mocked(getCurrentProject).mockResolvedValue(null);
+
+      const result = await analyzer.analyzeProjectContext();
+
+      expect(result.projectName).toBe('Unknown');
+      expect(result.questions.some(q =>
+        q.question.toLowerCase().includes('no active project')
+      )).toBe(true);
+    });
+  });
 });
