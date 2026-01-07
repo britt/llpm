@@ -84,3 +84,68 @@ defining comprehensive requirements for their project. Available domains:
     };
   },
 });
+
+/**
+ * @prompt Tool: record_requirement_answer
+ * Record the user's answer to a requirement question. After recording,
+ * returns the next question or indicates section completion.
+ */
+export const recordRequirementAnswer = tool({
+  description: `Record the user's answer to a requirement question. Use this after the user
+responds to a question from the elicitation wizard. The tool will return the next
+question to ask, or indicate that the current section is complete.`,
+  inputSchema: z.object({
+    sessionId: z.string().describe('The elicitation session ID'),
+    questionId: z.string().describe('The ID of the question being answered'),
+    answer: z.string().describe("The user's answer to the question"),
+  }),
+  execute: async ({ sessionId, questionId, answer }) => {
+    const project = await getCurrentProject();
+    if (!project) {
+      return {
+        success: false,
+        error: 'No active project',
+      };
+    }
+
+    const backend = new ElicitationBackend(project.id);
+
+    try {
+      // Get the question text for recording
+      const allQuestions = await backend.getAllQuestionsForSession(sessionId);
+      const question = allQuestions.find(q => q.id === questionId);
+      const questionText = question?.question || questionId;
+
+      const session = await backend.recordAnswer(sessionId, questionId, questionText, answer);
+      const nextQuestion = await backend.getNextQuestion(sessionId);
+
+      const currentSection = session.sections.find(s => s.id === session.currentSectionId);
+      const sectionComplete = nextQuestion === null || nextQuestion.section !== session.currentSectionId;
+
+      return {
+        success: true,
+        recorded: true,
+        sectionComplete,
+        currentSection: session.currentSectionId,
+        currentSectionName: currentSection?.name,
+        answersInSection: currentSection?.answers.length || 0,
+        nextQuestion: nextQuestion && !sectionComplete
+          ? {
+              id: nextQuestion.id,
+              question: nextQuestion.question,
+              description: nextQuestion.description,
+              required: nextQuestion.required,
+            }
+          : null,
+        message: sectionComplete
+          ? `Section "${currentSection?.name}" complete. Ready to move to the next section.`
+          : `Answer recorded. Next question ready.`,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to record answer',
+      };
+    }
+  },
+});
