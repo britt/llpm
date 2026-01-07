@@ -18,6 +18,7 @@ import {
   advanceElicitationSection,
   skipElicitationSection,
   refineRequirementSection,
+  generateRequirementsDocument,
 } from './elicitationTools';
 
 describe('startRequirementElicitation', () => {
@@ -357,5 +358,102 @@ describe('refineRequirementSection', () => {
 
     expect(result.success).toBe(true);
     expect(result.currentSection).toBe('overview');
+  });
+});
+
+describe('generateRequirementsDocument', () => {
+  beforeEach(async () => {
+    try {
+      await fs.rm('/tmp/llpm-elicit-test', { recursive: true });
+    } catch {
+      // Directory may not exist
+    }
+  });
+
+  afterEach(async () => {
+    try {
+      await fs.rm('/tmp/llpm-elicit-test', { recursive: true });
+    } catch {
+      // Ignore cleanup errors
+    }
+  });
+
+  it('should generate a markdown document from captured answers', async () => {
+    const startResult = await startRequirementElicitation.execute({
+      domain: 'api',
+      projectName: 'My API Service',
+    });
+
+    // Record some answers
+    await recordRequirementAnswer.execute({
+      sessionId: startResult.sessionId,
+      questionId: 'project-name',
+      answer: 'My API Service',
+    });
+    await recordRequirementAnswer.execute({
+      sessionId: startResult.sessionId,
+      questionId: 'project-description',
+      answer: 'A REST API for managing user data',
+    });
+    await recordRequirementAnswer.execute({
+      sessionId: startResult.sessionId,
+      questionId: 'success-criteria',
+      answer: '99.9% uptime, <100ms response time',
+    });
+
+    const result = await generateRequirementsDocument.execute({
+      sessionId: startResult.sessionId,
+    });
+
+    expect(result.success).toBe(true);
+    expect(result.document).toContain('# Project Requirements: My API Service');
+    expect(result.document).toContain('api');
+    expect(result.document).toContain('REST API for managing user data');
+    expect(result.document).toContain('99.9% uptime');
+  });
+
+  it('should include domain in document header', async () => {
+    const startResult = await startRequirementElicitation.execute({
+      domain: 'web-app',
+      projectName: 'Web Dashboard',
+    });
+
+    await recordRequirementAnswer.execute({
+      sessionId: startResult.sessionId,
+      questionId: 'project-name',
+      answer: 'Web Dashboard',
+    });
+
+    const result = await generateRequirementsDocument.execute({
+      sessionId: startResult.sessionId,
+    });
+
+    expect(result.success).toBe(true);
+    expect(result.document).toContain('## Overview');
+    expect(result.document).toContain('Domain: web-app');
+  });
+
+  it('should optionally save document to file', async () => {
+    const startResult = await startRequirementElicitation.execute({
+      domain: 'cli',
+      projectName: 'My CLI Tool',
+    });
+
+    await recordRequirementAnswer.execute({
+      sessionId: startResult.sessionId,
+      questionId: 'project-name',
+      answer: 'My CLI Tool',
+    });
+
+    const result = await generateRequirementsDocument.execute({
+      sessionId: startResult.sessionId,
+      outputPath: '/tmp/llpm-elicit-test/requirements.md',
+    });
+
+    expect(result.success).toBe(true);
+    expect(result.savedTo).toBe('/tmp/llpm-elicit-test/requirements.md');
+
+    const fileContent = await fs.readFile('/tmp/llpm-elicit-test/requirements.md', 'utf-8');
+    expect(fileContent).toContain('My CLI Tool');
   });
 });
