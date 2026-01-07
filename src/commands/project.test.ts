@@ -53,9 +53,36 @@ vi.mock('../services/projectScanOrchestrator', () => ({
   })),
 }));
 
+// Mock GitHub services for health/risks commands
+vi.mock('../services/github', () => ({
+  listIssues: vi.fn(),
+  listPullRequests: vi.fn(),
+  listAllIssues: vi.fn(),
+  listAllPullRequests: vi.fn(),
+  getIssueWithComments: vi.fn(),
+}));
+
+// Mock RiskDetectionService
+vi.mock('../services/riskDetectionService', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../services/riskDetectionService')>();
+  return {
+    ...actual,
+    RiskDetectionService: vi.fn().mockImplementation(() => ({
+      detectStaleSignals: vi.fn().mockReturnValue([]),
+      detectBlockedSignals: vi.fn().mockReturnValue([]),
+      detectDeadlineSignals: vi.fn().mockReturnValue([]),
+      detectScopeSignals: vi.fn().mockReturnValue([]),
+      detectAssignmentSignals: vi.fn().mockReturnValue([]),
+      detectOverloadedAssignees: vi.fn().mockReturnValue([]),
+    })),
+  };
+});
+
 import { projectCommand } from './project';
 import * as projectConfig from '../utils/projectConfig';
 import * as fsPromises from 'fs/promises';
+import * as github from '../services/github';
+import { RiskDetectionService } from '../services/riskDetectionService';
 
 describe('Project Command', () => {
   beforeEach(() => {
@@ -629,6 +656,206 @@ describe('Project Command', () => {
       expect(projectConfig.addProject).toHaveBeenCalledWith(expect.objectContaining({
         repository: 'https://github.com/user/repo'
       }));
+    });
+  });
+
+  describe('Health subcommand', () => {
+    it('should fail when no project with github_repo is active', async () => {
+      vi.mocked(projectConfig.getCurrentProject).mockResolvedValue({
+        id: 'proj-1',
+        name: 'Test Project',
+        repository: 'https://github.com/user/repo',
+        path: '/test/path',
+        createdAt: '2024-01-01',
+        updatedAt: '2024-01-01'
+        // No github_repo set
+      });
+
+      const result = await projectCommand.execute(['health']);
+
+      expect(result.success).toBe(false);
+      expect(result.content).toContain('No active project with GitHub repository');
+    });
+
+    it('should show health summary when project has github_repo', async () => {
+      vi.mocked(projectConfig.getCurrentProject).mockResolvedValue({
+        id: 'proj-1',
+        name: 'Test Project',
+        repository: 'https://github.com/user/repo',
+        github_repo: 'user/repo',
+        path: '/test/path',
+        createdAt: '2024-01-01',
+        updatedAt: '2024-01-01'
+      });
+
+      vi.mocked(github.listIssues).mockResolvedValue([
+        { number: 1, title: 'Issue 1', state: 'open', html_url: 'http://example.com/1', updated_at: new Date().toISOString() } as any,
+        { number: 2, title: 'Issue 2', state: 'open', html_url: 'http://example.com/2', updated_at: new Date().toISOString() } as any,
+      ]);
+      vi.mocked(github.listPullRequests).mockResolvedValue([
+        { number: 10, title: 'PR 1', state: 'open', html_url: 'http://example.com/10', updated_at: new Date().toISOString() } as any,
+      ]);
+
+      const result = await projectCommand.execute(['health']);
+
+      expect(result.success).toBe(true);
+      expect(result.content).toContain('Project Health');
+      expect(result.content).toContain('Test Project');
+    });
+
+    it('should use comprehensive mode with --all flag', async () => {
+      vi.mocked(projectConfig.getCurrentProject).mockResolvedValue({
+        id: 'proj-1',
+        name: 'Test Project',
+        repository: 'https://github.com/user/repo',
+        github_repo: 'user/repo',
+        path: '/test/path',
+        createdAt: '2024-01-01',
+        updatedAt: '2024-01-01'
+      });
+
+      vi.mocked(github.listAllIssues).mockResolvedValue([]);
+      vi.mocked(github.listAllPullRequests).mockResolvedValue([]);
+
+      const result = await projectCommand.execute(['health', '--all']);
+
+      expect(result.success).toBe(true);
+      expect(github.listAllIssues).toHaveBeenCalled();
+      expect(github.listAllPullRequests).toHaveBeenCalled();
+    });
+
+    it('should show risk counts by severity', async () => {
+      vi.mocked(projectConfig.getCurrentProject).mockResolvedValue({
+        id: 'proj-1',
+        name: 'Test Project',
+        repository: 'https://github.com/user/repo',
+        github_repo: 'user/repo',
+        path: '/test/path',
+        createdAt: '2024-01-01',
+        updatedAt: '2024-01-01'
+      });
+
+      // Create mock issues
+      const staleIssue = {
+        number: 1,
+        title: 'Stale Issue',
+        state: 'open',
+        html_url: 'http://example.com/1',
+        updated_at: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 days old
+      };
+
+      vi.mocked(github.listIssues).mockResolvedValue([staleIssue as any]);
+      vi.mocked(github.listPullRequests).mockResolvedValue([]);
+
+      // Mock the risk detection to return a signal
+      const mockService = vi.mocked(RiskDetectionService);
+      mockService.mockImplementation(() => ({
+        detectStaleSignals: vi.fn().mockReturnValue([
+          { type: 'stale', description: 'No activity for 30 days', value: 30, severity: 'critical' }
+        ]),
+        detectBlockedSignals: vi.fn().mockReturnValue([]),
+        detectDeadlineSignals: vi.fn().mockReturnValue([]),
+        detectScopeSignals: vi.fn().mockReturnValue([]),
+        detectAssignmentSignals: vi.fn().mockReturnValue([]),
+        detectOverloadedAssignees: vi.fn().mockReturnValue([]),
+      }) as any);
+
+      const result = await projectCommand.execute(['health']);
+
+      expect(result.success).toBe(true);
+      expect(result.content).toContain('Critical');
+    });
+  });
+
+  describe('Risks subcommand', () => {
+    it('should fail when no project with github_repo is active', async () => {
+      vi.mocked(projectConfig.getCurrentProject).mockResolvedValue(null);
+
+      const result = await projectCommand.execute(['risks']);
+
+      expect(result.success).toBe(false);
+      expect(result.content).toContain('No active project with GitHub repository');
+    });
+
+    it('should list at-risk items', async () => {
+      vi.mocked(projectConfig.getCurrentProject).mockResolvedValue({
+        id: 'proj-1',
+        name: 'Test Project',
+        repository: 'https://github.com/user/repo',
+        github_repo: 'user/repo',
+        path: '/test/path',
+        createdAt: '2024-01-01',
+        updatedAt: '2024-01-01'
+      });
+
+      const staleIssue = {
+        number: 1,
+        title: 'Stale Issue',
+        state: 'open',
+        html_url: 'http://example.com/1',
+        updated_at: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
+      };
+
+      vi.mocked(github.listIssues).mockResolvedValue([staleIssue as any]);
+      vi.mocked(github.listPullRequests).mockResolvedValue([]);
+
+      // Mock risk detection
+      const mockService = vi.mocked(RiskDetectionService);
+      mockService.mockImplementation(() => ({
+        detectStaleSignals: vi.fn().mockReturnValue([
+          { type: 'stale', description: 'No activity for 30 days', value: 30, severity: 'critical' }
+        ]),
+        detectBlockedSignals: vi.fn().mockReturnValue([]),
+        detectDeadlineSignals: vi.fn().mockReturnValue([]),
+        detectScopeSignals: vi.fn().mockReturnValue([]),
+        detectAssignmentSignals: vi.fn().mockReturnValue([]),
+        detectOverloadedAssignees: vi.fn().mockReturnValue([]),
+      }) as any);
+
+      const result = await projectCommand.execute(['risks']);
+
+      expect(result.success).toBe(true);
+      expect(result.content).toContain('At-Risk Items');
+    });
+
+    it('should filter by risk type with --type flag', async () => {
+      vi.mocked(projectConfig.getCurrentProject).mockResolvedValue({
+        id: 'proj-1',
+        name: 'Test Project',
+        repository: 'https://github.com/user/repo',
+        github_repo: 'user/repo',
+        path: '/test/path',
+        createdAt: '2024-01-01',
+        updatedAt: '2024-01-01'
+      });
+
+      vi.mocked(github.listIssues).mockResolvedValue([]);
+      vi.mocked(github.listPullRequests).mockResolvedValue([]);
+
+      const result = await projectCommand.execute(['risks', '--type', 'stale']);
+
+      expect(result.success).toBe(true);
+      expect(result.content).toContain('stale');
+    });
+
+    it('should show healthy message when no risks found', async () => {
+      vi.mocked(projectConfig.getCurrentProject).mockResolvedValue({
+        id: 'proj-1',
+        name: 'Test Project',
+        repository: 'https://github.com/user/repo',
+        github_repo: 'user/repo',
+        path: '/test/path',
+        createdAt: '2024-01-01',
+        updatedAt: '2024-01-01'
+      });
+
+      vi.mocked(github.listIssues).mockResolvedValue([]);
+      vi.mocked(github.listPullRequests).mockResolvedValue([]);
+
+      const result = await projectCommand.execute(['risks']);
+
+      expect(result.success).toBe(true);
+      expect(result.content).toContain('No at-risk items');
     });
   });
 });

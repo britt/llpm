@@ -11,8 +11,22 @@ import {
 } from '../utils/projectConfig';
 
 // Import project scan functionality
-import { readdir, stat } from 'fs/promises';
-import { join, relative, extname, basename } from 'path';
+import { basename } from 'path';
+
+// Import risk detection functionality
+import {
+  listIssues,
+  listPullRequests,
+  listAllIssues,
+  listAllPullRequests,
+} from '../services/github';
+import {
+  RiskDetectionService,
+  analyzeItems,
+  type RiskType,
+  type ExtendedGitHubIssue,
+  type ExtendedGitHubPullRequest,
+} from '../services/riskDetectionService';
 
 // Helper function to normalize repository format
 function normalizeRepository(repository: string): string {
@@ -34,242 +48,6 @@ function normalizeRepository(repository: string): string {
   return repository;
 }
 
-// Project Scan functionality
-interface FileAnalysis {
-  path: string;
-  type: string;
-  size: number;
-  lines?: number;
-  language?: string;
-}
-
-interface ProjectAnalysis {
-  totalFiles: number;
-  totalSize: number;
-  totalLines: number;
-  filesByType: Record<string, number>;
-  filesByLanguage: Record<string, number>;
-  largestFiles: FileAnalysis[];
-  structure: string[];
-}
-
-const LANGUAGE_EXTENSIONS = {
-  '.ts': 'TypeScript',
-  '.tsx': 'TypeScript React',
-  '.js': 'JavaScript',
-  '.jsx': 'JavaScript React',
-  '.py': 'Python',
-  '.go': 'Go',
-  '.rs': 'Rust',
-  '.java': 'Java',
-  '.kt': 'Kotlin',
-  '.swift': 'Swift',
-  '.cpp': 'C++',
-  '.c': 'C',
-  '.h': 'C Header',
-  '.cs': 'C#',
-  '.php': 'PHP',
-  '.rb': 'Ruby',
-  '.scala': 'Scala',
-  '.clj': 'Clojure',
-  '.sh': 'Shell',
-  '.bash': 'Bash',
-  '.zsh': 'Zsh',
-  '.fish': 'Fish',
-  '.ps1': 'PowerShell',
-  '.html': 'HTML',
-  '.css': 'CSS',
-  '.scss': 'SCSS',
-  '.sass': 'Sass',
-  '.less': 'Less',
-  '.vue': 'Vue',
-  '.svelte': 'Svelte',
-  '.json': 'JSON',
-  '.yaml': 'YAML',
-  '.yml': 'YAML',
-  '.toml': 'TOML',
-  '.xml': 'XML',
-  '.md': 'Markdown',
-  '.txt': 'Text',
-  '.sql': 'SQL',
-  '.dockerfile': 'Dockerfile',
-  '.makefile': 'Makefile'
-} as const;
-
-const IGNORE_PATTERNS = [
-  'node_modules',
-  '.git',
-  'dist',
-  'build',
-  'target',
-  '.next',
-  '.nuxt',
-  'coverage',
-  '.nyc_output',
-  '.vscode',
-  '.idea',
-  '*.log',
-  '.DS_Store',
-  'Thumbs.db'
-];
-
-async function shouldIgnoreFile(filePath: string): Promise<boolean> {
-  const fileName = filePath.split('/').pop() || '';
-  const dirName = filePath.split('/').slice(-2, -1)[0] || '';
-  
-  return IGNORE_PATTERNS.some(pattern => {
-    if (pattern.includes('*')) {
-      const regex = new RegExp(pattern.replace('*', '.*'));
-      return regex.test(fileName);
-    }
-    return fileName === pattern || dirName === pattern || filePath.includes(pattern);
-  });
-}
-
-async function countLines(filePath: string): Promise<number> {
-  try {
-    const { readFile } = await import('fs/promises');
-    const content = await readFile(filePath, 'utf-8');
-    return content.split('\n').length;
-  } catch {
-    return 0;
-  }
-}
-
-async function analyzeDirectory(projectPath: string, maxFiles: number = 1000): Promise<ProjectAnalysis> {
-  const analysis: ProjectAnalysis = {
-    totalFiles: 0,
-    totalSize: 0,
-    totalLines: 0,
-    filesByType: {},
-    filesByLanguage: {},
-    largestFiles: [],
-    structure: []
-  };
-
-  const files: FileAnalysis[] = [];
-  const structureMap = new Map<string, boolean>();
-
-  const scanDirectory = async (dirPath: string, depth: number = 0): Promise<void> => {
-    if (analysis.totalFiles >= maxFiles) return;
-    if (depth > 10) return; // Prevent infinite recursion
-
-    try {
-      const entries = await readdir(dirPath);
-      
-      for (const entry of entries) {
-        if (analysis.totalFiles >= maxFiles) break;
-        
-        const fullPath = join(dirPath, entry);
-        const relativePath = relative(projectPath, fullPath);
-        
-        if (await shouldIgnoreFile(relativePath)) continue;
-
-        const stats = await stat(fullPath);
-        
-        if (stats.isDirectory()) {
-          structureMap.set(relativePath, true);
-          await scanDirectory(fullPath, depth + 1);
-        } else if (stats.isFile()) {
-          const ext = extname(entry).toLowerCase();
-          const language = LANGUAGE_EXTENSIONS[ext as keyof typeof LANGUAGE_EXTENSIONS] || 'Other';
-          
-          let lines = 0;
-          if (['.ts', '.tsx', '.js', '.jsx', '.py', '.go', '.rs', '.java', '.kt', '.swift', '.cpp', '.c', '.h', '.cs', '.php', '.rb'].includes(ext)) {
-            lines = await countLines(fullPath);
-            analysis.totalLines += lines;
-          }
-
-          const fileAnalysis: FileAnalysis = {
-            path: relativePath,
-            type: ext || 'no extension',
-            size: stats.size,
-            lines,
-            language
-          };
-
-          files.push(fileAnalysis);
-          analysis.totalFiles++;
-          analysis.totalSize += stats.size;
-          
-          analysis.filesByType[ext || 'no extension'] = (analysis.filesByType[ext || 'no extension'] || 0) + 1;
-          analysis.filesByLanguage[language] = (analysis.filesByLanguage[language] || 0) + 1;
-        }
-      }
-    } catch (error) {
-      debug('Error scanning directory:', dirPath, error);
-    }
-  };
-
-  await scanDirectory(projectPath);
-
-  // Get largest files
-  analysis.largestFiles = files
-    .sort((a, b) => b.size - a.size)
-    .slice(0, 10);
-
-  // Build structure representation
-  const sortedStructure = Array.from(structureMap.keys())
-    .sort()
-    .slice(0, 50); // Limit structure output
-
-  analysis.structure = sortedStructure.map(path => `📁 ${path}/`);
-
-  return analysis;
-}
-
-function formatBytes(bytes: number): string {
-  if (bytes === 0) return '0 B';
-  const k = 1024;
-  const sizes = ['B', 'KB', 'MB', 'GB'];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-}
-
-function formatAnalysisResult(analysis: ProjectAnalysis, projectName: string): string {
-  const topLanguages = Object.entries(analysis.filesByLanguage)
-    .sort(([, a], [, b]) => b - a)
-    .slice(0, 5)
-    .map(([lang, count]) => `  ${lang}: ${count} files`)
-    .join('\n');
-
-  const topFileTypes = Object.entries(analysis.filesByType)
-    .sort(([, a], [, b]) => b - a)
-    .slice(0, 8)
-    .map(([ext, count]) => `  ${ext || 'no extension'}: ${count}`)
-    .join('\n');
-
-  const largestFiles = analysis.largestFiles
-    .slice(0, 5)
-    .map(file => `  📄 ${file.path} (${formatBytes(file.size)})${file.lines ? ` - ${file.lines} lines` : ''}`)
-    .join('\n');
-
-  const structure = analysis.structure
-    .slice(0, 20)
-    .join('\n');
-
-  return `🔍 **Project Analysis: ${projectName}**
-
-## 📊 Overview
-- **Total Files**: ${analysis.totalFiles}
-- **Total Size**: ${formatBytes(analysis.totalSize)}
-- **Lines of Code**: ${analysis.totalLines.toLocaleString()}
-
-## 💻 Languages
-${topLanguages}
-
-## 📁 File Types
-${topFileTypes}
-
-## 📈 Largest Files
-${largestFiles}
-
-## 🏗️ Directory Structure
-${structure}${analysis.structure.length > 20 ? '\n  ... (truncated)' : ''}
-
----
-*Analysis completed. Use the filesystem tools (read_project_file, list_project_directory, find_project_files) to explore specific files and directories.*`;
-}
 
 // Import ProjectScan type for formatting
 import type { ProjectScan } from '../types/projectScan';
@@ -381,10 +159,11 @@ function formatFullScanResult(scan: ProjectScan): string {
   // Footer
   lines.push('---');
   lines.push(`*Scan saved to ~/.llpm/projects/${scan.projectId}/project.json*`);
-  lines.push('*Use \`/project scan --force\` to rescan, or \`/project scan --no-llm\` for faster scan without architecture analysis.*');
+  lines.push('*Use `/project scan --force` to rescan, or `/project scan --no-llm` for faster scan without architecture analysis.*');
 
   return lines.join('\n');
 }
+
 
 export const projectCommand: Command = {
   name: 'project',
@@ -432,6 +211,10 @@ export const projectCommand: Command = {
 
 **Project Analysis:**
 • /project scan - Analyze the current project codebase and generate a summary
+
+**Project Health:**
+• /project health [--all] - Show project health summary with risk counts
+• /project risks [--type <type>] [--all] - List at-risk items with details
 
 ⌨️ Quick Actions:
 • Shift+Tab - Interactive project selector
@@ -730,9 +513,210 @@ export const projectCommand: Command = {
         }
       }
 
+      case 'health': {
+        try {
+          const currentProject = await getCurrentProject();
+
+          if (!currentProject || !currentProject.github_repo) {
+            return {
+              content: '❌ No active project with GitHub repository. Use /project to set an active project first.',
+              success: false
+            };
+          }
+
+          const [owner, repo] = currentProject.github_repo.split('/');
+          if (!owner || !repo) {
+            return {
+              content: `❌ Invalid GitHub repository format: ${currentProject.github_repo}. Expected format: owner/repo`,
+              success: false
+            };
+          }
+
+          const comprehensive = args.includes('--all');
+          const service = new RiskDetectionService();
+
+          // Fetch issues and PRs based on mode
+          let issues: ExtendedGitHubIssue[];
+          let pullRequests: ExtendedGitHubPullRequest[];
+
+          if (comprehensive) {
+            [issues, pullRequests] = await Promise.all([
+              listAllIssues(owner, repo, { state: 'open' }) as Promise<ExtendedGitHubIssue[]>,
+              listAllPullRequests(owner, repo, { state: 'open' }) as Promise<ExtendedGitHubPullRequest[]>,
+            ]);
+          } else {
+            [issues, pullRequests] = await Promise.all([
+              listIssues(owner, repo, { state: 'open', per_page: 30 }) as Promise<ExtendedGitHubIssue[]>,
+              listPullRequests(owner, repo, { state: 'open', per_page: 30 }) as Promise<ExtendedGitHubPullRequest[]>,
+            ]);
+          }
+
+          // Analyze all items
+          const risks = analyzeItems(service, issues, pullRequests);
+
+          // Calculate summary
+          const totalOpen = issues.length + pullRequests.length;
+          const atRiskCount = risks.length;
+          const healthyCount = totalOpen - atRiskCount;
+          const bySeverity = {
+            critical: risks.filter((r) => r.severity === 'critical').length,
+            warning: risks.filter((r) => r.severity === 'warning').length,
+            info: risks.filter((r) => r.severity === 'info').length,
+          };
+
+          // Detect overloaded assignees
+          const overloadedAssignees = service.detectOverloadedAssignees(issues);
+
+          // Format health report
+          const healthPercent = totalOpen > 0 ? Math.round((healthyCount / totalOpen) * 100) : 100;
+          const healthEmoji = healthPercent >= 80 ? '🟢' : healthPercent >= 50 ? '🟡' : '🔴';
+
+          let content = `${healthEmoji} **Project Health: ${currentProject.name}**\n\n`;
+          content += `## 📊 Summary\n`;
+          content += `- **Total Open Items**: ${totalOpen} (${issues.length} issues, ${pullRequests.length} PRs)\n`;
+          content += `- **At-Risk Items**: ${atRiskCount}\n`;
+          content += `- **Healthy Items**: ${healthyCount}\n`;
+          content += `- **Health Score**: ${healthPercent}%\n\n`;
+
+          content += `## ⚠️ Risk Breakdown\n`;
+          content += `- 🔴 **Critical**: ${bySeverity.critical}\n`;
+          content += `- 🟡 **Warning**: ${bySeverity.warning}\n`;
+          content += `- 🔵 **Info**: ${bySeverity.info}\n\n`;
+
+          if (overloadedAssignees.length > 0) {
+            content += `## 👥 Overloaded Assignees\n`;
+            for (const { assignee, issueCount, severity } of overloadedAssignees) {
+              const emoji = severity === 'critical' ? '🔴' : '🟡';
+              content += `- ${emoji} **${assignee}**: ${issueCount} assigned issues\n`;
+            }
+            content += '\n';
+          }
+
+          content += `---\n`;
+          content += `*Mode: ${comprehensive ? 'Comprehensive (all items)' : 'Quick (30 most recent)'}*\n`;
+          content += `*Use \`/project risks\` to see detailed at-risk items*`;
+
+          return {
+            content,
+            success: true
+          };
+        } catch (error) {
+          debug('Error analyzing project health:', error);
+          return {
+            content: `❌ Failed to analyze project health: ${error instanceof Error ? error.message : String(error)}`,
+            success: false
+          };
+        }
+      }
+
+      case 'risks': {
+        try {
+          const currentProject = await getCurrentProject();
+
+          if (!currentProject || !currentProject.github_repo) {
+            return {
+              content: '❌ No active project with GitHub repository. Use /project to set an active project first.',
+              success: false
+            };
+          }
+
+          const [owner, repo] = currentProject.github_repo.split('/');
+          if (!owner || !repo) {
+            return {
+              content: `❌ Invalid GitHub repository format: ${currentProject.github_repo}. Expected format: owner/repo`,
+              success: false
+            };
+          }
+
+          const comprehensive = args.includes('--all');
+          const service = new RiskDetectionService();
+
+          // Parse type filter
+          const typeIndex = args.indexOf('--type');
+          const riskTypeFilter = typeIndex !== -1 ? args[typeIndex + 1] as RiskType : undefined;
+
+          // Fetch issues and PRs based on mode
+          let issues: ExtendedGitHubIssue[];
+          let pullRequests: ExtendedGitHubPullRequest[];
+
+          if (comprehensive) {
+            [issues, pullRequests] = await Promise.all([
+              listAllIssues(owner, repo, { state: 'open' }) as Promise<ExtendedGitHubIssue[]>,
+              listAllPullRequests(owner, repo, { state: 'open' }) as Promise<ExtendedGitHubPullRequest[]>,
+            ]);
+          } else {
+            [issues, pullRequests] = await Promise.all([
+              listIssues(owner, repo, { state: 'open', per_page: 30 }) as Promise<ExtendedGitHubIssue[]>,
+              listPullRequests(owner, repo, { state: 'open', per_page: 30 }) as Promise<ExtendedGitHubPullRequest[]>,
+            ]);
+          }
+
+          // Analyze all items
+          let risks = analyzeItems(service, issues, pullRequests);
+
+          // Apply type filter if specified
+          if (riskTypeFilter) {
+            risks = risks.filter((r) => r.signals.some((s) => s.type === riskTypeFilter));
+          }
+
+          // Sort by severity (critical first)
+          risks.sort((a, b) => {
+            const severityOrder = { critical: 0, warning: 1, info: 2 };
+            return severityOrder[a.severity] - severityOrder[b.severity];
+          });
+
+          // Format risks report
+          let content = `📋 **At-Risk Items: ${currentProject.name}**\n\n`;
+
+          if (riskTypeFilter) {
+            content += `*Filtered by: ${riskTypeFilter}*\n\n`;
+          }
+
+          if (risks.length === 0) {
+            content += `✅ No at-risk items found! Your project is looking healthy.\n`;
+          } else {
+            content += `Found ${risks.length} at-risk item(s):\n\n`;
+
+            for (const risk of risks) {
+              const severityEmoji = risk.severity === 'critical' ? '🔴' : risk.severity === 'warning' ? '🟡' : '🔵';
+              const typeEmoji = risk.item.type === 'issue' ? '🐛' : '🔀';
+
+              content += `### ${severityEmoji} ${typeEmoji} #${risk.item.number}: ${risk.item.title}\n`;
+              content += `**URL**: ${risk.item.url}\n`;
+              if (risk.item.assignee) {
+                content += `**Assignee**: ${risk.item.assignee}\n`;
+              }
+              content += `**Signals**:\n`;
+              for (const signal of risk.signals) {
+                content += `  - ${signal.description}\n`;
+              }
+              content += `**Suggestions**:\n`;
+              for (const suggestion of risk.suggestions) {
+                content += `  - ${suggestion}\n`;
+              }
+              content += '\n';
+            }
+          }
+
+          content += `---\n`;
+          content += `*Mode: ${comprehensive ? 'Comprehensive (all items)' : 'Quick (30 most recent)'}*`;
+
+          return {
+            content,
+            success: true
+          };
+        } catch (error) {
+          debug('Error analyzing project risks:', error);
+          return {
+            content: `❌ Failed to analyze project risks: ${error instanceof Error ? error.message : String(error)}`,
+            success: false
+          };
+        }
+      }
+
       default:
         return {
-          content: `❌ Unknown subcommand: ${subCommand}\n\nAvailable subcommands:\n• add <name> <repository> <path> [description] - Add a new project\n• list - List all available projects\n• switch <project-id> - Switch to a different project\n• set <project-id> - Set current project (alias for switch)\n• update <project-id> description "<description>" - Update project description\n• remove <project-id> - Remove a project`,
+          content: `❌ Unknown subcommand: ${subCommand}\n\nAvailable subcommands:\n• add <name> <repository> <path> [description] - Add a new project\n• list - List all available projects\n• switch <project-id> - Switch to a different project\n• set <project-id> - Set current project (alias for switch)\n• update <project-id> description "<description>" - Update project description\n• remove <project-id> - Remove a project\n• health [--all] - Show project health summary\n• risks [--type <type>] [--all] - List at-risk items`,
           success: false
         };
     }
