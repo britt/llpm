@@ -12,7 +12,7 @@ import {
 
 // Import project scan functionality
 import { readdir, stat } from 'fs/promises';
-import { join, relative, extname } from 'path';
+import { join, relative, extname, basename } from 'path';
 
 // Helper function to normalize repository format
 function normalizeRepository(repository: string): string {
@@ -651,21 +651,25 @@ export const projectCommand: Command = {
         try {
           const currentProject = await getCurrentProject();
 
-          if (!currentProject) {
-            return {
-              content: '❌ No active project set. Use `/project switch <project-id>` to set an active project first.',
-              success: false
-            };
-          }
+          // Determine project info - use current project if set, otherwise use CWD
+          let projectPath: string;
+          let projectId: string;
+          let projectName: string;
 
-          if (!currentProject.path) {
-            return {
-              content: '❌ Current project does not have a path configured.',
-              success: false
-            };
+          if (currentProject?.path) {
+            // Use the configured project
+            projectPath = currentProject.path;
+            projectId = currentProject.id;
+            projectName = currentProject.name;
+            debug('Scanning configured project:', projectName, 'at path:', projectPath);
+          } else {
+            // Fall back to current working directory
+            projectPath = process.cwd();
+            projectName = basename(projectPath);
+            // Generate a simple ID from the directory name
+            projectId = projectName.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+            debug('Scanning CWD (no active project):', projectName, 'at path:', projectPath);
           }
-
-          debug('Analyzing project:', currentProject.name, 'at path:', currentProject.path);
 
           // Check for --force and --no-llm flags
           const force = args.includes('--force');
@@ -703,9 +707,9 @@ export const projectCommand: Command = {
           });
 
           const scan = await orchestrator.performFullScan({
-            projectPath: currentProject.path,
-            projectId: currentProject.id,
-            projectName: currentProject.name,
+            projectPath,
+            projectId,
+            projectName,
             force,
             skipLLM,
           });
