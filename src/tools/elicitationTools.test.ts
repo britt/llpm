@@ -11,7 +11,14 @@ vi.mock('../utils/projectConfig', () => ({
   getCurrentProject: vi.fn(() => Promise.resolve({ id: 'test-project', name: 'Test' })),
 }));
 
-import { startRequirementElicitation, recordRequirementAnswer, getElicitationState } from './elicitationTools';
+import {
+  startRequirementElicitation,
+  recordRequirementAnswer,
+  getElicitationState,
+  advanceElicitationSection,
+  skipElicitationSection,
+  refineRequirementSection,
+} from './elicitationTools';
 
 describe('startRequirementElicitation', () => {
   beforeEach(async () => {
@@ -247,5 +254,108 @@ describe('getElicitationState', () => {
 
     expect(result.success).toBe(false);
     expect(result.error).toContain('No active');
+  });
+});
+
+describe('advanceElicitationSection', () => {
+  beforeEach(async () => {
+    try {
+      await fs.rm('/tmp/llpm-elicit-test', { recursive: true });
+    } catch {
+      // Directory may not exist
+    }
+  });
+
+  afterEach(async () => {
+    try {
+      await fs.rm('/tmp/llpm-elicit-test', { recursive: true });
+    } catch {
+      // Ignore cleanup errors
+    }
+  });
+
+  it('should move to the next section', async () => {
+    const startResult = await startRequirementElicitation.execute({
+      domain: 'general',
+      projectName: 'Test',
+    });
+
+    const result = await advanceElicitationSection.execute({
+      sessionId: startResult.sessionId,
+    });
+
+    expect(result.success).toBe(true);
+    expect(result.previousSection).toBe('overview');
+    expect(result.currentSection).toBe('functional');
+  });
+});
+
+describe('skipElicitationSection', () => {
+  beforeEach(async () => {
+    try {
+      await fs.rm('/tmp/llpm-elicit-test', { recursive: true });
+    } catch {
+      // Directory may not exist
+    }
+  });
+
+  afterEach(async () => {
+    try {
+      await fs.rm('/tmp/llpm-elicit-test', { recursive: true });
+    } catch {
+      // Ignore cleanup errors
+    }
+  });
+
+  it('should skip current section and move to next', async () => {
+    const startResult = await startRequirementElicitation.execute({
+      domain: 'general',
+      projectName: 'Test',
+    });
+
+    const result = await skipElicitationSection.execute({
+      sessionId: startResult.sessionId,
+    });
+
+    expect(result.success).toBe(true);
+    expect(result.skippedSection).toBe('overview');
+    expect(result.currentSection).toBe('functional');
+  });
+});
+
+describe('refineRequirementSection', () => {
+  beforeEach(async () => {
+    try {
+      await fs.rm('/tmp/llpm-elicit-test', { recursive: true });
+    } catch {
+      // Directory may not exist
+    }
+  });
+
+  afterEach(async () => {
+    try {
+      await fs.rm('/tmp/llpm-elicit-test', { recursive: true });
+    } catch {
+      // Ignore cleanup errors
+    }
+  });
+
+  it('should reopen a completed section', async () => {
+    const startResult = await startRequirementElicitation.execute({
+      domain: 'general',
+      projectName: 'Test',
+    });
+
+    // Advance to functional section first
+    await advanceElicitationSection.execute({ sessionId: startResult.sessionId });
+
+    // Now refine overview
+    const result = await refineRequirementSection.execute({
+      sessionId: startResult.sessionId,
+      sectionId: 'overview',
+    });
+
+    expect(result.success).toBe(true);
+    expect(result.currentSection).toBe('overview');
   });
 });

@@ -225,3 +225,164 @@ is provided, returns the most recent active session.`,
     };
   },
 });
+
+/**
+ * @prompt Tool: advance_elicitation_section
+ * Move to the next section in the elicitation process.
+ */
+export const advanceElicitationSection = tool({
+  description: `Advance to the next section in the requirement elicitation. Use this when the
+user indicates they're done with the current section and ready to move on.`,
+  inputSchema: z.object({
+    sessionId: z.string().describe('The elicitation session ID'),
+  }),
+  execute: async ({ sessionId }) => {
+    const project = await getCurrentProject();
+    if (!project) {
+      return { success: false, error: 'No active project' };
+    }
+
+    const backend = new ElicitationBackend(project.id);
+
+    try {
+      const beforeSession = await backend.getSession(sessionId);
+      const previousSection = beforeSession?.currentSectionId;
+
+      const session = await backend.advanceSection(sessionId);
+      const nextQuestion = await backend.getNextQuestion(sessionId);
+      const currentSectionObj = session.sections.find(s => s.id === session.currentSectionId);
+
+      return {
+        success: true,
+        previousSection,
+        currentSection: session.currentSectionId,
+        currentSectionName: currentSectionObj?.name,
+        sessionComplete: session.status === 'completed',
+        nextQuestion: nextQuestion
+          ? {
+              id: nextQuestion.id,
+              question: nextQuestion.question,
+              description: nextQuestion.description,
+              required: nextQuestion.required,
+            }
+          : null,
+        message: session.status === 'completed'
+          ? 'All sections complete! Ready to generate requirements document.'
+          : `Moving to "${currentSectionObj?.name}"`,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to advance section',
+      };
+    }
+  },
+});
+
+/**
+ * @prompt Tool: skip_elicitation_section
+ * Skip the current section without answering questions.
+ */
+export const skipElicitationSection = tool({
+  description: `Skip the current elicitation section. Use this when the user wants to skip
+a section (e.g., "Let's skip budget constraints"). The section can be revisited later.`,
+  inputSchema: z.object({
+    sessionId: z.string().describe('The elicitation session ID'),
+  }),
+  execute: async ({ sessionId }) => {
+    const project = await getCurrentProject();
+    if (!project) {
+      return { success: false, error: 'No active project' };
+    }
+
+    const backend = new ElicitationBackend(project.id);
+
+    try {
+      const beforeSession = await backend.getSession(sessionId);
+      const skippedSection = beforeSession?.currentSectionId;
+      const skippedSectionObj = beforeSession?.sections.find(s => s.id === skippedSection);
+
+      const session = await backend.skipSection(sessionId);
+      const nextQuestion = await backend.getNextQuestion(sessionId);
+      const currentSectionObj = session.sections.find(s => s.id === session.currentSectionId);
+
+      return {
+        success: true,
+        skippedSection,
+        skippedSectionName: skippedSectionObj?.name,
+        currentSection: session.currentSectionId,
+        currentSectionName: currentSectionObj?.name,
+        sessionComplete: session.status === 'completed',
+        nextQuestion: nextQuestion
+          ? {
+              id: nextQuestion.id,
+              question: nextQuestion.question,
+              description: nextQuestion.description,
+              required: nextQuestion.required,
+            }
+          : null,
+        message: `Skipped "${skippedSectionObj?.name}". You can revisit it later.`,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to skip section',
+      };
+    }
+  },
+});
+
+/**
+ * @prompt Tool: refine_requirement_section
+ * Reopen a completed section to update or add answers.
+ */
+export const refineRequirementSection = tool({
+  description: `Reopen a previously completed section for refinement. Use this when the user
+says things like "Let's revisit the security requirements" or "I want to update the
+performance section". Shows previous answers for context.`,
+  inputSchema: z.object({
+    sessionId: z.string().describe('The elicitation session ID'),
+    sectionId: z.enum(['overview', 'functional', 'nonfunctional', 'constraints', 'edge-cases']).describe(
+      'The section to reopen'
+    ),
+  }),
+  execute: async ({ sessionId, sectionId }) => {
+    const project = await getCurrentProject();
+    if (!project) {
+      return { success: false, error: 'No active project' };
+    }
+
+    const backend = new ElicitationBackend(project.id);
+
+    try {
+      const session = await backend.reopenSection(sessionId, sectionId);
+      const sectionObj = session.sections.find(s => s.id === sectionId);
+      const nextQuestion = await backend.getNextQuestion(sessionId);
+
+      return {
+        success: true,
+        currentSection: sectionId,
+        currentSectionName: sectionObj?.name,
+        previousAnswers: sectionObj?.answers.map(a => ({
+          questionId: a.questionId,
+          question: a.question,
+          answer: a.answer,
+        })) || [],
+        nextQuestion: nextQuestion
+          ? {
+              id: nextQuestion.id,
+              question: nextQuestion.question,
+              description: nextQuestion.description,
+              required: nextQuestion.required,
+            }
+          : null,
+        message: `Reopened "${sectionObj?.name}" for refinement. Here are your previous answers.`,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to refine section',
+      };
+    }
+  },
+});
