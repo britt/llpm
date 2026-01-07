@@ -80,6 +80,10 @@ describe('GapAnalyzer', () => {
     });
 
     it('should return empty array when issue has all information', async () => {
+      // Use a recent date to avoid stale issue detection
+      const recentDate = new Date();
+      recentDate.setDate(recentDate.getDate() - 5); // 5 days ago
+
       const mockIssue: GitHubIssue = {
         id: 3,
         node_id: 'node_3',
@@ -99,13 +103,63 @@ Some technical details here.`,
         labels: [{ name: 'enhancement', color: 'blue' }],
         user: { login: 'author', html_url: 'https://github.com/author' },
         html_url: 'https://github.com/owner/repo/issues/44',
-        created_at: '2025-01-01T00:00:00Z',
-        updated_at: '2025-01-01T00:00:00Z',
+        created_at: recentDate.toISOString(),
+        updated_at: recentDate.toISOString(),
+        assignee: { login: 'someone', html_url: 'https://github.com/someone' },
       };
 
       const result = await analyzer.analyzeIssue(mockIssue, []);
 
       expect(result.questions.length).toBe(0);
+    });
+
+    it('should detect missing assignee on open issues', async () => {
+      const mockIssue: GitHubIssue = {
+        id: 4,
+        node_id: 'node_4',
+        number: 45,
+        title: 'Feature request',
+        body: '## Description\nAdd a feature.\n\n## Acceptance Criteria\n- [ ] Works',
+        state: 'open',
+        labels: [{ name: 'enhancement', color: 'blue' }],
+        user: { login: 'author', html_url: 'https://github.com/author' },
+        html_url: 'https://github.com/owner/repo/issues/45',
+        created_at: '2025-01-01T00:00:00Z',
+        updated_at: '2025-01-01T00:00:00Z',
+        assignee: null,
+      };
+
+      const result = await analyzer.analyzeIssue(mockIssue, []);
+
+      expect(result.questions.some(q =>
+        q.question.toLowerCase().includes('assign')
+      )).toBe(true);
+    });
+
+    it('should detect stale issues (30+ days)', async () => {
+      const thirtyOneDaysAgo = new Date();
+      thirtyOneDaysAgo.setDate(thirtyOneDaysAgo.getDate() - 31);
+
+      const mockIssue: GitHubIssue = {
+        id: 5,
+        node_id: 'node_5',
+        number: 46,
+        title: 'Old issue',
+        body: '## Description\nAn old issue.\n\n## Acceptance Criteria\n- [ ] Works',
+        state: 'open',
+        labels: [{ name: 'bug', color: 'red' }],
+        user: { login: 'author', html_url: 'https://github.com/author' },
+        html_url: 'https://github.com/owner/repo/issues/46',
+        created_at: '2024-01-01T00:00:00Z',
+        updated_at: thirtyOneDaysAgo.toISOString(),
+        assignee: { login: 'someone', html_url: 'https://github.com/someone' },
+      };
+
+      const result = await analyzer.analyzeIssue(mockIssue, []);
+
+      expect(result.questions.some(q =>
+        q.question.toLowerCase().includes('still relevant')
+      )).toBe(true);
     });
   });
 
@@ -124,6 +178,12 @@ Some technical details here.`,
       expect(analyzer.checkAcceptanceCriteria('**AC:**\n- works')).toBe(true);
       expect(analyzer.checkAcceptanceCriteria('Done when:\n- works')).toBe(true);
       expect(analyzer.checkAcceptanceCriteria('Definition of Done\n- works')).toBe(true);
+    });
+
+    it('should detect acceptance criteria via checkboxes', () => {
+      expect(analyzer.checkAcceptanceCriteria('- [ ] Item 1\n- [x] Item 2')).toBe(true);
+      expect(analyzer.checkAcceptanceCriteria('* [ ] Task')).toBe(true);
+      expect(analyzer.checkAcceptanceCriteria('No checkboxes here')).toBe(false);
     });
 
     it('should handle null body', () => {

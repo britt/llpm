@@ -89,6 +89,44 @@ export class GapAnalyzer {
       questions.push(createQuestion(questionInput));
     }
 
+    // Check for missing assignee on open issues
+    if (issue.state === 'open' && !issue.assignee) {
+      const questionInput: QuestionInput = {
+        category: 'process',
+        priority: 'low',
+        question: `Who should be assigned to issue #${issue.number}?`,
+        context: `Open issue "${issue.title}" has no assignee.`,
+        source: {
+          type: 'issue',
+          reference: `#${issue.number}`,
+          url: issue.html_url,
+        },
+        suggestedAction: 'Assign someone to own this issue',
+      };
+      questions.push(createQuestion(questionInput));
+    }
+
+    // Check for stale issues (no updates in 30+ days)
+    const lastUpdated = new Date(issue.updated_at);
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    if (issue.state === 'open' && lastUpdated < thirtyDaysAgo) {
+      const questionInput: QuestionInput = {
+        category: 'process',
+        priority: 'medium',
+        question: `Is issue #${issue.number} still relevant?`,
+        context: `Issue "${issue.title}" hasn't been updated in over 30 days.`,
+        source: {
+          type: 'issue',
+          reference: `#${issue.number}`,
+          url: issue.html_url,
+        },
+        suggestedAction: 'Review and update status, or close if no longer needed',
+      };
+      questions.push(createQuestion(questionInput));
+    }
+
     // Prioritize and return
     const prioritized = this.prioritizeQuestions(questions);
     debug(`Generated ${prioritized.length} questions for issue #${issue.number}`);
@@ -109,8 +147,8 @@ export class GapAnalyzer {
 
     const lowerBody = body.toLowerCase();
 
-    // Check for common acceptance criteria patterns
-    const patterns = [
+    // Check for common acceptance criteria patterns (text-based)
+    const textPatterns = [
       'acceptance criteria',
       'acceptance criterion',
       'ac:',
@@ -119,7 +157,13 @@ export class GapAnalyzer {
       'dod:',
     ];
 
-    return patterns.some(pattern => lowerBody.includes(pattern));
+    if (textPatterns.some(pattern => lowerBody.includes(pattern))) {
+      return true;
+    }
+
+    // Check for checkbox patterns (regex-based)
+    const checkboxPattern = /\[\s*[x ]\s*\]/i;
+    return checkboxPattern.test(body);
   }
 
   /**
