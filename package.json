@@ -27,7 +27,7 @@
     "llpm": "./bin/llpm.cjs"
   },
   "scripts": {
-    "build": "bun build index.ts --compile --outfile bin/llpm --alias react-devtools-core=./stubs/react-devtools-core.js",
+    "build": "bun build index.ts --compile --outfile bin/llpm",
     "postinstall": "node scripts/postinstall.cjs",
     "start": "bun run index.ts",
     "start:verbose": "bun run index.ts --verbose",
