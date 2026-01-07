@@ -143,4 +143,93 @@ describe('ElicitationBackend', () => {
       expect(active).toBeNull();
     });
   });
+
+  describe('recordAnswer', () => {
+    it('should record an answer to the current section', async () => {
+      await backend.initialize();
+      const session = await backend.createSession('web-app', 'Test');
+
+      const updated = await backend.recordAnswer(
+        session.id,
+        'q1',
+        'What is the project name?',
+        'My Awesome Project'
+      );
+
+      expect(updated.sections[0].answers).toHaveLength(1);
+      expect(updated.sections[0].answers[0].answer).toBe('My Awesome Project');
+      expect(updated.sections[0].answers[0].questionId).toBe('q1');
+    });
+
+    it('should update currentQuestionIndex after recording', async () => {
+      await backend.initialize();
+      const session = await backend.createSession('api', 'Test');
+
+      await backend.recordAnswer(session.id, 'q1', 'Question 1?', 'Answer 1');
+      const updated = await backend.recordAnswer(session.id, 'q2', 'Question 2?', 'Answer 2');
+
+      expect(updated.sections[0].currentQuestionIndex).toBe(2);
+      expect(updated.sections[0].answers).toHaveLength(2);
+    });
+
+    it('should throw if session not found', async () => {
+      await backend.initialize();
+
+      await expect(
+        backend.recordAnswer('fake-id', 'q1', 'Q?', 'A')
+      ).rejects.toThrow('Session not found');
+    });
+  });
+
+  describe('advanceSection', () => {
+    it('should mark current section complete and move to next', async () => {
+      await backend.initialize();
+      const session = await backend.createSession('cli', 'Test');
+
+      const updated = await backend.advanceSection(session.id);
+
+      expect(updated.sections[0].status).toBe('completed');
+      expect(updated.currentSectionId).toBe('functional');
+      expect(updated.sections[1].status).toBe('in_progress');
+    });
+
+    it('should mark session complete when all sections done', async () => {
+      await backend.initialize();
+      const session = await backend.createSession('mobile', 'Test');
+
+      // Advance through all 5 sections
+      await backend.advanceSection(session.id);
+      await backend.advanceSection(session.id);
+      await backend.advanceSection(session.id);
+      await backend.advanceSection(session.id);
+      const final = await backend.advanceSection(session.id);
+
+      expect(final.status).toBe('completed');
+    });
+  });
+
+  describe('skipSection', () => {
+    it('should mark current section skipped and move to next', async () => {
+      await backend.initialize();
+      const session = await backend.createSession('library', 'Test');
+
+      const updated = await backend.skipSection(session.id);
+
+      expect(updated.sections[0].status).toBe('skipped');
+      expect(updated.currentSectionId).toBe('functional');
+    });
+  });
+
+  describe('reopenSection', () => {
+    it('should reopen a completed section for refinement', async () => {
+      await backend.initialize();
+      const session = await backend.createSession('infrastructure', 'Test');
+      await backend.advanceSection(session.id);
+
+      const updated = await backend.reopenSection(session.id, 'overview');
+
+      expect(updated.currentSectionId).toBe('overview');
+      expect(updated.sections[0].status).toBe('in_progress');
+    });
+  });
 });

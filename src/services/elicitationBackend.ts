@@ -1,7 +1,7 @@
 import * as fs from 'node:fs/promises';
 import * as path from 'node:path';
 import { getConfigDir } from '../utils/config';
-import type { ElicitationSession, ElicitationSection, ProjectDomain } from '../types/elicitation';
+import type { ElicitationSession, ElicitationSection, ProjectDomain, RequirementAnswer } from '../types/elicitation';
 
 /**
  * Backend service for managing elicitation session state.
@@ -112,6 +112,108 @@ export class ElicitationBackend {
     } catch {
       return null;
     }
+  }
+
+  /**
+   * Record an answer for the current section.
+   */
+  async recordAnswer(
+    sessionId: string,
+    questionId: string,
+    question: string,
+    answer: string
+  ): Promise<ElicitationSession> {
+    const session = await this.getSession(sessionId);
+    if (!session) {
+      throw new Error('Session not found');
+    }
+
+    const currentSection = session.sections.find(s => s.id === session.currentSectionId);
+    if (!currentSection) {
+      throw new Error('Current section not found');
+    }
+
+    const requirementAnswer: RequirementAnswer = {
+      questionId,
+      question,
+      answer,
+      timestamp: new Date().toISOString(),
+      section: currentSection.id,
+    };
+
+    currentSection.answers.push(requirementAnswer);
+    currentSection.currentQuestionIndex++;
+    currentSection.status = 'in_progress';
+
+    await this.updateSession(session);
+    return session;
+  }
+
+  /**
+   * Advance to the next section.
+   */
+  async advanceSection(sessionId: string): Promise<ElicitationSession> {
+    const session = await this.getSession(sessionId);
+    if (!session) {
+      throw new Error('Session not found');
+    }
+
+    const currentIndex = session.sections.findIndex(s => s.id === session.currentSectionId);
+    session.sections[currentIndex].status = 'completed';
+
+    if (currentIndex < session.sections.length - 1) {
+      session.currentSectionId = session.sections[currentIndex + 1].id;
+      session.sections[currentIndex + 1].status = 'in_progress';
+    } else {
+      session.status = 'completed';
+    }
+
+    await this.updateSession(session);
+    return session;
+  }
+
+  /**
+   * Skip the current section.
+   */
+  async skipSection(sessionId: string): Promise<ElicitationSession> {
+    const session = await this.getSession(sessionId);
+    if (!session) {
+      throw new Error('Session not found');
+    }
+
+    const currentIndex = session.sections.findIndex(s => s.id === session.currentSectionId);
+    session.sections[currentIndex].status = 'skipped';
+
+    if (currentIndex < session.sections.length - 1) {
+      session.currentSectionId = session.sections[currentIndex + 1].id;
+      session.sections[currentIndex + 1].status = 'in_progress';
+    } else {
+      session.status = 'completed';
+    }
+
+    await this.updateSession(session);
+    return session;
+  }
+
+  /**
+   * Reopen a section for refinement.
+   */
+  async reopenSection(sessionId: string, sectionId: string): Promise<ElicitationSession> {
+    const session = await this.getSession(sessionId);
+    if (!session) {
+      throw new Error('Session not found');
+    }
+
+    const section = session.sections.find(s => s.id === sectionId);
+    if (!section) {
+      throw new Error('Section not found');
+    }
+
+    session.currentSectionId = sectionId;
+    section.status = 'in_progress';
+
+    await this.updateSession(session);
+    return session;
   }
 
   /**
