@@ -206,3 +206,88 @@ All 9 phases completed successfully. Project codebase parsing feature fully impl
 1. `src/tools/projectScanTools.ts` - Added 4 new tools
 2. `src/tools/registry.ts` - Registered new tools
 3. `package.json` - Added `ignore` dependency
+
+---
+
+## Feature: Context-Aware Question Generator (Issue #28)
+**Branch:** britt/context-aware-questions
+**Started:** 2026-01-06
+
+### Task 1.1: Define Question Types - COMPLETE ✅
+- **Started**: 2026-01-06 16:17:00
+- **Completed**: 2026-01-06 16:19:30
+- **Commit**: db47241
+
+#### Implementation Summary
+
+Created type system for questions generated from project context analysis:
+
+**Files Created:**
+- `src/types/questions.ts` - Type definitions
+- `src/types/questions.test.ts` - Test suite
+
+**Types Implemented:**
+- `QuestionCategory` - 6 categories: requirements, technical, documentation, process, consistency, architecture
+- `QuestionPriority` - 3 levels: high, medium, low
+- `QuestionSourceType` - 7 source types: issue, pr, file, note, readme, project-scan, architecture
+- `QuestionSource` - Interface tracking question origin with type, reference, and optional URL
+- `Question` - Core question interface with id, category, priority, question text, context, source, optional suggested action
+- `QuestionInput` - Question type without id (for creating new questions)
+- `isQuestion()` - Type guard function for validating Question objects
+- `createQuestion()` - Factory function with unique ID generation
+- `SourcesAnalyzed` - Summary of analyzed sources
+- `QuestionsSummary` - Summary of generated questions by category and priority
+- `ProjectQuestionsResult` - Result structure for project-wide analysis
+- `IssueQuestionsResult` - Result structure for issue-specific analysis
+- `InformationGapsResult` - Result structure for information gaps
+- `ClarificationsResult` - Result structure for clarifications
+
+#### TDD Cycle
+
+**RED Phase:**
+- Created `src/types/questions.test.ts` with 7 test cases
+- Tests failed as expected: "Failed to resolve import ./questions"
+- Tests covered: QuestionCategory, QuestionPriority, isQuestion type guard, createQuestion factory
+
+**GREEN Phase:**
+- Implemented `src/types/questions.ts` with all required types and functions
+- All 7 tests passed
+- No modifications needed - minimal implementation passed all tests
+
+**REFACTOR Phase:**
+- N/A - Initial implementation was clean and complete
+
+#### Test Results
+
+```
+✓ src/types/questions.test.ts (7 tests) 2ms
+  ✓ QuestionCategory (1)
+  ✓ QuestionPriority (1)
+  ✓ isQuestion (3)
+  ✓ createQuestion (2)
+
+Test Files: 1 passed (1)
+Tests: 7 passed (7)
+```
+
+#### Coverage
+
+- **Lines**: 100%
+- **Functions**: 100%
+- **Branches**: 100%
+- **Statements**: 100%
+
+#### Build & Linting
+
+- **Build**: ✅ Not applicable (types only)
+- **Linting**: ✅ Clean - no errors or warnings
+- **Type Check**: ✅ New files pass type checking
+
+#### Notes
+
+- Used TDD strictly: wrote failing tests first, then implemented
+- All tests passed on first GREEN phase attempt
+- Type definitions are well-documented with JSDoc comments
+- Factory function (`createQuestion`) generates unique IDs using timestamp + counter
+- Type guard (`isQuestion`) validates all required fields
+- Ready for next task: Question Generator Service implementation
