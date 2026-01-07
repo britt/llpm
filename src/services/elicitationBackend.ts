@@ -2,6 +2,11 @@ import * as fs from 'node:fs/promises';
 import * as path from 'node:path';
 import { getConfigDir } from '../utils/config';
 import type { ElicitationSession, ElicitationSection, ProjectDomain, RequirementAnswer } from '../types/elicitation';
+import {
+  getBaseQuestions,
+  getDomainQuestions,
+  type QuestionDefinition,
+} from './elicitationQuestions';
 
 /**
  * Backend service for managing elicitation session state.
@@ -214,6 +219,44 @@ export class ElicitationBackend {
 
     await this.updateSession(session);
     return session;
+  }
+
+  /**
+   * Get all questions for a session (base + domain).
+   */
+  async getAllQuestionsForSession(sessionId: string): Promise<QuestionDefinition[]> {
+    const session = await this.getSession(sessionId);
+    if (!session) {
+      throw new Error('Session not found');
+    }
+
+    const baseQuestions = getBaseQuestions();
+    const domainQuestions = getDomainQuestions(session.domain);
+
+    return [...baseQuestions, ...domainQuestions];
+  }
+
+  /**
+   * Get the next unanswered question for the current section.
+   */
+  async getNextQuestion(sessionId: string): Promise<QuestionDefinition | null> {
+    const session = await this.getSession(sessionId);
+    if (!session || session.status === 'completed') {
+      return null;
+    }
+
+    const currentSection = session.sections.find(s => s.id === session.currentSectionId);
+    if (!currentSection) {
+      return null;
+    }
+
+    const allQuestions = await this.getAllQuestionsForSession(sessionId);
+    const sectionQuestions = allQuestions.filter(q => q.section === currentSection.id);
+
+    const answeredIds = new Set(currentSection.answers.map(a => a.questionId));
+    const unanswered = sectionQuestions.filter(q => !answeredIds.has(q.id));
+
+    return unanswered[0] || null;
   }
 
   /**

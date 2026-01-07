@@ -232,4 +232,75 @@ describe('ElicitationBackend', () => {
       expect(updated.sections[0].status).toBe('in_progress');
     });
   });
+
+  describe('getAllQuestionsForSession', () => {
+    it('should return combined base and domain questions', async () => {
+      await backend.initialize();
+      const session = await backend.createSession('cli', 'Test');
+
+      const questions = await backend.getAllQuestionsForSession(session.id);
+
+      // Should have base questions
+      expect(questions.some(q => q.id === 'project-name')).toBe(true);
+      // Should have domain-specific questions
+      expect(questions.some(q => q.id === 'cli-commands')).toBe(true);
+    });
+
+    it('should throw if session not found', async () => {
+      await backend.initialize();
+
+      await expect(backend.getAllQuestionsForSession('fake-id')).rejects.toThrow('Session not found');
+    });
+  });
+
+  describe('getNextQuestion', () => {
+    it('should return the first question for a new session', async () => {
+      await backend.initialize();
+      const session = await backend.createSession('web-app', 'Test');
+
+      const question = await backend.getNextQuestion(session.id);
+
+      expect(question).not.toBeNull();
+      expect(question!.section).toBe('overview');
+      expect(question!.id).toBe('project-name');
+    });
+
+    it('should return next unanswered question in current section', async () => {
+      await backend.initialize();
+      const session = await backend.createSession('api', 'Test');
+      await backend.recordAnswer(session.id, 'project-name', 'What is the project name?', 'My API');
+
+      const question = await backend.getNextQuestion(session.id);
+
+      expect(question).not.toBeNull();
+      expect(question!.id).toBe('project-description');
+    });
+
+    it('should return null when session is completed', async () => {
+      await backend.initialize();
+      const session = await backend.createSession('general', 'Test');
+      session.status = 'completed';
+      await backend.updateSession(session);
+
+      const question = await backend.getNextQuestion(session.id);
+
+      expect(question).toBeNull();
+    });
+
+    it('should return null when all questions in section are answered', async () => {
+      await backend.initialize();
+      const session = await backend.createSession('general', 'Test');
+
+      // Answer all overview questions
+      await backend.recordAnswer(session.id, 'project-name', 'Q?', 'A');
+      await backend.recordAnswer(session.id, 'project-description', 'Q?', 'A');
+      await backend.recordAnswer(session.id, 'success-criteria', 'Q?', 'A');
+      await backend.recordAnswer(session.id, 'target-users', 'Q?', 'A');
+
+      const question = await backend.getNextQuestion(session.id);
+
+      // No more questions in overview section
+      expect(question).toBeNull();
+    });
+  });
 });
