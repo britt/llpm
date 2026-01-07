@@ -17,6 +17,12 @@ import {
   getGitHubIssueWithCommentsTool
 } from './githubIssueTools';
 import {
+  generateProjectQuestionsTool,
+  generateIssueQuestionsTool,
+  suggestClarificationsTool,
+  identifyInformationGapsTool
+} from './questionTools';
+import {
   listGitHubPullRequestsTool,
   createGitHubPullRequestTool
 } from './githubPullRequestTools';
@@ -122,6 +128,11 @@ const toolRegistry: ToolRegistry = {
   list_available_skills: listAvailableSkillsTool,
   // Shell execution
   run_shell_command: runShellCommandTool,
+  // Context-Aware Question Generation
+  generate_project_questions: generateProjectQuestionsTool,
+  generate_issue_questions: generateIssueQuestionsTool,
+  suggest_clarifications: suggestClarificationsTool,
+  identify_information_gaps: identifyInformationGapsTool,
   // Stakeholder Management
   add_stakeholder: addStakeholderTool,
   list_stakeholders: listStakeholdersTool,
