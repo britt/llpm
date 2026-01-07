@@ -44,7 +44,6 @@ export interface ElicitationSection {
   name: string;
   status: SectionStatus;
   answers: RequirementAnswer[];
-  currentQuestionIndex: number;
 }
 
 /**

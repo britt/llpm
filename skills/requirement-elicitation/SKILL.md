@@ -152,6 +152,17 @@ When asking the user what type of project they're building, present these option
 - When generating the document, ask where they want to save it (default: docs/requirements.md)
 - After completing requirements, suggest project planning as a natural next step
 
+## Saving to Notes
+
+Use the `add_note` and `search_notes` tools to persist elicitation insights:
+
+- **After generating the document**: Use `add_note` to save the requirements document to the project's notes for future reference
+- **Capturing key decisions**: If the user makes important architectural decisions during elicitation, save them as notes with relevant tags
+- **Searching past requirements**: Use `search_notes` if the user asks about previous requirements or wants to compare with past projects
+
+Example: After generating the requirements document, offer to save it:
+> "I've generated your requirements document. Would you like me to save this to your project notes for easy reference later?"
+
 ## Progress Tracking
 
 Use `get_elicitation_state` to show progress at any time:

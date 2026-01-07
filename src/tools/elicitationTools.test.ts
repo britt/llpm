@@ -445,15 +445,19 @@ describe('generateRequirementsDocument', () => {
       answer: 'My CLI Tool',
     });
 
+    // Use relative path (security: absolute paths are rejected)
     const result = await generateRequirementsDocument.execute({
       sessionId: startResult.sessionId,
-      outputPath: '/tmp/llpm-elicit-test/requirements.md',
+      outputPath: 'docs/requirements.md',
     });
 
     expect(result.success).toBe(true);
-    expect(result.savedTo).toBe('/tmp/llpm-elicit-test/requirements.md');
+    expect(result.savedTo).toBe('docs/requirements.md');
 
-    const fileContent = await fs.readFile('/tmp/llpm-elicit-test/requirements.md', 'utf-8');
+    const fileContent = await fs.readFile('docs/requirements.md', 'utf-8');
     expect(fileContent).toContain('My CLI Tool');
+
+    // Cleanup
+    await fs.rm('docs', { recursive: true });
   });
 });

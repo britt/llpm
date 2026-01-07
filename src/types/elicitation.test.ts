@@ -47,7 +47,6 @@ describe('Elicitation Types', () => {
       name: 'Functional Requirements',
       status: 'pending',
       answers: [],
-      currentQuestionIndex: 0,
     };
     expect(section.status).toBe('pending');
   });

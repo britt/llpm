@@ -44,11 +44,11 @@ export class ElicitationBackend {
     const now = new Date().toISOString();
 
     const sections: ElicitationSection[] = [
-      { id: 'overview', name: 'Project Overview', status: 'pending', answers: [], currentQuestionIndex: 0 },
-      { id: 'functional', name: 'Functional Requirements', status: 'pending', answers: [], currentQuestionIndex: 0 },
-      { id: 'nonfunctional', name: 'Nonfunctional Requirements', status: 'pending', answers: [], currentQuestionIndex: 0 },
-      { id: 'constraints', name: 'Constraints & Context', status: 'pending', answers: [], currentQuestionIndex: 0 },
-      { id: 'edge-cases', name: 'Edge Cases & Risks', status: 'pending', answers: [], currentQuestionIndex: 0 },
+      { id: 'overview', name: 'Project Overview', status: 'pending', answers: [] },
+      { id: 'functional', name: 'Functional Requirements', status: 'pending', answers: [] },
+      { id: 'nonfunctional', name: 'Nonfunctional Requirements', status: 'pending', answers: [] },
+      { id: 'constraints', name: 'Constraints & Context', status: 'pending', answers: [] },
+      { id: 'edge-cases', name: 'Edge Cases & Risks', status: 'pending', answers: [] },
     ];
 
     const session: ElicitationSession = {
@@ -75,7 +75,11 @@ export class ElicitationBackend {
     try {
       const content = await fs.readFile(filePath, 'utf-8');
       return JSON.parse(content) as ElicitationSession;
-    } catch {
+    } catch (error) {
+      // Log error for debugging session corruption or missing files
+      if (error instanceof Error && !error.message.includes('ENOENT')) {
+        console.error(`Failed to read session ${sessionId}:`, error.message);
+      }
       return null;
     }
   }
@@ -96,15 +100,29 @@ export class ElicitationBackend {
       const files = await fs.readdir(this.elicitationDir);
       const jsonFiles = files.filter(f => f.endsWith('.json'));
 
+      // Read all session files in parallel for better performance
+      const sessionPromises = jsonFiles.map(async (file) => {
+        const filePath = path.join(this.elicitationDir, file);
+        try {
+          const content = await fs.readFile(filePath, 'utf-8');
+          return JSON.parse(content) as ElicitationSession;
+        } catch (error) {
+          // Skip corrupt files rather than failing the entire operation
+          if (error instanceof Error) {
+            console.error(`Failed to read session file ${file}:`, error.message);
+          }
+          return null;
+        }
+      });
+
+      const sessions = await Promise.all(sessionPromises);
+
+      // Find the latest in_progress session
       let latestSession: ElicitationSession | null = null;
       let latestTime = 0;
 
-      for (const file of jsonFiles) {
-        const filePath = path.join(this.elicitationDir, file);
-        const content = await fs.readFile(filePath, 'utf-8');
-        const session = JSON.parse(content) as ElicitationSession;
-
-        if (session.status === 'in_progress') {
+      for (const session of sessions) {
+        if (session && session.status === 'in_progress') {
           const sessionTime = new Date(session.updatedAt).getTime();
           if (sessionTime > latestTime) {
             latestTime = sessionTime;
@@ -147,7 +165,6 @@ export class ElicitationBackend {
     };
 
     currentSection.answers.push(requirementAnswer);
-    currentSection.currentQuestionIndex++;
     currentSection.status = 'in_progress';
 
     await this.updateSession(session);
@@ -155,7 +172,7 @@ export class ElicitationBackend {
   }
 
   /**
-   * Advance to the next section.
+   * Advance to the next section, auto-skipping any empty sections.
    */
   async advanceSection(sessionId: string): Promise<ElicitationSession> {
     const session = await this.getSession(sessionId);
@@ -164,6 +181,9 @@ export class ElicitationBackend {
     }
 
     const currentIndex = session.sections.findIndex(s => s.id === session.currentSectionId);
+    if (currentIndex === -1) {
+      throw new Error('Current section not found');
+    }
     session.sections[currentIndex].status = 'completed';
 
     if (currentIndex < session.sections.length - 1) {
@@ -174,11 +194,21 @@ export class ElicitationBackend {
     }
 
     await this.updateSession(session);
+
+    // Auto-advance through empty sections
+    if (session.status !== 'completed') {
+      const nextQuestion = await this.getNextQuestion(sessionId);
+      if (nextQuestion === null || nextQuestion.section !== session.currentSectionId) {
+        // Current section has no questions, auto-advance
+        return this.advanceSection(sessionId);
+      }
+    }
+
     return session;
   }
 
   /**
-   * Skip the current section.
+   * Skip the current section, auto-skipping any following empty sections.
    */
   async skipSection(sessionId: string): Promise<ElicitationSession> {
     const session = await this.getSession(sessionId);
@@ -187,6 +217,9 @@ export class ElicitationBackend {
     }
 
     const currentIndex = session.sections.findIndex(s => s.id === session.currentSectionId);
+    if (currentIndex === -1) {
+      throw new Error('Current section not found');
+    }
     session.sections[currentIndex].status = 'skipped';
 
     if (currentIndex < session.sections.length - 1) {
@@ -197,6 +230,16 @@ export class ElicitationBackend {
     }
 
     await this.updateSession(session);
+
+    // Auto-advance through empty sections
+    if (session.status !== 'completed') {
+      const nextQuestion = await this.getNextQuestion(sessionId);
+      if (nextQuestion === null || nextQuestion.section !== session.currentSectionId) {
+        // Current section has no questions, auto-advance
+        return this.advanceSection(sessionId);
+      }
+    }
+
     return session;
   }
 

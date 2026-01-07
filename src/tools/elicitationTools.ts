@@ -63,7 +63,8 @@ defining comprehensive requirements for their project. Available domains:
     const backend = new ElicitationBackend(project.id);
     await backend.initialize();
 
-    const session = await backend.createSession(domain as ProjectDomain, projectName);
+    // domain is already validated by zod enum schema
+    const session = await backend.createSession(domain, projectName);
     const nextQuestion = await backend.getNextQuestion(session.id);
 
     return {
@@ -418,10 +419,19 @@ by section. Can optionally save to a file.`,
 
     let savedTo: string | undefined;
     if (outputPath) {
-      const dir = path.dirname(outputPath);
+      // Validate outputPath to prevent path traversal attacks
+      const normalizedPath = path.normalize(outputPath);
+      if (path.isAbsolute(normalizedPath)) {
+        return { success: false, error: 'outputPath must be a relative path within the project' };
+      }
+      if (normalizedPath.startsWith('..') || normalizedPath.includes('../')) {
+        return { success: false, error: 'outputPath cannot traverse outside the current directory' };
+      }
+
+      const dir = path.dirname(normalizedPath);
       await fsPromises.mkdir(dir, { recursive: true });
-      await fsPromises.writeFile(outputPath, document, 'utf-8');
-      savedTo = outputPath;
+      await fsPromises.writeFile(normalizedPath, document, 'utf-8');
+      savedTo = normalizedPath;
     }
 
     return {

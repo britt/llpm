@@ -85,10 +85,10 @@ describe('Elicitation Integration Tests', () => {
     expect(stateResult.success).toBe(true);
     expect(stateResult.capturedAnswers.length).toBeGreaterThanOrEqual(6);
 
-    // Generate document
+    // Generate document (use relative path - absolute paths rejected for security)
     const docResult = await generateRequirementsDocument.execute({
       sessionId,
-      outputPath: '/tmp/llpm-integration-test/docs/requirements.md',
+      outputPath: 'test-output/requirements.md',
     });
     expect(docResult.success).toBe(true);
     expect(docResult.document).toContain('E-Commerce Dashboard');
@@ -96,8 +96,11 @@ describe('Elicitation Integration Tests', () => {
     expect(docResult.document).toContain('Real-time sales chart');
 
     // Verify file was saved
-    const savedContent = await fs.readFile('/tmp/llpm-integration-test/docs/requirements.md', 'utf-8');
+    const savedContent = await fs.readFile('test-output/requirements.md', 'utf-8');
     expect(savedContent).toBe(docResult.document);
+
+    // Cleanup
+    await fs.rm('test-output', { recursive: true });
   });
 
   it('should support session resumption', async () => {

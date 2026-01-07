@@ -161,14 +161,13 @@ describe('ElicitationBackend', () => {
       expect(updated.sections[0].answers[0].questionId).toBe('q1');
     });
 
-    it('should update currentQuestionIndex after recording', async () => {
+    it('should track answer count after multiple recordings', async () => {
       await backend.initialize();
       const session = await backend.createSession('api', 'Test');
 
       await backend.recordAnswer(session.id, 'q1', 'Question 1?', 'Answer 1');
       const updated = await backend.recordAnswer(session.id, 'q2', 'Question 2?', 'Answer 2');
 
-      expect(updated.sections[0].currentQuestionIndex).toBe(2);
       expect(updated.sections[0].answers).toHaveLength(2);
     });
 
