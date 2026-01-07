@@ -55,6 +55,17 @@ import {
 import { askUserTool } from './askUserTool';
 import { loadSkillsTool, listAvailableSkillsTool } from './skillTools';
 import { runShellCommandTool } from './shellTools';
+import {
+  addStakeholderTool,
+  listStakeholdersTool,
+  getStakeholderTool,
+  updateStakeholderTool,
+  removeStakeholderTool,
+  linkIssueToGoalTool,
+  unlinkIssueFromGoalTool,
+  generateCoverageReportTool,
+  resolveConflictTool
+} from './stakeholderTools';
 
 const toolRegistry: ToolRegistry = {
   get_current_project: getCurrentProjectTool,
@@ -110,7 +121,17 @@ const toolRegistry: ToolRegistry = {
   load_skills: loadSkillsTool,
   list_available_skills: listAvailableSkillsTool,
   // Shell execution
-  run_shell_command: runShellCommandTool
+  run_shell_command: runShellCommandTool,
+  // Stakeholder Management
+  add_stakeholder: addStakeholderTool,
+  list_stakeholders: listStakeholdersTool,
+  get_stakeholder: getStakeholderTool,
+  update_stakeholder: updateStakeholderTool,
+  remove_stakeholder: removeStakeholderTool,
+  link_issue_to_goal: linkIssueToGoalTool,
+  unlink_issue_from_goal: unlinkIssueFromGoalTool,
+  generate_coverage_report: generateCoverageReportTool,
+  resolve_stakeholder_conflict: resolveConflictTool
 };
 
 export async function getToolRegistry(): Promise<ToolRegistry> {
