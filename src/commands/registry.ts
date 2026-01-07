@@ -12,6 +12,7 @@ import { notesCommand } from './notes';
 import { historyCommand } from './history';
 import { skillsCommand } from './skills';
 import { stakeholderCommand } from './stakeholder';
+import { issueCommand } from './issue';
 import { debug } from '../utils/logger';
 
 const commandRegistry: CommandRegistry = {
@@ -27,7 +28,8 @@ const commandRegistry: CommandRegistry = {
   notes: notesCommand,
   history: historyCommand,
   skills: skillsCommand,
-  stakeholder: stakeholderCommand
+  stakeholder: stakeholderCommand,
+  issue: issueCommand
 };
 
 export function getCommandRegistry(): CommandRegistry {

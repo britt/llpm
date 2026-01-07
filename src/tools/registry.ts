@@ -81,6 +81,11 @@ import {
   generateCoverageReportTool,
   resolveConflictTool
 } from './stakeholderTools';
+import {
+  analyzeProjectRisksTool,
+  analyzeIssueRisksTool,
+  getAtRiskItemsTool
+} from './riskDetectionTools';
 
 const toolRegistry: ToolRegistry = {
   get_current_project: getCurrentProjectTool,
@@ -159,7 +164,11 @@ const toolRegistry: ToolRegistry = {
   link_issue_to_goal: linkIssueToGoalTool,
   unlink_issue_from_goal: unlinkIssueFromGoalTool,
   generate_coverage_report: generateCoverageReportTool,
-  resolve_stakeholder_conflict: resolveConflictTool
+  resolve_stakeholder_conflict: resolveConflictTool,
+  // Risk Detection
+  analyze_project_risks: analyzeProjectRisksTool,
+  analyze_issue_risks: analyzeIssueRisksTool,
+  get_at_risk_items: getAtRiskItemsTool
 };
 
 export async function getToolRegistry(): Promise<ToolRegistry> {

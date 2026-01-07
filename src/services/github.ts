@@ -76,6 +76,8 @@ export interface GitHubPullRequest {
   created_at: string;
   updated_at: string;
   merged_at: string | null;
+  labels?: Array<{ name: string; color: string }>;
+  requested_reviewers?: Array<{ login: string; html_url: string }>;
 }
 
 let octokit: Octokit | null = null;
@@ -1052,6 +1054,164 @@ export async function listPullRequests(
       throw new Error(`Failed to list GitHub pull requests: ${error.message}`);
     }
     throw new Error('Failed to list GitHub pull requests: Unknown error');
+  }
+}
+
+/**
+ * List ALL open issues in a repository using Octokit pagination.
+ * Used for comprehensive risk analysis that needs to scan all issues.
+ */
+export async function listAllIssues(
+  owner: string,
+  repo: string,
+  options: {
+    state?: 'open' | 'closed' | 'all';
+    labels?: string;
+    sort?: 'created' | 'updated' | 'comments';
+    direction?: 'asc' | 'desc';
+  } = {}
+): Promise<GitHubIssue[]> {
+  debug('Listing ALL GitHub issues with pagination:', owner, repo, 'options:', options);
+
+  try {
+    await initializeOctokit();
+    const octokit = getOctokit();
+
+    const apiParams = {
+      owner,
+      repo,
+      state: options.state || 'open',
+      ...(options.labels && { labels: options.labels }),
+      sort: options.sort || 'updated',
+      direction: options.direction || 'desc',
+      per_page: 100, // Max for pagination
+    };
+
+    if (getVerbose()) {
+      debug('🌐 GitHub API Call: GET /repos/:owner/:repo/issues (paginated)');
+      debug('📋 Parameters:', JSON.stringify(apiParams, null, 2));
+    }
+
+    // Use Octokit's paginate to fetch ALL issues
+    const data = await octokit.paginate(octokit.rest.issues.listForRepo, apiParams);
+
+    if (getVerbose()) {
+      debug('✅ GitHub API Response: received', data.length, 'issues (paginated)');
+    }
+
+    const issues: GitHubIssue[] = data.map(issue => ({
+      id: issue.id,
+      number: issue.number,
+      title: issue.title,
+      body: issue.body || null,
+      state: issue.state as 'open' | 'closed',
+      html_url: issue.html_url,
+      user: {
+        login: issue.user?.login || 'unknown',
+        html_url: issue.user?.html_url || ''
+      },
+      node_id: issue.node_id,
+      labels: (issue.labels || [])
+        .filter((label): label is { name?: string; color?: string } =>
+          typeof label === 'object' && label !== null
+        )
+        .map(label => ({
+          name: label.name || '',
+          color: label.color || ''
+        })),
+      created_at: issue.created_at,
+      updated_at: issue.updated_at
+    }));
+
+    debug('Retrieved', issues.length, 'issues via pagination');
+    return issues;
+  } catch (error) {
+    debug('Error listing all GitHub issues:', error instanceof Error ? error.message : 'Unknown error');
+    if (error instanceof Error) {
+      throw new Error(`Failed to list all GitHub issues: ${error.message}`);
+    }
+    throw new Error('Failed to list all GitHub issues: Unknown error');
+  }
+}
+
+/**
+ * List ALL open pull requests in a repository using Octokit pagination.
+ * Used for comprehensive risk analysis that needs to scan all PRs.
+ */
+export async function listAllPullRequests(
+  owner: string,
+  repo: string,
+  options: {
+    state?: 'open' | 'closed' | 'all';
+    head?: string;
+    base?: string;
+    sort?: 'created' | 'updated' | 'popularity' | 'long-running';
+    direction?: 'asc' | 'desc';
+  } = {}
+): Promise<GitHubPullRequest[]> {
+  debug('Listing ALL GitHub pull requests with pagination:', owner, repo, 'options:', options);
+
+  try {
+    await initializeOctokit();
+    const octokit = getOctokit();
+
+    const apiParams = {
+      owner,
+      repo,
+      state: options.state || 'open',
+      ...(options.head && { head: options.head }),
+      ...(options.base && { base: options.base }),
+      sort: options.sort || 'updated',
+      direction: options.direction || 'desc',
+      per_page: 100, // Max for pagination
+    };
+
+    if (getVerbose()) {
+      debug('🌐 GitHub API Call: GET /repos/:owner/:repo/pulls (paginated)');
+      debug('📋 Parameters:', JSON.stringify(apiParams, null, 2));
+    }
+
+    // Use Octokit's paginate to fetch ALL pull requests
+    const data = await octokit.paginate(octokit.rest.pulls.list, apiParams);
+
+    if (getVerbose()) {
+      debug('✅ GitHub API Response: received', data.length, 'pull requests (paginated)');
+    }
+
+    const pullRequests: GitHubPullRequest[] = data.map(pr => ({
+      id: pr.id,
+      number: pr.number,
+      title: pr.title,
+      body: pr.body || null,
+      state: pr.merged_at ? 'merged' : (pr.state as 'open' | 'closed'),
+      html_url: pr.html_url,
+      user: {
+        login: pr.user?.login || 'unknown',
+        html_url: pr.user?.html_url || ''
+      },
+      head: {
+        ref: pr.head.ref,
+        sha: pr.head.sha
+      },
+      base: {
+        ref: pr.base.ref,
+        sha: pr.base.sha
+      },
+      draft: pr.draft || false,
+      mergeable: (pr as any).mergeable,
+      created_at: pr.created_at,
+      updated_at: pr.updated_at,
+      merged_at: pr.merged_at
+    }));
+
+    debug('Retrieved', pullRequests.length, 'pull requests via pagination');
+    return pullRequests;
+  } catch (error) {
+    debug('Error listing all GitHub pull requests:', error instanceof Error ? error.message : 'Unknown error');
+    if (error instanceof Error) {
+      throw new Error(`Failed to list all GitHub pull requests: ${error.message}`);
+    }
+    throw new Error('Failed to list all GitHub pull requests: Unknown error');
   }
 }
 

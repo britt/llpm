@@ -531,3 +531,119 @@ Context-Aware Question Generator feature fully implemented with:
 
 ### Files Created
 1. `src/services/stakeholderBackend.integration.test.ts` - Integration tests
+
+---
+
+## Feature: At-Risk Detection (Issue #196)
+**Branch:** britt/issue-196-impl
+**Started:** 2026-01-07
+**Completed:** 2026-01-07
+
+### Summary
+Implemented proactive at-risk detection for GitHub issues and pull requests. The system identifies stale items, blocked work, deadline risks, scope creep, and unassigned high-priority items before they become problems.
+
+### Phase 1: Risk Detection Service - COMPLETE
+- **Files Created:**
+  - `src/services/riskDetectionService.ts` - Core risk detection service
+  - `src/services/riskDetectionService.test.ts` - 62 tests
+- **Tests:** 62 passing
+- **Risk Types Implemented:**
+  - Stale detection (14 days for issues, 3 days for PRs awaiting review)
+  - Blocked detection (labels, body patterns, draft PRs, merge conflicts)
+  - Deadline detection (milestone due dates with severity escalation)
+  - Scope detection (comment count for issues, lines changed for PRs)
+  - Assignment detection (unassigned high-priority items)
+  - Overloaded assignee detection (>10 issues per person)
+
+### Phase 2: AI Tools - COMPLETE
+- **Files Created:**
+  - `src/tools/riskDetectionTools.ts` - 3 AI tools
+  - `src/tools/riskDetectionTools.test.ts` - 10 tests
+- **Tools Implemented:**
+  - `analyze_project_risks` - Scan entire project for at-risk items
+  - `analyze_issue_risks` - Analyze specific issue for risk signals
+  - `get_at_risk_items` - Get filtered list of at-risk items
+- **Two-Tier Fetching:**
+  - Quick mode (default): 30 most recent items
+  - Comprehensive mode (`--all`): All items via Octokit pagination
+
+### Phase 3: Commands - COMPLETE
+- **Files Created:**
+  - `src/commands/issue.ts` - New `/issue` command
+  - `src/commands/issue.test.ts` - 12 tests
+- **Files Modified:**
+  - `src/commands/project.ts` - Added `health` and `risks` subcommands (45 tests)
+  - `src/commands/registry.ts` - Registered `/issue` command
+- **Commands Implemented:**
+  - `/project health [--all]` - Show project health summary with risk counts
+  - `/project risks [--type TYPE] [--all]` - List at-risk items with details
+  - `/issue NUMBER` - Analyze specific issue for risks
+  - `/issue risks NUMBER` - Explicit form for issue risk analysis
+
+### Phase 4: Skill - COMPLETE
+- **File Created:**
+  - `skills/at-risk-detection/SKILL.md`
+- **Skill Features:**
+  - Documents all available tools and commands
+  - Explains risk types and severity levels
+  - Provides example workflows for daily standups, sprint planning, etc.
+  - Documents configuration options and thresholds
+
+### Phase 5: Integration Testing & Polish - COMPLETE
+- **Full Test Suite:** 2097 passing, 16 skipped
+- **New Tests Added:** 84 tests
+  - riskDetectionService.test.ts: 62 tests
+  - riskDetectionTools.test.ts: 10 tests
+  - issue.test.ts: 12 tests
+- **Lint:** Risk detection files clean (reduced overall project errors from 14 to 8)
+- **TypeCheck:** Risk detection files clean (pre-existing issues in other files)
+- **Code Cleanup:** Removed unused dead code from project.ts, fixed unnecessary escape characters, added proper TypeScript types
+
+### Files Created
+1. `src/services/riskDetectionService.ts` - Risk detection service (62 tests)
+2. `src/services/riskDetectionService.test.ts` - Service tests
+3. `src/tools/riskDetectionTools.ts` - 3 AI tools (10 tests)
+4. `src/tools/riskDetectionTools.test.ts` - Tool tests
+5. `src/commands/issue.ts` - Issue command (12 tests)
+6. `src/commands/issue.test.ts` - Command tests
+7. `skills/at-risk-detection/SKILL.md` - Skill definition
+
+### Files Modified
+1. `src/services/github.ts` - Added `listAllIssues`, `listAllPullRequests` with pagination
+2. `src/commands/project.ts` - Added `health` and `risks` subcommands
+3. `src/commands/project.test.ts` - Added tests for health/risks subcommands
+4. `src/commands/registry.ts` - Registered issue command
+5. `src/tools/registry.ts` - Registered risk detection tools
+
+### Key Features
+- **Two-Tier Fetching:** Quick mode for daily checks, comprehensive mode for milestone reviews
+- **Configurable Thresholds:** Stale days, deadline warning window, scope limits
+- **Severity Escalation:** Info → Warning → Critical based on thresholds
+- **Actionable Suggestions:** Each risk signal includes recommendations
+- **Health Score:** Percentage of healthy vs at-risk items
+- **Overload Detection:** Identifies team members with too many assigned issues
+
+### Code Review Fixes Applied - 2026-01-07
+
+Per code review feedback, the following improvements were made:
+
+| Issue | Description | Fix |
+|-------|-------------|-----|
+| #1 | Code duplication of `getHighestSeverity`, `generateSuggestions`, `analyzeItems` across 3 files | Centralized functions in `riskDetectionService.ts` as exports; removed duplicates from `project.ts`, `issue.ts`, `riskDetectionTools.ts` |
+| #2 | Use of `any[]` types for issues and pull requests | Created `ExtendedGitHubIssue` and `ExtendedGitHubPullRequest` types with proper type intersections |
+| #3 | Use of `as any` casts in multiple locations | Replaced with proper type assertions using extended types |
+| #4 | Unused exports (`RiskItem`, `RiskSeverity` in project.ts) | Removed unused imports after DRYing up code |
+| #5 | Test mock incomplete (missing `analyzeItems` export) | Updated mocks in `project.test.ts` and `issue.test.ts` to import actual module and only mock RiskDetectionService class |
+
+**Validation Results:**
+- Tests: 2097 passing, 16 skipped
+- Build: Successful
+- Lint: No new errors introduced (pre-existing warnings in other files)
+
+**Files Modified:**
+- `src/services/riskDetectionService.ts` - Added exported functions and extended types
+- `src/commands/project.ts` - Removed duplicates, updated imports
+- `src/commands/issue.ts` - Removed duplicates, updated imports
+- `src/tools/riskDetectionTools.ts` - Removed duplicates, updated imports, fixed types
+- `src/commands/project.test.ts` - Fixed mock to use `importOriginal` pattern
+- `src/commands/issue.test.ts` - Fixed mock to use `importOriginal` pattern
