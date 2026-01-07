@@ -19,6 +19,8 @@ import { getStakeholderBackend } from '../services/stakeholderBackend';
 const mockBackend = {
   listStakeholders: vi.fn(),
   getStakeholder: vi.fn(),
+  findStakeholder: vi.fn(),
+  findStakeholders: vi.fn(),
   addStakeholder: vi.fn(),
   updateStakeholder: vi.fn(),
   removeStakeholder: vi.fn(),
@@ -107,7 +109,7 @@ describe('Stakeholder Command', () => {
     it('should show a stakeholder by name', async () => {
       vi.mocked(getCurrentProject).mockResolvedValue({ id: 'test-project', name: 'Test', path: '/test' });
       vi.mocked(getStakeholderBackend).mockResolvedValue(mockBackend as any);
-      mockBackend.getStakeholder.mockResolvedValue({
+      mockBackend.findStakeholder.mockResolvedValue({
         name: 'End User',
         role: 'Daily user',
         description: 'Non-technical users',
@@ -137,12 +139,30 @@ describe('Stakeholder Command', () => {
     it('should fail when stakeholder not found', async () => {
       vi.mocked(getCurrentProject).mockResolvedValue({ id: 'test-project', name: 'Test', path: '/test' });
       vi.mocked(getStakeholderBackend).mockResolvedValue(mockBackend as any);
-      mockBackend.getStakeholder.mockResolvedValue(null);
+      mockBackend.findStakeholder.mockResolvedValue(null);
 
       const result = await stakeholderCommand.execute(['show', 'Non Existent']);
 
       expect(result.success).toBe(false);
       expect(result.content).toContain('not found');
+    });
+
+    it('should use fuzzy matching for stakeholder name', async () => {
+      vi.mocked(getCurrentProject).mockResolvedValue({ id: 'test-project', name: 'Test', path: '/test' });
+      vi.mocked(getStakeholderBackend).mockResolvedValue(mockBackend as any);
+      mockBackend.findStakeholder.mockResolvedValue({
+        name: 'End User',
+        role: 'Daily user',
+        description: 'Non-technical users',
+        goals: [],
+        painPoints: [],
+        priorities: []
+      });
+
+      const result = await stakeholderCommand.execute(['show', 'end', 'user']);
+
+      expect(result.success).toBe(true);
+      expect(mockBackend.findStakeholder).toHaveBeenCalledWith('end user');
     });
   });
 
@@ -185,12 +205,21 @@ describe('Stakeholder Command', () => {
     it('should remove a stakeholder successfully', async () => {
       vi.mocked(getCurrentProject).mockResolvedValue({ id: 'test-project', name: 'Test', path: '/test' });
       vi.mocked(getStakeholderBackend).mockResolvedValue(mockBackend as any);
+      mockBackend.findStakeholder.mockResolvedValue({
+        name: 'End User',
+        role: 'User',
+        description: 'Users',
+        goals: [],
+        painPoints: [],
+        priorities: []
+      });
       mockBackend.removeStakeholder.mockResolvedValue(undefined);
 
       const result = await stakeholderCommand.execute(['remove', 'End User']);
 
       expect(result.success).toBe(true);
       expect(result.content).toContain('Removed');
+      expect(result.content).toContain('End User');
     });
 
     it('should fail when no name provided', async () => {
@@ -206,12 +235,32 @@ describe('Stakeholder Command', () => {
     it('should fail when stakeholder not found', async () => {
       vi.mocked(getCurrentProject).mockResolvedValue({ id: 'test-project', name: 'Test', path: '/test' });
       vi.mocked(getStakeholderBackend).mockResolvedValue(mockBackend as any);
-      mockBackend.removeStakeholder.mockRejectedValue(new Error('Stakeholder "Non Existent" not found'));
+      mockBackend.findStakeholder.mockResolvedValue(null);
 
       const result = await stakeholderCommand.execute(['remove', 'Non Existent']);
 
       expect(result.success).toBe(false);
       expect(result.content).toContain('not found');
+    });
+
+    it('should use fuzzy matching for stakeholder name', async () => {
+      vi.mocked(getCurrentProject).mockResolvedValue({ id: 'test-project', name: 'Test', path: '/test' });
+      vi.mocked(getStakeholderBackend).mockResolvedValue(mockBackend as any);
+      mockBackend.findStakeholder.mockResolvedValue({
+        name: 'End User',
+        role: 'User',
+        description: 'Users',
+        goals: [],
+        painPoints: [],
+        priorities: []
+      });
+      mockBackend.removeStakeholder.mockResolvedValue(undefined);
+
+      const result = await stakeholderCommand.execute(['remove', 'end']);
+
+      expect(result.success).toBe(true);
+      expect(mockBackend.findStakeholder).toHaveBeenCalledWith('end');
+      expect(mockBackend.removeStakeholder).toHaveBeenCalledWith('End User');
     });
   });
 
@@ -219,6 +268,14 @@ describe('Stakeholder Command', () => {
     it('should link issue to goal successfully', async () => {
       vi.mocked(getCurrentProject).mockResolvedValue({ id: 'test-project', name: 'Test', path: '/test' });
       vi.mocked(getStakeholderBackend).mockResolvedValue(mockBackend as any);
+      mockBackend.findStakeholder.mockResolvedValue({
+        name: 'End User',
+        role: 'User',
+        description: 'Users',
+        goals: [{ text: 'Complete tasks', linkedIssues: [] }],
+        painPoints: [],
+        priorities: []
+      });
       mockBackend.linkIssueToGoal.mockResolvedValue(undefined);
 
       const result = await stakeholderCommand.execute(['link', '42', 'End User', 'Complete tasks']);
@@ -226,6 +283,7 @@ describe('Stakeholder Command', () => {
       expect(result.success).toBe(true);
       expect(result.content).toContain('Linked');
       expect(result.content).toContain('#42');
+      expect(mockBackend.linkIssueToGoal).toHaveBeenCalledWith('End User', 'Complete tasks', 42);
     });
 
     it('should fail when not enough arguments', async () => {
@@ -246,6 +304,57 @@ describe('Stakeholder Command', () => {
 
       expect(result.success).toBe(false);
       expect(result.content).toContain('valid issue number');
+    });
+
+    it('should fail when stakeholder not found', async () => {
+      vi.mocked(getCurrentProject).mockResolvedValue({ id: 'test-project', name: 'Test', path: '/test' });
+      vi.mocked(getStakeholderBackend).mockResolvedValue(mockBackend as any);
+      mockBackend.findStakeholder.mockResolvedValue(null);
+
+      const result = await stakeholderCommand.execute(['link', '42', 'Non Existent', 'Goal']);
+
+      expect(result.success).toBe(false);
+      expect(result.content).toContain('not found');
+    });
+
+    it('should fail when goal not found', async () => {
+      vi.mocked(getCurrentProject).mockResolvedValue({ id: 'test-project', name: 'Test', path: '/test' });
+      vi.mocked(getStakeholderBackend).mockResolvedValue(mockBackend as any);
+      mockBackend.findStakeholder.mockResolvedValue({
+        name: 'End User',
+        role: 'User',
+        description: 'Users',
+        goals: [{ text: 'Different goal', linkedIssues: [] }],
+        painPoints: [],
+        priorities: []
+      });
+
+      const result = await stakeholderCommand.execute(['link', '42', 'End User', 'Non existent goal']);
+
+      expect(result.success).toBe(false);
+      expect(result.content).toContain('Goal');
+      expect(result.content).toContain('not found');
+      expect(result.content).toContain('Different goal'); // Shows available goals
+    });
+
+    it('should use fuzzy matching for goal text', async () => {
+      vi.mocked(getCurrentProject).mockResolvedValue({ id: 'test-project', name: 'Test', path: '/test' });
+      vi.mocked(getStakeholderBackend).mockResolvedValue(mockBackend as any);
+      mockBackend.findStakeholder.mockResolvedValue({
+        name: 'End User',
+        role: 'User',
+        description: 'Users',
+        goals: [{ text: 'Complete tasks quickly', linkedIssues: [] }],
+        painPoints: [],
+        priorities: []
+      });
+      mockBackend.linkIssueToGoal.mockResolvedValue(undefined);
+
+      // Partial match for "Complete tasks quickly"
+      const result = await stakeholderCommand.execute(['link', '42', 'End User', 'Complete tasks']);
+
+      expect(result.success).toBe(true);
+      expect(mockBackend.linkIssueToGoal).toHaveBeenCalledWith('End User', 'Complete tasks quickly', 42);
     });
   });
 
@@ -306,6 +415,62 @@ describe('Stakeholder Command', () => {
       expect(result.success).toBe(false);
       expect(result.content).toContain('Unknown subcommand');
       expect(result.content).toContain('/stakeholder help');
+    });
+  });
+
+  describe('Quoted argument parsing', () => {
+    it('should parse quoted arguments for add command', async () => {
+      vi.mocked(getCurrentProject).mockResolvedValue({ id: 'test-project', name: 'Test', path: '/test' });
+      vi.mocked(getStakeholderBackend).mockResolvedValue(mockBackend as any);
+      mockBackend.addStakeholder.mockResolvedValue(undefined);
+
+      // Simulating: /stakeholder add "End User" "Daily user" "Non-technical users"
+      const result = await stakeholderCommand.execute(['add', '"End', 'User"', '"Daily', 'user"', '"Non-technical', 'users"']);
+
+      expect(result.success).toBe(true);
+      expect(mockBackend.addStakeholder).toHaveBeenCalledWith(
+        expect.objectContaining({
+          name: 'End User',
+          role: 'Daily user',
+          description: 'Non-technical users'
+        })
+      );
+    });
+
+    it('should handle single-word quoted arguments', async () => {
+      vi.mocked(getCurrentProject).mockResolvedValue({ id: 'test-project', name: 'Test', path: '/test' });
+      vi.mocked(getStakeholderBackend).mockResolvedValue(mockBackend as any);
+      mockBackend.addStakeholder.mockResolvedValue(undefined);
+
+      // Simulating: /stakeholder add "Developer" "Engineer" "Builds the product"
+      const result = await stakeholderCommand.execute(['add', '"Developer"', '"Engineer"', '"Builds', 'the', 'product"']);
+
+      expect(result.success).toBe(true);
+      expect(mockBackend.addStakeholder).toHaveBeenCalledWith(
+        expect.objectContaining({
+          name: 'Developer',
+          role: 'Engineer',
+          description: 'Builds the product'
+        })
+      );
+    });
+
+    it('should handle mixed quoted and unquoted arguments', async () => {
+      vi.mocked(getCurrentProject).mockResolvedValue({ id: 'test-project', name: 'Test', path: '/test' });
+      vi.mocked(getStakeholderBackend).mockResolvedValue(mockBackend as any);
+      mockBackend.addStakeholder.mockResolvedValue(undefined);
+
+      // Simulating: /stakeholder add "End User" Developer "The developers"
+      const result = await stakeholderCommand.execute(['add', '"End', 'User"', 'Developer', '"The', 'developers"']);
+
+      expect(result.success).toBe(true);
+      expect(mockBackend.addStakeholder).toHaveBeenCalledWith(
+        expect.objectContaining({
+          name: 'End User',
+          role: 'Developer',
+          description: 'The developers'
+        })
+      );
     });
   });
 });

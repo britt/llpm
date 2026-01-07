@@ -4,10 +4,59 @@ import { getStakeholderBackend } from '../services/stakeholderBackend';
 import { debug } from '../utils/logger';
 import type { StakeholderGoal, GoalCoverage, StakeholderCoverage } from '../types/stakeholder';
 
+/**
+ * Parse command arguments, respecting quoted strings.
+ * e.g., ['add', '"End User"', '"Daily user"', '"Description here"']
+ * becomes ['add', 'End User', 'Daily user', 'Description here']
+ */
+function parseQuotedArgs(args: string[]): string[] {
+  const result: string[] = [];
+  let currentArg = '';
+  let inQuote = false;
+  let quoteChar = '';
+
+  for (const arg of args) {
+    if (!inQuote) {
+      // Check if this arg starts with a quote
+      if ((arg.startsWith('"') || arg.startsWith("'")) && arg.length > 1) {
+        quoteChar = arg[0];
+        // Check if it also ends with the same quote (single-word quoted arg)
+        if (arg.endsWith(quoteChar) && arg.length > 2) {
+          result.push(arg.slice(1, -1));
+        } else {
+          inQuote = true;
+          currentArg = arg.slice(1);
+        }
+      } else {
+        result.push(arg);
+      }
+    } else {
+      // We're inside a quoted string
+      if (arg.endsWith(quoteChar)) {
+        currentArg += ' ' + arg.slice(0, -1);
+        result.push(currentArg);
+        currentArg = '';
+        inQuote = false;
+      } else {
+        currentArg += ' ' + arg;
+      }
+    }
+  }
+
+  // If we're still in a quote at the end, just add what we have
+  if (inQuote && currentArg) {
+    result.push(currentArg);
+  }
+
+  return result;
+}
+
 export const stakeholderCommand: Command = {
   name: 'stakeholder',
   description: 'Manage stakeholder profiles and track their goals',
-  execute: async (args: string[]): Promise<CommandResult> => {
+  execute: async (rawArgs: string[]): Promise<CommandResult> => {
+    // Parse quoted arguments first
+    const args = parseQuotedArgs(rawArgs);
     debug('Executing /stakeholder command with args:', args);
 
     const currentProject = await getCurrentProject();
@@ -59,11 +108,12 @@ export const stakeholderCommand: Command = {
           }
 
           const name = args.slice(1).join(' ');
-          const stakeholder = await backend.getStakeholder(name);
+          // Use fuzzy matching to find the stakeholder
+          const stakeholder = await backend.findStakeholder(name);
 
           if (!stakeholder) {
             return {
-              content: `❌ Stakeholder "${name}" not found.`,
+              content: `❌ Stakeholder "${name}" not found.\n\n💡 Tip: Use /stakeholder list to see all available stakeholders.`,
               success: false
             };
           }
@@ -138,11 +188,21 @@ ${prioritiesText}`,
             };
           }
 
-          const name = args.slice(1).join(' ');
-          await backend.removeStakeholder(name);
+          const nameQuery = args.slice(1).join(' ');
+          // Use fuzzy matching to find the stakeholder
+          const stakeholder = await backend.findStakeholder(nameQuery);
+
+          if (!stakeholder) {
+            return {
+              content: `❌ Stakeholder "${nameQuery}" not found.\n\n💡 Tip: Use /stakeholder list to see all available stakeholders.`,
+              success: false
+            };
+          }
+
+          await backend.removeStakeholder(stakeholder.name);
 
           return {
-            content: `✅ Removed stakeholder "${name}"`,
+            content: `✅ Removed stakeholder "${stakeholder.name}"`,
             success: true
           };
         }
@@ -165,13 +225,41 @@ ${prioritiesText}`,
             };
           }
 
-          const stakeholderName = args[2] || '';
+          const stakeholderQuery = args[2] || '';
           const goalText = args.slice(3).join(' ');
 
-          await backend.linkIssueToGoal(stakeholderName, goalText, issueNumber);
+          // Use fuzzy matching to find the stakeholder
+          const stakeholder = await backend.findStakeholder(stakeholderQuery);
+
+          if (!stakeholder) {
+            return {
+              content: `❌ Stakeholder "${stakeholderQuery}" not found.\n\n💡 Tip: Use /stakeholder list to see all available stakeholders.`,
+              success: false
+            };
+          }
+
+          // Find the goal using fuzzy matching
+          const lowerGoalQuery = goalText.toLowerCase();
+          const matchedGoal = stakeholder.goals.find(g =>
+            g.text === goalText ||
+            g.text.toLowerCase() === lowerGoalQuery ||
+            g.text.toLowerCase().includes(lowerGoalQuery)
+          );
+
+          if (!matchedGoal) {
+            const availableGoals = stakeholder.goals.length > 0
+              ? `\n\nAvailable goals for "${stakeholder.name}":\n${stakeholder.goals.map(g => `  • ${g.text}`).join('\n')}`
+              : `\n\n"${stakeholder.name}" has no goals defined. Add goals first.`;
+            return {
+              content: `❌ Goal "${goalText}" not found for stakeholder "${stakeholder.name}".${availableGoals}`,
+              success: false
+            };
+          }
+
+          await backend.linkIssueToGoal(stakeholder.name, matchedGoal.text, issueNumber);
 
           return {
-            content: `✅ Linked issue #${issueNumber} to "${stakeholderName}"'s goal: "${goalText}"`,
+            content: `✅ Linked issue #${issueNumber} to "${stakeholder.name}"'s goal: "${matchedGoal.text}"`,
             success: true
           };
         }

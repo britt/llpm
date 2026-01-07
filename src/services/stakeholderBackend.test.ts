@@ -9,7 +9,7 @@ vi.mock('../utils/config', () => ({
   getConfigDir: () => testConfigDir
 }));
 
-import { StakeholderBackend, getStakeholderBackend } from './stakeholderBackend';
+import { StakeholderBackend, getStakeholderBackend, clearStakeholderCache } from './stakeholderBackend';
 import type { Stakeholder, ConflictResolution } from '../types/stakeholder';
 
 describe('StakeholderBackend', () => {
@@ -458,6 +458,151 @@ updated_at: "2025-01-06T12:00:00.000Z"
       expect(content).toContain('# Goal-Issue Links');
       expect(content).toContain('**Complete tasks quickly**: #42, #58');
     });
+
+    it('should not write empty Goal-Issue Links section when no links exist', async () => {
+      await backend.addStakeholder({
+        name: 'End User',
+        role: 'User',
+        description: 'Users',
+        goals: [{ text: 'Goal without links', linkedIssues: [] }],
+        painPoints: [],
+        priorities: []
+      });
+
+      const filePath = backend.getFilePath();
+      const content = readFileSync(filePath, 'utf-8');
+
+      // Should NOT contain empty Goal-Issue Links section
+      expect(content).not.toContain('# Goal-Issue Links');
+    });
+  });
+
+  describe('special characters in content', () => {
+    it('should handle goal text containing markdown special characters', async () => {
+      await backend.addStakeholder({
+        name: 'End User',
+        role: 'User',
+        description: 'Users',
+        goals: [
+          { text: 'Goal with **bold** text', linkedIssues: [42] },
+          { text: 'Goal with: colons', linkedIssues: [43] }
+        ],
+        painPoints: [],
+        priorities: []
+      });
+
+      // Reload and verify it round-trips correctly
+      const stakeholder = await backend.getStakeholder('End User');
+      expect(stakeholder?.goals[0].text).toBe('Goal with **bold** text');
+      expect(stakeholder?.goals[0].linkedIssues).toContain(42);
+      expect(stakeholder?.goals[1].text).toBe('Goal with: colons');
+      expect(stakeholder?.goals[1].linkedIssues).toContain(43);
+    });
+
+    it('should handle stakeholder name with special characters', async () => {
+      await backend.addStakeholder({
+        name: 'End User (Primary)',
+        role: 'Daily user',
+        description: 'Primary end users',
+        goals: [{ text: 'A goal', linkedIssues: [] }],
+        painPoints: [],
+        priorities: []
+      });
+
+      const stakeholder = await backend.getStakeholder('End User (Primary)');
+      expect(stakeholder).not.toBeNull();
+      expect(stakeholder?.name).toBe('End User (Primary)');
+    });
+
+    it('should handle pain points and priorities with special characters', async () => {
+      await backend.addStakeholder({
+        name: 'Test User',
+        role: 'User',
+        description: 'Test',
+        goals: [],
+        painPoints: ['Pain with **emphasis**', 'Pain: with colon'],
+        priorities: ['Priority #1: important', 'Priority with "quotes"']
+      });
+
+      const stakeholder = await backend.getStakeholder('Test User');
+      expect(stakeholder?.painPoints).toContain('Pain with **emphasis**');
+      expect(stakeholder?.painPoints).toContain('Pain: with colon');
+      expect(stakeholder?.priorities).toContain('Priority #1: important');
+      expect(stakeholder?.priorities).toContain('Priority with "quotes"');
+    });
+  });
+
+  describe('fuzzy name matching', () => {
+    beforeEach(async () => {
+      await backend.addStakeholder({
+        name: 'End User',
+        role: 'Daily user',
+        description: 'Non-technical users',
+        goals: [],
+        painPoints: [],
+        priorities: []
+      });
+      await backend.addStakeholder({
+        name: 'Product Owner',
+        role: 'Decision maker',
+        description: 'Makes product decisions',
+        goals: [],
+        painPoints: [],
+        priorities: []
+      });
+      await backend.addStakeholder({
+        name: 'Developer',
+        role: 'Engineer',
+        description: 'Builds the product',
+        goals: [],
+        painPoints: [],
+        priorities: []
+      });
+    });
+
+    it('should find stakeholder with case-insensitive match', async () => {
+      const result = await backend.findStakeholder('end user');
+      expect(result).not.toBeNull();
+      expect(result?.name).toBe('End User');
+    });
+
+    it('should find stakeholder with partial match', async () => {
+      const result = await backend.findStakeholder('user');
+      expect(result).not.toBeNull();
+      expect(result?.name).toBe('End User');
+    });
+
+    it('should find stakeholder with prefix match', async () => {
+      const result = await backend.findStakeholder('prod');
+      expect(result).not.toBeNull();
+      expect(result?.name).toBe('Product Owner');
+    });
+
+    it('should return null when no match found', async () => {
+      const result = await backend.findStakeholder('nonexistent');
+      expect(result).toBeNull();
+    });
+
+    it('should prefer exact match over partial match', async () => {
+      // Add another stakeholder that partially matches
+      await backend.addStakeholder({
+        name: 'User Admin',
+        role: 'Admin',
+        description: 'Admin',
+        goals: [],
+        painPoints: [],
+        priorities: []
+      });
+
+      const result = await backend.findStakeholder('End User');
+      expect(result?.name).toBe('End User');
+    });
+
+    it('should return all matches for findStakeholders (plural)', async () => {
+      const results = await backend.findStakeholders('user');
+      expect(results.length).toBeGreaterThanOrEqual(1);
+      expect(results.some(s => s.name === 'End User')).toBe(true);
+    });
   });
 });
 
@@ -474,6 +619,8 @@ describe('getStakeholderBackend', () => {
     if (existsSync(testDir)) {
       rmSync(testDir, { recursive: true, force: true });
     }
+    // Clear the cache after each test
+    clearStakeholderCache();
   });
 
   it('should return cached backend for same project', async () => {
@@ -487,6 +634,27 @@ describe('getStakeholderBackend', () => {
 
     const backend1 = await getStakeholderBackend('test-project');
     const backend2 = await getStakeholderBackend('other-project');
+    expect(backend1).not.toBe(backend2);
+  });
+
+  it('should cache multiple projects simultaneously', async () => {
+    mkdirSync(join(testDir, 'projects', 'project-a'), { recursive: true });
+    mkdirSync(join(testDir, 'projects', 'project-b'), { recursive: true });
+
+    const backendA1 = await getStakeholderBackend('project-a');
+    const backendB1 = await getStakeholderBackend('project-b');
+    const backendA2 = await getStakeholderBackend('project-a');
+    const backendB2 = await getStakeholderBackend('project-b');
+
+    expect(backendA1).toBe(backendA2);
+    expect(backendB1).toBe(backendB2);
+    expect(backendA1).not.toBe(backendB1);
+  });
+
+  it('should return fresh backend after cache is cleared', async () => {
+    const backend1 = await getStakeholderBackend('test-project');
+    clearStakeholderCache();
+    const backend2 = await getStakeholderBackend('test-project');
     expect(backend1).not.toBe(backend2);
   });
 });

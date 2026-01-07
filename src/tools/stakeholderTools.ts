@@ -486,7 +486,7 @@ export const resolveConflictTool = tool({
     try {
       const backend = await getStakeholderBackend(project.id);
 
-      const dateStr = new Date().toISOString().split('T')[0] ?? new Date().toISOString().slice(0, 10);
+      const dateStr = new Date().toISOString().slice(0, 10);
       await backend.addConflictResolution({
         date: dateStr,
         stakeholder1,

@@ -76,6 +76,22 @@ export class StakeholderBackend {
   }
 
   /**
+   * Escape special markdown characters in goal text for Goal-Issue Links section
+   * This ensures round-trip compatibility when goals contain ** or :
+   */
+  private escapeMarkdownForLink(text: string): string {
+    // Replace ** with a placeholder that won't conflict with markdown
+    return text.replace(/\*\*/g, '\\*\\*');
+  }
+
+  /**
+   * Unescape special markdown characters when parsing Goal-Issue Links
+   */
+  private unescapeMarkdownForLink(text: string): string {
+    return text.replace(/\\\*\\\*/g, '**');
+  }
+
+  /**
    * Parse the stakeholder markdown file into structured data
    */
   private parseStakeholderFile(content: string): StakeholderFile {
@@ -98,9 +114,12 @@ export class StakeholderBackend {
           continue;
         }
 
-        const linkMatch = line.match(/^- \*\*(.+)\*\*: (.+)$/);
+        // Improved regex to handle goals with colons - match from ** to **: and capture the rest
+        // Pattern: - **goal text here**: #issues
+        const linkMatch = line.match(/^- \*\*(.+?)\*\*: (#.+)$/);
         if (linkMatch && linkMatch[1] && linkMatch[2] && currentStakeholder) {
-          const goal = linkMatch[1];
+          // Unescape the goal text
+          const goal = this.unescapeMarkdownForLink(linkMatch[1]);
           const issues = linkMatch[2]
             .split(',')
             .map((s: string) => s.trim())
@@ -246,12 +265,12 @@ export class StakeholderBackend {
       body += '\n---\n\n';
     }
 
-    // Serialize Goal-Issue Links
+    // Serialize Goal-Issue Links - only if there are actual links (fix issue #5)
     const hasLinks = data.stakeholders.some(s =>
       s.goals.some(g => g.linkedIssues.length > 0)
     );
 
-    if (hasLinks || data.stakeholders.length > 0) {
+    if (hasLinks) {
       body += '# Goal-Issue Links\n\n';
 
       for (const stakeholder of data.stakeholders) {
@@ -259,8 +278,10 @@ export class StakeholderBackend {
         if (goalsWithLinks.length > 0) {
           body += `## ${stakeholder.name}\n`;
           for (const goal of goalsWithLinks) {
+            // Escape goal text for markdown (fix issue #2)
+            const escapedGoal = this.escapeMarkdownForLink(goal.text);
             const issueRefs = goal.linkedIssues.map(n => `#${n}`).join(', ');
-            body += `- **${goal.text}**: ${issueRefs}\n`;
+            body += `- **${escapedGoal}**: ${issueRefs}\n`;
           }
           body += '\n';
         }
@@ -468,24 +489,107 @@ export class StakeholderBackend {
     data.conflictResolutions.push(resolution);
     await this.saveStakeholders(data);
   }
+
+  /**
+   * Find a stakeholder using fuzzy matching (case-insensitive, partial match)
+   * Returns the best match or null if no match found.
+   * Matching priority: exact match > case-insensitive match > prefix match > contains match
+   */
+  async findStakeholder(query: string): Promise<Stakeholder | null> {
+    const data = await this.loadStakeholders();
+    const lowerQuery = query.toLowerCase();
+
+    // 1. Exact match
+    const exactMatch = data.stakeholders.find(s => s.name === query);
+    if (exactMatch) return exactMatch;
+
+    // 2. Case-insensitive exact match
+    const caseInsensitiveMatch = data.stakeholders.find(
+      s => s.name.toLowerCase() === lowerQuery
+    );
+    if (caseInsensitiveMatch) return caseInsensitiveMatch;
+
+    // 3. Prefix match (case-insensitive)
+    const prefixMatch = data.stakeholders.find(s =>
+      s.name.toLowerCase().startsWith(lowerQuery)
+    );
+    if (prefixMatch) return prefixMatch;
+
+    // 4. Contains match (case-insensitive)
+    const containsMatch = data.stakeholders.find(s =>
+      s.name.toLowerCase().includes(lowerQuery)
+    );
+    if (containsMatch) return containsMatch;
+
+    return null;
+  }
+
+  /**
+   * Find all stakeholders matching a fuzzy query
+   * Returns all matches sorted by relevance (exact > case-insensitive > prefix > contains)
+   */
+  async findStakeholders(query: string): Promise<Stakeholder[]> {
+    const data = await this.loadStakeholders();
+    const lowerQuery = query.toLowerCase();
+
+    type ScoredStakeholder = { stakeholder: Stakeholder; score: number };
+    const scored: ScoredStakeholder[] = [];
+
+    for (const stakeholder of data.stakeholders) {
+      const lowerName = stakeholder.name.toLowerCase();
+      let score = 0;
+
+      if (stakeholder.name === query) {
+        score = 4; // Exact match
+      } else if (lowerName === lowerQuery) {
+        score = 3; // Case-insensitive exact
+      } else if (lowerName.startsWith(lowerQuery)) {
+        score = 2; // Prefix match
+      } else if (lowerName.includes(lowerQuery)) {
+        score = 1; // Contains match
+      }
+
+      if (score > 0) {
+        scored.push({ stakeholder, score });
+      }
+    }
+
+    // Sort by score descending, then by name
+    scored.sort((a, b) => {
+      if (b.score !== a.score) return b.score - a.score;
+      return a.stakeholder.name.localeCompare(b.stakeholder.name);
+    });
+
+    return scored.map(s => s.stakeholder);
+  }
 }
+
+/**
+ * Cache for stakeholder backends - supports multiple projects (fix issue #1)
+ */
+const backendCache: Map<string, StakeholderBackend> = new Map();
 
 /**
  * Get stakeholder backend for a project (cached)
  */
-let currentBackend: StakeholderBackend | null = null;
-let currentProjectId: string | null = null;
-
 export async function getStakeholderBackend(
   projectId: string
 ): Promise<StakeholderBackend> {
-  if (currentBackend && currentProjectId === projectId) {
-    return currentBackend;
+  const cached = backendCache.get(projectId);
+  if (cached) {
+    return cached;
   }
 
-  currentBackend = new StakeholderBackend(projectId);
-  currentProjectId = projectId;
-  await currentBackend.initialize();
+  const backend = new StakeholderBackend(projectId);
+  await backend.initialize();
+  backendCache.set(projectId, backend);
 
-  return currentBackend;
+  return backend;
+}
+
+/**
+ * Clear the stakeholder backend cache (useful for testing)
+ */
+export function clearStakeholderCache(): void {
+  backendCache.clear();
 }
