@@ -8,7 +8,7 @@
 import { tool } from './instrumentedTool';
 import * as z from 'zod';
 import { getCurrentProject } from '../utils/projectConfig';
-import { listIssues } from '../services/github';
+import { listIssues, getIssueWithComments } from '../services/github';
 import { GapAnalyzer } from '../services/gapAnalyzer';
 import type { Question, QuestionPriority } from '../types/questions';
 import { debug } from '../utils/logger';
@@ -127,6 +127,108 @@ Returns questions grouped by category and sorted by priority.`,
       return {
         success: false,
         error: `Failed to generate questions: ${error instanceof Error ? error.message : String(error)}`,
+        questions: [],
+      };
+    }
+  },
+});
+
+/**
+ * @prompt Tool: generate_issue_questions
+ * Description and parameter descriptions sent to LLM explaining tool usage.
+ */
+export const generateIssueQuestionsTool = tool({
+  description: `Analyze a specific GitHub issue and generate questions to identify gaps or clarify requirements.
+
+This tool examines:
+- Issue description completeness
+- Presence of acceptance criteria
+- Label and assignee status
+- Comment thread for context
+
+Use this when:
+- User asks "are there any gaps in issue #X?"
+- User wants to review an issue before starting work
+- User needs to understand what's unclear about an issue
+
+Returns targeted questions specific to the issue.`,
+
+  inputSchema: z.object({
+    issue_number: z.number().describe('The GitHub issue number to analyze'),
+  }),
+
+  execute: async ({ issue_number }) => {
+    debug('generate_issue_questions called for issue:', issue_number);
+
+    try {
+      const project = await getCurrentProject();
+
+      if (!project) {
+        return {
+          success: false,
+          error: 'No active project set. Use /project to set an active project first.',
+          issueNumber: issue_number,
+          issueTitle: '',
+          questions: [],
+        };
+      }
+
+      if (!project.github_repo) {
+        return {
+          success: false,
+          error: 'Current project does not have a GitHub repository configured.',
+          issueNumber: issue_number,
+          issueTitle: '',
+          questions: [],
+        };
+      }
+
+      const [owner, repo] = project.github_repo.split('/');
+      if (!owner || !repo) {
+        return {
+          success: false,
+          error: `Invalid GitHub repository format: ${project.github_repo}`,
+          issueNumber: issue_number,
+          issueTitle: '',
+          questions: [],
+        };
+      }
+
+      // Fetch the issue with comments
+      const { issue, comments } = await getIssueWithComments(owner, repo, issue_number, {
+        includeComments: true,
+        commentsPerPage: 100,
+      });
+
+      const analyzer = new GapAnalyzer();
+      const analysis = await analyzer.analyzeIssue(issue, comments);
+
+      // Build summary
+      const summary = {
+        totalQuestions: analysis.questions.length,
+        byCategory: {} as Record<string, number>,
+      };
+
+      for (const q of analysis.questions) {
+        summary.byCategory[q.category] = (summary.byCategory[q.category] || 0) + 1;
+      }
+
+      return {
+        success: true,
+        issueNumber: issue.number,
+        issueTitle: issue.title,
+        issueUrl: issue.html_url,
+        questions: analysis.questions,
+        summary,
+      };
+
+    } catch (error) {
+      debug('Error in generate_issue_questions:', error);
+      return {
+        success: false,
+        error: `Failed to analyze issue: ${error instanceof Error ? error.message : String(error)}`,
+        issueNumber: issue_number,
+        issueTitle: '',
         questions: [],
       };
     }
