@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { generateProjectQuestionsTool } from './questionTools';
+import type { Question } from '../types/questions';
 
 vi.mock('../utils/projectConfig', () => ({
   getCurrentProject: vi.fn(),
@@ -85,7 +86,7 @@ describe('generateProjectQuestionsTool', () => {
     });
 
     expect(result.success).toBe(true);
-    result.questions.forEach((q: any) => {
+    result.questions.forEach((q: Question) => {
       expect(q.category).toBe('requirements');
     });
   });
@@ -121,7 +122,7 @@ describe('generateProjectQuestionsTool', () => {
     });
 
     expect(result.success).toBe(true);
-    result.questions.forEach((q: any) => {
+    result.questions.forEach((q: Question) => {
       expect(q.priority).toBe('high');
     });
   });
