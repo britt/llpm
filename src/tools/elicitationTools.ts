@@ -149,3 +149,79 @@ question to ask, or indicate that the current section is complete.`,
     }
   },
 });
+
+/**
+ * @prompt Tool: get_elicitation_state
+ * Retrieve the current state of an elicitation session. Shows progress,
+ * captured answers, and what sections remain.
+ */
+export const getElicitationState = tool({
+  description: `Get the current state of a requirement elicitation session. Use this to show
+the user their progress, review captured answers, or resume a session. If no sessionId
+is provided, returns the most recent active session.`,
+  inputSchema: z.object({
+    sessionId: z.string().optional().describe('Session ID (optional - uses active session if not provided)'),
+  }),
+  execute: async ({ sessionId }) => {
+    const project = await getCurrentProject();
+    if (!project) {
+      return {
+        success: false,
+        error: 'No active project',
+      };
+    }
+
+    const backend = new ElicitationBackend(project.id);
+    await backend.initialize();
+
+    let session;
+    if (sessionId) {
+      session = await backend.getSession(sessionId);
+    } else {
+      session = await backend.getActiveSession();
+    }
+
+    if (!session) {
+      return {
+        success: false,
+        error: 'No active elicitation session found. Start one with "Let\'s define requirements for my project"',
+      };
+    }
+
+    const nextQuestion = await backend.getNextQuestion(session.id);
+    const allAnswers = session.sections.flatMap(s => s.answers);
+
+    return {
+      success: true,
+      sessionId: session.id,
+      projectName: session.projectName,
+      domain: session.domain,
+      status: session.status,
+      currentSection: session.currentSectionId,
+      sections: session.sections.map(s => ({
+        id: s.id,
+        name: s.name,
+        status: s.status,
+        answerCount: s.answers.length,
+      })),
+      capturedAnswers: allAnswers.map(a => ({
+        section: a.section,
+        question: a.question,
+        answer: a.answer,
+      })),
+      nextQuestion: nextQuestion
+        ? {
+            id: nextQuestion.id,
+            question: nextQuestion.question,
+            description: nextQuestion.description,
+            required: nextQuestion.required,
+          }
+        : null,
+      progress: {
+        completedSections: session.sections.filter(s => s.status === 'completed').length,
+        totalSections: session.sections.length,
+        totalAnswers: allAnswers.length,
+      },
+    };
+  },
+});

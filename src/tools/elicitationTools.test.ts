@@ -11,7 +11,7 @@ vi.mock('../utils/projectConfig', () => ({
   getCurrentProject: vi.fn(() => Promise.resolve({ id: 'test-project', name: 'Test' })),
 }));
 
-import { startRequirementElicitation, recordRequirementAnswer } from './elicitationTools';
+import { startRequirementElicitation, recordRequirementAnswer, getElicitationState } from './elicitationTools';
 
 describe('startRequirementElicitation', () => {
   beforeEach(async () => {
@@ -172,5 +172,80 @@ describe('recordRequirementAnswer', () => {
 
     expect(result.success).toBe(false);
     expect(result.error).toContain('Session not found');
+  });
+});
+
+describe('getElicitationState', () => {
+  beforeEach(async () => {
+    try {
+      await fs.rm('/tmp/llpm-elicit-test', { recursive: true });
+    } catch {
+      // Directory may not exist
+    }
+  });
+
+  afterEach(async () => {
+    try {
+      await fs.rm('/tmp/llpm-elicit-test', { recursive: true });
+    } catch {
+      // Ignore cleanup errors
+    }
+  });
+
+  it('should have correct tool metadata', () => {
+    expect(getElicitationState.description).toContain('state');
+    expect(getElicitationState.inputSchema).toBeDefined();
+  });
+
+  it('should return current session state', async () => {
+    const startResult = await startRequirementElicitation.execute({
+      domain: 'mobile',
+      projectName: 'Mobile App',
+    });
+
+    await recordRequirementAnswer.execute({
+      sessionId: startResult.sessionId,
+      questionId: 'project-name',
+      answer: 'My Mobile App',
+    });
+
+    const result = await getElicitationState.execute({
+      sessionId: startResult.sessionId,
+    });
+
+    expect(result.success).toBe(true);
+    expect(result.domain).toBe('mobile');
+    expect(result.projectName).toBe('Mobile App');
+    expect(result.status).toBe('in_progress');
+    expect(result.sections).toHaveLength(5);
+    expect(result.capturedAnswers).toHaveLength(1);
+    expect(result.capturedAnswers[0].answer).toBe('My Mobile App');
+  });
+
+  it('should return active session when no sessionId provided', async () => {
+    const startResult = await startRequirementElicitation.execute({
+      domain: 'library',
+      projectName: 'My Library',
+    });
+
+    const result = await getElicitationState.execute({});
+
+    expect(result.success).toBe(true);
+    expect(result.sessionId).toBe(startResult.sessionId);
+  });
+
+  it('should indicate no active session when none exists', async () => {
+    // Clean up any existing sessions
+    try {
+      await fs.rm('/tmp/llpm-elicit-test', { recursive: true });
+    } catch {
+      // Directory may not exist
+    }
+    await fs.mkdir('/tmp/llpm-elicit-test/projects/test-project/elicitation', { recursive: true });
+
+    const result = await getElicitationState.execute({});
+
+    expect(result.success).toBe(false);
+    expect(result.error).toContain('No active');
   });
 });
