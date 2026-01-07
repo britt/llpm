@@ -62,6 +62,15 @@ import { askUserTool } from './askUserTool';
 import { loadSkillsTool, listAvailableSkillsTool } from './skillTools';
 import { runShellCommandTool } from './shellTools';
 import {
+  startRequirementElicitation,
+  recordRequirementAnswer,
+  getElicitationState,
+  advanceElicitationSection,
+  skipElicitationSection,
+  refineRequirementSection,
+  generateRequirementsDocument
+} from './elicitationTools';
+import {
   addStakeholderTool,
   listStakeholdersTool,
   getStakeholderTool,
@@ -128,6 +137,14 @@ const toolRegistry: ToolRegistry = {
   list_available_skills: listAvailableSkillsTool,
   // Shell execution
   run_shell_command: runShellCommandTool,
+  // Requirement Elicitation
+  start_requirement_elicitation: startRequirementElicitation,
+  record_requirement_answer: recordRequirementAnswer,
+  get_elicitation_state: getElicitationState,
+  advance_elicitation_section: advanceElicitationSection,
+  skip_elicitation_section: skipElicitationSection,
+  refine_requirement_section: refineRequirementSection,
+  generate_requirements_document: generateRequirementsDocument,
   // Context-Aware Question Generation
   generate_project_questions: generateProjectQuestionsTool,
   generate_issue_questions: generateIssueQuestionsTool,
