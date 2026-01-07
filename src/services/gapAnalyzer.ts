@@ -52,7 +52,7 @@ export class GapAnalyzer {
    */
   async analyzeIssue(
     issue: GitHubIssue,
-    _comments: GitHubIssueComment[]
+    comments: GitHubIssueComment[]
   ): Promise<IssueAnalysisResult> {
     debug(`Analyzing issue #${issue.number}: ${issue.title}`);
     const questions: Question[] = [];
@@ -146,11 +146,64 @@ export class GapAnalyzer {
       questions.push(createQuestion(questionInput));
     }
 
+    // Check for unanswered questions in comments
+    const unansweredQuestions = this.findUnansweredQuestions(comments);
+    const firstQuestion = unansweredQuestions[0];
+    if (firstQuestion) {
+      const preview = firstQuestion.length > 100 ? `${firstQuestion.slice(0, 100)}...` : firstQuestion;
+      const questionInput: QuestionInput = {
+        category: 'requirements',
+        priority: 'medium',
+        question: `Are there unanswered questions in the discussion for issue #${issue.number}?`,
+        context: `Found ${unansweredQuestions.length} potential unanswered question(s) in comments: "${preview}"`,
+        source: {
+          type: 'issue',
+          reference: `#${issue.number}`,
+          url: issue.html_url,
+        },
+        suggestedAction: 'Review and respond to questions in the issue comments',
+      };
+      questions.push(createQuestion(questionInput));
+    }
+
     // Prioritize and return
     const prioritized = this.prioritizeQuestions(questions);
     debug(`Generated ${prioritized.length} questions for issue #${issue.number}`);
 
     return { questions: prioritized };
+  }
+
+  /**
+   * Find comments that contain unanswered questions
+   *
+   * @param comments Issue comments to analyze
+   * @returns Array of comment bodies containing questions
+   */
+  findUnansweredQuestions(comments: GitHubIssueComment[]): string[] {
+    const questionsFound: string[] = [];
+
+    for (const comment of comments) {
+      if (!comment.body) continue;
+
+      // Check if comment contains a question mark
+      if (comment.body.includes('?')) {
+        // Additional heuristics to filter out rhetorical questions or code
+        const lines = comment.body.split('\n');
+        for (const line of lines) {
+          // Skip code blocks
+          if (line.trim().startsWith('```') || line.trim().startsWith('`')) continue;
+          // Skip lines that look like code (common patterns)
+          if (line.includes('===') || line.includes('!==') || line.includes('?.')) continue;
+
+          if (line.includes('?') && !line.trim().startsWith('//') && !line.trim().startsWith('#')) {
+            questionsFound.push(line.trim());
+            break; // Only capture first question per comment
+          }
+        }
+      }
+    }
+
+    return questionsFound;
   }
 
   /**
@@ -198,6 +251,29 @@ export class GapAnalyzer {
 
     // Flag very short descriptions (less than 100 characters)
     if (body.trim().length < 100) {
+      return true;
+    }
+
+    // Check for vague/uncertain language
+    const lowerBody = body.toLowerCase();
+    const vagueWords = [
+      'maybe',
+      'might',
+      'unclear',
+      'possibly',
+      'probably',
+      'perhaps',
+      'not sure',
+      'i think',
+      'could be',
+      'something like',
+      'sort of',
+      'kind of',
+      'somehow',
+      'at some point',
+    ];
+
+    if (vagueWords.some(word => lowerBody.includes(word))) {
       return true;
     }
 

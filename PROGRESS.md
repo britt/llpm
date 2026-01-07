@@ -291,3 +291,117 @@ Tests: 7 passed (7)
 - Factory function (`createQuestion`) generates unique IDs using timestamp + counter
 - Type guard (`isQuestion`) validates all required fields
 - Ready for next task: Question Generator Service implementation
+
+### Task 2.1 & 2.2: Create Gap Analyzer Service - COMPLETE ✅
+- **Started**: 2026-01-06
+- **Completed**: 2026-01-06
+
+**Files Created:**
+- `src/services/gapAnalyzer.ts` - Gap analyzer service
+- `src/services/gapAnalyzer.test.ts` - Test suite (19 tests)
+
+**Implementation:**
+- `GapAnalyzer` class with `analyzeIssue()` method
+- Detects: missing acceptance criteria, vague descriptions, missing labels, missing assignees, stale issues (30+ days)
+- `checkAcceptanceCriteria()` - checkbox patterns, "done when" phrases
+- `checkVagueDescription()` - short content, vague words ("unclear", "might", "maybe")
+- `prioritizeQuestions()` - sorts by priority (high > medium > low)
+- `analyzeProjectContext()` - analyzes project scan data for documentation gaps
+- `analyzeProjectScan()` - extracts questions from architecture/docs coverage
+
+**Test Results:**
+```
+✓ src/services/gapAnalyzer.test.ts (19 tests) 4ms
+```
+
+**Coverage:**
+- Lines: 99.17%
+- Functions: 100%
+- Branches: 89.47%
+
+### Task 3.1-3.4: Create Question Tools - COMPLETE ✅
+- **Started**: 2026-01-06
+- **Completed**: 2026-01-06
+
+**Files Created/Modified:**
+- `src/tools/questionTools.ts` - 4 AI tools
+- `src/tools/questionTools.test.ts` - Test suite (22 tests)
+- `src/tools/registry.ts` - Registered all 4 tools
+
+**Tools Implemented:**
+1. `generateProjectQuestionsTool` - Analyze entire project context for gaps
+2. `generateIssueQuestionsTool` - Analyze specific GitHub issue
+3. `suggestClarificationsTool` - Review draft content before submission
+4. `identifyInformationGapsTool` - Scan specific target (README, docs, codebase)
+
+**Test Results:**
+```
+✓ src/tools/questionTools.test.ts (22 tests) 9ms
+```
+
+**Integration Tests:**
+- Test poorly written issues detect multiple gaps
+- Test well-written issues have minimal/no flags
+- Test combined project and issue analysis
+
+### Task 4.1: Create context-aware-questions Skill - COMPLETE ✅
+- **Started**: 2026-01-06
+- **Completed**: 2026-01-06
+
+**File Created:**
+- `skills/context-aware-questions/SKILL.md`
+
+**Skill Features:**
+- Describes when to use each tool
+- Provides example workflows for common scenarios
+- Documents question categories and priorities
+- Shows output structure and best practices
+
+### Task 5.1: Add Integration Tests - COMPLETE ✅
+- **Completed**: 2026-01-06
+- Added 3 integration tests to questionTools.test.ts
+- Tests verify end-to-end gap detection workflows
+
+### Task 6.1: Final Verification - COMPLETE ✅
+- **Completed**: 2026-01-06
+
+**All Tests Pass:**
+```
+Test Files: 3 passed (3)
+Tests: 48 passed (48)
+```
+
+**Coverage Summary:**
+- questions.ts: 100% (all metrics)
+- gapAnalyzer.ts: 99.17% lines, 89.47% branches, 100% functions
+- questionTools.ts: Tested via 22 tests
+
+**Lint: Clean** - No errors in new files
+**TypeCheck:** Pre-existing issues only (AI SDK tool type pattern)
+
+## Summary - Issue #28
+
+Context-Aware Question Generator feature fully implemented with:
+
+### Files Created
+1. `src/types/questions.ts` - Type definitions (7 tests)
+2. `src/types/questions.test.ts` - Type tests
+3. `src/services/gapAnalyzer.ts` - Gap analysis service (19 tests)
+4. `src/services/gapAnalyzer.test.ts` - Service tests
+5. `src/tools/questionTools.ts` - 4 AI tools (22 tests)
+6. `src/tools/questionTools.test.ts` - Tool tests
+7. `skills/context-aware-questions/SKILL.md` - Skill definition
+
+### Files Modified
+1. `src/tools/registry.ts` - Registered 4 new tools
+
+### Feature Summary
+- **Question Types**: Categories (6), Priorities (3), Sources (7)
+- **Gap Analyzer**: Issue analysis, project scan analysis, prioritization
+- **AI Tools**: 4 tools for project/issue/draft/target analysis
+- **Skill**: Natural language interface with example workflows
+
+### Total Tests Added: 48 tests
+- questions.test.ts: 7 tests
+- gapAnalyzer.test.ts: 19 tests
+- questionTools.test.ts: 22 tests

@@ -71,10 +71,9 @@ export function isQuestion(obj: unknown): obj is Question {
 }
 
 // Factory function to create questions with unique IDs
-let questionCounter = 0;
 export function createQuestion(input: QuestionInput): Question {
   return {
-    id: `q${Date.now()}_${++questionCounter}`,
+    id: crypto.randomUUID(),
     ...input,
   };
 }

@@ -161,6 +161,113 @@ Some technical details here.`,
         q.question.toLowerCase().includes('still relevant')
       )).toBe(true);
     });
+
+    it('should detect unanswered questions in comments', async () => {
+      const recentDate = new Date();
+      recentDate.setDate(recentDate.getDate() - 5);
+
+      const mockIssue: GitHubIssue = {
+        id: 6,
+        node_id: 'node_6',
+        number: 47,
+        title: 'Feature with questions',
+        body: `## Description
+This is a detailed feature request with clear requirements and context.
+
+## Acceptance Criteria
+- [ ] Feature works correctly
+- [ ] Tests are passing`,
+        state: 'open',
+        labels: [{ name: 'enhancement', color: 'blue' }],
+        user: { login: 'author', html_url: 'https://github.com/author' },
+        html_url: 'https://github.com/owner/repo/issues/47',
+        created_at: recentDate.toISOString(),
+        updated_at: recentDate.toISOString(),
+        assignee: { login: 'someone', html_url: 'https://github.com/someone' },
+      };
+
+      const commentsWithQuestions: GitHubIssueComment[] = [
+        {
+          id: 1,
+          node_id: 'comment_1',
+          body: 'What database should we use for this feature?',
+          user: { login: 'developer', html_url: 'https://github.com/developer' },
+          html_url: 'https://github.com/owner/repo/issues/47#issuecomment-1',
+          created_at: recentDate.toISOString(),
+          updated_at: recentDate.toISOString(),
+        },
+        {
+          id: 2,
+          node_id: 'comment_2',
+          body: 'Should this work on mobile devices?',
+          user: { login: 'reviewer', html_url: 'https://github.com/reviewer' },
+          html_url: 'https://github.com/owner/repo/issues/47#issuecomment-2',
+          created_at: recentDate.toISOString(),
+          updated_at: recentDate.toISOString(),
+        },
+      ];
+
+      const result = await analyzer.analyzeIssue(mockIssue, commentsWithQuestions);
+
+      // Should detect unanswered questions in comments
+      expect(result.questions.some(q =>
+        q.question.toLowerCase().includes('unanswered') ||
+        q.context.toLowerCase().includes('question')
+      )).toBe(true);
+    });
+
+    it('should not flag comments without questions', async () => {
+      const recentDate = new Date();
+      recentDate.setDate(recentDate.getDate() - 5);
+
+      const mockIssue: GitHubIssue = {
+        id: 7,
+        node_id: 'node_7',
+        number: 48,
+        title: 'Feature with resolved discussion',
+        body: `## Description
+This is a detailed feature request with clear requirements and context.
+
+## Acceptance Criteria
+- [ ] Feature works correctly
+- [ ] Tests are passing`,
+        state: 'open',
+        labels: [{ name: 'enhancement', color: 'blue' }],
+        user: { login: 'author', html_url: 'https://github.com/author' },
+        html_url: 'https://github.com/owner/repo/issues/48',
+        created_at: recentDate.toISOString(),
+        updated_at: recentDate.toISOString(),
+        assignee: { login: 'someone', html_url: 'https://github.com/someone' },
+      };
+
+      const commentsWithoutQuestions: GitHubIssueComment[] = [
+        {
+          id: 1,
+          node_id: 'comment_1',
+          body: 'Great idea! I think this will improve the user experience.',
+          user: { login: 'developer', html_url: 'https://github.com/developer' },
+          html_url: 'https://github.com/owner/repo/issues/48#issuecomment-1',
+          created_at: recentDate.toISOString(),
+          updated_at: recentDate.toISOString(),
+        },
+        {
+          id: 2,
+          node_id: 'comment_2',
+          body: 'LGTM, ready to implement.',
+          user: { login: 'reviewer', html_url: 'https://github.com/reviewer' },
+          html_url: 'https://github.com/owner/repo/issues/48#issuecomment-2',
+          created_at: recentDate.toISOString(),
+          updated_at: recentDate.toISOString(),
+        },
+      ];
+
+      const result = await analyzer.analyzeIssue(mockIssue, commentsWithoutQuestions);
+
+      // Should not flag issues with non-question comments
+      expect(result.questions.some(q =>
+        q.question.toLowerCase().includes('unanswered')
+      )).toBe(false);
+    });
   });
 
   describe('checkAcceptanceCriteria', () => {
@@ -211,6 +318,37 @@ Some technical details here.`,
 
     it('should handle null body', () => {
       expect(analyzer.checkVagueDescription(null)).toBe(true);
+    });
+
+    it('should flag descriptions with vague words like "maybe", "might", "unclear"', () => {
+      const vagueWithMaybe = 'This feature should maybe add a new button to the dashboard. The implementation details are provided below with specific requirements and acceptance criteria for the team.';
+      const vagueWithMight = 'We might need to update the API endpoint. The current implementation has specific issues that need to be addressed according to the requirements document.';
+      const vagueWithUnclear = 'The requirements are unclear but we should proceed anyway. Here are some detailed steps for the implementation that the team should follow carefully.';
+      const vagueWithPossibly = 'This could possibly fix the bug in the login flow. The detailed analysis shows multiple potential causes that need investigation by the team.';
+      const vagueWithProbably = 'We should probably refactor this module at some point. The current codebase has specific technical debt issues documented in the architecture notes.';
+
+      expect(analyzer.checkVagueDescription(vagueWithMaybe)).toBe(true);
+      expect(analyzer.checkVagueDescription(vagueWithMight)).toBe(true);
+      expect(analyzer.checkVagueDescription(vagueWithUnclear)).toBe(true);
+      expect(analyzer.checkVagueDescription(vagueWithPossibly)).toBe(true);
+      expect(analyzer.checkVagueDescription(vagueWithProbably)).toBe(true);
+    });
+
+    it('should not flag descriptions that are detailed without vague language', () => {
+      const clearDescription = `
+        ## Problem
+        The login form submits data without client-side validation. This results in
+        unnecessary server requests and poor user experience when fields are empty.
+
+        ## Solution
+        Add client-side validation using the existing form validation library.
+
+        ## Acceptance Criteria
+        - Email field validates format on blur
+        - Password field requires minimum 8 characters
+        - Submit button disabled until form is valid
+      `;
+      expect(analyzer.checkVagueDescription(clearDescription)).toBe(false);
     });
   });
 
