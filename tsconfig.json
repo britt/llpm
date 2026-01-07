@@ -13,6 +13,10 @@
     "allowImportingTsExtensions": true,
     "verbatimModuleSyntax": true,
     "noEmit": true,
+    "baseUrl": ".",
+    "paths": {
+      "react-devtools-core": ["./stubs/react-devtools-core.js"]
+    },
 
     // Best practices
     "strict": true,
