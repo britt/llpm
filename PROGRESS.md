@@ -647,3 +647,59 @@ Per code review feedback, the following improvements were made:
 - `src/tools/riskDetectionTools.ts` - Removed duplicates, updated imports, fixed types
 - `src/commands/project.test.ts` - Fixed mock to use `importOriginal` pattern
 - `src/commands/issue.test.ts` - Fixed mock to use `importOriginal` pattern
+
+---
+
+## Feature: Project Plan Generation Skills (Issue #195)
+**Branch:** britt/core-skills-impl
+**Started:** 2026-01-17
+**Completed:** 2026-01-17
+
+### Summary
+Created 5 core skills for AI-powered project plan generation per Issue #195. These skills use existing tools to generate GitHub issues, Mermaid diagrams, and planning documents.
+
+### Skills Created
+
+| Skill | Purpose | Location |
+|-------|---------|----------|
+| `issue-decomposition` | Decompose projects into GitHub issues | `skills/issue-decomposition/SKILL.md` |
+| `architecture-diagramming` | Generate Mermaid architecture diagrams | `skills/architecture-diagramming/SKILL.md` |
+| `dependency-mapping` | Map issue dependencies as Mermaid graphs | `skills/dependency-mapping/SKILL.md` |
+| `timeline-planning` | Create Mermaid Gantt charts | `skills/timeline-planning/SKILL.md` |
+| `project-planning` | Orchestrator - coordinates full workflow | `skills/project-planning/SKILL.md` |
+
+### TDD Approach
+
+1. **RED**: Wrote 30 tests for skill parsing (all failed initially)
+2. **GREEN**: Created skill files with correct YAML format
+3. **REFACTOR**: Fixed `allowed-tools` format (hyphen key, space-delimited string)
+
+### Test Results
+- New Tests: 30 passing (projectPlanningSkills.test.ts)
+- Full Test Suite: 2127 passing, 16 skipped
+- Build: Successful
+- Lint: Clean for new files (pre-existing warnings in other files)
+- TypeCheck: Clean for new files (pre-existing errors in other files)
+
+### Files Created
+1. `skills/issue-decomposition/SKILL.md` - Issue decomposition skill
+2. `skills/architecture-diagramming/SKILL.md` - Architecture diagram skill
+3. `skills/dependency-mapping/SKILL.md` - Dependency mapping skill
+4. `skills/timeline-planning/SKILL.md` - Timeline/Gantt skill
+5. `skills/project-planning/SKILL.md` - Orchestrator skill
+6. `src/skills/projectPlanningSkills.test.ts` - Test file for all skills
+
+### Key Implementation Details
+- Skills use `allowed-tools: "tool1 tool2"` format (hyphen key, space-delimited string)
+- All skills reference existing tools (no new tools created)
+- Orchestrator loads sub-skills via `load_skills` tool
+- All Mermaid examples follow GitHub rendering rules (no parentheses in labels)
+
+### Verification
+To verify skills work:
+```bash
+bun run start
+/skills reload
+/skills list  # Should show all 5 new skills
+/skills test project-planning  # Preview orchestrator content
+```
