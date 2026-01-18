@@ -29,17 +29,10 @@ export class NotesBackend {
   }
 
   /**
-   * Initialize the backend (create directories, run migration if needed)
+   * Initialize the backend (create directories)
    */
   async initialize(): Promise<void> {
-    const projectDir = join(getConfigDir(), 'projects', this.projectId);
-    const sqliteDb = join(projectDir, 'project.db');
-
-    if (existsSync(sqliteDb) && !existsSync(this.notesDir)) {
-      // Auto-migrate from SQLite
-      await this.migrateFromSqlite();
-    } else if (!existsSync(this.notesDir)) {
-      // Create empty notes directory
+    if (!existsSync(this.notesDir)) {
       mkdirSync(this.notesDir, { recursive: true });
     }
 
@@ -57,66 +50,6 @@ export class NotesBackend {
           '  Cargo:   cargo install ripgrep\n'
         );
       }
-    }
-  }
-
-  /**
-   * Migrate notes from SQLite database
-   */
-  private async migrateFromSqlite(): Promise<void> {
-    // Import SQLite dynamically to avoid loading if not needed
-    const { Database } = await import('bun:sqlite');
-    const projectDir = join(getConfigDir(), 'projects', this.projectId);
-    const dbPath = join(projectDir, 'project.db');
-
-    // Backup the database
-    const archiveDir = join(getConfigDir(), 'archives');
-    mkdirSync(archiveDir, { recursive: true });
-    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-    const backupPath = join(archiveDir, `notes-backup-${this.projectId}-${timestamp}.db`);
-
-    const dbContent = readFileSync(dbPath);
-    writeFileSync(backupPath, dbContent);
-
-    // Read notes from SQLite
-    const db = new Database(dbPath, { readonly: true });
-
-    try {
-      const notes = db.prepare('SELECT * FROM notes').all() as Array<{
-        id: number;
-        title: string;
-        content: string;
-        tags: string | null;
-        createdAt: string;
-        updatedAt: string;
-      }>;
-
-      // Create notes directory
-      mkdirSync(this.notesDir, { recursive: true });
-
-      // Export each note
-      for (const sqliteNote of notes) {
-        const tags = sqliteNote.tags ? sqliteNote.tags.split(',') : [];
-        const filename = generateNoteFilename(sqliteNote.title, sqliteNote.createdAt);
-        const id = filename.replace('.md', '');
-
-        const note: Note = {
-          id,
-          title: sqliteNote.title,
-          content: sqliteNote.content,
-          tags,
-          createdAt: sqliteNote.createdAt,
-          updatedAt: sqliteNote.updatedAt,
-          source: 'migration'
-        };
-
-        const markdown = serializeNote(note);
-        writeFileSync(join(this.notesDir, filename), markdown, 'utf-8');
-      }
-
-      console.warn(`Migrated ${notes.length} notes from SQLite to Markdown`);
-    } finally {
-      db.close();
     }
   }
 

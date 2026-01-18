@@ -2,9 +2,6 @@ import '@testing-library/jest-dom';
 import { beforeAll, afterEach } from 'vitest';
 import { cleanup } from '@testing-library/react';
 
-// Note: bun:sqlite is mocked via vitest.config.ts alias to test/mocks/bun-sqlite.js
-// This provides browser/testing compatibility for the native Bun SQLite module
-
 // Setup DOM environment for React Testing Library
 beforeAll(() => {
   // Ensure we have a proper DOM environment

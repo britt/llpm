@@ -1,6 +1,6 @@
 {
   "name": "llpm",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "description": "Large Language Model Product Manager - AI-powered CLI for software development",
   "keywords": [
     "llm",
@@ -51,7 +51,6 @@
   "devDependencies": {
     "@testing-library/jest-dom": "^6.6.4",
     "@testing-library/react": "^16.3.0",
-    "@types/better-sqlite3": "^7.6.13",
     "@types/bun": "latest",
     "@types/js-yaml": "^4.0.9",
     "@types/react": "^19.1.9",
@@ -94,7 +93,6 @@
     "ai": "^5.0.8",
     "ansi-escapes": "^7.1.1",
     "axios": "^1.12.2",
-    "better-sqlite3": "^12.2.0",
     "cli-html": "^4.4.0",
     "cli-markdown": "^3.5.1",
     "cli-spinners": "^3.3.0",
@@ -115,8 +113,6 @@
     "openai": "^5.12.2",
     "parse5": "^8.0.0",
     "react": "^19.1.1",
-    "sqlite-vec": "^0.1.7-alpha.2",
-    "sqlite-vss": "^0.1.2",
     "zod": "^4.0.17"
   }
 }

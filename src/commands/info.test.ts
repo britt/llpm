@@ -6,7 +6,6 @@ import { modelRegistry } from '../services/modelRegistry';
 import * as systemPrompt from '../utils/systemPrompt';
 import * as markdownHighlight from '../utils/markdownHighlight';
 import * as chatHistory from '../utils/chatHistory';
-import { embeddingsFactory } from '../services/embeddings';
 import packageJson from '../../package.json';
 
 describe('infoCommand', () => {
@@ -236,20 +235,5 @@ describe('infoCommand', () => {
 
     expect(result.success).toBe(true);
     expect(result.content).toContain(`📱 LLPM v${packageJson.version}`);
-  });
-
-  it('should show "Not available" when embeddings provider fails', async () => {
-    vi.spyOn(projectConfig, 'getCurrentProject').mockResolvedValue(null);
-    vi.spyOn(modelRegistry, 'getCurrentModel').mockReturnValue({
-      displayName: 'Test Model',
-      provider: 'openai',
-      modelId: 'test-model'
-    });
-    vi.spyOn(embeddingsFactory, 'getProvider').mockRejectedValue(new Error('Provider not initialized'));
-
-    const result = await infoCommand.execute([]);
-
-    expect(result.success).toBe(true);
-    expect(result.content).toContain('🔍 Embeddings: Not available');
   });
 });

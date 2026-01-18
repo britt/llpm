@@ -272,7 +272,6 @@ Default to using Bun instead of Node.js.
 ## APIs
 
 - `Bun.serve()` supports WebSockets, HTTPS, and routes. Don't use `express`.
-- `bun:sqlite` for SQLite (default). Use `better-sqlite3` only when SQLite extensions are needed (e.g., VSS).
 - `Bun.redis` for Redis. Don't use `ioredis`.
 - `Bun.sql` for Postgres. Don't use `pg` or `postgres.js`.
 - `WebSocket` is built-in. Don't use `ws`.
@@ -418,6 +417,8 @@ export const existingTool = tool({
 
 export const newTool1 = tool({ ... }); // Your new tool
 ```
+
+**MANDATORY RULE: Never claim to have used a tool without actually calling it.** This is a hard rule. NEVER respond as though you have used a tool when you have not.
 
 ### Prompt Documentation with @prompt
 
