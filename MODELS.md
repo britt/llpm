@@ -18,15 +18,23 @@ OpenAI provides GPT and o-series models, known for strong reasoning capabilities
 
 #### Available Models
 
-- **o4 Mini** (`o4-mini`) - Fast and efficient reasoning model
-- **GPT-5** (`gpt-5`) - Next-generation OpenAI model
-- **GPT-5 Mini** (`gpt-5-mini`) - Fast and efficient GPT-5 model
-- **GPT-5 Nano** (`gpt-5-nano`) - Ultra-lightweight GPT-5 model
+**GPT-5.2 Family (Latest)**
+- **GPT-5.2** (`gpt-5.2`) - Latest flagship GPT model
+- **GPT-5.2 Mini** (`gpt-5.2-mini`) - Fast and efficient GPT-5.2 variant
+- **GPT-5.2 Turbo** (`gpt-5.2-turbo`) - High-performance GPT-5.2 model
+
+**GPT-5.1 Family**
+- **GPT-5.1** (`gpt-5.1`) - Previous generation flagship
+- **GPT-5.1 Mini** (`gpt-5.1-mini`) - Fast GPT-5.1 variant
+- **GPT-5.1 Turbo** (`gpt-5.1-turbo`) - High-performance GPT-5.1 model
+
+**GPT-4o Family**
 - **GPT-4o** (`gpt-4o`) - Most capable GPT-4 model
-- **GPT-4o Mini** (`gpt-4o-mini`) - Fast and efficient model (default)
-- **GPT-4.1 Mini** (`gpt-4.1-mini`) - Improved GPT-4 model
-- **GPT-4.1 Turbo** (`gpt-4.1-turbo`) - High-performance GPT-4.1 model
-- **GPT-4 Turbo** (`gpt-4-turbo`) - High-performance GPT-4 model
+- **GPT-4o Mini** (`gpt-4o-mini`) - Fast and efficient GPT-4o variant
+
+**O-Series (Reasoning)**
+- **o4 Mini** (`o4-mini`) - Latest reasoning model
+- **o3 Mini** (`o3-mini`) - Previous generation reasoning model
 
 #### Configuration
 
@@ -48,6 +56,9 @@ OpenAI provides GPT and o-series models, known for strong reasoning capabilities
 #### Usage Examples
 
 ```bash
+# Switch to GPT-5.2 (latest)
+/model switch openai/gpt-5.2
+
 # Switch to GPT-4o
 /model switch openai/gpt-4o
 
@@ -203,13 +214,13 @@ Google Vertex AI requires a Google Cloud project and proper authentication.
    ```
 
 3. **Authenticate** (choose one method):
-   
+
    **Method 1: Service Account Key**
    ```bash
    # Download service account key JSON file
    export GOOGLE_APPLICATION_CREDENTIALS=/path/to/service-account-key.json
    ```
-   
+
    **Method 2: Application Default Credentials**
    ```bash
    # Login with gcloud CLI
@@ -243,10 +254,9 @@ Cerebras provides ultra-fast inference using their Wafer-Scale Engine hardware, 
 #### Available Models
 
 - **Qwen 3 235B Instruct** (`qwen-3-235b-a22b-instruct-2507`) - Largest Qwen 3 model with exceptional performance
-- **Qwen 3 32B Instruct** (`qwen-3-32b-a3b-instruct-2507`) - Fast Qwen 3 model with excellent capabilities
-- **Llama 4 Scout 17B** (`llama-4-scout-17b-16e-instruct`) - Meta Llama 4 Scout model
-- **Llama 3.3 70B** (`llama-3.3-70b`) - Large Llama 3.3 model
-- **Llama 3.1 8B** (`llama-3.1-8b`) - Fast Llama model
+- **Llama 3.3 70B** (`llama-3.3-70b`) - Meta Llama 3.3 70B on Cerebras
+- **Llama 3.1 8B** (`llama3.1-8b`) - Fast Llama 3.1 model on Cerebras
+- **Llama 3.1 70B** (`llama3.1-70b`) - Large Llama 3.1 model on Cerebras
 
 #### Configuration
 
@@ -271,11 +281,11 @@ Cerebras provides ultra-fast inference using their Wafer-Scale Engine hardware, 
 # Switch to Qwen 3 235B for maximum performance
 /model switch cerebras/qwen-3-235b-a22b-instruct-2507
 
-# Switch to Qwen 3 32B for faster responses
-/model switch cerebras/qwen-3-32b-a3b-instruct-2507
+# Switch to Llama 3.3 70B
+/model switch cerebras/llama-3.3-70b
 
-# Switch to Llama 4 Scout
-/model switch cerebras/llama-4-scout-17b-16e-instruct
+# Switch to Llama 3.1 8B for fast responses
+/model switch cerebras/llama3.1-8b
 ```
 
 ---
@@ -309,9 +319,9 @@ Use arrow keys to navigate, Enter to select, ESC to cancel.
 /model switch <provider>/<model-id>
 
 # Examples
-/model switch openai/gpt-4o
+/model switch openai/gpt-5.2
 /model switch anthropic/claude-sonnet-4-5
-/model switch groq/llama-3.1-70b-versatile
+/model switch groq/llama-3.3-70b-versatile
 ```
 
 ### Check Current Model
@@ -336,9 +346,9 @@ Use arrow keys to navigate, Enter to select, ESC to cancel.
 ## Model Selection Guidelines
 
 ### For General Tasks
-- **OpenAI GPT-4.1 Mini** (default) - Improved GPT-4 model with good balance
+- **OpenAI GPT-5.2** - Latest flagship model with excellent all-around performance
 - **Anthropic Claude Sonnet 4.5** - Latest and most capable Claude model
-- **Groq Llama 3.1 8B** - Very fast responses
+- **Groq Llama 3.3 70B** - Fast inference with strong capabilities
 
 ### For Complex Reasoning
 - **OpenAI o4 Mini** - Designed for reasoning tasks
@@ -352,7 +362,7 @@ Use arrow keys to navigate, Enter to select, ESC to cancel.
 - **Cerebras models** - Ultra-fast inference with Wafer-Scale Engine
 
 ### For Latest Capabilities
-- **OpenAI GPT-5** series - Next-generation models
+- **OpenAI GPT-5.2** series - Latest generation models
 - **Anthropic Claude Sonnet 4.5** - Latest Claude model with enhanced capabilities
 - **Google Gemini 2.5** series - Latest multimodal capabilities
 
@@ -417,7 +427,7 @@ Use arrow keys to navigate, Enter to select, ESC to cancel.
 ### Performance Issues
 
 - **Groq models** offer the fastest inference
-- **Mini/Nano variants** are optimized for speed
+- **Mini variants** are optimized for speed
 - **Haiku models** provide quick responses
 - Check your internet connection for API latency
 
@@ -442,7 +452,4 @@ GITHUB_TOKEN=...                         # GitHub integration
 
 - **Current model selection** is automatically saved to `~/.llpm/model-config.json`
 - **Model switches persist** across LLPM restarts
-- **Default fallback** is GPT-4.1 Mini if configured, or first available model
-
-_This list is out of date_
-
+- **Default fallback** is GPT-5.2 if configured, or first available model

@@ -1,24 +1,25 @@
 # LLPM Telemetry and Distributed Tracing
 
-LLPM includes OpenTelemetry support for distributed tracing across CLI and Docker services.
+LLPM includes OpenTelemetry support for distributed tracing, integrated with [Arize Phoenix](https://phoenix.arize.com/) for LLM-focused observability.
 
 ## Quick Start
 
-### 1. Start Tracing Backend
+### 1. Start Phoenix
 
-**Option A: Jaeger (General-purpose tracing)**
+**Option A: Docker (Self-Hosted)**
 ```bash
-cd docker
-docker-compose up -d jaeger
+docker run --pull=always -d --name arize-phoenix \
+  -p 6006:6006 \
+  -p 4317:4317 \
+  -e PHOENIX_SQL_DATABASE_URL="sqlite:///phoenix.db" \
+  arizephoenix/phoenix:latest
 ```
-Jaeger UI: http://localhost:16686
 
-**Option B: Phoenix (LLM-focused tracing)**
-```bash
-cd docker/phoenix
-docker-compose up -d
-```
 Phoenix UI: http://localhost:6006
+
+**Option B: Phoenix Cloud**
+
+Sign up at [app.phoenix.arize.com](https://app.phoenix.arize.com) for a managed instance.
 
 ### 2. Enable Telemetry in CLI
 
@@ -26,12 +27,14 @@ Phoenix UI: http://localhost:6006
 # Enable telemetry (enabled by default)
 export LLPM_TELEMETRY_ENABLED=1
 
-# For Jaeger (HTTP/protobuf - default)
-export OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318
-
-# For Phoenix (gRPC)
-export OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4319
+# For self-hosted Phoenix (gRPC - default port 4317)
+export OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4317
 export OTEL_EXPORTER_OTLP_PROTOCOL=grpc
+
+# For Phoenix Cloud
+export OTEL_EXPORTER_OTLP_ENDPOINT=https://app.phoenix.arize.com
+export PHOENIX_API_KEY=your-api-key
+export OTEL_EXPORTER_OTLP_HEADERS="api_key=your-api-key"
 ```
 
 **Phoenix Project Name:** The LLPM CLI automatically sets the Phoenix project name to "llpm" via the `phoenix.project.name` resource attribute. All traces will be grouped under the "llpm" project in Phoenix.
@@ -44,8 +47,8 @@ bun run index.ts --verbose
 
 Look for telemetry initialization messages:
 ```
-[DEBUG] Initializing OpenTelemetry SDK for llpm@0.13.0
-[DEBUG] OTLP endpoint: http://localhost:4318
+[DEBUG] Initializing OpenTelemetry SDK for llpm@1.4.1
+[DEBUG] OTLP endpoint: http://localhost:4317
 [DEBUG] Runtime: Bun
 [DEBUG] OpenTelemetry SDK initialized successfully
 ```
@@ -99,13 +102,7 @@ LLPM enables Vercel AI SDK's experimental OpenTelemetry support for automatic tr
   - Model configuration
   - Message flow
 
-- **ai.embed** (functionId: `llpm.generateEmbedding`) - Captures:
-  - Embedding model details
-  - Input text length
-  - Embedding dimensions
-  - Token usage
-
-All AI SDK spans automatically nest under their parent spans (e.g., `llm.generateResponse`) for complete visibility in Jaeger flame graphs.
+All AI SDK spans automatically nest under their parent spans (e.g., `llm.generateResponse`) for complete visibility in Phoenix flame graphs.
 
 ### Tool Executions
 - **tool.[tool_name]** - Every tool execution is traced with:
@@ -157,19 +154,6 @@ All AI SDK spans automatically nest under their parent spans (e.g., `llm.generat
   - Project ID
   - Agent count
   - File size
-
-### Database Operations
-- **db.addNote** - Traces note insertion with:
-  - Project ID
-  - Embedding generation
-  - Note ID
-  - Tags presence
-- **db.searchNotesSemantica** - Traces semantic search with:
-  - Query and limit
-  - Candidates count
-  - Results count
-  - Embedding generation status
-  - Top similarity score
 
 ### Network Operations
 - **github.getUserRepos** - Traces GitHub repository listing with:
@@ -242,17 +226,26 @@ const response = await traced('ai.generateText', {
 
 ## Verifying Traces
 
-### Check Jaeger UI
+### Check Phoenix UI
 
-1. Open http://localhost:16686
-2. Select service: "llpm" from the dropdown
-3. Click "Find Traces"
+1. Open http://localhost:6006
+2. Select the "llpm" project from the projects list
+3. Click on "Traces" in the sidebar
 4. You should see traces like:
    - `llm.generateResponse` - AI model calls
    - `fs.loadChatHistory` - File operations
    - `fs.saveChatHistory` - File writes
-   - `db.addNote` - Database inserts
    - `github.getUserRepos` - API calls
+
+### Phoenix Features
+
+Phoenix provides LLM-focused observability features:
+
+- **Trace Visualization**: View complete request flows with flame graphs
+- **LLM Analytics**: Token usage, latency, and cost tracking
+- **Evaluations**: Score traces with LLM-based evaluators or code-based checks
+- **Prompt Playground**: Optimize prompts and compare model outputs
+- **Span Details**: Rich metadata for debugging
 
 ### Trace Attributes
 
@@ -300,21 +293,6 @@ Each trace includes rich metadata:
   - `has_current_project` - Whether a current project is set
   - `agents.count` - Number of agents in configuration
 
-- **Database traces**:
-  - `db.operation` - Operation type (insert/update/select/search)
-  - `db.table` - Table name
-  - `project.id` - Project ID
-  - `note.id` - Note ID
-  - `note.has_embedding` - Whether embedding was generated
-  - `note.has_tags` - Whether note has tags
-  - `search.query` - Search query text (truncated to 100 chars)
-  - `search.limit` - Maximum results requested
-  - `search.candidates` - Number of candidates evaluated
-  - `search.results` - Number of results returned
-  - `search.embedding.generated` - Whether query embedding was generated
-  - `search.top_similarity` - Highest similarity score
-  - `search.fallback` - Fallback method if embedding failed
-
 - **Network traces (GitHub)**:
   - `github.api` - API endpoint
   - `github.owner` - Repository owner
@@ -338,26 +316,14 @@ To verify connectivity, you can manually create a test trace:
 ```typescript
 import { trace, SpanStatusCode } from '@opentelemetry/api';
 
-const tracer = trace.getTracer('llpm', '0.13.0');
+const tracer = trace.getTracer('llpm', '1.4.1');
 const span = tracer.startSpan('test.trace');
 span.setAttribute('test', true);
 span.setStatus({ code: SpanStatusCode.OK });
 span.end();
 ```
 
-Run the CLI and check Jaeger UI for the "test.trace" span.
-
-## Docker Services
-
-All Docker services have auto-instrumentation configured:
-
-- **rest-broker** - Service name: `rest-broker`
-- **claude-code** - Service name: `claude-code`
-- **openai-codex** - Service name: `openai-codex`
-- **aider** - Service name: `aider`
-- **opencode** - Service name: `opencode`
-
-These services run in Node.js containers where auto-instrumentation works properly.
+Run the CLI and check Phoenix UI for the "test.trace" span.
 
 ## Configuration
 
@@ -367,14 +333,41 @@ These services run in Node.js containers where auto-instrumentation works proper
 # Enable/disable telemetry (default: enabled)
 LLPM_TELEMETRY_ENABLED=1
 
-# Jaeger OTLP endpoint (default: http://localhost:4318)
-OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318
+# Phoenix OTLP endpoint
+# Self-hosted (gRPC - recommended)
+OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4317
+OTEL_EXPORTER_OTLP_PROTOCOL=grpc
 
-# Protocol (default: http/protobuf)
+# Self-hosted (HTTP)
+OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:6006/v1/traces
 OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
+
+# Phoenix Cloud
+OTEL_EXPORTER_OTLP_ENDPOINT=https://app.phoenix.arize.com
+PHOENIX_API_KEY=your-api-key
+OTEL_EXPORTER_OTLP_HEADERS="api_key=your-api-key"
 
 # Sampling (default: always_on for dev)
 OTEL_TRACES_SAMPLER=always_on
+```
+
+### Phoenix Docker Configuration
+
+Key environment variables for self-hosted Phoenix:
+
+```bash
+# Database (default: in-memory SQLite)
+PHOENIX_SQL_DATABASE_URL=sqlite:///phoenix.db
+
+# Ports
+PHOENIX_GRPC_PORT=4317  # gRPC OTLP collector
+# Phoenix UI runs on port 6006 by default
+
+# Working directory for data persistence
+PHOENIX_WORKING_DIR=/data
+
+# Air-gapped environments (disable external resources)
+PHOENIX_ALLOW_EXTERNAL_RESOURCES=false
 ```
 
 ### Disable Telemetry
@@ -385,16 +378,17 @@ export LLPM_TELEMETRY_ENABLED=0
 
 ## Troubleshooting
 
-### No traces appearing in Jaeger
+### No traces appearing in Phoenix
 
-1. **Check Jaeger is running:**
+1. **Check Phoenix is running:**
    ```bash
-   curl http://localhost:16686
+   curl http://localhost:6006
    ```
 
-2. **Check OTLP endpoint is accessible:**
+2. **Check gRPC endpoint is accessible:**
    ```bash
-   curl http://localhost:4318/v1/traces
+   # Phoenix gRPC endpoint (default port 4317)
+   curl http://localhost:4317
    ```
 
 3. **Enable verbose logging:**
@@ -405,12 +399,28 @@ export LLPM_TELEMETRY_ENABLED=0
 4. **Verify telemetry initialized:**
    Look for: `OpenTelemetry SDK initialized successfully`
 
-5. **Remember: Auto-instrumentation doesn't work in Bun**
+5. **Check project name:**
+   Traces should appear under the "llpm" project in Phoenix
+
+6. **Remember: Auto-instrumentation doesn't work in Bun**
    You must use manual tracing with `traced()` for CLI operations
 
-### Traces from Docker services not appearing
+### Phoenix Cloud connection issues
 
-See `docker/JAEGER.md` for Docker-specific troubleshooting.
+1. **Verify API key is set:**
+   ```bash
+   echo $PHOENIX_API_KEY
+   ```
+
+2. **Check headers are configured:**
+   ```bash
+   echo $OTEL_EXPORTER_OTLP_HEADERS
+   ```
+
+3. **Test connectivity:**
+   ```bash
+   curl -H "api_key: $PHOENIX_API_KEY" https://app.phoenix.arize.com/v1/traces
+   ```
 
 ## Performance Impact
 
@@ -421,6 +431,7 @@ See `docker/JAEGER.md` for Docker-specific troubleshooting.
 
 ## Related Documentation
 
-- [docker/JAEGER.md](docker/JAEGER.md) - Docker services tracing setup
+- [Arize Phoenix Documentation](https://arize.com/docs/phoenix)
+- [Phoenix GitHub Repository](https://github.com/Arize-ai/phoenix)
 - [src/utils/telemetry.ts](src/utils/telemetry.ts) - Telemetry initialization
 - [src/utils/tracing.ts](src/utils/tracing.ts) - Manual tracing utilities

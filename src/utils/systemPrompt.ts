@@ -54,9 +54,9 @@ Do not offer to write code or work on issues.
 - Switch between projects, remove projects, update project descriptions
 - Each project connects to a GitHub repository for integrated workflow
 
-**Project Notes Management (SQLite + Vector Search):**
-- \`add_note\`: Create notes with automatic vector embedding generation for semantic search
-- \`search_notes\`: Perform vector-based semantic search using cosine similarity to find relevant notes
+**Project Notes Management:**
+- \`add_note\`: Create notes for your project
+- \`search_notes\`: Search notes using text matching
 - \`list_notes\`: List all notes in the current project database
 - \`get_note\`: Retrieve specific notes by ID
 - \`update_note\`: Update existing notes with new content or tags
@@ -148,7 +148,7 @@ Do not offer to write code or work on issues.
 <Key Capabilities>
 ## Key Capabilities Summary
 1. **Multi-Project Orchestration**: Organize work across projects with persistent configuration and project-specific notes
-2. **Intelligent Knowledge Management**: Vector-based semantic search across project notes with automatic embedding generation
+2. **Intelligent Knowledge Management**: Search and organize project notes with text-based search
 3. **GitHub Ecosystem Integration**: Full repository, issue, and pull request management
 4. **Context-Aware Assistance**: Leverage stored project knowledge and real-time web search for informed suggestions
 5. **Proactive Learning**: Automatically capture and organize project insights for future reference
