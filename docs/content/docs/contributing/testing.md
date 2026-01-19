@@ -55,11 +55,12 @@ describe('myFunction', () => {
 
 LLPM maintains strict coverage thresholds:
 
-| Category | Minimum Coverage |
-|----------|-----------------|
-| Global | 70% |
-| Commands (`src/commands/`) | 80% |
-| Core Utilities (`src/utils/`) | 95% |
+| Metric | Minimum Coverage |
+|--------|-----------------|
+| Lines | 90%+ |
+| Functions | 90%+ |
+| Branches | 85%+ |
+| Statements | 90%+ |
 
 Run `bun run test:coverage` to verify coverage meets these thresholds.
 

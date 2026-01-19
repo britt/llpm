@@ -9,9 +9,10 @@ Get your development environment ready to contribute to LLPM.
 
 Before you begin, ensure you have the following installed:
 
-- [Bun](https://bun.sh) runtime (latest version recommended)
-- [Node.js](https://nodejs.org) v18 or later
+- [Bun](https://bun.sh) runtime (latest version recommended) - the only required JavaScript runtime
 - [Git](https://git-scm.com) for version control
+
+Note: Node.js is not required. LLPM uses Bun as its runtime.
 
 ## Clone and Install
 
@@ -68,6 +69,7 @@ You should see the LLPM welcome screen and prompt.
 | `bun run test` | Run the test suite once |
 | `bun run test:watch` | Run tests in watch mode |
 | `bun run test:coverage` | Run tests with coverage report |
+| `bun run test:ui` | Open Vitest UI |
 | `bun run lint` | Check for linting errors |
 | `bun run lint:fix` | Fix auto-fixable linting errors |
 | `bun run typecheck` | Run TypeScript type checking |
