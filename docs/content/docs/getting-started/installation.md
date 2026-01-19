@@ -5,7 +5,9 @@ weight: 1
 
 ## Prerequisites
 
-- [Bun](https://bun.com) runtime (latest version recommended)
+- [Bun](https://bun.sh) runtime (latest version recommended)
+- [Node.js](https://nodejs.org) v18 or later
+- [Git](https://git-scm.com) for cloning the repository
 - At least one AI provider API key
 
 ## Install from Source
@@ -23,7 +25,11 @@ weight: 1
    bun install
    ```
 
-3. **Make it executable (optional)**
+3. **Configure environment**
+
+   Create a `.env` file with your API keys (see [Environment Variables](#environment-variables) below).
+
+4. **Make it executable (optional)**
 
    ```bash
    chmod +x index.ts
@@ -45,3 +51,19 @@ llpm
 ```
 
 You should see the LLPM welcome screen and prompt.
+
+## Environment Variables
+
+Create a `.env` file in the project root with your AI provider API keys:
+
+```bash
+# At least one AI provider is required
+OPENAI_API_KEY=sk-...
+ANTHROPIC_API_KEY=sk-ant-...
+GROQ_API_KEY=gsk_...
+
+# Optional: GitHub integration
+GITHUB_TOKEN=ghp_...
+```
+
+Bun automatically loads environment variables from `.env` files.

@@ -18,11 +18,20 @@ weight: 2
    > What can you help me with?
    ```
 
-3. **Try a slash command**
+3. **Explore slash commands**
 
-   ```
-   /help
-   ```
+   LLPM provides slash commands for quick actions:
+
+   | Command | Description |
+   |---------|-------------|
+   | `/help` | Show all available commands |
+   | `/model` | View or switch AI models |
+   | `/skills` | Manage reusable AI instruction sets |
+   | `/github` | GitHub integration commands |
+   | `/project` | Manage projects |
+   | `/quit` | Exit LLPM |
+
+   Try `/help` to see the full list.
 
 4. **Set up a project**
 
