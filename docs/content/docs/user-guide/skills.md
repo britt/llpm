@@ -76,7 +76,7 @@ Skills with the same name are loaded based on priority (higher priority wins).
 
 ## Learn More
 
-See the [Skills Reference](/docs/skills/) for:
-- Creating custom skills
-- Skill file format
-- Best practices
+See the [Skills Reference](/docs/skills-reference/) for:
+- Complete documentation of all 19 built-in skills
+- How to create custom skills
+- Skill file format and best practices
