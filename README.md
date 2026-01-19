@@ -4,6 +4,10 @@ A modern, AI-powered project management CLI that brings intelligent assistance d
 
 Perfect for developers who want to organize multiple projects, interact with GitHub repositories, and leverage AI assistance without leaving the command line.
 
+## Documentation
+
+Full documentation available at: **https://britt.github.io/llpm/**
+
 ## Features
 
 ### Core Features
