@@ -29,7 +29,7 @@ cd llpm
 bun install
 ```
 
-Then continue with the [Getting Started guide](./docs/getting-started/).
+Then continue with the [Getting Started guide]({{< relref "docs/getting-started/_index.md" >}}).
 
 </div>
 
