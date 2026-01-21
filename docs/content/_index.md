@@ -74,7 +74,7 @@ Or jump to the [User Guide]({{< relref "docs/user-guide/" >}}) for commands, pro
 - Refresh the local cached model list from provider APIs with `/model update`.
 
 Use this workflow after adding a new provider (for example, Cerebras), rotating API keys, or troubleshooting why a model is missing."
-    class="hx-aspect-auto md:hx-aspect-[1.1/1] max-md:hx-min-h-[360px]"
+    class="hx-aspect-auto md:hx-aspect-[1.1/1] max-md:hx-aspect-[1.1/1] max-md:hx-min-h-[360px]"
     style="background: radial-gradient(ellipse at 50% 80%,rgba(194,97,254,0.15),hsla(0,0%,100%,0));"
   >}}
   {{< hextra/feature-card
