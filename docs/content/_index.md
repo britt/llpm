@@ -45,28 +45,28 @@ For prerequisites, provider setup, and other install options, see [Installation]
 {{< hextra/feature-grid >}}
   {{< hextra/feature-card
     title="Multi-Provider Models"
-    subtitle="Configure one or more model providers, then switch models per session.
+    subtitle="Connect one or more model providers, then switch models per session.
 
-- Use `/model providers` to see which providers are configured.
-- Use `/model switch` for an interactive selector (configured providers only).
-- Use `/model list` to list available models.
-- Use `/model update` to refresh the cached model catalog from provider APIs.
+- Check provider configuration with `/model providers`.
+- Switch models with `/model switch` (interactive selector).
+- List available models with `/model list`.
+- Refresh the cached model catalog with `/model update`.
 
 Supported provider IDs: `openai`, `anthropic`, `groq`, `google-vertex`, `cerebras`.
 
-LLPM stores the provider-fetched catalog in `~/.llpm/models.json` so model discovery is fast and consistent between sessions."
+LLPM caches the provider-fetched model catalog in `~/.llpm/models.json` so discovery stays fast and consistent between sessions."
     class="hx-aspect-auto md:hx-aspect-[1.1/1] max-md:hx-min-h-[560px]"
     style="background: radial-gradient(ellipse at 50% 80%,rgba(194,97,254,0.15),hsla(0,0%,100%,0));"
   >}}
   {{< hextra/feature-card
     title="Projects, Scans, and GitHub"
-    subtitle="Keep work attached to the right repository, then generate a project scan when deeper context is needed.
+    subtitle="Attach work to the right repository, then run a project scan when you need deeper context.
 
 - Manage projects with `/project` (add, list, switch, remove).
-- Run `/project scan` to analyze the active project (or the current working directory).
+- Analyze a codebase with `/project scan` (active project or current working directory).
 - Use `/github` to browse and search repositories, then connect one to a project.
 
-A scan summarizes codebase structure, dependencies, and documentation so follow-on workflows (like context-aware questions and at-risk detection) start with concrete inputs."
+A scan summarizes codebase structure, dependencies, and documentation so follow-on workflows start with concrete inputs."
     class="hx-aspect-auto md:hx-aspect-[1.1/1] max-lg:hx-min-h-[560px]"
     style="background: radial-gradient(ellipse at 50% 80%,rgba(142,53,74,0.15),hsla(0,0%,100%,0));"
   >}}
@@ -74,18 +74,18 @@ A scan summarizes codebase structure, dependencies, and documentation so follow-
     title="Skills and Guided Workflows"
     subtitle="Use reusable workflows packaged as Agent Skills (`SKILL.md`) to guide planning, analysis, and documentation work.
 
-- Use `/skills list` to see discovered skills.
-- Use `/skills test <name>` to preview a skill.
-- Use `/skills reload` after editing or adding skills.
-- Use `/skills reinstall` to restore the bundled skill catalog.
+- Discover skills with `/skills list`.
+- Preview a skill with `/skills test <name>`.
+- Reload after edits with `/skills reload`.
+- Restore bundled skills with `/skills reinstall`.
 
-Skills cover stakeholder tracking, requirement elicitation, project planning, risk checks, documentation formatting, note consolidation, FAQ generation, meeting preparation, and research summaries."
+The built-in catalog covers stakeholder tracking, requirement elicitation, project planning, risk checks, documentation formatting, note consolidation, FAQ generation, meeting preparation, and research summaries."
     class="hx-aspect-auto md:hx-aspect-[1.1/1] max-md:hx-min-h-[560px]"
     style="background: radial-gradient(ellipse at 50% 80%,rgba(221,210,59,0.15),hsla(0,0%,100%,0));"
   >}}
   {{< hextra/feature-card
     title="Notes, Shell, and Search"
-    subtitle="Capture project knowledge in markdown notes, search it quickly, and run carefully scoped shell commands when needed.
+    subtitle="Capture project knowledge in Markdown notes, search it quickly, and run carefully scoped shell commands when needed.
 
 - Notes are stored as Markdown files with YAML frontmatter.
 - Search uses ripgrep-based text search for fast local lookup.
