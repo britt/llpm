@@ -23,9 +23,11 @@ layout: hextra-home
 
 ## Install
 
-1. **Install dependencies**
+1. **Clone and install**
 
    ```bash
+   git clone https://github.com/britt/llpm.git
+   cd llpm
    bun install
    ```
 
@@ -48,7 +50,7 @@ layout: hextra-home
    llpm
    ```
 
-Continue with [Getting Started]({{< relref "docs/getting-started/installation.md" >}}) for a step-by-step walkthrough.
+Continue with [Installation]({{< relref "docs/getting-started/installation.md" >}}) for more details.
 
 You can also jump to the [User Guide]({{< relref "docs/user-guide/" >}}) for commands, projects, skills, and GitHub integration.
 
