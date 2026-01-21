@@ -54,7 +54,7 @@ layout: hextra-home
 
 Continue with [Installation]({{< relref "docs/getting-started/installation.md" >}}) for more details.
 
-You can also jump to the [User Guide]({{< relref "docs/user-guide/" >}}) for commands, projects, skills, and GitHub integration.
+Or jump to the [User Guide]({{< relref "docs/user-guide/" >}}) for commands, projects, skills, and GitHub integration.
 
 </div>
 
