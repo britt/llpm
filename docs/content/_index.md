@@ -23,15 +23,28 @@ layout: hextra-home
 
 ## Install
 
-Install from source:
+1. **Clone the repository**
 
-```bash
-git clone https://github.com/britt/llpm.git
-cd llpm
-bun install
-```
+   ```bash
+   git clone https://github.com/britt/llpm.git
+   cd llpm
+   ```
 
-Then follow the remaining installation and setup steps in [Getting Started]({{< relref "docs/getting-started/installation.md" >}}).
+2. **Install dependencies**
+
+   ```bash
+   bun install
+   ```
+
+3. **Configure your API keys**
+
+   Copy the example environment file and add at least one provider key:
+
+   ```bash
+   cp .env.example .env
+   ```
+
+Then follow the full installation and configuration guide in [Getting Started]({{< relref "docs/getting-started/installation.md" >}}).
 
 </div>
 
