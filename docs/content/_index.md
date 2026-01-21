@@ -52,6 +52,20 @@ layout: hextra-home
 
 ### Option 2: Install a global `llpm` command
 
+1. **Link the package**
+
+   ```bash
+   bun link
+   ```
+
+2. **Run LLPM**
+
+   ```bash
+   llpm
+   ```
+
+### Option 3: Install a compiled `llpm` binary
+
 1. **Build the compiled binary**
 
    ```bash
@@ -91,8 +105,10 @@ Or jump to the [User Guide]({{< relref "docs/user-guide/" >}}) for commands, pro
 - Review available models with `/model list` (use `--all` to include unconfigured providers).
 - Refresh the locally cached model list from provider APIs with `/model update`.
 
-Providers are identified by these IDs: `openai`, `anthropic`, `groq`, `google-vertex`, and `cerebras`."
-    class="hx-aspect-auto md:hx-aspect-[1.1/1] max-md:hx-min-h-[420px]"
+Providers are identified by these IDs: `openai`, `anthropic`, `groq`, `google-vertex`, and `cerebras`.
+
+If a provider is not configured, LLPM filters its models out of the interactive selector so the list stays focused on what can run in the current environment."
+    class="hx-aspect-auto md:hx-aspect-[1.1/1] max-md:hx-min-h-[460px]"
     style="background: radial-gradient(ellipse at 50% 80%,rgba(194,97,254,0.15),hsla(0,0%,100%,0));"
   >}}
   {{< hextra/feature-card
@@ -105,8 +121,8 @@ Providers are identified by these IDs: `openai`, `anthropic`, `groq`, `google-ve
 
 A project scan is designed for quick orientation and repeatable context sharing. It captures file structure, detected languages, parsed dependencies, and documentation signals. When LLM analysis is enabled, it can also include an architecture overview.
 
-Use scans when starting work on a new repo, preparing a stakeholder update, writing docs, or reviewing risk in an unfamiliar codebase."
-    class="hx-aspect-auto md:hx-aspect-[1.1/1] max-lg:hx-min-h-[420px]"
+Use scans when starting work on a new repo, preparing a stakeholder update, generating context-aware questions, or reviewing risk in an unfamiliar codebase."
+    class="hx-aspect-auto md:hx-aspect-[1.1/1] max-lg:hx-min-h-[460px]"
     style="background: radial-gradient(ellipse at 50% 80%,rgba(142,53,74,0.15),hsla(0,0%,100%,0));"
   >}}
   {{< hextra/feature-card
@@ -118,8 +134,8 @@ Use scans when starting work on a new repo, preparing a stakeholder update, writ
 - Rescan after changes with `/skills reload`.
 - Refresh the bundled skill catalog with `/skills reinstall`.
 
-Skills provide structure for repeatable work like requirement elicitation, stakeholder tracking, at-risk detection, project planning, and documentation formatting. They also work well as “checklists” to keep multi-step workflows consistent across projects."
-    class="hx-aspect-auto md:hx-aspect-[1.1/1] max-md:hx-min-h-[420px]"
+Skills provide structure for repeatable work like requirement elicitation, stakeholder tracking, at-risk detection, project planning, and documentation formatting. They also work well as checklists for multi-step workflows, including step-by-step question flows and structured outputs."
+    class="hx-aspect-auto md:hx-aspect-[1.1/1] max-md:hx-min-h-[460px]"
     style="background: radial-gradient(ellipse at 50% 80%,rgba(221,210,59,0.15),hsla(0,0%,100%,0));"
   >}}
 {{< /hextra/feature-grid >}}
