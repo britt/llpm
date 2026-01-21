@@ -50,6 +50,8 @@ layout: hextra-home
 
 Continue with [Getting Started]({{< relref "docs/getting-started/installation.md" >}}) for a step-by-step walkthrough.
 
+You can also jump to the [User Guide]({{< relref "docs/user-guide/" >}}) for commands, projects, skills, and GitHub integration.
+
 </div>
 
 {{< hextra/feature-grid >}}
