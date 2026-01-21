@@ -69,7 +69,7 @@ You can also jump to the [User Guide]({{< relref "docs/user-guide/" >}}) for com
   >}}
   {{< hextra/feature-card
     title="Skills System"
-    subtitle="Use reusable workflows packaged as Agent Skills (SKILL.md) to guide planning, analysis, stakeholder tracking, and documentation tasks. Use /skills list to discover installed skills, /skills reload to rescan skill directories after changes, and /skills reinstall to refresh the bundled core skills."
+    subtitle="Use reusable workflows packaged as Agent Skills (SKILL.md) to guide planning, analysis, and documentation work. Explore and manage skills with /skills list and /skills reload, and refresh the bundled catalog after an upgrade with /skills reinstall."
     class="hx-aspect-auto md:hx-aspect-[1.1/1] max-md:hx-min-h-[340px]"
     style="background: radial-gradient(ellipse at 50% 80%,rgba(221,210,59,0.15),hsla(0,0%,100%,0));"
   >}}
