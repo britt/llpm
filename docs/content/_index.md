@@ -27,7 +27,7 @@ layout: hextra-home
 
 ## Install
 
-For prerequisites (Bun, Node.js, Git) and environment setup, see [Installation]({{< relref "docs/getting-started/installation.md" >}}).
+For prerequisites and environment setup, see [Installation]({{< relref "docs/getting-started/installation.md" >}}).
 
 ### Option 1: Build and run from source
 
@@ -48,6 +48,17 @@ For prerequisites (Bun, Node.js, Git) and environment setup, see [Installation](
 
    ```bash
    cp .env.example .env
+   ```
+
+   Then edit `.env` to add at least one provider configuration.
+
+   ```bash
+   # At least one provider is required
+   OPENAI_API_KEY=sk-...
+   ANTHROPIC_API_KEY=sk-ant-...
+   GROQ_API_KEY=gsk_...
+   CEREBRAS_API_KEY=...
+   GOOGLE_VERTEX_PROJECT_ID=...
    ```
 
 4. **Start LLPM**
