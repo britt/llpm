@@ -45,12 +45,14 @@ For prerequisites, provider setup, and other install options, see [Installation]
 {{< hextra/feature-grid >}}
   {{< hextra/feature-card
     title="Multi-Provider Models"
-    subtitle="Connect one or more model providers, then switch models per session.
+    subtitle="Configure one or more providers, then switch models per session.
 
-- Check provider configuration with `/model providers`.
-- Switch models with `/model switch` (interactive selector).
-- List available models with `/model list`.
-- Refresh the cached model catalog with `/model update`.
+Key commands:
+
+- `/model providers` to confirm which providers are configured.
+- `/model switch` to choose a model (interactive).
+- `/model list` to list available models.
+- `/model update` to refresh the cached model catalog from provider APIs.
 
 Supported provider IDs: `openai`, `anthropic`, `groq`, `google-vertex`, `cerebras`.
 
@@ -62,20 +64,20 @@ Example model IDs:
 - Groq: `llama-3.3-70b-versatile`
 - Cerebras: `qwen-3-235b-a22b-instruct-2507`
 
-LLPM caches the provider-fetched model catalog in `~/.llpm/models.json` so discovery stays fast and consistent between sessions."
-    class="hx-aspect-auto md:hx-aspect-[1.1/1] max-md:hx-min-h-[560px]"
+LLPM caches the provider-fetched catalog in `~/.llpm/models.json` so discovery is fast and consistent between sessions."
+    class="hx-aspect-auto md:hx-aspect-[1.1/1] max-md:hx-min-h-[600px]"
     style="background: radial-gradient(ellipse at 50% 80%,rgba(194,97,254,0.15),hsla(0,0%,100%,0));"
   >}}
   {{< hextra/feature-card
     title="Projects, Scans, and GitHub"
-    subtitle="Attach work to the right repository, then run a project scan when you need deeper context.
+    subtitle="Attach work to the right repository, then generate project context when you need it.
 
 - Manage projects with `/project` (add, list, switch, remove).
 - Analyze a codebase with `/project scan` (active project or current working directory).
 - Use `/github` to browse and search repositories, then connect one to a project.
 
-A scan summarizes codebase structure, dependencies, and documentation so follow-on workflows start with concrete inputs."
-    class="hx-aspect-auto md:hx-aspect-[1.1/1] max-lg:hx-min-h-[560px]"
+A scan summarizes codebase structure, dependencies, and documentation so follow-on workflows start with concrete inputs and reduce repeated context gathering."
+    class="hx-aspect-auto md:hx-aspect-[1.1/1] max-lg:hx-min-h-[600px]"
     style="background: radial-gradient(ellipse at 50% 80%,rgba(142,53,74,0.15),hsla(0,0%,100%,0));"
   >}}
   {{< hextra/feature-card
@@ -87,20 +89,20 @@ A scan summarizes codebase structure, dependencies, and documentation so follow-
 - Reload after edits with `/skills reload`.
 - Restore bundled skills with `/skills reinstall`.
 
-The built-in catalog covers stakeholder tracking, requirement elicitation, project planning, risk checks, documentation formatting, note consolidation, FAQ generation, meeting preparation, and research summaries."
-    class="hx-aspect-auto md:hx-aspect-[1.1/1] max-md:hx-min-h-[560px]"
+The built-in catalog includes stakeholder tracking, requirement elicitation, project planning, risk checks, documentation formatting, note consolidation, FAQ generation, meeting preparation, and research summaries."
+    class="hx-aspect-auto md:hx-aspect-[1.1/1] max-md:hx-min-h-[600px]"
     style="background: radial-gradient(ellipse at 50% 80%,rgba(221,210,59,0.15),hsla(0,0%,100%,0));"
   >}}
   {{< hextra/feature-card
-    title="Notes, Shell, and Search"
-    subtitle="Capture project knowledge in Markdown notes, search it quickly, and run carefully scoped shell commands when needed.
+    title="Notes, Search, and Shell"
+    subtitle="Capture project knowledge in Markdown notes, search it locally, and run carefully scoped shell commands when needed.
 
 - Notes are stored as Markdown files with YAML frontmatter.
 - Search uses ripgrep-based text search for fast local lookup.
 - Shell execution is configured in `~/.llpm/config.json`.
 
-LLPM can require confirmation before executing shell commands and keeps an audit trail of executions."
-    class="hx-aspect-auto md:hx-aspect-[1.1/1] max-md:hx-min-h-[560px]"
+Use the shell tool for short, auditable commands and keep long-running workflows in normal terminal sessions."
+    class="hx-aspect-auto md:hx-aspect-[1.1/1] max-md:hx-min-h-[600px]"
     style="background: radial-gradient(ellipse at 50% 80%,rgba(80,120,200,0.15),hsla(0,0%,100%,0));"
   >}}
 {{< /hextra/feature-grid >}}
