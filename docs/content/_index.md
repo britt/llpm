@@ -50,6 +50,8 @@ layout: hextra-home
    llpm
    ```
 
+**Supported model providers:** OpenAI, Anthropic, Groq, Google Vertex AI (`google-vertex`), and Cerebras.
+
 Continue with [Installation]({{< relref "docs/getting-started/installation.md" >}}) for more details.
 
 You can also jump to the [User Guide]({{< relref "docs/user-guide/" >}}) for commands, projects, skills, and GitHub integration.
@@ -59,7 +61,7 @@ You can also jump to the [User Guide]({{< relref "docs/user-guide/" >}}) for com
 {{< hextra/feature-grid >}}
   {{< hextra/feature-card
     title="Multi-Provider AI"
-    subtitle="Choose from multiple model providers and switch models without leaving the terminal. Supported providers include OpenAI, Anthropic, Groq, Google Vertex AI, and Cerebras. Use /model providers to check which providers are configured, /model list to see available models, /model switch to change the active model, and /model update to refresh the locally cached model list from provider APIs."
+    subtitle="Choose from multiple model providers and switch models without leaving the terminal. Supported providers include OpenAI, Anthropic, Groq, Google Vertex AI (`google-vertex`), and Cerebras. Use /model providers to check which providers are configured, /model list to see available models, /model switch to change the active model, and /model update to refresh the locally cached model list from provider APIs."
     class="hx-aspect-auto md:hx-aspect-[1.1/1] max-md:hx-min-h-[340px]"
     style="background: radial-gradient(ellipse at 50% 80%,rgba(194,97,254,0.15),hsla(0,0%,100%,0));"
   >}}
