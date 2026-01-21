@@ -23,6 +23,8 @@ layout: hextra-home
 
 ## Install
 
+For prerequisites and configuration, follow [Installation]({{< relref "docs/getting-started/installation.md" >}}).
+
 ### Option 1: Build and run from source
 
 1. **Clone the repository**
@@ -87,9 +89,7 @@ layout: hextra-home
    llpm
    ```
 
-**Supported model providers:** OpenAI, Anthropic, Groq, Google Vertex AI (`google-vertex`), and Cerebras.
-
-Continue with [Installation]({{< relref "docs/getting-started/installation.md" >}}) for prerequisites and configuration.
+**Supported model providers:** OpenAI (`openai`), Anthropic (`anthropic`), Groq (`groq`), Google Vertex AI (`google-vertex`), and Cerebras (`cerebras`).
 
 Or jump to the [User Guide]({{< relref "docs/user-guide/" >}}) for commands, projects, skills, and GitHub integration.
 
@@ -98,7 +98,7 @@ Or jump to the [User Guide]({{< relref "docs/user-guide/" >}}) for commands, pro
 {{< hextra/feature-grid >}}
   {{< hextra/feature-card
     title="Multi-Provider Models"
-    subtitle="Connect one or more providers, then switch between models based on what you have configured.
+    subtitle="Connect one or more providers, then switch models without leaving your terminal.
 
 - Check which providers are configured with `/model providers`.
 - Choose a model interactively with `/model switch`.
