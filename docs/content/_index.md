@@ -66,12 +66,14 @@ Or jump to the [User Guide]({{< relref "docs/user-guide/" >}}) for commands, pro
 {{< hextra/feature-grid >}}
   {{< hextra/feature-card
     title="Multi-Provider AI"
-    subtitle="Configure one or more model providers and switch models without leaving the terminal.
+    subtitle="Configure one or more model providers and keep a local list of available models.
 
 - Confirm provider setup with `/model providers`.
 - List available models with `/model list` (use `--all` to include unconfigured providers).
 - Switch models with `/model switch`.
-- Refresh the local cached model list from provider APIs with `/model update`."
+- Refresh the local cached model list from provider APIs with `/model update`.
+
+Use this flow when rotating API keys, adding a new provider (for example, Cerebras), or troubleshooting model availability."
     class="hx-aspect-auto md:hx-aspect-[1.1/1] max-md:hx-min-h-[340px]"
     style="background: radial-gradient(ellipse at 50% 80%,rgba(194,97,254,0.15),hsla(0,0%,100%,0));"
   >}}
@@ -93,7 +95,9 @@ With a connected repo, LLPM can help review work status and generate follow-up q
 - Run `/skills list` to see what is installed.
 - Run `/skills test <name>` to preview a skill.
 - Run `/skills reload` after editing or adding skills.
-- Run `/skills reinstall` after upgrading LLPM to refresh the bundled skill catalog."
+- Run `/skills reinstall` after upgrading LLPM to refresh the bundled skill catalog.
+
+Use skills when repeating a workflow (for example, requirement elicitation, project planning, or at-risk detection) and you want consistent steps and outputs."
     class="hx-aspect-auto md:hx-aspect-[1.1/1] max-md:hx-min-h-[340px]"
     style="background: radial-gradient(ellipse at 50% 80%,rgba(221,210,59,0.15),hsla(0,0%,100%,0));"
   >}}
