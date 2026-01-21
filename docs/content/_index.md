@@ -47,14 +47,20 @@ For prerequisites, provider setup, and other install options, see [Installation]
     title="Multi-Provider Models"
     subtitle="Configure one or more providers, then switch models per session.
 
-Key commands:
+Key workflows:
 
-- `/model providers` to confirm which providers are configured.
-- `/model switch` to choose a model (interactive).
-- `/model list` to list available models.
-- `/model update` to refresh the cached model catalog from provider APIs.
+- Use `/model providers` to confirm which providers are configured.
+- Use `/model switch` to pick a model (interactive) or `/model switch <provider>/<model>` to switch directly.
+- Use `/model list` to view the available catalog.
+- Use `/model update` to refresh the cached catalog from provider APIs.
 
-Supported provider IDs: `openai`, `anthropic`, `groq`, `google-vertex`, `cerebras`.
+Supported provider IDs:
+
+- `openai`
+- `anthropic`
+- `groq`
+- `google-vertex`
+- `cerebras`
 
 Example model IDs:
 
@@ -64,7 +70,7 @@ Example model IDs:
 - Groq: `llama-3.3-70b-versatile`
 - Cerebras: `qwen-3-235b-a22b-instruct-2507`
 
-LLPM caches the provider-fetched catalog in `~/.llpm/models.json` so discovery is fast and consistent between sessions."
+LLPM caches the provider-fetched catalog in `~/.llpm/models.json` so model discovery stays fast and consistent between sessions."
     class="hx-aspect-auto md:hx-aspect-[1.1/1] max-md:hx-min-h-[600px]"
     style="background: radial-gradient(ellipse at 50% 80%,rgba(194,97,254,0.15),hsla(0,0%,100%,0));"
   >}}
@@ -76,7 +82,7 @@ LLPM caches the provider-fetched catalog in `~/.llpm/models.json` so discovery i
 - Analyze a codebase with `/project scan` (active project or current working directory).
 - Use `/github` to browse and search repositories, then connect one to a project.
 
-A scan summarizes codebase structure, dependencies, and documentation so follow-on workflows start with concrete inputs and reduce repeated context gathering."
+A project scan summarizes codebase structure, dependencies, and documentation so follow-on workflows start with concrete inputs and reduce repeated context gathering."
     class="hx-aspect-auto md:hx-aspect-[1.1/1] max-lg:hx-min-h-[600px]"
     style="background: radial-gradient(ellipse at 50% 80%,rgba(142,53,74,0.15),hsla(0,0%,100%,0));"
   >}}
@@ -89,7 +95,7 @@ A scan summarizes codebase structure, dependencies, and documentation so follow-
 - Reload after edits with `/skills reload`.
 - Restore bundled skills with `/skills reinstall`.
 
-The built-in catalog includes stakeholder tracking, requirement elicitation, project planning, risk checks, documentation formatting, note consolidation, FAQ generation, meeting preparation, and research summaries."
+The built-in catalog covers stakeholder tracking, requirement elicitation, project planning, risk checks, documentation formatting, note consolidation, FAQ generation, meeting preparation, and research summaries."
     class="hx-aspect-auto md:hx-aspect-[1.1/1] max-md:hx-min-h-[600px]"
     style="background: radial-gradient(ellipse at 50% 80%,rgba(221,210,59,0.15),hsla(0,0%,100%,0));"
   >}}
