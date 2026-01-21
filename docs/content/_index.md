@@ -66,26 +66,26 @@ Or jump to the [User Guide]({{< relref "docs/user-guide/" >}}) for commands, pro
 {{< hextra/feature-grid >}}
   {{< hextra/feature-card
     title="Multi-Provider Models"
-    subtitle="Configure one or more providers and keep a local, cached list of available models.
+    subtitle="Configure one or more model providers and select a model from the providers you have credentials for.
 
-- Confirm provider setup with `/model providers`.
-- List models with `/model list` (use `--all` to include unconfigured providers).
+- Check which providers are configured with `/model providers`.
+- List available models with `/model list` (use `--all` to include unconfigured providers).
 - Switch models with `/model switch` (interactive or direct).
-- Refresh the cached list from provider APIs with `/model update`.
+- Refresh the local cached model list from provider APIs with `/model update`.
 
-Use this when adding a provider (for example, Cerebras), rotating API keys, or troubleshooting why a model is not available."
+Use this workflow after adding a new provider (for example, Cerebras), rotating API keys, or troubleshooting why a model is missing."
     class="hx-aspect-auto md:hx-aspect-[1.1/1] max-md:hx-min-h-[360px]"
     style="background: radial-gradient(ellipse at 50% 80%,rgba(194,97,254,0.15),hsla(0,0%,100%,0));"
   >}}
   {{< hextra/feature-card
     title="Projects + Project Scans"
-    subtitle="Keep work attached to the right repository, and scan the codebase when you need a structured overview.
+    subtitle="Keep work attached to the right repository and generate a structured snapshot of the codebase when you need it.
 
-- Use `/project` to add a repository as a project and switch context.
-- Use `/project scan` to analyze the current project (or your current working directory).
+- Add or switch projects with `/project`.
+- Scan the current project (or your current working directory) with `/project scan`.
 - Use `/github` to browse repositories, issues, and pull requests.
 
-Project scans help LLPM summarize structure, dependencies, documentation coverage, and architecture (with Mermaid diagrams when LLM analysis is enabled)."
+A project scan captures file structure, detected languages, dependencies, documentation signals, and (optionally) an architecture overview."
     class="hx-aspect-auto md:hx-aspect-[1.1/1] max-lg:hx-min-h-[360px]"
     style="background: radial-gradient(ellipse at 50% 80%,rgba(142,53,74,0.15),hsla(0,0%,100%,0));"
   >}}
@@ -93,12 +93,12 @@ Project scans help LLPM summarize structure, dependencies, documentation coverag
     title="Skills + Guided Workflows"
     subtitle="Use reusable workflows packaged as Agent Skills (`SKILL.md`) to guide planning, analysis, and documentation work.
 
-- Use `/skills list` to see what is installed.
-- Use `/skills test <name>` to preview a skill.
-- Use `/skills reload` after editing or adding skills.
-- Use `/skills reinstall` after upgrading LLPM to refresh the bundled skill catalog.
+- See what is installed with `/skills list`.
+- Preview a skill with `/skills test <name>`.
+- Rescan after changes with `/skills reload`.
+- Refresh the bundled skill catalog with `/skills reinstall`.
 
-Skills help keep output consistent for repeatable tasks (for example, requirement elicitation, stakeholder tracking, at-risk detection, and project planning)."
+Skills help keep output consistent for repeatable work like requirement elicitation, stakeholder tracking, at-risk detection, and project planning."
     class="hx-aspect-auto md:hx-aspect-[1.1/1] max-md:hx-min-h-[360px]"
     style="background: radial-gradient(ellipse at 50% 80%,rgba(221,210,59,0.15),hsla(0,0%,100%,0));"
   >}}
