@@ -82,7 +82,7 @@ Or jump to the [User Guide]({{< relref "docs/user-guide/" >}}) for commands, pro
 - Use `/github` to browse or search repositories.
 - Use `/project` to add a repository as a project and switch context.
 
-With a connected repo, LLPM can help review work status and generate follow-up questions based on issues and project context." 
+With a connected repo, LLPM can help review work status and generate follow-up questions based on issues and project context."
     class="hx-aspect-auto md:hx-aspect-[1.1/1] max-lg:hx-min-h-[340px]"
     style="background: radial-gradient(ellipse at 50% 80%,rgba(142,53,74,0.15),hsla(0,0%,100%,0));"
   >}}
@@ -93,7 +93,7 @@ With a connected repo, LLPM can help review work status and generate follow-up q
 - Run `/skills list` to see what is installed.
 - Run `/skills test <name>` to preview a skill.
 - Run `/skills reload` after editing or adding skills.
-- Run `/skills reinstall` after upgrading LLPM to refresh the bundled skill catalog." 
+- Run `/skills reinstall` after upgrading LLPM to refresh the bundled skill catalog."
     class="hx-aspect-auto md:hx-aspect-[1.1/1] max-md:hx-min-h-[340px]"
     style="background: radial-gradient(ellipse at 50% 80%,rgba(221,210,59,0.15),hsla(0,0%,100%,0));"
   >}}
