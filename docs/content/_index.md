@@ -20,25 +20,35 @@ layout: hextra-home
 </div>
 
 <div class="hx-mb-6">
-{{< hextra/hero-button text="Get Started" link="docs/getting-started/" >}}
+
+Install from source:
+
+```bash
+git clone https://github.com/britt/llpm.git
+cd llpm
+bun install
+```
+
+Then continue with the [Getting Started guide](./docs/getting-started/).
+
 </div>
 
 {{< hextra/feature-grid >}}
   {{< hextra/feature-card
     title="Multi-Provider AI"
-    subtitle="Chat with GPT-4, Claude, Groq, and more. Switch models on the fly."
+    subtitle="Connect one or more model providers (OpenAI, Anthropic, Groq, Google Vertex AI, Cerebras) and switch models during a session with /model."
     class="hx-aspect-auto md:hx-aspect-[1.1/1] max-md:hx-min-h-[340px]"
     style="background: radial-gradient(ellipse at 50% 80%,rgba(194,97,254,0.15),hsla(0,0%,100%,0));"
   >}}
   {{< hextra/feature-card
     title="GitHub Integration"
-    subtitle="Browse repos, create issues, and manage projects directly from the CLI."
+    subtitle="Browse repositories, work with issues and pull requests, and connect a repo to a project so workflows stay close to the code."
     class="hx-aspect-auto md:hx-aspect-[1.1/1] max-lg:hx-min-h-[340px]"
     style="background: radial-gradient(ellipse at 50% 80%,rgba(142,53,74,0.15),hsla(0,0%,100%,0));"
   >}}
   {{< hextra/feature-card
     title="Skills System"
-    subtitle="Extensible instruction sets for mermaid diagrams, stakeholder updates, and more."
+    subtitle="Use reusable instruction sets (Agent Skills SKILL.md files) to guide workflows like planning, stakeholder updates, and diagrams, with /skills to manage what’s available."
     class="hx-aspect-auto md:hx-aspect-[1.1/1] max-md:hx-min-h-[340px]"
     style="background: radial-gradient(ellipse at 50% 80%,rgba(221,210,59,0.15),hsla(0,0%,100%,0));"
   >}}
