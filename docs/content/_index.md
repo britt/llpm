@@ -23,6 +23,8 @@ layout: hextra-home
 
 ## Install
 
+### Option 1: Build and run from source
+
 1. **Clone the repository**
 
    ```bash
@@ -48,16 +50,32 @@ layout: hextra-home
    bun start
    ```
 
-5. **Install globally (optional)**
+### Option 2: Install a global `llpm` command
+
+1. **Build the compiled binary**
 
    ```bash
-   bun link
+   bun run build
+   ```
+
+2. **Run the binary**
+
+   ```bash
+   ./bin/llpm
+   ```
+
+3. **(Optional) Add the binary to your PATH**
+
+   ```bash
+   # Example: add llpm to ~/.local/bin
+   mkdir -p ~/.local/bin
+   ln -sf "$(pwd)/bin/llpm" ~/.local/bin/llpm
    llpm
    ```
 
 **Supported model providers:** OpenAI, Anthropic, Groq, Google Vertex AI (`google-vertex`), and Cerebras.
 
-Continue with [Installation]({{< relref "docs/getting-started/installation.md" >}}) for more details.
+Continue with [Installation]({{< relref "docs/getting-started/installation.md" >}}) for prerequisites and configuration.
 
 Or jump to the [User Guide]({{< relref "docs/user-guide/" >}}) for commands, projects, skills, and GitHub integration.
 
@@ -66,15 +84,15 @@ Or jump to the [User Guide]({{< relref "docs/user-guide/" >}}) for commands, pro
 {{< hextra/feature-grid >}}
   {{< hextra/feature-card
     title="Multi-Provider Models"
-    subtitle="Configure one or more model providers, then choose from the models available for the providers you have credentials for.
+    subtitle="Connect one or more model providers, then switch between the models that are available for the providers you have configured.
 
 - See which providers are configured with `/model providers`.
 - Open the interactive picker with `/model switch`.
 - List models with `/model list` (use `--all` to include unconfigured providers).
 - Refresh the locally cached model list from provider APIs with `/model update`.
 
-This workflow is useful after adding a provider, rotating API keys, or troubleshooting why a model is missing from the selector."
-    class="hx-aspect-auto md:hx-aspect-[1.1/1] max-md:hx-min-h-[360px]"
+LLPM supports these providers: `openai`, `anthropic`, `groq`, `google-vertex`, and `cerebras`."
+    class="hx-aspect-auto md:hx-aspect-[1.1/1] max-md:hx-min-h-[380px]"
     style="background: radial-gradient(ellipse at 50% 80%,rgba(194,97,254,0.15),hsla(0,0%,100%,0));"
   >}}
   {{< hextra/feature-card
@@ -85,8 +103,8 @@ This workflow is useful after adding a provider, rotating API keys, or troublesh
 - Scan the current project (or your current working directory) with `/project scan`.
 - Use `/github` to browse repositories and connect a repo to a project.
 
-A project scan captures file structure, detected languages, dependencies, documentation signals, and (optionally) an architecture overview."
-    class="hx-aspect-auto md:hx-aspect-[1.1/1] max-lg:hx-min-h-[360px]"
+A project scan captures file structure, detected languages, parsed dependencies, documentation signals, and (optionally) an architecture overview. Use scans when starting work on a new repo, writing docs, or reviewing risk in an unfamiliar codebase."
+    class="hx-aspect-auto md:hx-aspect-[1.1/1] max-lg:hx-min-h-[380px]"
     style="background: radial-gradient(ellipse at 50% 80%,rgba(142,53,74,0.15),hsla(0,0%,100%,0));"
   >}}
   {{< hextra/feature-card
@@ -98,8 +116,8 @@ A project scan captures file structure, detected languages, dependencies, docume
 - Rescan after changes with `/skills reload`.
 - Refresh the bundled skill catalog with `/skills reinstall`.
 
-Skills help keep output consistent for repeatable work like requirement elicitation, stakeholder tracking, at-risk detection, and project planning."
-    class="hx-aspect-auto md:hx-aspect-[1.1/1] max-md:hx-min-h-[360px]"
+Skills help keep output consistent for repeatable work like requirement elicitation, stakeholder tracking, at-risk detection, project planning, and documentation formatting."
+    class="hx-aspect-auto md:hx-aspect-[1.1/1] max-md:hx-min-h-[380px]"
     style="background: radial-gradient(ellipse at 50% 80%,rgba(221,210,59,0.15),hsla(0,0%,100%,0));"
   >}}
 {{< /hextra/feature-grid >}}
