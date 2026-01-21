@@ -23,7 +23,7 @@ layout: hextra-home
 
 ## Install
 
-1. **Clone and install**
+1. **Clone and install dependencies**
 
    ```bash
    git clone https://github.com/britt/llpm.git
@@ -61,13 +61,13 @@ Or jump to the [User Guide]({{< relref "docs/user-guide/" >}}) for commands, pro
 {{< hextra/feature-grid >}}
   {{< hextra/feature-card
     title="Multi-Provider AI"
-    subtitle="Switch between multiple LLM providers without leaving the terminal. Supported providers are OpenAI, Anthropic, Groq, Google Vertex AI (`google-vertex`), and Cerebras. Use `/model providers` to confirm which providers are configured, `/model list` to view models that are available to you, and `/model switch` to change the active model. If provider APIs are available, use `/model update` to refresh the locally cached model list."
+    subtitle="Configure one or more model providers and switch models without leaving the terminal. LLPM supports OpenAI, Anthropic, Groq, Google Vertex AI (`google-vertex`), and Cerebras. Use `/model providers` to confirm what is configured, `/model list` to see what is available (add `--all` to include unconfigured providers), and `/model switch` to change the active model. If provider APIs are available, run `/model update` to refresh the local model cache."
     class="hx-aspect-auto md:hx-aspect-[1.1/1] max-md:hx-min-h-[340px]"
     style="background: radial-gradient(ellipse at 50% 80%,rgba(194,97,254,0.15),hsla(0,0%,100%,0));"
   >}}
   {{< hextra/feature-card
     title="GitHub Integration"
-    subtitle="Connect a GitHub repository to a project and work with issues, pull requests, and repositories from the CLI. Use `/github` to browse or search repositories, then use `/project` to add the repo as a project and switch contexts. Once a repo is connected, keep conversations and actions tied to the right codebase while you plan and track work."
+    subtitle="Work with GitHub repositories, issues, and pull requests from the CLI, while keeping your conversations tied to the right project context. Use `/github` to browse or search repositories, then use `/project` to add a repository as a project and switch contexts. With a connected repo, LLPM can help track work, surface gaps, and generate follow-up questions based on issue content and project context."
     class="hx-aspect-auto md:hx-aspect-[1.1/1] max-lg:hx-min-h-[340px]"
     style="background: radial-gradient(ellipse at 50% 80%,rgba(142,53,74,0.15),hsla(0,0%,100%,0));"
   >}}
