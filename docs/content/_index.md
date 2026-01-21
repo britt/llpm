@@ -84,40 +84,40 @@ Or jump to the [User Guide]({{< relref "docs/user-guide/" >}}) for commands, pro
 {{< hextra/feature-grid >}}
   {{< hextra/feature-card
     title="Multi-Provider Models"
-    subtitle="Connect one or more model providers, then switch between the models that are available for the providers you have configured.
+    subtitle="Connect one or more model providers, then switch between models based on the providers you have configured.
 
-- See which providers are configured with `/model providers`.
-- Open the interactive picker with `/model switch`.
-- List models with `/model list` (use `--all` to include unconfigured providers).
+- Validate provider configuration with `/model providers`.
+- Choose a model interactively with `/model switch`.
+- Review available models with `/model list` (use `--all` to include unconfigured providers).
 - Refresh the locally cached model list from provider APIs with `/model update`.
 
 LLPM supports these providers: `openai`, `anthropic`, `groq`, `google-vertex`, and `cerebras`."
-    class="hx-aspect-auto md:hx-aspect-[1.1/1] max-md:hx-min-h-[380px]"
+    class="hx-aspect-auto md:hx-aspect-[1.1/1] max-md:hx-min-h-[420px]"
     style="background: radial-gradient(ellipse at 50% 80%,rgba(194,97,254,0.15),hsla(0,0%,100%,0));"
   >}}
   {{< hextra/feature-card
     title="Projects + Project Scans"
-    subtitle="Keep work attached to the right repository, then generate a structured snapshot of the codebase when you need shared context.
+    subtitle="Keep work attached to the right repository, then create a structured snapshot of a codebase when you need shared context.
 
 - Add, list, and switch projects with `/project`.
 - Scan the current project (or your current working directory) with `/project scan`.
 - Use `/github` to browse repositories and connect a repo to a project.
 
-A project scan captures file structure, detected languages, parsed dependencies, documentation signals, and (optionally) an architecture overview. Use scans when starting work on a new repo, writing docs, or reviewing risk in an unfamiliar codebase."
-    class="hx-aspect-auto md:hx-aspect-[1.1/1] max-lg:hx-min-h-[380px]"
+A project scan is designed for quick orientation: it captures file structure, detected languages, parsed dependencies, documentation signals, and (optionally) an architecture overview. Use scans when starting work on a new repo, writing docs, or reviewing risk in an unfamiliar codebase."
+    class="hx-aspect-auto md:hx-aspect-[1.1/1] max-lg:hx-min-h-[420px]"
     style="background: radial-gradient(ellipse at 50% 80%,rgba(142,53,74,0.15),hsla(0,0%,100%,0));"
   >}}
   {{< hextra/feature-card
     title="Skills + Guided Workflows"
     subtitle="Use reusable workflows packaged as Agent Skills (`SKILL.md`) to guide planning, analysis, and documentation work.
 
-- See what is installed with `/skills list`.
+- List installed skills with `/skills list`.
 - Preview a skill with `/skills test <name>`.
 - Rescan after changes with `/skills reload`.
 - Refresh the bundled skill catalog with `/skills reinstall`.
 
-Skills help keep output consistent for repeatable work like requirement elicitation, stakeholder tracking, at-risk detection, project planning, and documentation formatting."
-    class="hx-aspect-auto md:hx-aspect-[1.1/1] max-md:hx-min-h-[380px]"
+Skills provide structure for repeatable work like requirement elicitation, stakeholder tracking, at-risk detection, project planning, and documentation formatting."
+    class="hx-aspect-auto md:hx-aspect-[1.1/1] max-md:hx-min-h-[420px]"
     style="background: radial-gradient(ellipse at 50% 80%,rgba(221,210,59,0.15),hsla(0,0%,100%,0));"
   >}}
 {{< /hextra/feature-grid >}}
