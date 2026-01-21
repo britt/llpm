@@ -65,40 +65,41 @@ Or jump to the [User Guide]({{< relref "docs/user-guide/" >}}) for commands, pro
 
 {{< hextra/feature-grid >}}
   {{< hextra/feature-card
-    title="Multi-Provider AI"
-    subtitle="Configure one or more model providers and keep a local list of available models.
+    title="Multi-Provider Models"
+    subtitle="Configure one or more providers and keep a local, cached list of available models.
 
 - Confirm provider setup with `/model providers`.
-- List available models with `/model list` (use `--all` to include unconfigured providers).
-- Switch models with `/model switch`.
-- Refresh the local cached model list from provider APIs with `/model update`.
+- List models with `/model list` (use `--all` to include unconfigured providers).
+- Switch models with `/model switch` (interactive or direct).
+- Refresh the cached list from provider APIs with `/model update`.
 
-Use this flow when rotating API keys, adding a new provider (for example, Cerebras), or troubleshooting model availability."
-    class="hx-aspect-auto md:hx-aspect-[1.1/1] max-md:hx-min-h-[340px]"
+Use this when adding a provider (for example, Cerebras), rotating API keys, or troubleshooting why a model is not available."
+    class="hx-aspect-auto md:hx-aspect-[1.1/1] max-md:hx-min-h-[360px]"
     style="background: radial-gradient(ellipse at 50% 80%,rgba(194,97,254,0.15),hsla(0,0%,100%,0));"
   >}}
   {{< hextra/feature-card
-    title="Project Context + GitHub"
-    subtitle="Work with GitHub repositories, issues, and pull requests from the CLI, while keeping conversations tied to the right project.
+    title="Projects + Project Scans"
+    subtitle="Keep work attached to the right repository, and scan the codebase when you need a structured overview.
 
-- Use `/github` to browse or search repositories.
 - Use `/project` to add a repository as a project and switch context.
+- Use `/project scan` to analyze the current project (or your current working directory).
+- Use `/github` to browse repositories, issues, and pull requests.
 
-With a connected repo, LLPM can help review work status and generate follow-up questions based on issues and project context."
-    class="hx-aspect-auto md:hx-aspect-[1.1/1] max-lg:hx-min-h-[340px]"
+Project scans help LLPM summarize structure, dependencies, documentation coverage, and architecture (with Mermaid diagrams when LLM analysis is enabled)."
+    class="hx-aspect-auto md:hx-aspect-[1.1/1] max-lg:hx-min-h-[360px]"
     style="background: radial-gradient(ellipse at 50% 80%,rgba(142,53,74,0.15),hsla(0,0%,100%,0));"
   >}}
   {{< hextra/feature-card
-    title="Skills (Agent Skills spec)"
+    title="Skills + Guided Workflows"
     subtitle="Use reusable workflows packaged as Agent Skills (`SKILL.md`) to guide planning, analysis, and documentation work.
 
-- Run `/skills list` to see what is installed.
-- Run `/skills test <name>` to preview a skill.
-- Run `/skills reload` after editing or adding skills.
-- Run `/skills reinstall` after upgrading LLPM to refresh the bundled skill catalog.
+- Use `/skills list` to see what is installed.
+- Use `/skills test <name>` to preview a skill.
+- Use `/skills reload` after editing or adding skills.
+- Use `/skills reinstall` after upgrading LLPM to refresh the bundled skill catalog.
 
-Use skills when repeating a workflow (for example, requirement elicitation, project planning, or at-risk detection) and you want consistent steps and outputs."
-    class="hx-aspect-auto md:hx-aspect-[1.1/1] max-md:hx-min-h-[340px]"
+Skills help keep output consistent for repeatable tasks (for example, requirement elicitation, stakeholder tracking, at-risk detection, and project planning)."
+    class="hx-aspect-auto md:hx-aspect-[1.1/1] max-md:hx-min-h-[360px]"
     style="background: radial-gradient(ellipse at 50% 80%,rgba(221,210,59,0.15),hsla(0,0%,100%,0));"
   >}}
 {{< /hextra/feature-grid >}}
