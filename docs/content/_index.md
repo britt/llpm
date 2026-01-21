@@ -54,6 +54,14 @@ For prerequisites, provider setup, and other install options, see [Installation]
 
 Supported provider IDs: `openai`, `anthropic`, `groq`, `google-vertex`, `cerebras`.
 
+Example model IDs:
+
+- OpenAI: `gpt-5.2`, `gpt-4o-mini`
+- Anthropic: `claude-sonnet-4-5`
+- Google Vertex: `gemini-2.5-pro`
+- Groq: `llama-3.3-70b-versatile`
+- Cerebras: `qwen-3-235b-a22b-instruct-2507`
+
 LLPM caches the provider-fetched model catalog in `~/.llpm/models.json` so discovery stays fast and consistent between sessions."
     class="hx-aspect-auto md:hx-aspect-[1.1/1] max-md:hx-min-h-[560px]"
     style="background: radial-gradient(ellipse at 50% 80%,rgba(194,97,254,0.15),hsla(0,0%,100%,0));"
