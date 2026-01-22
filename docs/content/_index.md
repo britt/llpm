@@ -29,6 +29,13 @@ LLPM is an AI-powered product management CLI for working with GitHub issues, loc
 
 ## What LLPM does
 
+LLPM is organized around four core workflows:
+
+- **Multi-provider models**: configure one or more providers, list models, and switch per task.
+- **Projects, scans, and GitHub**: manage projects, scan codebases, and connect GitHub repositories.
+- **Skills and guided workflows**: use skills to guide repeatable planning and analysis flows.
+- **Notes and search**: store decisions as Markdown notes and search them with ripgrep.
+
 ### Multi-provider models
 
 LLPM supports these model providers:
@@ -44,7 +51,7 @@ Use these commands:
 - Configure provider credentials: `/model providers`
 - List models: `/model list`
 - Switch models (interactive): `/model switch`
-- Switch models directly: `/model switch <provider>/<model>`
+- Switch models directly: `/model switch <provider>/<model-id>`
 - Refresh the cached model catalog: `/model update`
 
 Default model IDs in the built-in catalog:
