@@ -119,6 +119,11 @@ This homepage uses HTML-based cards (instead of feature-card shortcodes) to avoi
       <li>Use <code>/github</code> to browse/search repositories, then connect one to a project.</li>
     </ul>
 
+    <p>Scan results are saved under <code>~/.llpm/projects/&lt;projectId&gt;/project.json</code>.</p>
+  </div>
+</div>
+
+
     <p>Project scan output includes:</p>
 
     <ul>
