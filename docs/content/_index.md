@@ -185,6 +185,7 @@ This page avoids parameterized feature-card shortcodes and uses plain HTML.
     <p class="hx-mt-4">Shell execution:</p>
     <ul class="hx-mt-2">
       <li>Shell commands run through permission validation and explicit confirmation.</li>
+      <li>Shell must be enabled in global settings (<code>~/.llpm/config.json</code>, <code>shell</code> section).</li>
       <li>Commands can be audited via a local log when configured.</li>
     </ul>
 
