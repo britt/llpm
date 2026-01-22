@@ -275,22 +275,3 @@ For prerequisites, provider setup, and other install options, see [Installation]
     </p>
   </div>
 </div>
-      <li>
-        Notes are stored as Markdown files with YAML frontmatter under <code>~/.llpm/projects/{projectId}/notes/</code>.
-        Notes use YAML frontmatter to store titles, tags, and other metadata, making them easy to organize, grep, and feed into higher-level skills like <code>consolidate-notes-summary</code>, <code>build-faq-from-issues</code>, and <code>prepare-meeting-agenda</code>.
-      </li>
-      <li>
-        Search uses ripgrep-based text search for fast local lookup and does not rely on embeddings or external vector indexes.
-        The Markdown-based NotesBackend keeps everything on disk, while ripgrep-powered search stays fast even for large workspaces and multi-project setups.
-      </li>
-      <li>
-        Shell execution is configured in <code>~/.llpm/config.json</code> (the <code>shell</code> section) as a global allowlist/denylist with timeouts and defaults.
-        Every shell command goes through permission validation, explicit user confirmation (with optional skip-confirmation modes), and audit logging via the <code>run_shell_command</code> tool, so LLPM can suggest commands while still keeping execution controlled and traceable.
-      </li>
-    </ul>
-
-    <p class="hx-text-gray-600 dark:hx-text-gray-300 hx-mt-4">
-      Shell execution is designed for short, auditable commands that complement LLPM’s analysis and planning tools; longer workflows stay in normal terminal sessions.
-    </p>
-  </div>
-</div>
