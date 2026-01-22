@@ -86,7 +86,7 @@ For prerequisites and provider setup, see [Installation]({{< relref "docs/gettin
       Anthropic: <code>claude-sonnet-4-5</code>, <code>claude-opus-4-1</code><br>
       Groq: <code>meta-llama/llama-4-maverick-17b-128e-instruct</code>, <code>llama-3.3-70b-versatile</code>, <code>deepseek-r1-distill-llama-70b</code><br>
       Google Vertex AI: <code>gemini-2.5-pro</code>, <code>gemini-2.5-flash</code>, <code>gemini-2.5-ultra</code><br>
-      Cerebras: <code>qwen-3-235b-a22b-instruct-2507</code>, <code>llama-3.3-70b</code>, <code>llama3.1-8b</code>
+      Cerebras: <code>qwen-3-235b-a22b-instruct-2507</code>, <code>llama-3.3-70b</code>, <code>llama3.1-8b</code>, <code>llama3.1-70b</code>
     </p>
 
     <p class="hx-text-gray-600 dark:hx-text-gray-300 hx-mt-2">
