@@ -47,9 +47,9 @@ Next steps:
 
 <!--
 NOTE:
-Avoid fragile quoting in shortcode parameter strings (a previous homepage build failed with:
-  unterminated quoted string in shortcode parameter-argument).
-Use plain HTML blocks instead of parameterized shortcodes.
+A previous homepage build failed with:
+  unterminated quoted string in shortcode parameter-argument
+This page avoids parameterized feature-card shortcodes and uses plain HTML.
 -->
 
 <div class="hx-mt-12 hx-grid hx-gap-6 md:hx-grid-cols-2">
@@ -157,11 +157,12 @@ Use plain HTML blocks instead of parameterized shortcodes.
     </ul>
 
     <p class="hx-mt-4">
-      See the <a href="{{< relref \"docs/skills-reference/_index.md\" >}}">Skills Reference</a> for descriptions of the bundled skills.
+      See the <a href='{{< relref "docs/skills-reference/_index.md" >}}'>Skills Reference</a> for descriptions of the bundled skills.
     </p>
   </div>
-</div>
 
+  <div
+    class="hx-rounded-2xl hx-border hx-border-gray-200/50 dark:hx-border-gray-800/50 hx-bg-white/60 dark:hx-bg-neutral-900/40 hx-p-6"
     style="background: radial-gradient(ellipse at 50% 80%,rgba(53,123,142,0.15),hsla(0,0%,100%,0));"
   >
     <h3 class="hx-text-xl hx-font-semibold">Notes, Search, and Shell</h3>
@@ -193,31 +194,6 @@ Use plain HTML blocks instead of parameterized shortcodes.
   </div>
 </div>
 
-  >
-    <h3 class="hx-text-xl hx-font-semibold">Notes, Search, and Shell</h3>
-    <p class="hx-mt-2 hx-text-gray-600 dark:hx-text-gray-300">
-      Capture project knowledge in Markdown notes, search it locally, and run carefully scoped shell commands when needed.
-    </p>
-
-    <p>Notes:</p>
-    <ul>
-      <li>Notes are Markdown files with YAML frontmatter under <code>~/.llpm/projects/{projectId}/notes/</code>.</li>
-      <li>Frontmatter stores title, tags, and metadata for organization and reuse.</li>
-    </ul>
-
-    <p>Search:</p>
-    <ul>
-      <li>Notes search uses ripgrep-based full-text search.</li>
-      <li>Search does not rely on embeddings or external vector indexes.</li>
-    </ul>
-
-    <p>Shell execution:</p>
-    <ul>
-      <li>Shell commands run through permission validation and explicit confirmation.</li>
-      <li>Commands can be audited via a local log when configured.</li>
-    </ul>
-
-  <div
     class="hx-rounded-2xl hx-border hx-border-gray-200/50 dark:hx-border-gray-800/50 hx-bg-white/60 dark:hx-bg-neutral-900/40 hx-p-6"
     style="background: radial-gradient(ellipse at 50% 80%,rgba(194,97,254,0.15),hsla(0,0%,100%,0));"
   >
