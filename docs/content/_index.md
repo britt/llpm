@@ -184,3 +184,5 @@ This homepage uses HTML-based cards (instead of feature-card shortcodes) to avoi
     </ul>
   </div>
 </div>
+
+<!-- Homepage last reviewed: ensure provider IDs and example models match src/types/models.ts defaults. -->
