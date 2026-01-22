@@ -136,14 +136,27 @@ Use plain HTML blocks instead of parameterized shortcodes.
     class="hx-rounded-2xl hx-border hx-border-gray-200/50 dark:hx-border-gray-800/50 hx-bg-white/60 dark:hx-bg-neutral-900/40 hx-p-6"
     style="background: radial-gradient(ellipse at 50% 80%,rgba(53,123,142,0.15),hsla(0,0%,100%,0));"
   >
-    <h3 class="hx-text-xl hx-font-semibold">Notes and Local Search</h3>
+    <h3 class="hx-text-xl hx-font-semibold">Notes, Search, and Shell</h3>
     <p class="hx-mt-2 hx-text-gray-600 dark:hx-text-gray-300">
-      Capture project knowledge in Markdown notes and search it locally.
+      Capture project knowledge in Markdown notes, search it locally, and run carefully scoped shell commands when needed.
     </p>
 
-    <ul class="hx-mt-4">
-      <li>Store notes under <code>~/.llpm/projects/{projectId}/notes/</code>.</li>
-      <li>Search notes with <code>ripgrep</code> (no embeddings/vector index required).</li>
+    <p class="hx-mt-4">Notes:</p>
+    <ul class="hx-mt-2">
+      <li>Notes are Markdown files with YAML frontmatter under <code>~/.llpm/projects/{projectId}/notes/</code>.</li>
+      <li>Frontmatter stores title, tags, and metadata for organization and reuse.</li>
+    </ul>
+
+    <p class="hx-mt-4">Search:</p>
+    <ul class="hx-mt-2">
+      <li>Notes search uses ripgrep-based full-text search.</li>
+      <li>Search does not rely on embeddings or external vector indexes.</li>
+    </ul>
+
+    <p class="hx-mt-4">Shell execution:</p>
+    <ul class="hx-mt-2">
+      <li>Shell commands run through permission validation and explicit confirmation.</li>
+      <li>Commands can be audited via a local log when configured.</li>
     </ul>
 
     <p class="hx-mt-4">
@@ -152,52 +165,6 @@ Use plain HTML blocks instead of parameterized shortcodes.
   </div>
 </div>
 
-  <div
-    class="hx-rounded-2xl hx-border hx-border-gray-200/50 dark:hx-border-gray-800/50 hx-bg-white/60 dark:hx-bg-neutral-900/40 hx-p-6"
-    style="background: radial-gradient(ellipse at 50% 80%,rgba(16,185,129,0.14),hsla(0,0%,100%,0));"
-  >
-    <h3 class="hx-text-xl hx-font-semibold">Notes, Search, and Shell</h3>
-    <p class="hx-mt-2 hx-text-gray-600 dark:hx-text-gray-300">
-      Capture project knowledge in Markdown notes, search it locally, and run carefully scoped shell commands when needed.
-    </p>
-
-    <p>Notes:</p>
-    <ul>
-      <li>Notes are Markdown files with YAML frontmatter under <code>~/.llpm/projects/{projectId}/notes/</code>.</li>
-      <li>Frontmatter stores title, tags, and metadata for organization and reuse.</li>
-    </ul>
-
-    <p>Search:</p>
-    <ul>
-      <li>Notes search uses ripgrep-based full-text search.</li>
-      <li>Search does not rely on embeddings or external vector indexes.</li>
-    </ul>
-
-    <p>Shell execution:</p>
-    <ul>
-      <li>Shell commands run through permission validation and explicit confirmation.</li>
-      <li>Commands can be audited via a local log when configured.</li>
-    </ul>
-  </div>
-</div>
-
-        <code>claude-opus-4</code>, <code>claude-3-7-sonnet-latest</code>, <code>claude-3-5-haiku-latest</code>,
-        <code>claude-3-haiku</code>
-      </li>
-      <li>Google Vertex: <code>gemini-2.5-pro</code>, <code>gemini-2.5-flash</code>, <code>gemini-2.5-ultra</code></li>
-      <li>
-        Groq: <code>meta-llama/llama-4-maverick-17b-128e-instruct</code>, <code>llama-3.3-70b-versatile</code>,
-        <code>llama-3.1-70b-versatile</code>, <code>llama-3.1-8b-instant</code>, <code>deepseek-r1-distill-llama-70b</code>,
-        <code>moonshotai/kimi-k2-instruct</code>, <code>openai/gpt-oss-120b</code>, <code>openai/gpt-oss-20b</code>,
-        <code>qwen/qwen3-32b</code>
-      </li>
-      <li>Cerebras: <code>qwen-3-235b-a22b-instruct-2507</code>, <code>llama-3.3-70b</code>, <code>llama3.1-8b</code>, <code>llama3.1-70b</code></li>
-    </ul>
-
-    <p>LLPM caches the provider-fetched catalog in <code>~/.llpm/models.json</code>.</p>
-  </div>
-
-  <div
     class="hx-rounded-2xl hx-border hx-border-gray-200/50 dark:hx-border-gray-800/50 hx-bg-white/60 dark:hx-bg-neutral-900/40 hx-p-6"
     style="background: radial-gradient(ellipse at 50% 80%,rgba(142,53,74,0.15),hsla(0,0%,100%,0));"
   >
