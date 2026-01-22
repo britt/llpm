@@ -96,7 +96,7 @@ For prerequisites and provider setup, see [Installation]({{< relref "docs/gettin
     </p>
 
     <p class="hx-text-gray-600 dark:hx-text-gray-300 hx-mt-2">
-      For provider setup, environment variables, and model details, see <a href="{{< relref \"/MODELS.md\" >}}">MODELS.md</a>.
+      For environment variables and provider setup steps, see the <a href="{{< relref \"docs/getting-started/configuration.md\" >}}">Configuration</a> guide.
     </p>
   </div>
 
