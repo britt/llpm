@@ -47,7 +47,7 @@ For prerequisites, provider setup, and other install options, see [Installation]
 {{< hextra/feature-grid >}}
   {{< hextra/feature-card
     title="Multi-Provider Models"
-    subtitle="Connect one or more providers, then switch models per project or task while LLPM keeps the catalog in sync with provider APIs."
+    subtitle="Connect one or more providers, then switch models per project or task. LLPM keeps the catalog in sync with provider APIs."
     class="hx-aspect-auto md:hx-aspect-[1.1/1] max-md:hx-min-h-[900px]"
     style="background: radial-gradient(ellipse at 50% 80%,rgba(194,97,254,0.15),hsla(0,0%,100%,0));"
   >}}
