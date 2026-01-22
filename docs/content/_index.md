@@ -88,5 +88,5 @@ Store decisions as markdown notes and search them with ripgrep.
 
 ## Next steps
 
-- Follow the setup guide: [Getting Started](./docs/getting-started/_index.md)
-- Learn the workflows: [User Guide](./docs/user-guide/_index.md)
+- Follow the setup guide: [Getting Started](./docs/getting-started/)
+- Learn the workflows: [User Guide](./docs/user-guide/)
