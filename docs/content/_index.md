@@ -26,28 +26,29 @@ LLPM is a Bun-based CLI.
 
 1. Clone the repository.
 2. Install dependencies.
-3. Start LLPM.
+3. Configure environment variables.
+4. Start LLPM.
 
 ```bash
 git clone https://github.com/britt/llpm.git
 cd llpm
 bun install
+# Create .env with at least one provider key
 bun start
 ```
 
 Next:
 
-- Configure at least one model provider (environment variables).
 - Run `/model providers` to confirm LLPM sees your credentials.
 - Use `/model switch` to pick a model.
 
-For prerequisites and provider setup, see [Installation]({{< relref "docs/getting-started/installation.md" >}}).
+For prerequisites, optional global install, and provider setup, see [Installation]({{< relref "docs/getting-started/installation.md" >}}).
 
 </div>
 </div>
 
 <!--
-Feature boxes
+Homepage feature boxes
 
 Use plain HTML (not shortcodes with quoted parameters) so Hugo parsing
 cannot fail with an unterminated quoted shortcode argument.
