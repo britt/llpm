@@ -135,3 +135,20 @@ cannot fail with an unterminated quoted shortcode argument.
   </div>
 </div>
 
+
+  <div class="hx-rounded-xl hx-border hx-border-gray-200 dark:hx-border-neutral-800 hx-bg-white dark:hx-bg-neutral-900 hx-p-6"
+       style="background: radial-gradient(ellipse at 50% 80%,rgba(80,120,200,0.15),hsla(0,0%,100%,0));">
+    <h3 class="hx-text-xl hx-font-semibold hx-mb-2">Notes, search, and shell</h3>
+    <p class="hx-text-gray-600 dark:hx-text-gray-300 hx-mb-4">
+      Capture project knowledge in Markdown notes, search it locally, and run carefully scoped shell commands when needed.
+    </p>
+
+    <ul class="hx-list-disc hx-pl-6 hx-space-y-2 hx-text-gray-600 dark:hx-text-gray-300">
+      <li>Capture and browse notes with <code>/notes</code>, backed by Markdown files under <code>~/.llpm/projects/{projectId}/notes/</code>.</li>
+      <li>Search notes with <code>/notes search</code> (full-text via <code>rg</code>).</li>
+      <li>Configure shell execution (allow/deny lists, timeouts, audit logging) in <code>~/.llpm/config.json</code> under the <code>shell</code> section.</li>
+      <li>Run shell commands through the AI tool <code>run_shell_command</code> (explicit confirmation by default).</li>
+    </ul>
+  </div>
+</div>
+
