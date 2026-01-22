@@ -114,7 +114,7 @@ Skills are discovered from `~/.llpm/skills/` and project-specific skill folders.
 
   {{< hextra/feature-card
     title="Notes, Search, and Shell"
-    subtitle=`Capture project knowledge in Markdown notes, search it locally, and run carefully scoped shell commands when needed.`
+    subtitle="Capture project knowledge in Markdown notes, search it locally, and run carefully scoped shell commands when needed."
     class="hx-aspect-auto md:hx-aspect-[1.1/1] max-md:hx-min-h-[700px]"
     style="background: radial-gradient(ellipse at 50% 80%,rgba(80,120,200,0.15),hsla(0,0%,100%,0));"
   >}}
