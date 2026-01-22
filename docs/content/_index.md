@@ -4,22 +4,35 @@ title: LLPM Documentation
 
 # LLPM
 
-LLPM is an AI-powered product management CLI.
+LLPM is an AI-powered product management CLI that runs in your terminal.
 
-Use it to work with:
+Use it to:
 
-- GitHub issues and pull requests
-- Local projects (including codebase scanning)
-- Notes (stored as Markdown)
-- Stakeholders and goals
-- Requirement elicitation
+- Work with GitHub issues and pull requests
+- Manage local projects (including codebase scanning)
+- Keep notes (stored as Markdown)
+- Track stakeholders and goals
+- Run requirement elicitation workflows
 
-## Install (from source)
+## Install
 
-**Prerequisites**
+LLPM is built on [Bun](https://bun.com).
 
-- [Bun](https://bun.com)
-- At least one configured model provider (see [Model providers](#model-providers))
+### Option 1: Install the CLI globally (recommended)
+
+1. **Install LLPM.**
+
+   ```bash
+   bun add -g llpm
+   ```
+
+2. **Run LLPM.**
+
+   ```bash
+   llpm
+   ```
+
+### Option 2: Run from source
 
 1. **Clone the repository.**
 
@@ -40,7 +53,7 @@ Use it to work with:
    bun start
    ```
 
-## Next
+## Quickstart
 
 1. **Check provider configuration.**
 
@@ -48,7 +61,7 @@ Use it to work with:
    /model providers
    ```
 
-2. **Switch models.**
+2. **Switch models (optional).**
 
    ```text
    /model switch
@@ -62,9 +75,9 @@ Use it to work with:
 
 ## What LLPM helps with
 
-### Multi-provider models (with a cached catalog)
+## Models (multi-provider)
 
-LLPM supports multiple LLM providers and stores a model catalog on disk so model selection stays fast.
+LLPM supports multiple model providers.
 
 Use these commands:
 
@@ -79,7 +92,7 @@ Example direct switch:
 /model switch cerebras/qwen-3-235b-a22b-instruct-2507
 ```
 
-### Projects and codebase scans
+## Projects and codebase scans
 
 Projects keep separate context for different repositories and directories.
 
@@ -88,7 +101,7 @@ Use these commands:
 - `/project` to manage projects
 - `/project scan` to scan a project directory
 
-### GitHub workflows
+## GitHub workflows
 
 LLPM includes slash commands for GitHub-oriented product work.
 
@@ -97,7 +110,7 @@ Use these commands:
 - `/github` to browse and search repositories
 - `/issue` to work with issues
 
-### Skills and guided workflows
+## Skills and guided workflows
 
 Skills are reusable workflow guides (planning, diagrams, requirement elicitation, stakeholder updates).
 
@@ -108,7 +121,7 @@ Use these commands:
 - `/skills reload`
 - `/skills reinstall`
 
-### Notes (Markdown) and search
+## Notes (Markdown) and search
 
 Notes are stored as Markdown files.
 
