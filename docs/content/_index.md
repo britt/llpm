@@ -16,7 +16,7 @@ layout: hextra-home
 <div class="hx-mb-12">
 {{< hextra/hero-subtitle >}}
   AI-powered product management CLI for GitHub issues, codebases, stakeholders, and requirements.
-  
+
   Install with Bun, configure a provider API key, then start LLPM to begin working with slash commands.
 {{< /hextra/hero-subtitle >}}
 
@@ -148,4 +148,3 @@ cannot fail with an unterminated quoted shortcode argument.
 </div>
 
 <!-- docs-homepage-normalize: keep a stable trailing newline -->
-
