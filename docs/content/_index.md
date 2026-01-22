@@ -28,7 +28,7 @@ LLPM is a Bun-based CLI.
 
 1. Clone the repository.
 2. Install dependencies.
-3. Configure environment variables.
+3. Create a `.env` with at least one provider API key.
 4. Start LLPM.
 
 ```bash
@@ -66,23 +66,56 @@ shortcode parameter quoting issues during Hugo builds.
     <ul class="hx-list-disc hx-pl-6 hx-space-y-2 hx-text-gray-600 dark:hx-text-gray-300">
       <li>Run <code>/model providers</code> to see which providers are configured and which credentials are missing.</li>
       <li>Use <code>/model switch &lt;provider&gt;/&lt;model&gt;</code> to switch directly, or run <code>/model switch</code> for the interactive picker.</li>
-      <li>Run <code>/model list</code> to inspect relevant models per provider, grouped by generation.</li>
+      <li>Run <code>/model list</code> to inspect models per provider.</li>
       <li>Use <code>/model update</code> to refresh the cached catalog from provider APIs.</li>
     </ul>
 
     <p class="hx-text-gray-600 dark:hx-text-gray-300 hx-mt-4">
       <strong>Supported provider IDs:</strong> <code>openai</code>, <code>anthropic</code>, <code>groq</code>, <code>google-vertex</code>, <code>cerebras</code>.
     </p>
+  </div>
 
-    <p class="hx-text-gray-600 dark:hx-text-gray-300 hx-mt-2">
-      Example model IDs:
-      <br>
-      OpenAI: <code>gpt-5.2</code>, <code>gpt-4o</code>, <code>o4-mini</code>
-      <br>
-      Anthropic: <code>claude-sonnet-4-5</code>, <code>claude-opus-4-1</code>
-      <br>
-      Groq: <code>meta-llama/llama-4-maverick-17b-128e-instruct</code>, <code>llama-3.3-70b-versatile</code>, <code>deepseek-r1-distill-llama-70b</code>
-      <br>
+  <div class="hx-rounded-xl hx-border hx-border-gray-200 dark:hx-border-neutral-800 hx-bg-white dark:hx-bg-neutral-900 hx-p-6" style="background: radial-gradient(ellipse at 50% 80%,rgba(59,130,246,0.15),hsla(0,0%,100%,0));">
+    <h3 class="hx-text-xl hx-font-semibold hx-mb-2">Project context + scans</h3>
+    <p class="hx-text-gray-600 dark:hx-text-gray-300 hx-mb-4">
+      Scan a repo to capture languages, frameworks, dependencies, documentation coverage, and (optionally) an LLM-generated architecture summary. LLPM saves scans under your local LLPM project directory.
+    </p>
+
+    <ul class="hx-list-disc hx-pl-6 hx-space-y-2 hx-text-gray-600 dark:hx-text-gray-300">
+      <li>Run <code>/project scan</code> to analyze the current project (or your current working directory if no project is set).</li>
+      <li>Use <code>/project list</code> and <code>/project switch</code> to manage multiple projects.</li>
+      <li>Use <code>--no-llm</code> for faster scans without architecture analysis.</li>
+      <li>Use <code>--force</code> to rescan even when cached results exist.</li>
+    </ul>
+  </div>
+
+  <div class="hx-rounded-xl hx-border hx-border-gray-200 dark:hx-border-neutral-800 hx-bg-white dark:hx-bg-neutral-900 hx-p-6" style="background: radial-gradient(ellipse at 50% 80%,rgba(16,185,129,0.15),hsla(0,0%,100%,0));">
+    <h3 class="hx-text-xl hx-font-semibold hx-mb-2">GitHub workflows</h3>
+    <p class="hx-text-gray-600 dark:hx-text-gray-300 hx-mb-4">
+      Work with issues, pull requests, and project planning workflows from the CLI. Combine GitHub tools with skills like issue decomposition, risk detection, and context-aware questions.
+    </p>
+
+    <ul class="hx-list-disc hx-pl-6 hx-space-y-2 hx-text-gray-600 dark:hx-text-gray-300">
+      <li>Run <code>/github auth</code> (if needed) and <code>/github status</code> to confirm connectivity.</li>
+      <li>Use <code>/issue</code> and <code>/project</code> commands to inspect and manage work.</li>
+      <li>Use analysis skills to surface missing acceptance criteria and at-risk work.</li>
+    </ul>
+  </div>
+
+  <div class="hx-rounded-xl hx-border hx-border-gray-200 dark:hx-border-neutral-800 hx-bg-white dark:hx-bg-neutral-900 hx-p-6" style="background: radial-gradient(ellipse at 50% 80%,rgba(245,158,11,0.15),hsla(0,0%,100%,0));">
+    <h3 class="hx-text-xl hx-font-semibold hx-mb-2">Notes, requirements, stakeholders</h3>
+    <p class="hx-text-gray-600 dark:hx-text-gray-300 hx-mb-4">
+      Keep lightweight project knowledge in notes, run a requirement-elicitation flow to produce a markdown requirements document, and track stakeholders + goals.
+    </p>
+
+    <ul class="hx-list-disc hx-pl-6 hx-space-y-2 hx-text-gray-600 dark:hx-text-gray-300">
+      <li>Use <code>/notes</code> to add, list, and search notes (search uses ripgrep).</li>
+      <li>Use requirement elicitation tools to guide structured discovery and generate a document.</li>
+      <li>Use <code>/stakeholder</code> to manage stakeholders and goals.</li>
+    </ul>
+  </div>
+</div>
+
 ---
 title: LLPM Documentation
 layout: hextra-home
