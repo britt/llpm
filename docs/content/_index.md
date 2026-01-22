@@ -287,57 +287,8 @@ Use plain HTML blocks instead of parameterized shortcodes.
       See <a href='{{< relref "docs/user-guide/commands.md" >}}'>User Guide: Commands</a> and <a href='{{< relref "docs/user-guide/skills.md" >}}'>User Guide: Skills</a>.
     </p>
   </div>
-    <p>Work with projects and GitHub:</p>
+</div>
 
-    <ul>
-      <li>Use <code>/project</code> to add, list, switch, and remove projects.</li>
-      <li>Run <code>/project scan</code> to analyze a codebase (active project or current working directory).</li>
-      <li>Use <code>/github</code> to browse/search repositories, then connect one to a project.</li>
-    </ul>
-
-    <p>What a scan includes:</p>
-
-    <ul>
-      <li>Gitignore-aware file scanning with language/framework detection.</li>
-      <li>Dependency parsing across common package managers.</li>
-      <li>Documentation coverage checks.</li>
-      <li>Optional LLM-backed architecture analysis (including Mermaid diagrams).</li>
-    </ul>
-
-    <p>Scan results persist under <code>~/.llpm/projects/{projectId}/project.json</code> for reuse.</p>
-
-    <p>Flags:</p>
-
-    <ul>
-      <li><code>--force</code> refreshes cached scan results.</li>
-      <li><code>--no-llm</code> skips architecture analysis for faster, offline-friendly scans.</li>
-    </ul>
-  </div>
-
-  <div
-    class="hx-rounded-2xl hx-border hx-border-gray-200/50 dark:hx-border-gray-800/50 hx-bg-white/60 dark:hx-bg-neutral-900/40 hx-p-6"
-    style="background: radial-gradient(ellipse at 50% 80%,rgba(59,130,246,0.14),hsla(0,0%,100%,0));"
-  >
-    <h3 class="hx-text-xl hx-font-semibold">Skills and Guided Workflows</h3>
-    <p class="hx-mt-2 hx-text-gray-600 dark:hx-text-gray-300">
-      Use reusable workflows packaged as Agent Skills (<code>SKILL.md</code>) to guide planning, analysis, and documentation without rebuilding prompts for every task.
-    </p>
-
-    <p>Work with skills:</p>
-
-    <ul>
-      <li>Run <code>/skills list</code> to see bundled and user-defined skills.</li>
-      <li>Use <code>/skills test &lt;name&gt;</code> to preview a skill’s goal, inputs, tools, and sample runs.</li>
-      <li>Run <code>/skills reload</code> to pick up skill changes on disk.</li>
-      <li>Use <code>/skills reinstall</code> to restore bundled skills if local edits break them.</li>
-    </ul>
-
-    <p>Skills are discovered from <code>~/.llpm/skills/</code> and project-local skill folders (for repo-specific workflows).</p>
-  </div>
-
-  <div
-    class="hx-rounded-2xl hx-border hx-border-gray-200/50 dark:hx-border-gray-800/50 hx-bg-white/60 dark:hx-bg-neutral-900/40 hx-p-6"
-    style="background: radial-gradient(ellipse at 50% 80%,rgba(16,185,129,0.14),hsla(0,0%,100%,0));"
   >
     <h3 class="hx-text-xl hx-font-semibold">Notes, Search, and Shell</h3>
     <p class="hx-mt-2 hx-text-gray-600 dark:hx-text-gray-300">
