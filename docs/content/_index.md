@@ -47,7 +47,7 @@ Next steps:
 
 <!--
 NOTE:
-The docs build previously failed with:
+The docs build failed with:
   unterminated quoted string in shortcode parameter-argument
 This homepage uses HTML-based cards (instead of feature-card shortcodes) to avoid fragile quoting in shortcode params.
 -->
