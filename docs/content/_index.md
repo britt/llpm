@@ -76,6 +76,7 @@ This page avoids parameterized feature-card shortcodes and uses plain HTML.
 
     <p class="hx-mt-4">
       Example model IDs (see <a href="https://github.com/britt/llpm/blob/main/MODELS.md">MODELS.md</a> for the full list):
+      Model catalogs can change over time; use <code>/model list</code> and <code>/model update</code> to see what is available for the configured providers.
     </p>
 
     <ul class="hx-mt-2">
