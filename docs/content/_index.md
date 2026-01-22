@@ -161,22 +161,6 @@ For prerequisites, provider setup, and other install options, see [Installation]
   </div>
 </div>
 
-# Then start LLPM
-llpm
-```
-
-Next:
-
-- Configure at least one model provider (environment variables)
-- Run `/model providers` to confirm LLPM sees your credentials
-- Use `/model switch` to pick a model
-
-For prerequisites, provider setup, and other install options, see [Installation]({{< relref "docs/getting-started/installation.md" >}}).
-
-</div>
-</div>
-
-<div class="hx-grid hx-grid-cols-1 md:hx-grid-cols-2 hx-gap-6">
   <div class="hx-relative hx-rounded-xl hx-border hx-border-gray-200 dark:hx-border-neutral-800 hx-bg-white dark:hx-bg-neutral-900 hx-p-6 hx-shadow-sm"
        style="background: radial-gradient(ellipse at 50% 80%,rgba(194,97,254,0.15),hsla(0,0%,100%,0));">
     <h3 class="hx-text-xl hx-font-semibold hx-mb-2">Multi-Provider Models</h3>
