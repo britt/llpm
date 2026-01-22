@@ -3,11 +3,6 @@ title: LLPM Documentation
 layout: hextra-home
 ---
 
----
-title: LLPM Documentation
-layout: hextra-home
----
-
 {{< hextra/hero-badge >}}
   <span>AI-Powered CLI</span>
 {{< /hextra/hero-badge >}}
