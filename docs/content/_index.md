@@ -91,7 +91,8 @@ shortcode parameter quoting issues during Hugo builds.
     <p class="hx-text-gray-600 dark:hx-text-gray-300 hx-mt-2">
       LLPM caches the provider-fetched catalog in <code>~/.llpm/models.json</code>. If live discovery fails, LLPM falls back to curated defaults.
     </p>
-  </div>
+
+</div>
 
   <div class="hx-rounded-xl hx-border hx-border-gray-200 dark:hx-border-neutral-800 hx-bg-white dark:hx-bg-neutral-900 hx-p-6" style="background: radial-gradient(ellipse at 50% 80%,rgba(59,130,246,0.15),hsla(0,0%,100%,0));">
     <h3 class="hx-text-xl hx-font-semibold hx-mb-2">Project context + scans</h3>
