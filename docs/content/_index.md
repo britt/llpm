@@ -133,7 +133,7 @@ To see what credentials each provider needs:
 /model providers
 ```
 
-For full provider configuration and model reference, see [Model Providers and Configuration](../../MODELS.md).
+For full provider configuration and model reference, see [Getting Started: Configuration](./docs/getting-started/configuration/).
 
 ## Next steps
 
