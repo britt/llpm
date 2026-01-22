@@ -73,6 +73,15 @@ cannot fail with an unterminated quoted shortcode argument.
     </p>
 
     <p class="hx-text-gray-600 dark:hx-text-gray-300 hx-mt-2">
+      Example model IDs (see <code>MODELS.md</code> for the full list):<br>
+      OpenAI: <code>gpt-5.2</code>, <code>gpt-4o</code>, <code>o4-mini</code><br>
+      Anthropic: <code>claude-sonnet-4-5</code>, <code>claude-opus-4-1</code><br>
+      Groq: <code>llama-3.3-70b-versatile</code>, <code>deepseek-r1-distill-llama-70b</code><br>
+      Google Vertex AI: <code>gemini-2.5-pro</code>, <code>gemini-2.5-flash</code><br>
+      Cerebras: <code>qwen-3-235b-a22b-instruct-2507</code>, <code>llama-3.3-70b</code>
+    </p>
+
+    <p class="hx-text-gray-600 dark:hx-text-gray-300 hx-mt-2">
       LLPM caches the provider-fetched catalog in <code>~/.llpm/models.json</code>. If live discovery fails, LLPM falls back to the curated defaults in <code>MODELS.md</code>.
     </p>
   </div>
