@@ -117,24 +117,126 @@ cannot fail with an unterminated quoted shortcode argument.
     <p class="hx-text-gray-600 dark:hx-text-gray-300 hx-mt-4">
       Skills follow the Agent Skills specification and are discovered from <code>~/.llpm/skills/</code> and project-specific skill folders.
     </p>
-  </div>
+  </div>---
+title: LLPM Documentation
+layout: hextra-home
+---
 
+{{< hextra/hero-badge >}}
+  <span>AI-Powered CLI</span>
+{{< /hextra/hero-badge >}}
+
+<div class="hx-mt-6 hx-mb-6">
+{{< hextra/hero-headline >}}
+  Large Language Model&nbsp;<br class="sm:hx-block hx-hidden" />Product Manager
+{{< /hextra/hero-headline >}}
+</div>
+
+<div class="hx-mb-12">
+{{< hextra/hero-subtitle >}}
+  AI-powered product management CLI for GitHub issues, codebases, stakeholders, and requirements.
+{{< /hextra/hero-subtitle >}}
+
+<div class="hx-mt-6">
+
+## Install
+
+LLPM is a Bun-based CLI.
+
+1. Clone the repository.
+2. Install dependencies.
+3. Start LLPM.
+
+```bash
+git clone https://github.com/britt/llpm.git
+cd llpm
+bun install
+bun start
+```
+
+Next:
+
+- Configure at least one model provider (environment variables).
+- Run `/model providers` to confirm LLPM sees your credentials.
+- Use `/model switch` to pick a model.
+
+For prerequisites and provider setup, see [Installation]({{< relref "docs/getting-started/installation.md" >}}).
+
+</div>
+</div>
+
+<!--
+Feature boxes
+
+Use plain HTML (not shortcodes with quoted parameters) so Hugo parsing
+cannot fail with an unterminated quoted shortcode argument.
+-->
+<div class="hx-mt-10 hx-space-y-6">
   <div class="hx-rounded-xl hx-border hx-border-gray-200 dark:hx-border-neutral-800 hx-bg-white dark:hx-bg-neutral-900 hx-p-6"
-       style="background: radial-gradient(ellipse at 50% 80%,rgba(80,120,200,0.15),hsla(0,0%,100%,0));">
-    <h3 class="hx-text-xl hx-font-semibold hx-mb-2">Notes, search, and shell</h3>
+       style="background: radial-gradient(ellipse at 50% 80%,rgba(194,97,254,0.15),hsla(0,0%,100%,0));">
+    <h3 class="hx-text-xl hx-font-semibold hx-mb-2">Multi-provider models</h3>
     <p class="hx-text-gray-600 dark:hx-text-gray-300 hx-mb-4">
-      Capture project knowledge in Markdown notes, search it locally, and run carefully scoped shell commands when needed.
+      Configure one or more providers, then switch models when the task changes. LLPM can refresh the model catalog from provider APIs and stores the result on disk for fast startup.
     </p>
 
     <ul class="hx-list-disc hx-pl-6 hx-space-y-2 hx-text-gray-600 dark:hx-text-gray-300">
-      <li>Capture and browse notes with <code>/notes</code>, backed by Markdown files under <code>~/.llpm/projects/{projectId}/notes/</code>.</li>
-      <li>Search notes with <code>/notes search</code> (full-text via <code>rg</code>).</li>
-      <li>Configure shell execution (allow/deny lists, timeouts, audit logging) in <code>~/.llpm/config.json</code> under the <code>shell</code> section.</li>
-      <li>Run shell commands through the AI tool <code>run_shell_command</code> (explicit confirmation by default).</li>
+      <li>Run <code>/model providers</code> to see which providers are configured and which credentials are missing.</li>
+      <li>Use <code>/model switch</code> to pick a model (interactive), or <code>/model switch &lt;provider&gt;/&lt;model&gt;</code> to switch directly.</li>
+      <li>Run <code>/model list</code> to inspect relevant models per provider, grouped by generation.</li>
+      <li>Use <code>/model update</code> to refresh the cached catalog from provider APIs.</li>
     </ul>
-  </div>
-</div>
 
+    <p class="hx-text-gray-600 dark:hx-text-gray-300 hx-mt-4">
+      <strong>Supported provider IDs:</strong> <code>openai</code>, <code>anthropic</code>, <code>groq</code>, <code>google-vertex</code>, <code>cerebras</code>.
+    </p>
+
+    <p class="hx-text-gray-600 dark:hx-text-gray-300 hx-mt-2">
+      LLPM caches the provider-fetched catalog in <code>~/.llpm/models.json</code>. If live discovery fails, LLPM falls back to the curated defaults in <code>MODELS.md</code>.
+    </p>
+  </div>
+
+  <div class="hx-rounded-xl hx-border hx-border-gray-200 dark:hx-border-neutral-800 hx-bg-white dark:hx-bg-neutral-900 hx-p-6"
+       style="background: radial-gradient(ellipse at 50% 80%,rgba(142,53,74,0.15),hsla(0,0%,100%,0));">
+    <h3 class="hx-text-xl hx-font-semibold hx-mb-2">Projects, scans, and GitHub</h3>
+    <p class="hx-text-gray-600 dark:hx-text-gray-300 hx-mb-4">
+      Connect work to the right repo, then generate project context on demand.
+    </p>
+
+    <ul class="hx-list-disc hx-pl-6 hx-space-y-2 hx-text-gray-600 dark:hx-text-gray-300">
+      <li>Use <code>/project</code> to add, list, switch, and remove projects.</li>
+      <li>Run <code>/project scan</code> to analyze a codebase (active project or current working directory).</li>
+      <li>Use <code>/github</code> to browse/search repositories, then connect one to a project so issues, pull requests, and notes share the same context.</li>
+    </ul>
+
+    <p class="hx-text-gray-600 dark:hx-text-gray-300 hx-mt-4">
+      A scan summarizes project files (gitignore-aware), languages/frameworks, dependencies, documentation, and high-level architecture descriptions.
+    </p>
+    <p class="hx-text-gray-600 dark:hx-text-gray-300 hx-mt-2">
+      LLPM persists scan results in <code>~/.llpm/projects/{projectId}/project.json</code>.
+    </p>
+    <p class="hx-text-gray-600 dark:hx-text-gray-300 hx-mt-2">
+      Use flags like <code>--force</code> to refresh cached scans or <code>--no-llm</code> for a fast static pass without calling model APIs.
+    </p>
+  </div>
+
+  <div class="hx-rounded-xl hx-border hx-border-gray-200 dark:hx-border-neutral-800 hx-bg-white dark:hx-bg-neutral-900 hx-p-6"
+       style="background: radial-gradient(ellipse at 50% 80%,rgba(221,210,59,0.15),hsla(0,0%,100%,0));">
+    <h3 class="hx-text-xl hx-font-semibold hx-mb-2">Skills and guided workflows</h3>
+    <p class="hx-text-gray-600 dark:hx-text-gray-300 hx-mb-4">
+      Use reusable workflows packaged as Agent Skills (<code>SKILL.md</code>) to guide planning, analysis, and documentation.
+    </p>
+
+    <ul class="hx-list-disc hx-pl-6 hx-space-y-2 hx-text-gray-600 dark:hx-text-gray-300">
+      <li>Find skills with <code>/skills list</code> to see bundled and user-defined workflows.</li>
+      <li>Preview a skill with <code>/skills test &lt;name&gt;</code> before using it.</li>
+      <li>Reload after edits with <code>/skills reload</code> so changes to skill files are picked up immediately.</li>
+      <li>Restore bundled skills with <code>/skills reinstall</code> if local experiments break the core collection.</li>
+    </ul>
+
+    <p class="hx-text-gray-600 dark:hx-text-gray-300 hx-mt-4">
+      Skills follow the Agent Skills specification and are discovered from <code>~/.llpm/skills/</code> and project-specific skill folders.
+    </p>
+  </div>
 
   <div class="hx-rounded-xl hx-border hx-border-gray-200 dark:hx-border-neutral-800 hx-bg-white dark:hx-bg-neutral-900 hx-p-6"
        style="background: radial-gradient(ellipse at 50% 80%,rgba(80,120,200,0.15),hsla(0,0%,100%,0));">
