@@ -78,15 +78,6 @@ Avoid fragile quoting by using plain HTML cards (instead of feature-card shortco
       <li><code>cerebras</code></li>
     </ul>
 
-    <p class="hx-mt-4">Example model IDs:</p>
-    <ul class="hx-mt-2">
-      <li><code>openai/gpt-5.2</code>, <code>openai/gpt-4o</code></li>
-      <li><code>anthropic/claude-sonnet-4-5</code></li>
-      <li><code>groq/llama-3.3-70b-versatile</code></li>
-      <li><code>google-vertex/gemini-2.5-pro</code></li>
-      <li><code>cerebras/qwen-3-235b-a22b-instruct-2507</code></li>
-    </ul>
-
     <p class="hx-mt-4">LLPM caches the fetched catalog at <code>~/.llpm/models.json</code>.</p>
   </div>
 
@@ -118,6 +109,47 @@ Avoid fragile quoting by using plain HTML cards (instead of feature-card shortco
   <div
     class="hx-rounded-2xl hx-border hx-border-gray-200/50 dark:hx-border-gray-800/50 hx-bg-white/60 dark:hx-bg-neutral-900/40 hx-p-6"
     style="background: radial-gradient(ellipse at 50% 80%,rgba(40,121,61,0.12),hsla(0,0%,100%,0));"
+  >
+    <h3 class="hx-text-xl hx-font-semibold">Skills and Guided Workflows</h3>
+    <p class="hx-mt-2 hx-text-gray-600 dark:hx-text-gray-300">
+      Use reusable workflows packaged as Agent Skills (<code>SKILL.md</code>) to guide planning, analysis, and documentation.
+    </p>
+
+    <p class="hx-mt-4">Manage skills:</p>
+    <ul class="hx-mt-2">
+      <li><code>/skills list</code> to view bundled and user-defined skills.</li>
+      <li><code>/skills reload</code> to pick up skill changes on disk.</li>
+      <li><code>/skills reinstall</code> to restore bundled skills after upgrading.</li>
+    </ul>
+
+    <p class="hx-mt-4">Skill locations:</p>
+    <ul class="hx-mt-2">
+      <li><code>skills/</code> (bundled with LLPM)</li>
+      <li><code>.skills/</code> (project-specific skills)</li>
+      <li><code>~/.llpm/skills/</code> (user skills)</li>
+    </ul>
+
+    <p class="hx-mt-4">Explore the full catalog in [Skills Reference]({{< relref "docs/skills-reference/_index.md" >}}).</p>
+  </div>
+
+  <div
+    class="hx-rounded-2xl hx-border hx-border-gray-200/50 dark:hx-border-gray-800/50 hx-bg-white/60 dark:hx-bg-neutral-900/40 hx-p-6"
+    style="background: radial-gradient(ellipse at 50% 80%,rgba(53,123,142,0.15),hsla(0,0%,100%,0));"
+  >
+    <h3 class="hx-text-xl hx-font-semibold">Notes and Local Search</h3>
+    <p class="hx-mt-2 hx-text-gray-600 dark:hx-text-gray-300">
+      Capture project knowledge in Markdown notes and search it locally.
+    </p>
+
+    <ul class="hx-mt-4">
+      <li>Store notes under <code>~/.llpm/projects/{projectId}/notes/</code>.</li>
+      <li>Search notes with <code>ripgrep</code> (no embeddings/vector index required).</li>
+    </ul>
+
+    <p class="hx-mt-4">See [User Guide: Commands]({{< relref "docs/user-guide/commands.md" >}}) and [User Guide: Skills]({{< relref "docs/user-guide/skills.md" >}}).</p>
+  </div>
+</div>
+
   >
     <h3 class="hx-text-xl hx-font-semibold">Skills and Guided Workflows</h3>
     <p class="hx-mt-2 hx-text-gray-600 dark:hx-text-gray-300">
