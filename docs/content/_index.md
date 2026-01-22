@@ -22,13 +22,13 @@ layout: hextra-home
 
 ## Install
 
-LLPM is a Bun-based CLI.
+LLPM is a Bun-based CLI. Install prerequisites first: Node.js 18+ (or newer), Bun, and Git available on your `PATH`.
 
 ```bash
-# Install the llpm CLI globally
+# Install the LLPM CLI globally with Bun
 bun add -g llpm
 
-# Start LLPM
+# Then start LLPM
 llpm
 ```
 
