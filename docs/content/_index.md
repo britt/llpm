@@ -29,6 +29,26 @@ Install the `llpm` CLI from this repository.
    bun start
    ```
 
+## Quickstart
+
+1. **Start LLPM.**
+
+   ```bash
+   bun start
+   ```
+
+2. **Check which providers are configured.**
+
+   ```text
+   /model providers
+   ```
+
+3. **Switch to a model.**
+
+   ```text
+   /model switch
+   ```
+
 ## Configure a model provider
 
 LLPM supports these model providers:
@@ -47,29 +67,20 @@ To see what credentials each provider needs, run:
 
 For the full model/provider configuration reference, see [Configuration](./docs/getting-started/configuration/).
 
-## What to do next
+## What LLPM helps with
 
-- Start here: [Getting Started](./docs/getting-started/)
-- Learn the workflows: [User Guide](./docs/user-guide/)
-- Browse skills: [Skills Reference](./docs/skills-reference/)
+### Multi-provider models
 
-## Core workflows
+Connect one or more providers, then list and switch models as you work.
 
-### Models: list, switch, and update
-
-Use model providers to list and switch models per project or task.
-
-Common commands:
-
-- Configure provider credentials: `/model providers`
-- List models: `/model list`
-- Switch models (interactive): `/model switch`
-- Switch models directly: `/model switch <provider>/<model-id>`
-- Refresh the cached model catalog: `/model update`
+- List the current catalog: `/model list`
+- Refresh the catalog from provider APIs: `/model update`
+- Switch interactively: `/model switch`
+- Switch directly: `/model switch cerebras/qwen-3-235b-a22b-instruct-2507`
 
 ### Projects, scans, and GitHub
 
-Use projects to keep separate context, repositories, and scan results.
+Use projects to keep separate context for different repos and directories, and scan codebases to help LLPM understand structure.
 
 - Manage projects: `/project`
 - Scan a codebase: `/project scan`
@@ -88,5 +99,11 @@ Use skills to guide repeatable workflows (planning, elicitation, stakeholder upd
 
 Store decisions as Markdown notes and search them with ripgrep.
 
-- Notes are stored under `~/.llpm/projects/{projectId}/notes/` as Markdown files with YAML frontmatter.
+- Notes are stored under `~/.llpm/projects/{projectId}/notes/`.
 - Notes search uses ripgrep-based text search.
+
+## What to do next
+
+- Start here: [Getting Started](./docs/getting-started/)
+- Learn the workflows: [User Guide](./docs/user-guide/)
+- Browse skills: [Skills Reference](./docs/skills-reference/)
