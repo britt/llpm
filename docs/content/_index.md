@@ -54,7 +54,7 @@ This homepage uses HTML-based cards (instead of feature-card shortcodes) to avoi
   >
     <h3 class="hx-text-xl hx-font-semibold">Multi-Provider Models</h3>
     <p class="hx-mt-2 hx-text-gray-600 dark:hx-text-gray-300">
-      Connect providers and switch models per project or task.
+      Connect one or more providers and switch models per project or task, with a cached catalog that stays aligned with provider APIs.
     </p>
 
     <p>Connect and manage providers:</p>
@@ -77,7 +77,7 @@ This homepage uses HTML-based cards (instead of feature-card shortcodes) to avoi
 
     <p>Supported provider IDs: <code>openai</code>, <code>anthropic</code>, <code>groq</code>, <code>google-vertex</code>, <code>cerebras</code>.</p>
 
-    <p>Example model IDs (from <code>MODELS.md</code>):</p>
+    <p>Example model IDs:</p>
 
     <ul>
       <li>
@@ -114,7 +114,7 @@ This homepage uses HTML-based cards (instead of feature-card shortcodes) to avoi
   >
     <h3 class="hx-text-xl hx-font-semibold">Projects, Scans, and GitHub</h3>
     <p class="hx-mt-2 hx-text-gray-600 dark:hx-text-gray-300">
-      Tie work to the right repo, then generate project context on demand.
+      Keep work anchored to the right repository, then generate reusable project context with a structured scan of files, dependencies, documentation, and architecture.
     </p>
 
     <p>Work with projects and GitHub:</p>
@@ -141,7 +141,7 @@ This homepage uses HTML-based cards (instead of feature-card shortcodes) to avoi
   >
     <h3 class="hx-text-xl hx-font-semibold">Skills and Guided Workflows</h3>
     <p class="hx-mt-2 hx-text-gray-600 dark:hx-text-gray-300">
-      Use reusable workflows packaged as Agent Skills to guide planning, analysis, and documentation.
+      Use reusable workflows packaged as Agent Skills (<code>SKILL.md</code>) to guide planning, analysis, and documentation with predictable tool access and repeatable structure.
     </p>
 
     <p>Work with skills:</p>
@@ -162,8 +162,7 @@ This homepage uses HTML-based cards (instead of feature-card shortcodes) to avoi
   >
     <h3 class="hx-text-xl hx-font-semibold">Notes, Search, and Shell</h3>
     <p class="hx-mt-2 hx-text-gray-600 dark:hx-text-gray-300">
-      Capture project knowledge in Markdown notes, search it locally, and run carefully scoped shell commands when
-      needed.
+      Capture project knowledge in Markdown notes, search it locally with ripgrep, and (when needed) run carefully scoped shell commands through a permission-checked tool.
     </p>
 
     <p>Notes and search:</p>
