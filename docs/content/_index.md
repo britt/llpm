@@ -193,16 +193,3 @@ This page avoids parameterized feature-card shortcodes and uses plain HTML.
     </p>
   </div>
 </div>
-
-
-    <p>Project scan output includes:</p>
-
-    <ul>
-      <li>Detected languages, frameworks, and project type</li>
-      <li>Documentation overview</li>
-      <li>Dependencies (by package manager)</li>
-      <li>Optional architecture analysis (LLM-powered)</li>
-    </ul>
-  </div>
-</div>
-
