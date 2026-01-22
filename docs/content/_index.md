@@ -58,17 +58,7 @@ For prerequisites, provider setup, and other install options, see [Installation]
   >}}
   {{< hextra/feature-card
     title="Skills and Guided Workflows"
-    subtitle="Use reusable workflows packaged as Agent Skills (`SKILL.md`) to guide planning, analysis, and documentation without rebuilding prompts for every task.
-
-- Find skills with `/skills list` to see bundled and user-defined workflows.
-- Preview a skill with `/skills test <name>` to inspect its goal, inputs, tools, and sample runs before using it on real work.
-- Reload after edits with `/skills reload` so changes to SKILL.md files are picked up immediately.
-- Restore bundled skills with `/skills reinstall` if local experiments break the core collection.
-
-Skills follow the Agent Skills specification and are discovered from `~/.llpm/skills/` and project-specific skill folders, so repositories can ship their own guided workflows alongside code.
-The core collection includes skills for requirement elicitation wizards, project-planning orchestrators, issue decomposition and dependency mapping, architecture diagramming, context-aware question generation, at-risk detection and risk reporting, stakeholder tracking and updates, FAQ building from issues, note consolidation and summarization, meeting preparation, research summarization, and thread discussion summarization.
-
-Each skill documents its flow, inputs, and expected outputs in its SKILL.md file, making it easy to audit behavior, adapt prompts to a team’s process, and create entirely new skills tailored to a particular repository."
+    subtitle="Use reusable workflows packaged as Agent Skills (<code>SKILL.md</code>) to guide planning, analysis, and documentation without rebuilding prompts for every task.<br><br><ul><li>Find skills with <code>/skills list</code> to see bundled and user-defined workflows.</li><li>Preview a skill with <code>/skills test &lt;name&gt;</code> to inspect its goal, inputs, tools, and sample runs before using it on real work.</li><li>Reload after edits with <code>/skills reload</code> so changes to skill files are picked up immediately.</li><li>Restore bundled skills with <code>/skills reinstall</code> if local experiments break the core collection.</li></ul><br>Skills follow the Agent Skills specification and are discovered from <code>~/.llpm/skills/</code> and project-specific skill folders, so repositories can ship their own guided workflows alongside code.<br><br>The core collection includes skills for requirement elicitation, project planning, issue decomposition and dependency mapping, architecture diagramming, context-aware question generation, at-risk detection, stakeholder tracking, FAQ building from issues, note consolidation, meeting preparation, research summarization, and thread discussion summarization.<br><br>Each skill documents its flow, inputs, and expected outputs in its <code>SKILL.md</code> file, making it easy to audit behavior, adapt prompts to a team’s process, and create new skills tailored to a repository."
     class="hx-aspect-auto md:hx-aspect-[1.1/1] max-md:hx-min-h-[720px]"
     style="background: radial-gradient(ellipse at 50% 80%,rgba(221,210,59,0.15),hsla(0,0%,100%,0));"
   >}}
