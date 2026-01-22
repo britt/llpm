@@ -67,74 +67,18 @@ Scan results are saved to `~/.llpm/projects/{projectId}/project.json`.
 - Reload after editing skill files: `/skills reload`
 - Restore bundled skills: `/skills reinstall`
 
----
-title: LLPM Documentation
-layout: hextra-home
----
+Skills are discovered from `~/.llpm/skills/` and project-specific skill folders.
 
-# Large Language Model Product Manager
+### Notes, search, and shell
 
-AI-powered product management CLI for GitHub issues, codebases, stakeholders, and requirements.
+- Notes are stored under `~/.llpm/projects/{projectId}/notes/` as Markdown files with YAML frontmatter.
+- Notes search uses ripgrep-based text search.
+- Shell execution is configured in `~/.llpm/config.json` under the `shell` section.
 
-## Install
+## Next steps
 
-LLPM is a Bun-based CLI.
-
-```bash
-# Install the LLPM CLI globally with Bun
-bun add -g llpm
-
-# Start LLPM
-llpm
-```
-
-Next:
-
-- Configure at least one model provider (environment variables)
-- Run `/model providers` to confirm LLPM sees your credentials
-- Use `/model switch` to pick a model
-
-For prerequisites, provider setup, and other install options, see [Installation]({{< relref "docs/getting-started/installation.md" >}}).
-
-## What LLPM does
-
-### Multi-provider models
-
-- Configure providers and credentials: `/model providers`
-- Switch models (interactive): `/model switch`
-- Switch models directly: `/model switch <provider>/<model>`
-- List models: `/model list` (use `/model list --all` to include unconfigured providers)
-- Refresh the cached catalog: `/model update`
-
-Supported provider IDs: `openai`, `anthropic`, `groq`, `google-vertex`, `cerebras`.
-
-Example model IDs (from `MODELS.md`):
-
-- OpenAI: `gpt-5.2`, `gpt-5.2-mini`, `gpt-5.2-turbo`, `gpt-5.1`, `gpt-5.1-mini`, `gpt-5.1-turbo`, `gpt-4o`, `gpt-4o-mini`, `o4-mini`, `o3-mini`
-- Anthropic: `claude-sonnet-4-5`, `claude-opus-4-1`, `claude-sonnet-4`, `claude-opus-4`, `claude-3-7-sonnet-latest`, `claude-3-5-haiku-latest`, `claude-3-haiku`
-- Google Vertex: `gemini-2.5-pro`, `gemini-2.5-flash`, `gemini-2.5-ultra`
-- Groq: `meta-llama/llama-4-maverick-17b-128e-instruct`, `llama-3.3-70b-versatile`, `llama-3.1-70b-versatile`, `llama-3.1-8b-instant`, `deepseek-r1-distill-llama-70b`, `moonshotai/kimi-k2-instruct`, `openai/gpt-oss-120b`, `openai/gpt-oss-20b`, `qwen/qwen3-32b`
-- Cerebras: `qwen-3-235b-a22b-instruct-2507`, `llama-3.3-70b`, `llama3.1-8b`, `llama3.1-70b`
-
-Notes:
-
-- Model discovery is cached in `~/.llpm/models.json`.
-- If a provider is not configured, its models stay hidden from the selector and the footer only shows models from configured providers.
-
-### Projects, scans, and GitHub
-
-- Manage projects: `/project`
-- Scan a codebase: `/project scan` (uses the active project or the current working directory)
-- Connect and browse repositories: `/github`
-
-Scan results are saved to `~/.llpm/projects/{projectId}/project.json`.
-
-### Skills and guided workflows
-
-- List skills: `/skills list`
-- Preview a skill: `/skills test <name>`
-- Reload after editing skill files: `/skills reload`
-- Restore bundled skills: `/skills reinstall`
+- Follow the setup guide: [Getting Started]({{< relref "docs/getting-started/_index.md" >}})
+- Learn the workflows: [User Guide]({{< relref "docs/user-guide/_index.md" >}})
 
 Skills are discovered from `~/.llpm/skills/` and project-specific skill folders.
 
