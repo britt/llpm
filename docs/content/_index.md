@@ -136,3 +136,5 @@ cannot fail with an unterminated quoted shortcode argument.
   </div>
 </div>
 
+<!-- docs-homepage-normalize: keep a stable trailing newline -->
+
