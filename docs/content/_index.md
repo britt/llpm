@@ -22,7 +22,7 @@ layout: hextra-home
 
 ## Install
 
-LLPM is a Bun-based CLI. Install prerequisites first: Node.js 18+ (or newer), Bun, and Git available on your `PATH`.
+LLPM is a Bun-based CLI. Install prerequisites first: Bun and Git available on your `PATH`.
 
 ```bash
 # Install the LLPM CLI globally with Bun
@@ -46,12 +46,12 @@ For prerequisites, provider setup, and other install options, see [Installation]
 {{< hextra/feature-grid >}}
   {{< hextra/feature-card
     title="Multi-Provider Models"
-    subtitle="Connect one or more providers, then switch models per project or task.
+    subtitle="Connect one or more providers, then switch models per project or task while LLPM keeps the catalog in sync with provider APIs.
 
-- Run `/model providers` to see which providers are configured.
-- Use `/model switch` to pick a model (interactive), or `/model switch <provider>/<model>` to switch directly.
-- Run `/model list` to list models for configured providers.
-- Use `/model update` to refresh the cached catalog from provider APIs.
+- Run `/model providers` to see which providers are configured and which credentials are missing.
+- Use `/model switch` to pick a model (interactive), or `/model switch <provider>/<model>` to switch directly from the CLI or the web UI selector.
+- Run `/model list` to inspect the most relevant models per provider, grouped by generation.
+- Use `/model update` to refresh the cached catalog from provider APIs and pull in newly released models.
 
 Supported provider IDs:
 
@@ -61,6 +61,7 @@ Supported provider IDs:
 - `google-vertex`
 - `cerebras`
 
+LLPM discovers models dynamically from provider APIs and groups them by generation, showing the top options per provider by default with an advanced toggle for full catalogs.
 Example model IDs (from `MODELS.md`):
 
 - OpenAI: `gpt-5.2`, `gpt-5.2-mini`, `gpt-5.2-turbo`, `gpt-5.1`, `gpt-5.1-mini`, `gpt-5.1-turbo`, `gpt-4o`, `gpt-4o-mini`, `o4-mini`, `o3-mini`
@@ -69,38 +70,46 @@ Example model IDs (from `MODELS.md`):
 - Groq: `meta-llama/llama-4-maverick-17b-128e-instruct`, `llama-3.3-70b-versatile`, `llama-3.1-70b-versatile`, `llama-3.1-8b-instant`, `deepseek-r1-distill-llama-70b`, `moonshotai/kimi-k2-instruct`, `openai/gpt-oss-120b`, `openai/gpt-oss-20b`, `qwen/qwen3-32b`
 - Cerebras: `qwen-3-235b-a22b-instruct-2507`, `llama-3.3-70b`, `llama3.1-8b`, `llama3.1-70b`
 
-LLPM caches the provider-fetched catalog in `~/.llpm/models.json` so model discovery stays fast and consistent between sessions.
+LLPM caches the provider-fetched catalog in `~/.llpm/models.json` so model discovery stays fast and consistent between sessions and across restarts.
 
-If a provider is not configured, its models stay hidden from the selector, and the footer only shows models from configured providers."
+If live discovery fails, LLPM falls back to a curated default catalog defined in `MODELS.md` so core models stay available even when provider APIs are unavailable.
+If a provider is not configured, its models stay hidden from the selector, and the footer only shows models from configured providers so the interface always reflects usable models."
     class="hx-aspect-auto md:hx-aspect-[1.1/1] max-md:hx-min-h-[900px]"
     style="background: radial-gradient(ellipse at 50% 80%,rgba(194,97,254,0.15),hsla(0,0%,100%,0));"
   >}}
   {{< hextra/feature-card
     title="Projects, Scans, and GitHub"
-    subtitle="Tie work to the right repo, then generate project context on demand.
+    subtitle="Tie work to the right repo, then generate rich project context on demand.
 
-- Use `/project` to add, list, switch, and remove projects.
-- Run `/project scan` to analyze a codebase (active project or current working directory).
-- Use `/github` to browse/search repositories, then connect one to a project.
+- Use `/project` to add, list, switch, and remove projects, or to point LLPM at mono-repos and subdirectories.
+- Run `/project scan` to analyze a codebase (active project or current working directory) using the ProjectScanOrchestrator.
+- Use `/github` to browse/search repositories, then connect one to a project so issues, pull requests, and notes share the same context.
 
-A scan summarizes project files (gitignore-aware), languages/frameworks, dependencies, and documentation.
+The scan orchestration parses architecture, dependencies, documentation, and Git history to build a structured project profile for downstream tools.
+A scan summarizes project files (gitignore-aware), languages/frameworks, dependencies, documentation, and high-level architecture descriptions.
 
-LLPM persists scan results in `~/.llpm/projects/{projectId}/project.json` so repeat scans stay fast.
+LLPM persists scan results in `~/.llpm/projects/{projectId}/project.json` so repeat scans and follow-up commands stay fast.
 
-If LLPM starts inside a repo, it can auto-detect the matching project from your current working directory."
+Use flags like `--force` to refresh stale scans or `--no-llm` for a fast static pass without calling model APIs.
+Scan results feed into skills such as project-analysis, context-aware-questions, at-risk-detection, project-planning, and requirement-elicitation so follow-up questions and risk reports stay grounded in the actual codebase and GitHub issues.
+
+If LLPM starts inside a repo, it can auto-detect the matching project from the current working directory and will fall back to scanning the current directory when no project is configured."
     class="hx-aspect-auto md:hx-aspect-[1.1/1] max-lg:hx-min-h-[780px]"
     style="background: radial-gradient(ellipse at 50% 80%,rgba(142,53,74,0.15),hsla(0,0%,100%,0));"
   >}}
   {{< hextra/feature-card
     title="Skills and Guided Workflows"
-    subtitle="Use reusable workflows packaged as Agent Skills (`SKILL.md`) to guide planning, analysis, and documentation.
+    subtitle="Use reusable workflows packaged as Agent Skills (`SKILL.md`) to guide planning, analysis, and documentation without rebuilding prompts for every task.
 
-- Find skills with `/skills list`.
-- Preview a skill with `/skills test <name>`.
-- Reload after edits with `/skills reload`.
-- Restore bundled skills with `/skills reinstall`.
+- Find skills with `/skills list` to see bundled and user-defined workflows.
+- Preview a skill with `/skills test <name>` to inspect its goal, inputs, tools, and sample runs before using it on real work.
+- Reload after edits with `/skills reload` so changes to SKILL.md files are picked up immediately.
+- Restore bundled skills with `/skills reinstall` if local experiments break the core collection.
 
-Skills cover repeatable workflows like requirement elicitation, stakeholder tracking, project planning, risk checks, and context-aware question generation."
+Skills follow the Agent Skills specification and are discovered from `~/.llpm/skills/` and project-specific skill folders, so repositories can ship their own guided workflows alongside code.
+The core collection includes skills for requirement elicitation wizards, project-planning orchestrators, issue decomposition and dependency mapping, architecture diagramming, context-aware question generation, at-risk detection and risk reporting, stakeholder tracking and updates, FAQ building from issues, note consolidation and summarization, meeting preparation, research summarization, and thread discussion summarization.
+
+Each skill documents its flow, inputs, and expected outputs in its SKILL.md file, making it easy to audit behavior, adapt prompts to a team’s process, and create entirely new skills tailored to a particular repository."
     class="hx-aspect-auto md:hx-aspect-[1.1/1] max-md:hx-min-h-[720px]"
     style="background: radial-gradient(ellipse at 50% 80%,rgba(221,210,59,0.15),hsla(0,0%,100%,0));"
   >}}
@@ -109,10 +118,13 @@ Skills cover repeatable workflows like requirement elicitation, stakeholder trac
     subtitle="Capture project knowledge in Markdown notes, search it locally, and run carefully scoped shell commands when needed.
 
 - Notes are stored as Markdown files with YAML frontmatter under `~/.llpm/projects/{projectId}/notes/`.
-- Search uses ripgrep-based text search for fast local lookup.
-- Shell execution is configured in `~/.llpm/config.json`.
+Notes use YAML frontmatter to store titles, tags, and other metadata, making them easy to organize, grep, and feed into higher-level skills like consolidate-notes-summary, build-faq-from-issues, and prepare-meeting-agenda.
+- Search uses ripgrep-based text search for fast local lookup and does not rely on embeddings or external vector indexes.
+The Markdown-based NotesBackend keeps everything on disk, while ripgrep-powered search stays fast even for large workspaces and multi-project setups.
+- Shell execution is configured in `~/.llpm/shell.json` as a global allowlist/denylist with timeouts and defaults.
+Every shell command goes through permission validation, explicit user confirmation (with optional skip-confirmation modes), and audit logging via the `run_shell_command` tool, so LLPM can suggest commands while still keeping execution controlled and traceable.
 
-Shell execution is designed for short, auditable commands. Longer workflows stay in normal terminal sessions."
+Shell execution is designed for short, auditable commands that complement LLPM’s analysis and planning tools; longer workflows stay in normal terminal sessions."
     class="hx-aspect-auto md:hx-aspect-[1.1/1] max-md:hx-min-h-[700px]"
     style="background: radial-gradient(ellipse at 50% 80%,rgba(80,120,200,0.15),hsla(0,0%,100%,0));"
   >}}
