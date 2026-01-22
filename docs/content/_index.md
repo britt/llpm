@@ -22,21 +22,22 @@ layout: hextra-home
 
 ## Install
 
-LLPM is a Bun-based CLI. Install prerequisites first: Bun and Git available on your `PATH`.
+LLPM is a Bun-based CLI.
+
+1. Install prerequisites first: Bun and Git available on your `PATH`.
+2. Install LLPM globally.
+3. Start LLPM.
 
 ```bash
-# Install the LLPM CLI globally with Bun
 bun add -g llpm
-
-# Then start LLPM
 llpm
 ```
 
 Next:
 
-- Configure at least one model provider (environment variables)
-- Run `/model providers` to confirm LLPM sees your credentials
-- Use `/model switch` to pick a model
+- Configure at least one model provider (environment variables).
+- Run `/model providers` to confirm LLPM sees your credentials.
+- Use `/model switch` to pick a model.
 
 For prerequisites, provider setup, and other install options, see [Installation]({{< relref "docs/getting-started/installation.md" >}}).
 
@@ -89,6 +90,8 @@ Work with projects and GitHub:
 - Run `/project scan` to analyze a codebase (active project or current working directory).
 - Use `/github` to browse/search repositories, then connect one to a project.
 
+Project scans summarize project files (gitignore-aware), languages/frameworks, dependencies, documentation, and high-level architecture.
+
 LLPM persists scan results in `~/.llpm/projects/{projectId}/project.json` so repeat scans and follow-up commands stay fast.
 
 Use flags like `--force` to refresh stale scans or `--no-llm` for a fast static pass without calling model APIs.
@@ -97,7 +100,7 @@ Use flags like `--force` to refresh stale scans or `--no-llm` for a fast static 
 
   {{< hextra/feature-card
     title="Skills and Guided Workflows"
-    subtitle="Use reusable workflows packaged as Agent Skills (`SKILL.md`) to guide planning, analysis, and documentation."
+    subtitle="Use reusable workflows packaged as Agent Skills (`SKILL.md`) to guide planning, analysis, and documentation without rebuilding prompts for every task."
     class="hx-aspect-auto md:hx-aspect-[1.1/1] max-md:hx-min-h-[720px]"
     style="background: radial-gradient(ellipse at 50% 80%,rgba(221,210,59,0.15),hsla(0,0%,100%,0));"
   >}}
