@@ -190,7 +190,7 @@ This page avoids parameterized feature-card shortcodes and uses plain HTML.
     </ul>
 
     <p class="hx-mt-4">
-      See <a href='{{< relref "docs/user-guide/commands.md" >}}'>User Guide: Commands</a> and <a href='{{< relref "docs/user-guide/skills.md" >}}'>User Guide: Skills</a>.
+      See <a href="{{< relref "docs/user-guide/commands.md" >}}">User Guide: Commands</a> and <a href="{{< relref "docs/user-guide/skills.md" >}}">User Guide: Skills</a>.
     </p>
   </div>
 </div>
