@@ -47,7 +47,7 @@ For prerequisites, provider setup, and other install options, see [Installation]
 {{< hextra/feature-grid >}}
   {{< hextra/feature-card
     title="Multi-Provider Models"
-    subtitle="Connect one or more providers, then switch models per project or task while LLPM keeps the catalog in sync with provider APIs."
+    subtitle=`Connect one or more providers, refresh the catalog, then switch models per project or task.`
     class="hx-aspect-auto md:hx-aspect-[1.1/1] max-md:hx-min-h-[900px]"
     style="background: radial-gradient(ellipse at 50% 80%,rgba(194,97,254,0.15),hsla(0,0%,100%,0));"
   >}}
@@ -69,17 +69,13 @@ Example model IDs (from `MODELS.md`):
 - Groq: `meta-llama/llama-4-maverick-17b-128e-instruct`, `llama-3.3-70b-versatile`, `llama-3.1-70b-versatile`, `llama-3.1-8b-instant`, `deepseek-r1-distill-llama-70b`, `moonshotai/kimi-k2-instruct`, `openai/gpt-oss-120b`, `openai/gpt-oss-20b`, `qwen/qwen3-32b`
 - Cerebras: `qwen-3-235b-a22b-instruct-2507`, `llama-3.3-70b`, `llama3.1-8b`, `llama3.1-70b`
 
-LLPM caches the provider-fetched catalog in `~/.llpm/models.json` so model discovery stays fast and consistent between sessions.
-
-If live discovery fails, LLPM falls back to a curated default catalog defined in `MODELS.md` so core models stay available.
-
-If a provider is not configured, its models stay hidden from the selector, and the footer only shows models from configured providers.
+LLPM caches the provider-fetched catalog in `~/.llpm/models.json`.
 
   {{< /hextra/feature-card >}}
 
   {{< hextra/feature-card
     title="Projects, Scans, and GitHub"
-    subtitle="Tie work to the right repo, then generate rich project context on demand."
+    subtitle=`Tie work to the right repo, then generate project context on demand.`
     class="hx-aspect-auto md:hx-aspect-[1.1/1] max-lg:hx-min-h-[780px]"
     style="background: radial-gradient(ellipse at 50% 80%,rgba(142,53,74,0.15),hsla(0,0%,100%,0));"
   >}}
@@ -92,15 +88,15 @@ Work with projects and GitHub:
 
 Project scans summarize project files (gitignore-aware), languages/frameworks, dependencies, documentation, and high-level architecture.
 
-LLPM persists scan results in `~/.llpm/projects/{projectId}/project.json` so repeat scans and follow-up commands stay fast.
+LLPM persists scan results in `~/.llpm/projects/{projectId}/project.json`.
 
-Use flags like `--force` to refresh stale scans or `--no-llm` for a fast static pass without calling model APIs.
+Use `--force` to refresh cached scans or `--no-llm` to skip architecture analysis.
 
   {{< /hextra/feature-card >}}
 
   {{< hextra/feature-card
     title="Skills and Guided Workflows"
-    subtitle="Use reusable workflows packaged as Agent Skills (`SKILL.md`) to guide planning, analysis, and documentation without rebuilding prompts for every task."
+    subtitle=`Use reusable workflows packaged as Agent Skills to guide planning, analysis, and documentation.`
     class="hx-aspect-auto md:hx-aspect-[1.1/1] max-md:hx-min-h-[720px]"
     style="background: radial-gradient(ellipse at 50% 80%,rgba(221,210,59,0.15),hsla(0,0%,100%,0));"
   >}}
@@ -118,7 +114,7 @@ Skills are discovered from `~/.llpm/skills/` and project-specific skill folders.
 
   {{< hextra/feature-card
     title="Notes, Search, and Shell"
-    subtitle="Capture project knowledge in Markdown notes, search it locally, and run carefully scoped shell commands when needed."
+    subtitle=`Capture project knowledge in Markdown notes, search it locally, and run carefully scoped shell commands when needed.`
     class="hx-aspect-auto md:hx-aspect-[1.1/1] max-md:hx-min-h-[700px]"
     style="background: radial-gradient(ellipse at 50% 80%,rgba(80,120,200,0.15),hsla(0,0%,100%,0));"
   >}}
