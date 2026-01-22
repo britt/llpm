@@ -77,86 +77,77 @@ llpm
    /project
    ```
 
----
-title: LLPM Documentation
----
+## What LLPM helps with
 
-# LLPM
+### Models (multi-provider)
 
-LLPM is an AI-powered product management CLI that runs in your terminal.
+LLPM supports multiple model providers and caches provider model catalogs.
 
-Use it to:
+Use these commands:
 
-- Work with GitHub issues and pull requests
-- Manage local projects (including codebase scanning)
-- Keep notes (stored as Markdown)
-- Track stakeholders and goals
-- Run requirement elicitation workflows
+- `/model providers` to see which providers are configured
+- `/model list` to list available models
+- `/model update` to refresh the cached model catalog
+- `/model switch` to switch models interactively
 
-## Install
+Example direct switch:
 
-### Install from source
-
-**Prerequisites**
-
-- [Bun](https://bun.com)
-- At least one configured model provider (see [Model providers](#model-providers))
-
-1. **Clone the repository.**
-
-   ```bash
-   git clone https://github.com/britt/llpm.git
-   cd llpm
-   ```
-
-2. **Install dependencies.**
-
-   ```bash
-   bun install
-   ```
-
-3. **Configure environment variables.**
-
-   ```bash
-   cp .env.example .env
-   ```
-
-4. **Start LLPM.**
-
-   ```bash
-   bun start
-   ```
-
-### Install globally (optional)
-
-To run `llpm` as a command, link it globally:
-
-```bash
-bun link
-llpm
+```text
+/model switch cerebras/qwen-3-235b-a22b-instruct-2507
 ```
 
-## Quickstart
+### Projects, scans, and GitHub
 
-1. **Check provider configuration.**
+Projects keep separate context for different repositories and directories.
 
-   ```text
-   /model providers
-   ```
+Use these commands:
 
-2. **Switch models (optional).**
+- `/project` to manage projects
+- `/project scan` to scan a project directory
+- `/github` to browse and search repositories
+- `/issue` to work with issues
 
-   ```text
-   /model switch
-   ```
+### Skills and guided workflows
 
-3. **Add or switch projects.**
+Skills are reusable workflow guides (planning, diagrams, requirement elicitation, stakeholder updates).
 
-   ```text
-   /project
-   ```
+Use these commands:
 
-## What LLPM helps with
+- `/skills list`
+- `/skills test <name>`
+- `/skills reload`
+- `/skills reinstall`
+
+### Notes (Markdown) and search
+
+Notes are stored as Markdown files.
+
+- Notes live under `~/.llpm/projects/{projectId}/notes/`.
+- Notes search uses ripgrep-based text search.
+
+## Model providers
+
+LLPM supports these model providers:
+
+- `openai`
+- `anthropic`
+- `groq`
+- `google-vertex`
+- `cerebras`
+
+To see what credentials each provider needs:
+
+```text
+/model providers
+```
+
+For full provider configuration and model reference, see [Getting Started: Configuration](./docs/getting-started/configuration/).
+
+## Next steps
+
+- Start here: [Getting Started](./docs/getting-started/)
+- Learn the workflows: [User Guide](./docs/user-guide/)
+- Browse skills: [Skills Reference](./docs/skills-reference/)
 
 ### Models (multi-provider)
 
