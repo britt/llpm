@@ -96,7 +96,7 @@ Use `--force` to refresh cached scans or `--no-llm` to skip architecture analysi
 
   {{< hextra/feature-card
     title="Skills and Guided Workflows"
-    subtitle=`Use reusable workflows packaged as Agent Skills to guide planning, analysis, and documentation.`
+    subtitle="Use reusable workflows packaged as Agent Skills to guide planning, analysis, and documentation."
     class="hx-aspect-auto md:hx-aspect-[1.1/1] max-md:hx-min-h-[720px]"
     style="background: radial-gradient(ellipse at 50% 80%,rgba(221,210,59,0.15),hsla(0,0%,100%,0));"
   >}}
