@@ -65,7 +65,7 @@ shortcodes-with-quoted-parameters.
 
     <ul class="hx-list-disc hx-pl-6 hx-space-y-2 hx-text-gray-600 dark:hx-text-gray-300">
       <li>Run <code>/model providers</code> to see which providers are configured and which credentials are missing.</li>
-      <li>Use <code>/model switch</code> to pick a model (interactive), or <code>/model switch &lt;provider&gt;/&lt;model&gt;</code> to switch directly.</li>
+      <li>Use <code>/model switch &lt;provider&gt;/&lt;model&gt;</code> to switch directly, or run <code>/model switch</code> for the interactive picker.</li>
       <li>Run <code>/model list</code> to inspect relevant models per provider, grouped by generation.</li>
       <li>Use <code>/model update</code> to refresh the cached catalog from provider APIs.</li>
     </ul>
