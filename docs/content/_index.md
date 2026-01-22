@@ -31,14 +31,11 @@ LLPM is an AI-powered product management CLI for working with GitHub issues, loc
 
 LLPM is organized around four core workflows:
 
-- **Multi-provider models**: configure one or more providers, list models, and switch per task.
-- **Projects, scans, and GitHub**: manage projects, scan codebases, and connect GitHub repositories.
-- **Skills and guided workflows**: use skills to guide repeatable planning and analysis flows.
-- **Notes and search**: store decisions as Markdown notes and search them with ripgrep.
-
 ### Multi-provider models
 
-LLPM supports these model providers:
+Connect one or more providers, then list and switch models per project or task.
+
+Supported providers:
 
 - `openai`
 - `anthropic`
@@ -46,7 +43,7 @@ LLPM supports these model providers:
 - `google-vertex`
 - `cerebras`
 
-Use these commands:
+Common commands:
 
 - Configure provider credentials: `/model providers`
 - List models: `/model list`
@@ -81,7 +78,7 @@ Use skills to guide repeatable workflows (planning, elicitation, stakeholder upd
 
 ### Notes and search
 
-Store decisions as markdown notes and search them with ripgrep.
+Store decisions as Markdown notes and search them with ripgrep.
 
 - Notes are stored under `~/.llpm/projects/{projectId}/notes/` as Markdown files with YAML frontmatter.
 - Notes search uses ripgrep-based text search.
