@@ -113,11 +113,8 @@ Work with skills:
 Skills are discovered from `~/.llpm/skills/` and project-specific skill folders.
 
   {{< /hextra/feature-card >}}
+{{< /hextra/feature-grid >}}
 
-  ---
-title: LLPM Documentation
-layout: hextra-home
----
 
 {{< hextra/hero-badge >}}
   <span>AI-Powered CLI</span>
