@@ -129,7 +129,7 @@ Avoid fragile quoting by using plain HTML cards (instead of feature-card shortco
       <li><code>~/.llpm/skills/</code> (user skills)</li>
     </ul>
 
-    <p class="hx-mt-4">Explore the full catalog in [Skills Reference]({{< relref "docs/skills-reference/_index.md" >}}).</p>
+    <p class="hx-mt-4">Explore the full catalog in <a href="{{< relref \"docs/skills-reference/_index.md\" >}}">Skills Reference</a>.</p>
   </div>
 
   <div
