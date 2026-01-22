@@ -81,7 +81,7 @@ shortcodes-with-quoted-parameters.
       <br>
       Anthropic: <code>claude-sonnet-4-5</code>, <code>claude-opus-4-1</code>
       <br>
-      Groq: <code>llama-3.3-70b-versatile</code>, <code>deepseek-r1-distill-llama-70b</code>
+      Groq: <code>meta-llama/llama-4-maverick-17b-128e-instruct</code>, <code>llama-3.3-70b-versatile</code>, <code>deepseek-r1-distill-llama-70b</code>
       <br>
       Google Vertex AI: <code>gemini-2.5-pro</code>, <code>gemini-2.5-flash</code>
       <br>
