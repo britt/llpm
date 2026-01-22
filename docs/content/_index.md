@@ -90,7 +90,7 @@ For prerequisites, provider setup, and other install options, see [Installation]
         <code>moonshotai/kimi-k2-instruct</code>, <code>openai/gpt-oss-120b</code>, <code>openai/gpt-oss-20b</code>,
         <code>qwen/qwen3-32b</code>
       </li>
-      <li>Cerebras: <code>qwen-3-235b-a22b-instruct-2507</code>, <code>llama-3.3-70b</code>, <code>llama3.1-8b</code>, <code>llama3.1-70b</code></li>
+      <li>Cerebras: <code>qwen-3-235b-instruct-2507</code>, <code>llama-3.3-70b</code>, <code>llama3.1-8b</code>, <code>llama3.1-70b</code></li>
     </ul>
 
     <p>LLPM caches the provider-fetched catalog in <code>~/.llpm/models.json</code>.</p>
