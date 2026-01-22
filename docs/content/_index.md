@@ -14,6 +14,11 @@ LLPM is an AI-powered product management CLI for working with:
 
 ## Install (from source)
 
+### Prerequisites
+
+- [Bun](https://bun.com)
+- At least one configured model provider (see [Model providers](#model-providers))
+
 1. **Clone the repository.**
 
    ```bash
@@ -41,25 +46,19 @@ LLPM is an AI-powered product management CLI for working with:
    bun start
    ```
 
-2. **Configure at least one model provider.**
-
-   Run:
+2. **Check provider configuration.**
 
    ```text
    /model providers
    ```
 
-   Then set the required environment variables for the provider you want to use.
-
-3. **Select a model.**
+3. **Switch models.**
 
    ```text
    /model switch
    ```
 
-4. **Set up a project (optional).**
-
-   Run:
+4. **Add or switch projects.**
 
    ```text
    /project
@@ -69,34 +68,45 @@ LLPM is an AI-powered product management CLI for working with:
 
 ### Multi-provider model management
 
-LLPM works with multiple model providers so you can switch models as you work.
+LLPM supports switching between multiple providers, so different projects or tasks can use different models.
 
-- See which providers are configured: `/model providers`
-- List available models: `/model list`
-- Refresh the cached model catalog from provider APIs: `/model update`
-- Switch interactively: `/model switch`
-- Switch directly by ID: `/model switch cerebras/qwen-3-235b-a22b-instruct-2507`
+Common commands:
+
+- `/model providers` (see which providers are configured)
+- `/model list` (list models)
+- `/model update` (refresh the cached model catalog)
+- `/model switch` (switch interactively)
+
+Example direct switch:
+
+```text
+/model switch cerebras/qwen-3-235b-a22b-instruct-2507
+```
 
 ### Projects, scans, and GitHub workflows
 
 Projects keep separate context for different repositories and directories.
 
-- Manage projects: `/project`
-- Scan the current project: `/project scan`
-- Work with GitHub repositories and issues: `/github`, `/issue`, `/project`
+Common commands:
+
+- `/project` (manage projects)
+- `/project scan` (scan a project directory)
+- `/github` and `/issue` (work with GitHub)
 
 ### Skills and guided workflows
 
 Skills guide repeatable workflows (planning, diagrams, requirement elicitation, stakeholder updates).
 
-- List skills: `/skills list`
-- Preview a skill: `/skills test <name>`
-- Reload after editing skill files: `/skills reload`
-- Restore bundled skills: `/skills reinstall`
+Common commands:
+
+- `/skills list`
+- `/skills test <name>`
+- `/skills reload`
+- `/skills reinstall`
 
 ### Notes (Markdown) and search
 
-Notes are stored as Markdown files and can be searched with ripgrep.
+Notes are stored as Markdown files.
 
 - Notes live under `~/.llpm/projects/{projectId}/notes/`.
 - Notes search uses ripgrep-based text search.
@@ -111,13 +121,11 @@ LLPM supports these model providers:
 - `google-vertex`
 - `cerebras`
 
-To see what credentials each provider needs, run:
+To see what credentials each provider needs:
 
 ```text
 /model providers
 ```
-
-For the full configuration reference, see [Configuration](./docs/getting-started/configuration/).
 
 ## Next steps
 
