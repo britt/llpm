@@ -37,6 +37,33 @@ Next:
 - Configure at least one model provider (environment variables).
 - Run `/model providers` to confirm LLPM sees your credentials.
 - Use `/model switch` to pick a model.
+
+For prerequisites, provider setup, and other install options, see [Installation]({{< relref "docs/getting-started/installation.md" >}}).
+
+Next steps:
+
+- Follow [Quickstart]({{< relref "docs/getting-started/quickstart.md" >}}) for a first session and common slash commands.
+- Review [Configuration]({{< relref "docs/getting-started/configuration.md" >}}) for environment variables and setup.
+
+<!--
+NOTE:
+The docs build previously failed with:
+  unterminated quoted string in shortcode parameter-argument
+This homepage uses HTML-based cards (instead of feature-card shortcodes) to avoid fragile quoting in shortcode params.
+-->
+
+<div class="hx-mt-12 hx-grid hx-gap-6 md:hx-grid-cols-2">
+  <div
+    class="hx-rounded-2xl hx-border hx-border-gray-200/50 dark:hx-border-gray-800/50 hx-bg-white/60 dark:hx-bg-neutral-900/40 hx-p-6"
+    style="background: radial-gradient(ellipse at 50% 80%,rgba(194,97,254,0.15),hsla(0,0%,100%,0));"
+  >
+    <h3 class="hx-text-xl hx-font-semibold">Multi-Provider Models</h3>
+    <p class="hx-mt-2 hx-text-gray-600 dark:hx-text-gray-300">
+      Connect one or more providers and switch models per project or task, with a cached catalog that stays aligned with provider APIs.
+    </p>
+
+    <p>Connect and manage providers:</p>
+
     <ul>
       <li>Run <code>/model providers</code> to see which providers are configured and which credentials are missing.</li>
       <li>
@@ -148,32 +175,6 @@ Next:
 </div>
 
 <!-- Homepage last reviewed: ensure provider IDs and example models match src/types/models.ts defaults. -->
-
-For prerequisites, provider setup, and other install options, see [Installation]({{< relref "docs/getting-started/installation.md" >}}).
-
-Next steps:
-
-- Follow [Quickstart]({{< relref "docs/getting-started/quickstart.md" >}}) for a first session and common slash commands.
-- Review [Configuration]({{< relref "docs/getting-started/configuration.md" >}}) for environment variables and setup.
-
-<!--
-NOTE:
-The docs build previously failed with:
-  unterminated quoted string in shortcode parameter-argument
-This homepage uses HTML-based cards (instead of feature-card shortcodes) to avoid fragile quoting in shortcode params.
--->
-
-<div class="hx-mt-12 hx-grid hx-gap-6 md:hx-grid-cols-2">
-  <div
-    class="hx-rounded-2xl hx-border hx-border-gray-200/50 dark:hx-border-gray-800/50 hx-bg-white/60 dark:hx-bg-neutral-900/40 hx-p-6"
-    style="background: radial-gradient(ellipse at 50% 80%,rgba(194,97,254,0.15),hsla(0,0%,100%,0));"
-  >
-    <h3 class="hx-text-xl hx-font-semibold">Multi-Provider Models</h3>
-    <p class="hx-mt-2 hx-text-gray-600 dark:hx-text-gray-300">
-      Connect one or more providers and switch models per project or task, with a cached catalog that stays aligned with provider APIs.
-    </p>
-
-    <p>Connect and manage providers:</p>
 
     <ul>
       <li>Run <code>/model providers</code> to see which providers are configured and which credentials are missing.</li>
