@@ -4,7 +4,9 @@ title: LLPM Documentation
 
 # LLPM
 
-LLPM is an AI-powered product management CLI for working with:
+LLPM is an AI-powered product management CLI.
+
+Use it to work with:
 
 - GitHub issues and pull requests
 - Local projects (including codebase scanning)
@@ -68,7 +70,7 @@ LLPM is an AI-powered product management CLI for working with:
 
 ### Multi-provider model management
 
-LLPM supports switching between multiple providers, so different projects or tasks can use different models.
+Switch between multiple providers, so different projects or tasks can use different models.
 
 Common commands:
 
