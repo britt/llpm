@@ -414,35 +414,3 @@ This homepage uses HTML-based cards (instead of feature-card shortcodes) to avoi
   </div>
 </div>
 
-<div class="hx-mt-6 hx-grid hx-gap-6 md:hx-grid-cols-2">
-  <div
-    class="hx-rounded-2xl hx-border hx-border-gray-200/50 dark:hx-border-gray-800/50 hx-bg-white/60 dark:hx-bg-neutral-900/40 hx-p-6"
-    style="background: radial-gradient(ellipse at 50% 80%,rgba(61,132,255,0.15),hsla(0,0%,100%,0));"
-  >
-    <h3 class="hx-text-xl hx-font-semibold">Notes (Markdown)</h3>
-    <p class="hx-mt-2 hx-text-gray-600 dark:hx-text-gray-300">
-      Capture decisions, plans, and research as Markdown notes and search them with ripgrep.
-    </p>
-
-    <ul>
-      <li>Use <code>/notes</code> to create, list, view, update, and search notes.</li>
-      <li>Install <code>rg</code> (ripgrep) for fast full-text search.</li>
-    </ul>
-  </div>
-
-  <div
-    class="hx-rounded-2xl hx-border hx-border-gray-200/50 dark:hx-border-gray-800/50 hx-bg-white/60 dark:hx-bg-neutral-900/40 hx-p-6"
-    style="background: radial-gradient(ellipse at 50% 80%,rgba(87,204,116,0.15),hsla(0,0%,100%,0));"
-  >
-    <h3 class="hx-text-xl hx-font-semibold">Skills and Workflows</h3>
-    <p class="hx-mt-2 hx-text-gray-600 dark:hx-text-gray-300">
-      Use a catalog of skills (Agent Skills spec) to guide workflows like requirement elicitation, stakeholder tracking, risk detection, and project planning.
-    </p>
-
-    <ul>
-      <li>Run <code>/skills</code> to list installed skills.</li>
-      <li>Use <code>/skills reinstall</code> to refresh bundled core skills.</li>
-      <li>Review the <a href="{{< relref "docs/skills-reference/" >}}">Skills Reference</a> for what’s included.</li>
-    </ul>
-  </div>
-</div>
