@@ -128,3 +128,14 @@ Notes and tools:
 
   {{< /hextra/feature-card >}}
 {{< /hextra/feature-grid >}}
+
+  >}}
+
+Notes and tools:
+
+- Notes are stored under `~/.llpm/projects/{projectId}/notes/`.
+- Search uses ripgrep-based text search.
+- Shell execution is configured in `~/.llpm/config.json` (`shell` section) and runs via the `run_shell_command` tool.
+
+  {{< /hextra/feature-card >}}
+{{< /hextra/feature-grid >}}
