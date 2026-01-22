@@ -24,16 +24,15 @@ layout: hextra-home
 
 LLPM is a Bun-based CLI.
 
-1. Install Bun and Git.
-2. Install LLPM.
+1. Clone the repository.
+2. Install dependencies.
 3. Start LLPM.
 
 ```bash
-# Install the LLPM CLI globally with Bun
-bun add -g llpm
-
-# Start LLPM
-llpm
+git clone https://github.com/britt/llpm.git
+cd llpm
+bun install
+bun start
 ```
 
 Next:
@@ -42,7 +41,7 @@ Next:
 - Run `/model providers` to confirm LLPM sees your credentials.
 - Use `/model switch` to pick a model.
 
-For prerequisites, provider setup, and other install options, see [Installation]({{< relref "docs/getting-started/installation.md" >}}).
+For prerequisites and provider setup, see [Installation]({{< relref "docs/getting-started/installation.md" >}}).
 
 </div>
 </div>
