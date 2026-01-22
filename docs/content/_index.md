@@ -47,9 +47,9 @@ Next steps:
 
 <!--
 NOTE:
-The docs build failed with:
-  unterminated quoted string in shortcode parameter-argument
-Avoid fragile quoting by using plain HTML cards (instead of feature-card shortcodes with string params).
+Avoid fragile quoting in shortcode parameter strings (a previous homepage build failed with:
+  unterminated quoted string in shortcode parameter-argument).
+Use plain HTML cards instead of parameterized shortcodes.
 -->
 
 <div class="hx-mt-12 hx-grid hx-gap-6 md:hx-grid-cols-2">
@@ -118,6 +118,40 @@ Avoid fragile quoting by using plain HTML cards (instead of feature-card shortco
     <p class="hx-mt-4">Manage skills:</p>
     <ul class="hx-mt-2">
       <li><code>/skills list</code> to view bundled and user-defined skills.</li>
+      <li><code>/skills reload</code> to pick up skill changes on disk.</li>
+      <li><code>/skills reinstall</code> to restore bundled skills after upgrading.</li>
+    </ul>
+
+    <p class="hx-mt-4">Skill locations:</p>
+    <ul class="hx-mt-2">
+      <li><code>skills/</code> (bundled with LLPM)</li>
+      <li><code>.skills/</code> (project-specific skills)</li>
+      <li><code>~/.llpm/skills/</code> (user skills)</li>
+    </ul>
+
+    <p class="hx-mt-4">Explore the full catalog in [Skills Reference]({{< relref "docs/skills-reference/_index.md" >}}).</p>
+  </div>
+
+  <div
+    class="hx-rounded-2xl hx-border hx-border-gray-200/50 dark:hx-border-gray-800/50 hx-bg-white/60 dark:hx-bg-neutral-900/40 hx-p-6"
+    style="background: radial-gradient(ellipse at 50% 80%,rgba(53,123,142,0.15),hsla(0,0%,100%,0));"
+  >
+    <h3 class="hx-text-xl hx-font-semibold">Notes and Local Search</h3>
+    <p class="hx-mt-2 hx-text-gray-600 dark:hx-text-gray-300">
+      Capture project knowledge in Markdown notes and search it locally.
+    </p>
+
+    <ul class="hx-mt-4">
+      <li>Store notes under <code>~/.llpm/projects/{projectId}/notes/</code>.</li>
+      <li>Search notes with <code>ripgrep</code> (no embeddings/vector index required).</li>
+    </ul>
+
+    <p class="hx-mt-4">
+      See [User Guide: Commands]({{< relref "docs/user-guide/commands.md" >}}) and [User Guide: Skills]({{< relref "docs/user-guide/skills.md" >}}).
+    </p>
+  </div>
+</div>
+
       <li><code>/skills reload</code> to pick up skill changes on disk.</li>
       <li><code>/skills reinstall</code> to restore bundled skills after upgrading.</li>
     </ul>
