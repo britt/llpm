@@ -287,16 +287,6 @@ Use plain HTML blocks instead of parameterized shortcodes.
       See <a href='{{< relref "docs/user-guide/commands.md" >}}'>User Guide: Commands</a> and <a href='{{< relref "docs/user-guide/skills.md" >}}'>User Guide: Skills</a>.
     </p>
   </div>
-</div>
-
-    class="hx-rounded-2xl hx-border hx-border-gray-200/50 dark:hx-border-gray-800/50 hx-bg-white/60 dark:hx-bg-neutral-900/40 hx-p-6"
-    style="background: radial-gradient(ellipse at 50% 80%,rgba(142,53,74,0.15),hsla(0,0%,100%,0));"
-  >
-    <h3 class="hx-text-xl hx-font-semibold">Projects, Scans, and GitHub</h3>
-    <p class="hx-mt-2 hx-text-gray-600 dark:hx-text-gray-300">
-      Keep work anchored to the right repository, then generate reusable project context with a structured scan of files, dependencies, documentation, and architecture.
-    </p>
-
     <p>Work with projects and GitHub:</p>
 
     <ul>
