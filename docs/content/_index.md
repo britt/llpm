@@ -92,7 +92,7 @@ shortcode parameter quoting issues during Hugo builds.
       LLPM caches the provider-fetched catalog in <code>~/.llpm/models.json</code>. If live discovery fails, LLPM falls back to curated defaults.
     </p>
 
-</div>
+  </div>
 
   <div class="hx-rounded-xl hx-border hx-border-gray-200 dark:hx-border-neutral-800 hx-bg-white dark:hx-bg-neutral-900 hx-p-6" style="background: radial-gradient(ellipse at 50% 80%,rgba(59,130,246,0.15),hsla(0,0%,100%,0));">
     <h3 class="hx-text-xl hx-font-semibold hx-mb-2">Project context + scans</h3>
@@ -110,13 +110,32 @@ shortcode parameter quoting issues during Hugo builds.
       LLPM persists scan results in <code>~/.llpm/projects/{projectId}/project.json</code>.
     </p>
 
-</div>
+  </div>
 
   <div class="hx-rounded-xl hx-border hx-border-gray-200 dark:hx-border-neutral-800 hx-bg-white dark:hx-bg-neutral-900 hx-p-6" style="background: radial-gradient(ellipse at 50% 80%,rgba(16,185,129,0.15),hsla(0,0%,100%,0));">
     <h3 class="hx-text-xl hx-font-semibold hx-mb-2">GitHub workflows</h3>
     <p class="hx-text-gray-600 dark:hx-text-gray-300 hx-mb-4">
       Work with issues, pull requests, and planning workflows from the CLI. Combine GitHub tools with skills like issue decomposition, risk detection, and context-aware questions.
     </p>
+
+    <ul class="hx-list-disc hx-pl-6 hx-space-y-2 hx-text-gray-600 dark:hx-text-gray-300">
+      <li>Use <code>/github</code> to browse and connect repositories.</li>
+      <li>Use <code>/issue</code> and <code>/project</code> commands to inspect and manage work.</li>
+    </ul>
+  </div>
+
+  <div class="hx-rounded-xl hx-border hx-border-gray-200 dark:hx-border-neutral-800 hx-bg-white dark:hx-bg-neutral-900 hx-p-6" style="background: radial-gradient(ellipse at 50% 80%,rgba(245,158,11,0.15),hsla(0,0%,100%,0));">
+    <h3 class="hx-text-xl hx-font-semibold hx-mb-2">Notes, requirements, stakeholders</h3>
+    <p class="hx-text-gray-600 dark:hx-text-gray-300 hx-mb-4">
+      Keep lightweight project knowledge in notes, run a requirement-elicitation flow to produce a markdown requirements document, and track stakeholders + goals.
+    </p>
+
+    <ul class="hx-list-disc hx-pl-6 hx-space-y-2 hx-text-gray-600 dark:hx-text-gray-300">
+      <li>Use <code>/notes</code> to add, list, and search notes (search uses ripgrep).</li>
+      <li>Use <code>/stakeholder</code> to manage stakeholders and goals.</li>
+    </ul>
+  </div>
+</div>
 
     <ul class="hx-list-disc hx-pl-6 hx-space-y-2 hx-text-gray-600 dark:hx-text-gray-300">
       <li>Use <code>/github</code> to browse and connect repositories.</li>
