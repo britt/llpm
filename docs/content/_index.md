@@ -47,10 +47,8 @@ For prerequisites, provider setup, and other install options, see [Installation]
     title="Multi-Provider Models"
     subtitle="Configure one or more providers, then switch models per session.
 
-Key workflows:
-
 - Use `/model providers` to confirm which providers are configured.
-- Use `/model switch` to pick a model (interactive) or `/model switch <provider>/<model>` to switch directly.
+- Use `/model switch` to pick a model (interactive), or `/model switch <provider>/<model>` to switch directly.
 - Use `/model list` to view the available catalog.
 - Use `/model update` to refresh the cached catalog from provider APIs.
 
@@ -64,14 +62,14 @@ Supported provider IDs:
 
 Example model IDs:
 
-- OpenAI: `gpt-5.2`, `gpt-4o-mini`
-- Anthropic: `claude-sonnet-4-5`
+- OpenAI: `gpt-5.2`, `gpt-4o-mini`, `o4-mini`
+- Anthropic: `claude-sonnet-4-5`, `claude-opus-4-1`
 - Google Vertex: `gemini-2.5-pro`
-- Groq: `llama-3.3-70b-versatile`
-- Cerebras: `qwen-3-235b-a22b-instruct-2507`
+- Groq: `llama-3.3-70b-versatile`, `meta-llama/llama-4-maverick-17b-128e-instruct`
+- Cerebras: `qwen-3-235b-a22b-instruct-2507`, `llama-3.3-70b`
 
 LLPM caches the provider-fetched catalog in `~/.llpm/models.json` so model discovery stays fast and consistent between sessions."
-    class="hx-aspect-auto md:hx-aspect-[1.1/1] max-md:hx-min-h-[600px]"
+    class="hx-aspect-auto md:hx-aspect-[1.1/1] max-md:hx-min-h-[640px]"
     style="background: radial-gradient(ellipse at 50% 80%,rgba(194,97,254,0.15),hsla(0,0%,100%,0));"
   >}}
   {{< hextra/feature-card
@@ -82,8 +80,8 @@ LLPM caches the provider-fetched catalog in `~/.llpm/models.json` so model disco
 - Analyze a codebase with `/project scan` (active project or current working directory).
 - Use `/github` to browse and search repositories, then connect one to a project.
 
-A project scan summarizes codebase structure, dependencies, and documentation so follow-on workflows start with concrete inputs and reduce repeated context gathering."
-    class="hx-aspect-auto md:hx-aspect-[1.1/1] max-lg:hx-min-h-[600px]"
+A project scan summarizes codebase structure, dependencies, and documentation. Use it to start planning and issue work with concrete inputs, and to avoid re-scanning the same repository every session."
+    class="hx-aspect-auto md:hx-aspect-[1.1/1] max-lg:hx-min-h-[620px]"
     style="background: radial-gradient(ellipse at 50% 80%,rgba(142,53,74,0.15),hsla(0,0%,100%,0));"
   >}}
   {{< hextra/feature-card
@@ -95,8 +93,8 @@ A project scan summarizes codebase structure, dependencies, and documentation so
 - Reload after edits with `/skills reload`.
 - Restore bundled skills with `/skills reinstall`.
 
-The built-in catalog covers stakeholder tracking, requirement elicitation, project planning, risk checks, documentation formatting, note consolidation, FAQ generation, meeting preparation, and research summaries."
-    class="hx-aspect-auto md:hx-aspect-[1.1/1] max-md:hx-min-h-[600px]"
+The built-in catalog covers requirement elicitation, stakeholder tracking, project planning, risk checks, and question generation—plus supporting workflows like documentation formatting, note consolidation, FAQ generation, meeting preparation, and research summaries."
+    class="hx-aspect-auto md:hx-aspect-[1.1/1] max-md:hx-min-h-[640px]"
     style="background: radial-gradient(ellipse at 50% 80%,rgba(221,210,59,0.15),hsla(0,0%,100%,0));"
   >}}
   {{< hextra/feature-card
@@ -107,8 +105,8 @@ The built-in catalog covers stakeholder tracking, requirement elicitation, proje
 - Search uses ripgrep-based text search for fast local lookup.
 - Shell execution is configured in `~/.llpm/config.json`.
 
-Use the shell tool for short, auditable commands and keep long-running workflows in normal terminal sessions."
-    class="hx-aspect-auto md:hx-aspect-[1.1/1] max-md:hx-min-h-[600px]"
+Use the shell tool for short, auditable commands. Keep long-running workflows in normal terminal sessions."
+    class="hx-aspect-auto md:hx-aspect-[1.1/1] max-md:hx-min-h-[620px]"
     style="background: radial-gradient(ellipse at 50% 80%,rgba(80,120,200,0.15),hsla(0,0%,100%,0));"
   >}}
 {{< /hextra/feature-grid >}}
