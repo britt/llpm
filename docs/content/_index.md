@@ -248,15 +248,6 @@ Use plain HTML blocks instead of parameterized shortcodes.
       <li>Commands can be audited via a local log when configured.</li>
     </ul>
   </div>
-</div>
-
-    <ul>
-      <li>Run <code>/skills</code> to list installed skills.</li>
-      <li>Use <code>/skills reinstall</code> to refresh bundled core skills.</li>
-      <li>Review the <a href="{{< relref "docs/skills-reference/" >}}">Skills Reference</a> for what’s included.</li>
-    </ul>
-  </div>
-</div>
 
     </p>
 
