@@ -17,7 +17,7 @@ layout: hextra-home
 {{< hextra/hero-subtitle >}}
   AI-powered product management CLI for GitHub issues, codebases, stakeholders, and requirements.
 
-  Install with Bun, configure a provider API key, then start LLPM to begin working with slash commands.
+  Install with Bun and configure a provider API key, then start LLPM and begin working with slash commands.
 {{< /hextra/hero-subtitle >}}
 
 <div class="hx-mt-6">
