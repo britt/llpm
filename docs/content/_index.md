@@ -65,24 +65,18 @@ This homepage uses HTML-based cards (instead of feature-card shortcodes) to avoi
     <p>Connect and manage providers:</p>
 
     <ul>
-      <li>
-        Run <code>/model providers</code> to see which providers are configured and which credentials are missing.
-      </li>
+      <li>Run <code>/model providers</code> to see which providers are configured and which credentials are missing.</li>
       <li>
         Use <code>/model switch</code> to pick a model (interactive), or
         <code>/model switch &lt;provider&gt;/&lt;model&gt;</code> to switch directly.
       </li>
-      <li>
-        Run <code>/model list</code> to inspect models per provider, grouped by generation.
-      </li>
-      <li>
-        Use <code>/model update</code> to refresh the cached catalog from provider APIs.
-      </li>
+      <li>Run <code>/model list</code> to inspect models per provider.</li>
+      <li>Use <code>/model update</code> to refresh the cached catalog from provider APIs.</li>
     </ul>
 
     <p>Supported provider IDs: <code>openai</code>, <code>anthropic</code>, <code>groq</code>, <code>google-vertex</code>, <code>cerebras</code>.</p>
 
-    <p>Example model IDs:</p>
+    <p>Example model IDs (see <a href="https://github.com/britt/llpm/blob/main/MODELS.md">MODELS.md</a> for the full list):</p>
 
     <ul>
       <li>
@@ -106,11 +100,6 @@ This homepage uses HTML-based cards (instead of feature-card shortcodes) to avoi
     </ul>
 
     <p>LLPM caches the provider-fetched catalog in <code>~/.llpm/models.json</code>.</p>
-
-    <p>
-      For details on providers, env vars, and model naming, see
-      <a href="https://github.com/britt/llpm/blob/main/MODELS.md">Models</a>.
-    </p>
   </div>
 
   <div
