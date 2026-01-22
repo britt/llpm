@@ -41,78 +41,135 @@ Next:
 For prerequisites, provider setup, and other install options, see [Installation]({{< relref "docs/getting-started/installation.md" >}}).
 
 <div class="hx-mt-12 hx-grid hx-gap-6 md:hx-grid-cols-2">
-  <div class="hx-rounded-2xl hx-border hx-border-gray-200/50 dark:hx-border-gray-800/50 hx-bg-white/60 dark:hx-bg-neutral-900/40 hx-p-6"
-       style="background: radial-gradient(ellipse at 50% 80%,rgba(194,97,254,0.15),hsla(0,0%,100%,0));">
+  <div
+    class="hx-rounded-2xl hx-border hx-border-gray-200/50 dark:hx-border-gray-800/50 hx-bg-white/60 dark:hx-bg-neutral-900/40 hx-p-6"
+    style="background: radial-gradient(ellipse at 50% 80%,rgba(194,97,254,0.15),hsla(0,0%,100%,0));"
+  >
     <h3 class="hx-text-xl hx-font-semibold">Multi-Provider Models</h3>
-    <p class="hx-mt-2 hx-text-gray-600 dark:hx-text-gray-300">Connect providers and switch models per project or task.</p>
+    <p class="hx-mt-2 hx-text-gray-600 dark:hx-text-gray-300">
+      Connect providers and switch models per project or task.
+    </p>
 
-Connect and manage providers:
+    <p>Connect and manage providers:</p>
 
-- Run `/model providers` to see which providers are configured and which credentials are missing.
-- Use `/model switch` to pick a model (interactive), or `/model switch <provider>/<model>` to switch directly.
-- Run `/model list` to inspect models per provider, grouped by generation.
-- Use `/model update` to refresh the cached catalog from provider APIs.
+    <ul>
+      <li>
+        Run <code>/model providers</code> to see which providers are configured and which credentials are missing.
+      </li>
+      <li>
+        Use <code>/model switch</code> to pick a model (interactive), or
+        <code>/model switch &lt;provider&gt;/&lt;model&gt;</code> to switch directly.
+      </li>
+      <li>
+        Run <code>/model list</code> to inspect models per provider, grouped by generation.
+      </li>
+      <li>
+        Use <code>/model update</code> to refresh the cached catalog from provider APIs.
+      </li>
+    </ul>
 
-Supported provider IDs: `openai`, `anthropic`, `groq`, `google-vertex`, `cerebras`.
+    <p>Supported provider IDs: <code>openai</code>, <code>anthropic</code>, <code>groq</code>, <code>google-vertex</code>, <code>cerebras</code>.</p>
 
-Example model IDs (from `MODELS.md`):
+    <p>Example model IDs (from <code>MODELS.md</code>):</p>
 
-- OpenAI: `gpt-5.2`, `gpt-5.2-mini`, `gpt-5.2-turbo`, `gpt-5.1`, `gpt-5.1-mini`, `gpt-5.1-turbo`, `gpt-4o`, `gpt-4o-mini`, `o4-mini`, `o3-mini`
-- Anthropic: `claude-sonnet-4-5`, `claude-opus-4-1`, `claude-sonnet-4`, `claude-opus-4`, `claude-3-7-sonnet-latest`, `claude-3-5-haiku-latest`, `claude-3-haiku`
-- Google Vertex: `gemini-2.5-pro`, `gemini-2.5-flash`, `gemini-2.5-ultra`
-- Groq: `meta-llama/llama-4-maverick-17b-128e-instruct`, `llama-3.3-70b-versatile`, `llama-3.1-70b-versatile`, `llama-3.1-8b-instant`, `deepseek-r1-distill-llama-70b`, `moonshotai/kimi-k2-instruct`, `openai/gpt-oss-120b`, `openai/gpt-oss-20b`, `qwen/qwen3-32b`
-- Cerebras: `qwen-3-235b-a22b-instruct-2507`, `llama-3.3-70b`, `llama3.1-8b`, `llama3.1-70b`
+    <ul>
+      <li>
+        OpenAI: <code>gpt-5.2</code>, <code>gpt-5.2-mini</code>, <code>gpt-5.2-turbo</code>, <code>gpt-5.1</code>,
+        <code>gpt-5.1-mini</code>, <code>gpt-5.1-turbo</code>, <code>gpt-4o</code>, <code>gpt-4o-mini</code>,
+        <code>o4-mini</code>, <code>o3-mini</code>
+      </li>
+      <li>
+        Anthropic: <code>claude-sonnet-4-5</code>, <code>claude-opus-4-1</code>, <code>claude-sonnet-4</code>,
+        <code>claude-opus-4</code>, <code>claude-3-7-sonnet-latest</code>, <code>claude-3-5-haiku-latest</code>,
+        <code>claude-3-haiku</code>
+      </li>
+      <li>Google Vertex: <code>gemini-2.5-pro</code>, <code>gemini-2.5-flash</code>, <code>gemini-2.5-ultra</code></li>
+      <li>
+        Groq: <code>meta-llama/llama-4-maverick-17b-128e-instruct</code>, <code>llama-3.3-70b-versatile</code>,
+        <code>llama-3.1-70b-versatile</code>, <code>llama-3.1-8b-instant</code>, <code>deepseek-r1-distill-llama-70b</code>,
+        <code>moonshotai/kimi-k2-instruct</code>, <code>openai/gpt-oss-120b</code>, <code>openai/gpt-oss-20b</code>,
+        <code>qwen/qwen3-32b</code>
+      </li>
+      <li>Cerebras: <code>qwen-3-235b-a22b-instruct-2507</code>, <code>llama-3.3-70b</code>, <code>llama3.1-8b</code>, <code>llama3.1-70b</code></li>
+    </ul>
 
-LLPM caches the provider-fetched catalog in `~/.llpm/models.json`.
+    <p>LLPM caches the provider-fetched catalog in <code>~/.llpm/models.json</code>.</p>
 
-For details on providers, env vars, and model naming, see [Models](https://github.com/britt/llpm/blob/main/MODELS.md).
+    <p>
+      For details on providers, env vars, and model naming, see
+      <a href="https://github.com/britt/llpm/blob/main/MODELS.md">Models</a>.
+    </p>
   </div>
 
-  <div class="hx-rounded-2xl hx-border hx-border-gray-200/50 dark:hx-border-gray-800/50 hx-bg-white/60 dark:hx-bg-neutral-900/40 hx-p-6"
-       style="background: radial-gradient(ellipse at 50% 80%,rgba(142,53,74,0.15),hsla(0,0%,100%,0));">
+  <div
+    class="hx-rounded-2xl hx-border hx-border-gray-200/50 dark:hx-border-gray-800/50 hx-bg-white/60 dark:hx-bg-neutral-900/40 hx-p-6"
+    style="background: radial-gradient(ellipse at 50% 80%,rgba(142,53,74,0.15),hsla(0,0%,100%,0));"
+  >
     <h3 class="hx-text-xl hx-font-semibold">Projects, Scans, and GitHub</h3>
-    <p class="hx-mt-2 hx-text-gray-600 dark:hx-text-gray-300">Tie work to the right repo, then generate project context on demand.</p>
+    <p class="hx-mt-2 hx-text-gray-600 dark:hx-text-gray-300">
+      Tie work to the right repo, then generate project context on demand.
+    </p>
 
-Work with projects and GitHub:
+    <p>Work with projects and GitHub:</p>
 
-- Use `/project` to add, list, switch, and remove projects.
-- Run `/project scan` to analyze a codebase (active project or current working directory).
-- Use `/github` to browse/search repositories, then connect one to a project.
+    <ul>
+      <li>Use <code>/project</code> to add, list, switch, and remove projects.</li>
+      <li>Run <code>/project scan</code> to analyze a codebase (active project or current working directory).</li>
+      <li>Use <code>/github</code> to browse/search repositories, then connect one to a project.</li>
+    </ul>
 
-Project scans summarize project files (gitignore-aware), languages/frameworks, dependencies, documentation, and high-level architecture.
+    <p>
+      Project scans summarize project files (gitignore-aware), languages/frameworks, dependencies, documentation, and
+      high-level architecture.
+    </p>
 
-LLPM persists scan results in `~/.llpm/projects/{projectId}/project.json`.
+    <p>LLPM persists scan results in <code>~/.llpm/projects/{projectId}/project.json</code>.</p>
 
-Use `--force` to refresh cached scans or `--no-llm` to skip architecture analysis.
+    <p>Use <code>--force</code> to refresh cached scans or <code>--no-llm</code> to skip architecture analysis.</p>
   </div>
 
-  <div class="hx-rounded-2xl hx-border hx-border-gray-200/50 dark:hx-border-gray-800/50 hx-bg-white/60 dark:hx-bg-neutral-900/40 hx-p-6"
-       style="background: radial-gradient(ellipse at 50% 80%,rgba(221,210,59,0.15),hsla(0,0%,100%,0));">
+  <div
+    class="hx-rounded-2xl hx-border hx-border-gray-200/50 dark:hx-border-gray-800/50 hx-bg-white/60 dark:hx-bg-neutral-900/40 hx-p-6"
+    style="background: radial-gradient(ellipse at 50% 80%,rgba(221,210,59,0.15),hsla(0,0%,100%,0));"
+  >
     <h3 class="hx-text-xl hx-font-semibold">Skills and Guided Workflows</h3>
-    <p class="hx-mt-2 hx-text-gray-600 dark:hx-text-gray-300">Use reusable workflows packaged as Agent Skills to guide planning, analysis, and documentation.</p>
+    <p class="hx-mt-2 hx-text-gray-600 dark:hx-text-gray-300">
+      Use reusable workflows packaged as Agent Skills to guide planning, analysis, and documentation.
+    </p>
 
-Work with skills:
+    <p>Work with skills:</p>
 
-- Find skills with `/skills list`.
-- Preview a skill with `/skills test <name>`.
-- Reload after edits with `/skills reload`.
-- Restore bundled skills with `/skills reinstall`.
+    <ul>
+      <li>Find skills with <code>/skills list</code>.</li>
+      <li>Preview a skill with <code>/skills test &lt;name&gt;</code>.</li>
+      <li>Reload after edits with <code>/skills reload</code>.</li>
+      <li>Restore bundled skills with <code>/skills reinstall</code>.</li>
+    </ul>
 
-Skills are discovered from `~/.llpm/skills/` and project-specific skill folders.
+    <p>Skills are discovered from <code>~/.llpm/skills/</code> and project-specific skill folders.</p>
   </div>
 
-  <div class="hx-rounded-2xl hx-border hx-border-gray-200/50 dark:hx-border-gray-800/50 hx-bg-white/60 dark:hx-bg-neutral-900/40 hx-p-6"
-       style="background: radial-gradient(ellipse at 50% 80%,rgba(53,109,142,0.15),hsla(0,0%,100%,0));">
+  <div
+    class="hx-rounded-2xl hx-border hx-border-gray-200/50 dark:hx-border-gray-800/50 hx-bg-white/60 dark:hx-bg-neutral-900/40 hx-p-6"
+    style="background: radial-gradient(ellipse at 50% 80%,rgba(53,109,142,0.15),hsla(0,0%,100%,0));"
+  >
     <h3 class="hx-text-xl hx-font-semibold">Notes, Search, and Shell</h3>
-    <p class="hx-mt-2 hx-text-gray-600 dark:hx-text-gray-300">Capture project knowledge in Markdown notes, search it locally, and run carefully scoped shell commands when needed.</p>
+    <p class="hx-mt-2 hx-text-gray-600 dark:hx-text-gray-300">
+      Capture project knowledge in Markdown notes, search it locally, and run carefully scoped shell commands when
+      needed.
+    </p>
 
-Notes and search:
+    <p>Notes and search:</p>
 
-- Store notes as Markdown files with YAML frontmatter under `~/.llpm/projects/{projectId}/notes/`.
-- Search notes locally (fast full-text search via ripgrep).
+    <ul>
+      <li>Store notes as Markdown files with YAML frontmatter under <code>~/.llpm/projects/{projectId}/notes/</code>.</li>
+      <li>Search notes locally (fast full-text search via ripgrep).</li>
+    </ul>
 
-Shell execution:
+    <p>Shell execution:</p>
 
-- Run shell commands via the `run_shell_command` tool (permission-checked and audited).
+    <ul>
+      <li>Run shell commands via the <code>run_shell_command</code> tool (permission-checked and audited).</li>
+    </ul>
   </div>
 </div>
