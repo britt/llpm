@@ -21,7 +21,7 @@ Use LLPM to:
 **Prerequisites**
 
 - [Bun](https://bun.com)
-- At least one configured model provider (see [Model providers](#model-providers))
+- At least one configured model provider
 
 1. **Clone the repository.**
 
@@ -71,7 +71,7 @@ llpm
    /model switch
    ```
 
-3. **Add or switch projects.**
+3. **Manage projects.**
 
    ```text
    /project
@@ -96,7 +96,7 @@ Example direct switch:
 /model switch cerebras/qwen-3-235b-a22b-instruct-2507
 ```
 
-## Projects, scans, and repository context
+### Projects, scans, and repository context
 
 Projects keep separate context for different repositories and directories.
 
@@ -107,7 +107,7 @@ Use these commands:
 - `/github` to browse and search repositories
 - `/issue` to work with issues
 
-## Skills and guided workflows
+### Skills and guided workflows
 
 Skills are reusable workflow guides (planning, diagrams, requirement elicitation, stakeholder updates).
 
@@ -118,7 +118,7 @@ Use these commands:
 - `/skills reload`
 - `/skills reinstall`
 
-## Notes (Markdown) and search
+### Notes (Markdown) and search
 
 Notes are stored as Markdown files.
 
@@ -141,10 +141,10 @@ To see what credentials each provider needs:
 /model providers
 ```
 
-For full provider configuration and model reference, see [Getting Started: Configuration](./docs/getting-started/configuration/).
+For provider configuration and environment variable setup, see [Getting Started: Configuration]({{< relref "docs/getting-started/configuration" >}}).
 
 ## Next steps
 
-- Start here: [Getting Started](./docs/getting-started/)
-- Learn the workflows: [User Guide](./docs/user-guide/)
-- Browse skills: [Skills Reference](./docs/skills-reference/)
+- Start here: [Getting Started]({{< relref "docs/getting-started" >}})
+- Learn the workflows: [User Guide]({{< relref "docs/user-guide" >}})
+- Browse skills: [Skills Reference]({{< relref "docs/skills-reference" >}})
