@@ -6,13 +6,13 @@ title: LLPM Documentation
 
 LLPM is an AI-powered product management CLI that runs in your terminal.
 
-Use it to:
+Use LLPM to:
 
-- Work with GitHub issues and pull requests
-- Manage projects (including codebase scanning)
-- Keep notes (stored as Markdown)
-- Track stakeholders and goals
-- Run requirement elicitation workflows
+- Manage work in GitHub (issues, pull requests, and projects)
+- Scan a codebase to understand structure, dependencies, and docs
+- Keep project notes as Markdown and search them with ripgrep
+- Track stakeholders, goals, and dependencies
+- Run a requirement-elicitation workflow to produce a requirements document
 
 ## Install
 
@@ -36,7 +36,7 @@ Use it to:
    bun install
    ```
 
-3. **Configure environment variables.**
+3. **Create a local `.env` file.**
 
    ```bash
    cp .env.example .env
@@ -79,7 +79,7 @@ llpm
 
 ## What LLPM helps with
 
-### Models (multi-provider)
+### Model management (multi-provider)
 
 LLPM supports multiple model providers and caches provider model catalogs.
 
@@ -96,7 +96,7 @@ Example direct switch:
 /model switch cerebras/qwen-3-235b-a22b-instruct-2507
 ```
 
-### Projects, scans, and GitHub
+### Projects, scans, and repository context
 
 Projects keep separate context for different repositories and directories.
 
