@@ -66,20 +66,6 @@ Scan results are saved to `~/.llpm/projects/{projectId}/project.json`.
 - Preview a skill: `/skills test <name>`
 - Reload after editing skill files: `/skills reload`
 - Restore bundled skills: `/skills reinstall`
-
-Skills are discovered from `~/.llpm/skills/` and project-specific skill folders.
-
-### Notes, search, and shell
-
-- Notes are stored under `~/.llpm/projects/{projectId}/notes/` as Markdown files with YAML frontmatter.
-- Notes search uses ripgrep-based text search.
-- Shell execution is configured in `~/.llpm/config.json` under the `shell` section.
-
-## Next steps
-
-- Follow the setup guide: [Getting Started]({{< relref "docs/getting-started/_index.md" >}})
-- Learn the workflows: [User Guide]({{< relref "docs/user-guide/_index.md" >}})
-
 Skills are discovered from `~/.llpm/skills/` and project-specific skill folders.
 
 ### Notes, search, and shell
