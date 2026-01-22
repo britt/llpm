@@ -40,6 +40,13 @@ Next:
 
 For prerequisites, provider setup, and other install options, see [Installation]({{< relref "docs/getting-started/installation.md" >}}).
 
+<!--
+NOTE:
+The docs build previously failed with:
+  unterminated quoted string in shortcode parameter-argument
+This homepage uses HTML-based cards (instead of feature-card shortcodes) to avoid fragile quoting in shortcode params.
+-->
+
 <div class="hx-mt-12 hx-grid hx-gap-6 md:hx-grid-cols-2">
   <div
     class="hx-rounded-2xl hx-border hx-border-gray-200/50 dark:hx-border-gray-800/50 hx-bg-white/60 dark:hx-bg-neutral-900/40 hx-p-6"
