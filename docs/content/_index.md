@@ -187,17 +187,6 @@ This homepage uses HTML-based cards (instead of feature-card shortcodes) to avoi
     </ul>
   </div>
 </div>
-
-    <p>Scan results are saved under <code>~/.llpm/projects/&lt;projectId&gt;/project.json</code>.</p>
-  </div>
-</div>
-
-
-    <p>Project scan output includes:</p>
-
-    <ul>
-      <li>Detected languages, frameworks, and project type</li>
-      <li>Documentation overview</li>
       <li>Dependencies (by package manager)</li>
       <li>Optional architecture analysis (LLM-powered)</li>
     </ul>
