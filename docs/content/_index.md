@@ -2,43 +2,45 @@
 title: LLPM Documentation
 ---
 
-# Large Language Model Product Manager
+# LLPM
 
 LLPM is an AI-powered product management CLI for working with GitHub issues, local codebases, stakeholders, and requirement elicitation.
 
-## Install and run
+## Install
 
-1. Install dependencies:
+1. Install dependencies.
 
    ```bash
    bun install
    ```
 
-2. Start LLPM:
+2. Start LLPM.
 
    ```bash
    bun start
    ```
 
-3. Configure at least one model provider:
+## Configure a model provider
 
-   ```text
-   /model providers
-   ```
-
-## What LLPM does
-
-### Multi-provider models
-
-Connect one or more providers, then list and switch models per project or task.
-
-Supported providers:
+LLPM supports these model providers:
 
 - `openai`
 - `anthropic`
 - `groq`
 - `google-vertex`
 - `cerebras`
+
+To see what credentials each provider needs, run:
+
+```text
+/model providers
+```
+
+## Core workflows
+
+## Models: list, switch, and update
+
+Use model providers to list and switch models per project or task.
 
 Common commands:
 
@@ -48,7 +50,7 @@ Common commands:
 - Switch models directly: `/model switch <provider>/<model-id>`
 - Refresh the cached model catalog: `/model update`
 
-### Projects, scans, and GitHub
+## Projects, scans, and GitHub
 
 Use projects to keep separate context, repositories, and scan results.
 
@@ -56,7 +58,7 @@ Use projects to keep separate context, repositories, and scan results.
 - Scan a codebase: `/project scan`
 - Connect and browse repositories: `/github`
 
-### Skills and guided workflows
+## Skills and guided workflows
 
 Use skills to guide repeatable workflows (planning, elicitation, stakeholder updates, diagrams).
 
@@ -65,7 +67,7 @@ Use skills to guide repeatable workflows (planning, elicitation, stakeholder upd
 - Reload after editing skill files: `/skills reload`
 - Restore bundled skills: `/skills reinstall`
 
-### Notes and search
+## Notes and search
 
 Store decisions as Markdown notes and search them with ripgrep.
 
