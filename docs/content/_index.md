@@ -139,6 +139,15 @@ For prerequisites and provider setup, see [Installation]({{< relref "docs/gettin
     </p>
 
     <ul class="hx-list-disc hx-pl-6 hx-space-y-2 hx-text-gray-600 dark:hx-text-gray-300">
+      <li>Capture and browse notes with <code>/notes</code>, backed by Markdown files under <code>~/.llpm/projects/{projectId}/notes/</code>.</li>
+      <li>Search notes with <code>/notes search</code> (full-text via <code>rg</code>).</li>
+      <li>Configure shell execution (allow/deny lists, timeouts, audit logging) in <code>~/.llpm/config.json</code> under the <code>shell</code> section.</li>
+      <li>Run shell commands through the AI tool <code>run_shell_command</code> (explicit confirmation by default).</li>
+    </ul>
+  </div>
+</div>
+
+    <ul class="hx-list-disc hx-pl-6 hx-space-y-2 hx-text-gray-600 dark:hx-text-gray-300">
       <li>Notes are stored as Markdown files with YAML frontmatter under <code>~/.llpm/projects/{projectId}/notes/</code>. Notes use frontmatter to store titles, tags, and metadata.</li>
       <li>Search uses ripgrep-based text search for fast local lookup and does not rely on embeddings or external vector indexes.</li>
       <li>Shell execution is configured in <code>~/.llpm/config.json</code> (the <code>shell</code> section) as a global allowlist/denylist with timeouts and defaults. Commands run through permission validation, user confirmation (with optional skip-confirmation modes), and audit logging via the <code>run_shell_command</code> tool.</li>
