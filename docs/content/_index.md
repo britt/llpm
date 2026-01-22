@@ -8,13 +8,22 @@ LLPM is an AI-powered product management CLI for working with GitHub issues, loc
 
 ## Install
 
-1. Install dependencies.
+Install the `llpm` CLI from this repository.
+
+1. **Clone the repository.**
+
+   ```bash
+   git clone https://github.com/britt/llpm.git
+   cd llpm
+   ```
+
+2. **Install dependencies.**
 
    ```bash
    bun install
    ```
 
-2. Start LLPM.
+3. **Start LLPM.**
 
    ```bash
    bun start
@@ -36,9 +45,17 @@ To see what credentials each provider needs, run:
 /model providers
 ```
 
+For the full model/provider configuration reference, see [Configuration](./docs/getting-started/configuration/).
+
+## What to do next
+
+- Start here: [Getting Started](./docs/getting-started/)
+- Learn the workflows: [User Guide](./docs/user-guide/)
+- Browse skills: [Skills Reference](./docs/skills-reference/)
+
 ## Core workflows
 
-## Models: list, switch, and update
+### Models: list, switch, and update
 
 Use model providers to list and switch models per project or task.
 
@@ -50,7 +67,7 @@ Common commands:
 - Switch models directly: `/model switch <provider>/<model-id>`
 - Refresh the cached model catalog: `/model update`
 
-## Projects, scans, and GitHub
+### Projects, scans, and GitHub
 
 Use projects to keep separate context, repositories, and scan results.
 
@@ -58,7 +75,7 @@ Use projects to keep separate context, repositories, and scan results.
 - Scan a codebase: `/project scan`
 - Connect and browse repositories: `/github`
 
-## Skills and guided workflows
+### Skills and guided workflows
 
 Use skills to guide repeatable workflows (planning, elicitation, stakeholder updates, diagrams).
 
@@ -67,14 +84,9 @@ Use skills to guide repeatable workflows (planning, elicitation, stakeholder upd
 - Reload after editing skill files: `/skills reload`
 - Restore bundled skills: `/skills reinstall`
 
-## Notes and search
+### Notes and search
 
 Store decisions as Markdown notes and search them with ripgrep.
 
 - Notes are stored under `~/.llpm/projects/{projectId}/notes/` as Markdown files with YAML frontmatter.
 - Notes search uses ripgrep-based text search.
-
-## Next steps
-
-- Follow the setup guide: [Getting Started](./docs/getting-started/)
-- Learn the workflows: [User Guide](./docs/user-guide/)
