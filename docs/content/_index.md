@@ -152,8 +152,6 @@ Use plain HTML cards instead of parameterized shortcodes.
   </div>
 </div>
 
-
-{{< hextra/hero-badge >}}
   <span>AI-Powered CLI</span>
 {{< /hextra/hero-badge >}}
 
