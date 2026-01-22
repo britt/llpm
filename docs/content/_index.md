@@ -52,10 +52,106 @@ Avoid fragile quoting in shortcode parameter strings (a previous homepage build 
 Use plain HTML cards instead of parameterized shortcodes.
 -->
 
----
-title: LLPM Documentation
-layout: hextra-home
----
+<div class="hx-mt-12 hx-grid hx-gap-6 md:hx-grid-cols-2">
+  <div
+    class="hx-rounded-2xl hx-border hx-border-gray-200/50 dark:hx-border-gray-800/50 hx-bg-white/60 dark:hx-bg-neutral-900/40 hx-p-6"
+    style="background: radial-gradient(ellipse at 50% 80%,rgba(194,97,254,0.15),hsla(0,0%,100%,0));"
+  >
+    <h3 class="hx-text-xl hx-font-semibold">Multi-Provider Models</h3>
+    <p class="hx-mt-2 hx-text-gray-600 dark:hx-text-gray-300">
+      Connect one or more providers and switch models per project or task, with a cached catalog that stays aligned with provider APIs.
+    </p>
+
+    <p class="hx-mt-4">Manage providers and models:</p>
+    <ul class="hx-mt-2">
+      <li><code>/model providers</code> to see configured providers and missing credentials.</li>
+      <li><code>/model switch</code> to pick a model interactively.</li>
+      <li><code>/model update</code> to refresh the local model catalog.</li>
+    </ul>
+
+    <p class="hx-mt-4">Supported providers:</p>
+    <ul class="hx-mt-2">
+      <li><code>openai</code></li>
+      <li><code>anthropic</code></li>
+      <li><code>groq</code></li>
+      <li><code>google-vertex</code></li>
+      <li><code>cerebras</code></li>
+    </ul>
+
+    <p class="hx-mt-4">LLPM caches the fetched catalog at <code>~/.llpm/models.json</code>.</p>
+  </div>
+
+  <div
+    class="hx-rounded-2xl hx-border hx-border-gray-200/50 dark:hx-border-gray-800/50 hx-bg-white/60 dark:hx-bg-neutral-900/40 hx-p-6"
+    style="background: radial-gradient(ellipse at 50% 80%,rgba(142,53,74,0.15),hsla(0,0%,100%,0));"
+  >
+    <h3 class="hx-text-xl hx-font-semibold">Projects, Scans, and GitHub</h3>
+    <p class="hx-mt-2 hx-text-gray-600 dark:hx-text-gray-300">
+      Keep work anchored to the right repository, then generate reusable project context with a structured scan of files, dependencies, documentation, and architecture.
+    </p>
+
+    <p class="hx-mt-4">Core commands:</p>
+    <ul class="hx-mt-2">
+      <li><code>/project</code> to add, list, switch, and remove projects.</li>
+      <li><code>/project scan</code> to analyze a codebase for the active project, or the current working directory when no project is set.</li>
+      <li><code>/github</code> to connect a repo and work with issues and pull requests.</li>
+    </ul>
+
+    <p class="hx-mt-4">Scan results are saved under <code>~/.llpm/projects/{projectId}/project.json</code>.</p>
+
+    <p class="hx-mt-4">Scan options:</p>
+    <ul class="hx-mt-2">
+      <li><code>--force</code> to rescan even when cached data exists.</li>
+      <li><code>--no-llm</code> to skip architecture analysis that calls model APIs.</li>
+    </ul>
+  </div>
+
+  <div
+    class="hx-rounded-2xl hx-border hx-border-gray-200/50 dark:hx-border-gray-800/50 hx-bg-white/60 dark:hx-bg-neutral-900/40 hx-p-6"
+    style="background: radial-gradient(ellipse at 50% 80%,rgba(40,121,61,0.12),hsla(0,0%,100%,0));"
+  >
+    <h3 class="hx-text-xl hx-font-semibold">Skills and Guided Workflows</h3>
+    <p class="hx-mt-2 hx-text-gray-600 dark:hx-text-gray-300">
+      Use reusable workflows packaged as Agent Skills (<code>SKILL.md</code>) to guide planning, analysis, and documentation.
+    </p>
+
+    <p class="hx-mt-4">Manage skills:</p>
+    <ul class="hx-mt-2">
+      <li><code>/skills list</code> to view bundled and user-defined skills.</li>
+      <li><code>/skills reload</code> to pick up skill changes on disk.</li>
+      <li><code>/skills reinstall</code> to restore bundled skills after upgrading.</li>
+    </ul>
+
+    <p class="hx-mt-4">Skill locations:</p>
+    <ul class="hx-mt-2">
+      <li><code>skills/</code> (bundled with LLPM)</li>
+      <li><code>.skills/</code> (project-specific skills)</li>
+      <li><code>~/.llpm/skills/</code> (user skills)</li>
+    </ul>
+
+    <p class="hx-mt-4">Explore the full catalog in [Skills Reference]({{< relref "docs/skills-reference/_index.md" >}}).</p>
+  </div>
+
+  <div
+    class="hx-rounded-2xl hx-border hx-border-gray-200/50 dark:hx-border-gray-800/50 hx-bg-white/60 dark:hx-bg-neutral-900/40 hx-p-6"
+    style="background: radial-gradient(ellipse at 50% 80%,rgba(53,123,142,0.15),hsla(0,0%,100%,0));"
+  >
+    <h3 class="hx-text-xl hx-font-semibold">Notes and Local Search</h3>
+    <p class="hx-mt-2 hx-text-gray-600 dark:hx-text-gray-300">
+      Capture project knowledge in Markdown notes and search it locally.
+    </p>
+
+    <ul class="hx-mt-4">
+      <li>Store notes under <code>~/.llpm/projects/{projectId}/notes/</code>.</li>
+      <li>Search notes with <code>ripgrep</code> (no embeddings/vector index required).</li>
+    </ul>
+
+    <p class="hx-mt-4">
+      See [User Guide: Commands]({{< relref "docs/user-guide/commands.md" >}}) and [User Guide: Skills]({{< relref "docs/user-guide/skills.md" >}}).
+    </p>
+  </div>
+</div>
+
 
 {{< hextra/hero-badge >}}
   <span>AI-Powered CLI</span>
