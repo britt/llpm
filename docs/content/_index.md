@@ -84,7 +84,7 @@ For prerequisites and provider setup, see [Installation]({{< relref "docs/gettin
   <div class="hx-rounded-xl hx-border hx-border-gray-200 dark:hx-border-neutral-800 hx-bg-white dark:hx-bg-neutral-900 hx-p-6" style="background: radial-gradient(ellipse at 50% 80%, rgba(194,97,254,0.15), hsla(0,0%,100%,0));">
     <h3 class="hx-text-xl hx-font-semibold hx-mb-2">Multi-provider models</h3>
     <p class="hx-text-gray-600 dark:hx-text-gray-300 hx-mb-4">
-      Configure one or more providers, then switch models when the task changes. LLPM can refresh the model catalog from provider APIs and caches the result on disk.
+      Configure one or more providers, then switch models when the task changes. Use live model discovery to fetch each provider’s current catalog, then rely on the local cache for fast switching.
     </p>
 
     <ul class="hx-list-disc hx-pl-6 hx-space-y-2 hx-text-gray-600 dark:hx-text-gray-300">
