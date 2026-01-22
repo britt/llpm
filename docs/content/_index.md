@@ -119,59 +119,46 @@ This homepage uses HTML-based cards (instead of feature-card shortcodes) to avoi
       <li>Use <code>/github</code> to browse/search repositories, then connect one to a project.</li>
     </ul>
 
-    <p>
-      Project scans summarize project files (gitignore-aware), languages/frameworks, dependencies, documentation, and
-      high-level architecture.
-    </p>
-
-    <p>LLPM persists scan results in <code>~/.llpm/projects/{projectId}/project.json</code>.</p>
-
-    <p>Use <code>--force</code> to refresh cached scans or <code>--no-llm</code> to skip architecture analysis.</p>
-  </div>
-
-  <div
-    class="hx-rounded-2xl hx-border hx-border-gray-200/50 dark:hx-border-gray-800/50 hx-bg-white/60 dark:hx-bg-neutral-900/40 hx-p-6"
-    style="background: radial-gradient(ellipse at 50% 80%,rgba(221,210,59,0.15),hsla(0,0%,100%,0));"
-  >
-    <h3 class="hx-text-xl hx-font-semibold">Skills and Guided Workflows</h3>
-    <p class="hx-mt-2 hx-text-gray-600 dark:hx-text-gray-300">
-      Use reusable workflows packaged as Agent Skills (<code>SKILL.md</code>) to guide planning, analysis, and documentation with predictable tool access and repeatable structure.
-    </p>
-
-    <p>Work with skills:</p>
+    <p>Project scan output includes:</p>
 
     <ul>
-      <li>Find skills with <code>/skills list</code>.</li>
-      <li>Preview a skill with <code>/skills test &lt;name&gt;</code>.</li>
-      <li>Reload after edits with <code>/skills reload</code>.</li>
-      <li>Restore bundled skills with <code>/skills reinstall</code>.</li>
-    </ul>
-
-    <p>Skills are discovered from <code>~/.llpm/skills/</code> and project-specific skill folders.</p>
-  </div>
-
-  <div
-    class="hx-rounded-2xl hx-border hx-border-gray-200/50 dark:hx-border-gray-800/50 hx-bg-white/60 dark:hx-bg-neutral-900/40 hx-p-6"
-    style="background: radial-gradient(ellipse at 50% 80%,rgba(53,109,142,0.15),hsla(0,0%,100%,0));"
-  >
-    <h3 class="hx-text-xl hx-font-semibold">Notes, Search, and Shell</h3>
-    <p class="hx-mt-2 hx-text-gray-600 dark:hx-text-gray-300">
-      Capture project knowledge in Markdown notes, search it locally with ripgrep, and (when needed) run carefully scoped shell commands through a permission-checked tool.
-    </p>
-
-    <p>Notes and search:</p>
-
-    <ul>
-      <li>Store notes as Markdown files with YAML frontmatter under <code>~/.llpm/projects/{projectId}/notes/</code>.</li>
-      <li>Search notes locally (fast full-text search via ripgrep).</li>
-    </ul>
-
-    <p>Shell execution:</p>
-
-    <ul>
-      <li>Run shell commands via the <code>run_shell_command</code> tool (permission-checked and audited).</li>
+      <li>Detected languages, frameworks, and project type</li>
+      <li>Documentation overview</li>
+      <li>Dependencies (by package manager)</li>
+      <li>Optional architecture analysis (LLM-powered)</li>
     </ul>
   </div>
 </div>
 
-<!-- Homepage last reviewed: ensure provider IDs and example models match src/types/models.ts defaults. -->
+<div class="hx-mt-6 hx-grid hx-gap-6 md:hx-grid-cols-2">
+  <div
+    class="hx-rounded-2xl hx-border hx-border-gray-200/50 dark:hx-border-gray-800/50 hx-bg-white/60 dark:hx-bg-neutral-900/40 hx-p-6"
+    style="background: radial-gradient(ellipse at 50% 80%,rgba(61,132,255,0.15),hsla(0,0%,100%,0));"
+  >
+    <h3 class="hx-text-xl hx-font-semibold">Notes (Markdown)</h3>
+    <p class="hx-mt-2 hx-text-gray-600 dark:hx-text-gray-300">
+      Capture decisions, plans, and research as Markdown notes and search them with ripgrep.
+    </p>
+
+    <ul>
+      <li>Use <code>/notes</code> to create, list, view, update, and search notes.</li>
+      <li>Install <code>rg</code> (ripgrep) for fast full-text search.</li>
+    </ul>
+  </div>
+
+  <div
+    class="hx-rounded-2xl hx-border hx-border-gray-200/50 dark:hx-border-gray-800/50 hx-bg-white/60 dark:hx-bg-neutral-900/40 hx-p-6"
+    style="background: radial-gradient(ellipse at 50% 80%,rgba(87,204,116,0.15),hsla(0,0%,100%,0));"
+  >
+    <h3 class="hx-text-xl hx-font-semibold">Skills and Workflows</h3>
+    <p class="hx-mt-2 hx-text-gray-600 dark:hx-text-gray-300">
+      Use a catalog of skills (Agent Skills spec) to guide workflows like requirement elicitation, stakeholder tracking, risk detection, and project planning.
+    </p>
+
+    <ul>
+      <li>Run <code>/skills</code> to list installed skills.</li>
+      <li>Use <code>/skills reinstall</code> to refresh bundled core skills.</li>
+      <li>Review the <a href="{{< relref \"docs/skills-reference/\" >}}">Skills Reference</a> for what’s included.</li>
+    </ul>
+  </div>
+</div>
