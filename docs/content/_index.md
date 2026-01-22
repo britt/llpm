@@ -137,8 +137,6 @@ For prerequisites and provider setup, see [Installation]({{< relref "docs/gettin
     <p class="hx-text-gray-600 dark:hx-text-gray-300 hx-mb-4">
       Keep lightweight project knowledge in notes, run a requirement-elicitation flow to generate a markdown requirements document, and track stakeholders + goals.
     </p>
-  </div>
-</div>
 
     <ul class="hx-list-disc hx-pl-6 hx-space-y-2 hx-text-gray-600 dark:hx-text-gray-300">
       <li>Use <code>/notes</code> to add, list, and search notes (search uses ripgrep).</li>
