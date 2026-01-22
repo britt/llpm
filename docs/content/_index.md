@@ -46,51 +46,39 @@ For prerequisites and provider setup, see [Installation]({{< relref "docs/gettin
 </div>
 </div>
 
-<div class="hx-grid hx-grid-cols-1 md:hx-grid-cols-2 hx-gap-6">
-  <div class="hx-relative hx-rounded-xl hx-border hx-border-gray-200 dark:hx-border-neutral-800 hx-bg-white dark:hx-bg-neutral-900 hx-p-6 hx-shadow-sm"
+<div class="hx-mt-10 hx-space-y-6">
+  <div class="hx-rounded-xl hx-border hx-border-gray-200 dark:hx-border-neutral-800 hx-bg-white dark:hx-bg-neutral-900 hx-p-6"
        style="background: radial-gradient(ellipse at 50% 80%,rgba(194,97,254,0.15),hsla(0,0%,100%,0));">
-    <h3 class="hx-text-xl hx-font-semibold hx-mb-2">Multi-Provider Models</h3>
+    <h3 class="hx-text-xl hx-font-semibold hx-mb-2">Multi-provider models</h3>
     <p class="hx-text-gray-600 dark:hx-text-gray-300 hx-mb-4">
-      Connect one or more providers, then switch models per project or task while LLPM keeps the catalog in sync with provider APIs.
+      Configure one or more providers, then switch models when the task changes. LLPM can refresh the model catalog from provider APIs and stores the result on disk for fast startup.
     </p>
 
     <ul class="hx-list-disc hx-pl-6 hx-space-y-2 hx-text-gray-600 dark:hx-text-gray-300">
       <li>Run <code>/model providers</code> to see which providers are configured and which credentials are missing.</li>
       <li>Use <code>/model switch</code> to pick a model (interactive), or <code>/model switch &lt;provider&gt;/&lt;model&gt;</code> to switch directly.</li>
-      <li>Run <code>/model list</code> to inspect the most relevant models per provider, grouped by generation.</li>
-      <li>Use <code>/model update</code> to refresh the cached catalog from provider APIs and pull in newly released models.</li>
+      <li>Run <code>/model list</code> to inspect relevant models per provider, grouped by generation.</li>
+      <li>Use <code>/model update</code> to refresh the cached catalog from provider APIs.</li>
     </ul>
 
     <p class="hx-text-gray-600 dark:hx-text-gray-300 hx-mt-4">
       <strong>Supported provider IDs:</strong> <code>openai</code>, <code>anthropic</code>, <code>groq</code>, <code>google-vertex</code>, <code>cerebras</code>.
     </p>
 
-    <div class="hx-text-gray-600 dark:hx-text-gray-300 hx-mt-4">
-      <p class="hx-mb-2"><strong>Example model IDs (from <code>MODELS.md</code>):</strong></p>
-      <p class="hx-mb-2">OpenAI: <code>gpt-5.2</code>, <code>gpt-5.2-mini</code>, <code>gpt-5.2-turbo</code>, <code>gpt-5.1</code>, <code>gpt-5.1-mini</code>, <code>gpt-5.1-turbo</code>, <code>gpt-4o</code>, <code>gpt-4o-mini</code>, <code>o4-mini</code>, <code>o3-mini</code></p>
-      <p class="hx-mb-2">Anthropic: <code>claude-sonnet-4-5</code>, <code>claude-opus-4-1</code>, <code>claude-sonnet-4</code>, <code>claude-opus-4</code>, <code>claude-3-7-sonnet-latest</code>, <code>claude-3-5-haiku-latest</code>, <code>claude-3-haiku</code></p>
-      <p class="hx-mb-2">Google Vertex: <code>gemini-2.5-pro</code>, <code>gemini-2.5-flash</code>, <code>gemini-2.5-ultra</code></p>
-      <p class="hx-mb-2">Groq: <code>meta-llama/llama-4-maverick-17b-128e-instruct</code>, <code>llama-3.3-70b-versatile</code>, <code>llama-3.1-70b-versatile</code>, <code>llama-3.1-8b-instant</code>, <code>deepseek-r1-distill-llama-70b</code>, <code>moonshotai/kimi-k2-instruct</code>, <code>openai/gpt-oss-120b</code>, <code>openai/gpt-oss-20b</code>, <code>qwen/qwen3-32b</code></p>
-      <p>Cerebras: <code>qwen-3-235b-a22b-instruct-2507</code>, <code>llama-3.3-70b</code>, <code>llama3.1-8b</code>, <code>llama3.1-70b</code></p>
-    </div>
-
-    <p class="hx-text-gray-600 dark:hx-text-gray-300 hx-mt-4">
-      LLPM caches the provider-fetched catalog in <code>~/.llpm/models.json</code> so model discovery stays fast and consistent between sessions.
-    </p>
     <p class="hx-text-gray-600 dark:hx-text-gray-300 hx-mt-2">
-      If live discovery fails, LLPM falls back to a curated default catalog defined in <code>MODELS.md</code>. If a provider is not configured, its models stay hidden from the selector.
+      LLPM caches the provider-fetched catalog in <code>~/.llpm/models.json</code>. If live discovery fails, LLPM falls back to the curated defaults in <code>MODELS.md</code>.
     </p>
   </div>
 
-  <div class="hx-relative hx-rounded-xl hx-border hx-border-gray-200 dark:hx-border-neutral-800 hx-bg-white dark:hx-bg-neutral-900 hx-p-6 hx-shadow-sm"
+  <div class="hx-rounded-xl hx-border hx-border-gray-200 dark:hx-border-neutral-800 hx-bg-white dark:hx-bg-neutral-900 hx-p-6"
        style="background: radial-gradient(ellipse at 50% 80%,rgba(142,53,74,0.15),hsla(0,0%,100%,0));">
-    <h3 class="hx-text-xl hx-font-semibold hx-mb-2">Projects, Scans, and GitHub</h3>
+    <h3 class="hx-text-xl hx-font-semibold hx-mb-2">Projects, scans, and GitHub</h3>
     <p class="hx-text-gray-600 dark:hx-text-gray-300 hx-mb-4">
-      Tie work to the right repo, then generate rich project context on demand.
+      Connect work to the right repo, then generate project context on demand.
     </p>
 
     <ul class="hx-list-disc hx-pl-6 hx-space-y-2 hx-text-gray-600 dark:hx-text-gray-300">
-      <li>Use <code>/project</code> to add, list, switch, and remove projects, or to point LLPM at mono-repos and subdirectories.</li>
+      <li>Use <code>/project</code> to add, list, switch, and remove projects.</li>
       <li>Run <code>/project scan</code> to analyze a codebase (active project or current working directory).</li>
       <li>Use <code>/github</code> to browse/search repositories, then connect one to a project so issues, pull requests, and notes share the same context.</li>
     </ul>
@@ -104,21 +92,18 @@ For prerequisites and provider setup, see [Installation]({{< relref "docs/gettin
     <p class="hx-text-gray-600 dark:hx-text-gray-300 hx-mt-2">
       Use flags like <code>--force</code> to refresh cached scans or <code>--no-llm</code> for a fast static pass without calling model APIs.
     </p>
-    <p class="hx-text-gray-600 dark:hx-text-gray-300 hx-mt-2">
-      If LLPM starts inside a repo, it can auto-detect the matching project from the current working directory and will fall back to scanning the current directory when no project is configured.
-    </p>
   </div>
 
-  <div class="hx-relative hx-rounded-xl hx-border hx-border-gray-200 dark:hx-border-neutral-800 hx-bg-white dark:hx-bg-neutral-900 hx-p-6 hx-shadow-sm"
+  <div class="hx-rounded-xl hx-border hx-border-gray-200 dark:hx-border-neutral-800 hx-bg-white dark:hx-bg-neutral-900 hx-p-6"
        style="background: radial-gradient(ellipse at 50% 80%,rgba(221,210,59,0.15),hsla(0,0%,100%,0));">
-    <h3 class="hx-text-xl hx-font-semibold hx-mb-2">Skills and Guided Workflows</h3>
+    <h3 class="hx-text-xl hx-font-semibold hx-mb-2">Skills and guided workflows</h3>
     <p class="hx-text-gray-600 dark:hx-text-gray-300 hx-mb-4">
       Use reusable workflows packaged as Agent Skills (<code>SKILL.md</code>) to guide planning, analysis, and documentation.
     </p>
 
     <ul class="hx-list-disc hx-pl-6 hx-space-y-2 hx-text-gray-600 dark:hx-text-gray-300">
       <li>Find skills with <code>/skills list</code> to see bundled and user-defined workflows.</li>
-      <li>Preview a skill with <code>/skills test &lt;name&gt;</code> to inspect its goal, inputs, tools, and sample runs before using it.</li>
+      <li>Preview a skill with <code>/skills test &lt;name&gt;</code> before using it.</li>
       <li>Reload after edits with <code>/skills reload</code> so changes to skill files are picked up immediately.</li>
       <li>Restore bundled skills with <code>/skills reinstall</code> if local experiments break the core collection.</li>
     </ul>
@@ -126,14 +111,11 @@ For prerequisites and provider setup, see [Installation]({{< relref "docs/gettin
     <p class="hx-text-gray-600 dark:hx-text-gray-300 hx-mt-4">
       Skills follow the Agent Skills specification and are discovered from <code>~/.llpm/skills/</code> and project-specific skill folders.
     </p>
-    <p class="hx-text-gray-600 dark:hx-text-gray-300 hx-mt-2">
-      The core collection includes skills for requirement elicitation, project planning, issue decomposition and dependency mapping, architecture diagramming, context-aware question generation, at-risk detection, stakeholder tracking, FAQ building from issues, note consolidation, meeting preparation, research summarization, and thread discussion summarization.
-    </p>
   </div>
 
-  <div class="hx-relative hx-rounded-xl hx-border hx-border-gray-200 dark:hx-border-neutral-800 hx-bg-white dark:hx-bg-neutral-900 hx-p-6 hx-shadow-sm"
+  <div class="hx-rounded-xl hx-border hx-border-gray-200 dark:hx-border-neutral-800 hx-bg-white dark:hx-bg-neutral-900 hx-p-6"
        style="background: radial-gradient(ellipse at 50% 80%,rgba(80,120,200,0.15),hsla(0,0%,100%,0));">
-    <h3 class="hx-text-xl hx-font-semibold hx-mb-2">Notes, Search, and Shell</h3>
+    <h3 class="hx-text-xl hx-font-semibold hx-mb-2">Notes, search, and shell</h3>
     <p class="hx-text-gray-600 dark:hx-text-gray-300 hx-mb-4">
       Capture project knowledge in Markdown notes, search it locally, and run carefully scoped shell commands when needed.
     </p>
