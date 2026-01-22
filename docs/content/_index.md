@@ -47,7 +47,7 @@ For prerequisites, provider setup, and other install options, see [Installation]
 {{< hextra/feature-grid >}}
   {{< hextra/feature-card
     title="Multi-Provider Models"
-    subtitle="Connect one or more providers, refresh the catalog, then switch models per project or task."
+    subtitle="Connect one or more providers, then switch models per project or task."
     class="hx-aspect-auto md:hx-aspect-[1.1/1] max-md:hx-min-h-[900px]"
     style="background: radial-gradient(ellipse at 50% 80%,rgba(194,97,254,0.15),hsla(0,0%,100%,0));"
   >}}
