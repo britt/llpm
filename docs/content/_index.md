@@ -52,6 +52,60 @@ The docs build failed with:
 This homepage uses HTML-based cards (instead of feature-card shortcodes) to avoid fragile quoting in shortcode params.
 -->
 
+---
+title: LLPM Documentation
+layout: hextra-home
+---
+
+{{< hextra/hero-badge >}}
+  <span>AI-Powered CLI</span>
+{{< /hextra/hero-badge >}}
+
+<div class="hx-mt-6 hx-mb-6">
+{{< hextra/hero-headline >}}
+  Large Language Model&nbsp;<br class="sm:hx-block hx-hidden" />Product Manager
+{{< /hextra/hero-headline >}}
+</div>
+
+<div class="hx-mb-12">
+{{< hextra/hero-subtitle >}}
+  AI-powered product management CLI for GitHub issues, codebases, stakeholders, and requirements.
+{{< /hextra/hero-subtitle >}}
+</div>
+
+## Install
+
+LLPM is a Bun-based CLI.
+
+1. Install prerequisites first: Bun and Git available on your `PATH`.
+2. Install LLPM globally.
+3. Start LLPM.
+
+```bash
+bun add -g llpm
+llpm
+```
+
+Next:
+
+- Configure at least one model provider (environment variables).
+- Run `/model providers` to confirm LLPM sees your credentials.
+- Use `/model switch` to pick a model.
+
+For prerequisites, provider setup, and other install options, see [Installation]({{< relref "docs/getting-started/installation.md" >}}).
+
+Next steps:
+
+- Follow [Quickstart]({{< relref "docs/getting-started/quickstart.md" >}}) for a first session and common slash commands.
+- Review [Configuration]({{< relref "docs/getting-started/configuration.md" >}}) for environment variables and setup.
+
+<!--
+NOTE:
+The docs build failed with:
+  unterminated quoted string in shortcode parameter-argument
+This homepage avoids feature-card shortcodes to prevent fragile quoting in shortcode params.
+-->
+
 <div class="hx-mt-12 hx-grid hx-gap-6 md:hx-grid-cols-2">
   <div
     class="hx-rounded-2xl hx-border hx-border-gray-200/50 dark:hx-border-gray-800/50 hx-bg-white/60 dark:hx-bg-neutral-900/40 hx-p-6"
@@ -187,36 +241,6 @@ This homepage uses HTML-based cards (instead of feature-card shortcodes) to avoi
     </ul>
   </div>
 </div>
-      <li>Dependencies (by package manager)</li>
-      <li>Optional architecture analysis (LLM-powered)</li>
-    </ul>
-  </div>
-</div>
-
-<div class="hx-mt-6 hx-grid hx-gap-6 md:hx-grid-cols-2">
-  <div
-    class="hx-rounded-2xl hx-border hx-border-gray-200/50 dark:hx-border-gray-800/50 hx-bg-white/60 dark:hx-bg-neutral-900/40 hx-p-6"
-    style="background: radial-gradient(ellipse at 50% 80%,rgba(61,132,255,0.15),hsla(0,0%,100%,0));"
-  >
-    <h3 class="hx-text-xl hx-font-semibold">Notes (Markdown)</h3>
-    <p class="hx-mt-2 hx-text-gray-600 dark:hx-text-gray-300">
-      Capture decisions, plans, and research as Markdown notes and search them with ripgrep.
-    </p>
-
-    <ul>
-      <li>Use <code>/notes</code> to create, list, view, update, and search notes.</li>
-      <li>Install <code>rg</code> (ripgrep) for fast full-text search.</li>
-    </ul>
-  </div>
-
-  <div
-    class="hx-rounded-2xl hx-border hx-border-gray-200/50 dark:hx-border-gray-800/50 hx-bg-white/60 dark:hx-bg-neutral-900/40 hx-p-6"
-    style="background: radial-gradient(ellipse at 50% 80%,rgba(87,204,116,0.15),hsla(0,0%,100%,0));"
-  >
-    <h3 class="hx-text-xl hx-font-semibold">Skills and Workflows</h3>
-    <p class="hx-mt-2 hx-text-gray-600 dark:hx-text-gray-300">
-      Use a catalog of skills (Agent Skills spec) to guide workflows like requirement elicitation, stakeholder tracking, risk detection, and project planning.
-    </p>
 
     <ul>
       <li>Run <code>/skills</code> to list installed skills.</li>
