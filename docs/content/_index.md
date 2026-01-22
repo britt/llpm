@@ -133,11 +133,6 @@ Shell execution:
   {{< /hextra/feature-card >}}
 {{< /hextra/feature-grid >}}
 
-    style="background: radial-gradient(ellipse at 50% 80%,rgba(89,155,255,0.15),hsla(0,0%,100%,0));"
-  >}}
-
-Capture knowledge and keep it searchable:
-
 - Store notes as Markdown with YAML frontmatter under `~/.llpm/projects/{projectId}/notes/`.
 - Search notes locally with ripgrep-backed text search.
 - Run shell commands with explicit confirmation and audit logging.
