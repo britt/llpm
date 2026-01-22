@@ -17,7 +17,7 @@ layout: hextra-home
 {{< hextra/hero-subtitle >}}
   AI-powered product management CLI for GitHub issues, codebases, stakeholders, and requirements.
 
-  Install with Bun and configure a provider API key, then start LLPM and begin working with slash commands.
+  Install with Bun and configure a provider, then start LLPM and begin working with slash commands.
 {{< /hextra/hero-subtitle >}}
 
 <div class="hx-mt-6">
@@ -28,14 +28,16 @@ LLPM is a Bun-based CLI.
 
 1. Clone the repository.
 2. Install dependencies.
-3. Create a `.env` with at least one provider API key.
-4. Start LLPM.
+3. Copy the example config.
+4. Configure at least one provider.
+5. Start LLPM.
 
 ```bash
 git clone https://github.com/britt/llpm.git
 cd llpm
 bun install
-# Create .env with at least one provider key
+cp .env.example .env
+# Edit .env and set at least one provider
 bun start
 ```
 
