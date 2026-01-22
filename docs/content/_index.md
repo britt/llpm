@@ -25,11 +25,11 @@ layout: hextra-home
 LLPM is a Bun-based CLI.
 
 ```bash
-git clone https://github.com/britt/llpm.git
-cd llpm
-bun install
-cp .env.example .env
-bun start
+# Install the llpm CLI globally
+bun add -g llpm
+
+# Start LLPM
+llpm
 ```
 
 Next:
@@ -50,7 +50,7 @@ For prerequisites, provider setup, and other install options, see [Installation]
 
 - `/model providers` shows which providers are configured.
 - `/model switch` picks a model (interactive), or `/model switch <provider>/<model>` switches directly.
-- `/model list` shows all available models for configured providers.
+- `/model list` shows available models for configured providers.
 - `/model update` refreshes the cached catalog from provider APIs.
 
 Supported provider IDs:
@@ -63,8 +63,8 @@ Supported provider IDs:
 
 Example model IDs (from the built-in defaults):
 
-- OpenAI: `gpt-5.2`, `gpt-5.2-mini`, `gpt-5.2-turbo`, `gpt-4o`, `gpt-4o-mini`, `o4-mini`
-- Anthropic: `claude-sonnet-4-5`, `claude-opus-4-1`
+- OpenAI: `gpt-5.2`, `gpt-5.2-mini`, `gpt-5.2-turbo`, `gpt-4o`, `gpt-4o-mini`, `o4-mini`, `o3-mini`
+- Anthropic: `claude-sonnet-4-5`, `claude-opus-4-1`, `claude-sonnet-4`, `claude-opus-4`
 - Google Vertex: `gemini-2.5-pro`, `gemini-2.5-flash`, `gemini-2.5-ultra`
 - Groq: `llama-3.3-70b-versatile`, `meta-llama/llama-4-maverick-17b-128e-instruct`, `deepseek-r1-distill-llama-70b`
 - Cerebras: `qwen-3-235b-a22b-instruct-2507`, `llama-3.3-70b`, `llama3.1-8b`, `llama3.1-70b`
@@ -72,7 +72,7 @@ Example model IDs (from the built-in defaults):
 LLPM caches the provider-fetched catalog in `~/.llpm/models.json` so model discovery stays fast and consistent between sessions.
 
 If a provider is not configured, its models stay hidden from the selector, and the footer only shows models from configured providers."
-    class="hx-aspect-auto md:hx-aspect-[1.1/1] max-md:hx-min-h-[800px]"
+    class="hx-aspect-auto md:hx-aspect-[1.1/1] max-md:hx-min-h-[820px]"
     style="background: radial-gradient(ellipse at 50% 80%,rgba(194,97,254,0.15),hsla(0,0%,100%,0));"
   >}}
   {{< hextra/feature-card
@@ -83,10 +83,12 @@ If a provider is not configured, its models stay hidden from the selector, and t
 - Run `/project scan` to analyze a codebase (active project or current working directory).
 - Use `/github` to browse/search repositories, then connect one to a project.
 
-A scan summarizes structure, dependencies, and documentation. LLPM persists scan results so repeat scans stay fast.
+A scan summarizes project files (gitignore-aware), languages/frameworks, dependencies, and documentation.
+
+LLPM persists scan results in `~/.llpm/projects/{projectId}/project.json` so repeat scans stay fast.
 
 If LLPM starts inside a repo, it can auto-detect the matching project from your current working directory."
-    class="hx-aspect-auto md:hx-aspect-[1.1/1] max-lg:hx-min-h-[720px]"
+    class="hx-aspect-auto md:hx-aspect-[1.1/1] max-lg:hx-min-h-[760px]"
     style="background: radial-gradient(ellipse at 50% 80%,rgba(142,53,74,0.15),hsla(0,0%,100%,0));"
   >}}
   {{< hextra/feature-card
@@ -98,8 +100,8 @@ If LLPM starts inside a repo, it can auto-detect the matching project from your 
 - Reload after edits with `/skills reload`.
 - Restore bundled skills with `/skills reinstall`.
 
-Use skills to drive repeatable workflows like requirement elicitation, stakeholder tracking, project planning, risk checks, and context-aware question generation."
-    class="hx-aspect-auto md:hx-aspect-[1.1/1] max-md:hx-min-h-[660px]"
+Skills cover repeatable workflows like requirement elicitation, stakeholder tracking, project planning, risk checks, and context-aware question generation."
+    class="hx-aspect-auto md:hx-aspect-[1.1/1] max-md:hx-min-h-[700px]"
     style="background: radial-gradient(ellipse at 50% 80%,rgba(221,210,59,0.15),hsla(0,0%,100%,0));"
   >}}
   {{< hextra/feature-card
@@ -110,8 +112,8 @@ Use skills to drive repeatable workflows like requirement elicitation, stakehold
 - Search uses ripgrep-based text search for fast local lookup.
 - Shell execution is configured in `~/.llpm/config.json`.
 
-Use shell execution for short, auditable commands. Keep longer workflows in normal terminal sessions."
-    class="hx-aspect-auto md:hx-aspect-[1.1/1] max-md:hx-min-h-[680px]"
+Shell execution is designed for short, auditable commands. Longer workflows stay in normal terminal sessions."
+    class="hx-aspect-auto md:hx-aspect-[1.1/1] max-md:hx-min-h-[700px]"
     style="background: radial-gradient(ellipse at 50% 80%,rgba(80,120,200,0.15),hsla(0,0%,100%,0));"
   >}}
 {{< /hextra/feature-grid >}}
