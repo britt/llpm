@@ -40,8 +40,6 @@ Next:
 
 For prerequisites, provider setup, and other install options, see [Installation]({{< relref "docs/getting-started/installation.md" >}}).
 
-Next steps:
-
 - Follow [Quickstart]({{< relref "docs/getting-started/quickstart.md" >}}) for a first session and common slash commands.
 - Review [Configuration]({{< relref "docs/getting-started/configuration.md" >}}) for environment variables and setup.
 
