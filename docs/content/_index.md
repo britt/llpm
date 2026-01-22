@@ -158,3 +158,84 @@ For prerequisites and provider setup, see [Installation]({{< relref "docs/gettin
     </p>
   </div>
 </div>
+
+      If live discovery fails, LLPM falls back to a curated default catalog defined in <code>MODELS.md</code>.
+      If a provider is not configured, its models stay hidden from the selector.
+    </p>
+  </div>
+
+  <div class="hx-relative hx-rounded-xl hx-border hx-border-gray-200 dark:hx-border-neutral-800 hx-bg-white dark:hx-bg-neutral-900 hx-p-6 hx-shadow-sm"
+       style="background: radial-gradient(ellipse at 50% 80%,rgba(142,53,74,0.15),hsla(0,0%,100%,0));">
+    <h3 class="hx-text-xl hx-font-semibold hx-mb-2">Projects, Scans, and GitHub</h3>
+    <p class="hx-text-gray-600 dark:hx-text-gray-300 hx-mb-4">
+      Tie work to the right repo, then generate rich project context on demand.
+    </p>
+
+    <ul class="hx-list-disc hx-pl-6 hx-space-y-2 hx-text-gray-600 dark:hx-text-gray-300">
+      <li>Use <code>/project</code> to add, list, switch, and remove projects, or to point LLPM at mono-repos and subdirectories.</li>
+      <li>Run <code>/project scan</code> to analyze a codebase (active project or current working directory).</li>
+      <li>Use <code>/github</code> to browse/search repositories, then connect one to a project so issues, pull requests, and notes share the same context.</li>
+    </ul>
+
+    <p class="hx-text-gray-600 dark:hx-text-gray-300 hx-mt-4">
+      A scan summarizes project files (gitignore-aware), languages/frameworks, dependencies, documentation, and high-level architecture descriptions.
+    </p>
+    <p class="hx-text-gray-600 dark:hx-text-gray-300 hx-mt-2">
+      LLPM persists scan results in <code>~/.llpm/projects/{projectId}/project.json</code>.
+    </p>
+    <p class="hx-text-gray-600 dark:hx-text-gray-300 hx-mt-2">
+      Use flags like <code>--force</code> to refresh cached scans or <code>--no-llm</code> for a fast static pass without calling model APIs.
+    </p>
+    <p class="hx-text-gray-600 dark:hx-text-gray-300 hx-mt-2">
+      If LLPM starts inside a repo, it can auto-detect the matching project from the current working directory and will fall back to scanning the current directory when no project is configured.
+    </p>
+  </div>
+
+  <div class="hx-relative hx-rounded-xl hx-border hx-border-gray-200 dark:hx-border-neutral-800 hx-bg-white dark:hx-bg-neutral-900 hx-p-6 hx-shadow-sm"
+       style="background: radial-gradient(ellipse at 50% 80%,rgba(221,210,59,0.15),hsla(0,0%,100%,0));">
+    <h3 class="hx-text-xl hx-font-semibold hx-mb-2">Skills and Guided Workflows</h3>
+    <p class="hx-text-gray-600 dark:hx-text-gray-300 hx-mb-4">
+      Use reusable workflows packaged as Agent Skills (<code>SKILL.md</code>) to guide planning, analysis, and documentation.
+    </p>
+
+    <ul class="hx-list-disc hx-pl-6 hx-space-y-2 hx-text-gray-600 dark:hx-text-gray-300">
+      <li>Find skills with <code>/skills list</code> to see bundled and user-defined workflows.</li>
+      <li>Preview a skill with <code>/skills test &lt;name&gt;</code> to inspect its goal, inputs, tools, and sample runs before using it.</li>
+      <li>Reload after edits with <code>/skills reload</code> so changes to skill files are picked up immediately.</li>
+      <li>Restore bundled skills with <code>/skills reinstall</code> if local experiments break the core collection.</li>
+    </ul>
+
+    <p class="hx-text-gray-600 dark:hx-text-gray-300 hx-mt-4">
+      Skills follow the Agent Skills specification and are discovered from <code>~/.llpm/skills/</code> and project-specific skill folders.
+    </p>
+    <p class="hx-text-gray-600 dark:hx-text-gray-300 hx-mt-2">
+      The core collection includes skills for requirement elicitation, project planning, issue decomposition and dependency mapping, architecture diagramming, context-aware question generation, at-risk detection, stakeholder tracking, FAQ building from issues, note consolidation, meeting preparation, research summarization, and thread discussion summarization.
+    </p>
+  </div>
+
+  <div class="hx-relative hx-rounded-xl hx-border hx-border-gray-200 dark:hx-border-neutral-800 hx-bg-white dark:hx-bg-neutral-900 hx-p-6 hx-shadow-sm"
+       style="background: radial-gradient(ellipse at 50% 80%,rgba(80,120,200,0.15),hsla(0,0%,100%,0));">
+    <h3 class="hx-text-xl hx-font-semibold hx-mb-2">Notes, Search, and Shell</h3>
+    <p class="hx-text-gray-600 dark:hx-text-gray-300 hx-mb-4">
+      Capture project knowledge in Markdown notes, search it locally, and run carefully scoped shell commands when needed.
+    </p>
+
+    <ul class="hx-list-disc hx-pl-6 hx-space-y-2 hx-text-gray-600 dark:hx-text-gray-300">
+      <li>
+        Notes are stored as Markdown files with YAML frontmatter under <code>~/.llpm/projects/{projectId}/notes/</code>.
+        Notes use frontmatter to store titles, tags, and metadata.
+      </li>
+      <li>
+        Search uses ripgrep-based text search for fast local lookup and does not rely on embeddings or external vector indexes.
+      </li>
+      <li>
+        Shell execution is configured in <code>~/.llpm/config.json</code> (the <code>shell</code> section) as a global allowlist/denylist with timeouts and defaults.
+        Commands run through permission validation, user confirmation (with optional skip-confirmation modes), and audit logging via the <code>run_shell_command</code> tool.
+      </li>
+    </ul>
+
+    <p class="hx-text-gray-600 dark:hx-text-gray-300 hx-mt-4">
+      Shell execution is designed for short, auditable commands that complement LLPM’s analysis and planning tools.
+    </p>
+  </div>
+</div>
