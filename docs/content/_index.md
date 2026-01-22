@@ -121,7 +121,7 @@ Each skill documents its flow, inputs, and expected outputs in its SKILL.md file
 Notes use YAML frontmatter to store titles, tags, and other metadata, making them easy to organize, grep, and feed into higher-level skills like consolidate-notes-summary, build-faq-from-issues, and prepare-meeting-agenda.
 - Search uses ripgrep-based text search for fast local lookup and does not rely on embeddings or external vector indexes.
 The Markdown-based NotesBackend keeps everything on disk, while ripgrep-powered search stays fast even for large workspaces and multi-project setups.
-- Shell execution is configured in `~/.llpm/shell.json` as a global allowlist/denylist with timeouts and defaults.
+- Shell execution is configured in `~/.llpm/config.json` (the `shell` section) as a global allowlist/denylist with timeouts and defaults.
 Every shell command goes through permission validation, explicit user confirmation (with optional skip-confirmation modes), and audit logging via the `run_shell_command` tool, so LLPM can suggest commands while still keeping execution controlled and traceable.
 
 Shell execution is designed for short, auditable commands that complement LLPM’s analysis and planning tools; longer workflows stay in normal terminal sessions."
