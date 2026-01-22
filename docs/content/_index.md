@@ -52,8 +52,8 @@ For prerequisites, optional global install, and provider setup, see [Installatio
 <!--
 Homepage feature boxes
 
-Use plain HTML (not shortcodes with quoted parameters) so Hugo parsing
-cannot fail with an unterminated quoted shortcode argument.
+Avoid shortcode parameter quoting issues by using plain HTML instead of
+shortcodes-with-quoted-parameters.
 -->
 <div class="hx-mt-10 hx-space-y-6">
   <div class="hx-rounded-xl hx-border hx-border-gray-200 dark:hx-border-neutral-800 hx-bg-white dark:hx-bg-neutral-900 hx-p-6"
