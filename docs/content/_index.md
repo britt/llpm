@@ -118,6 +118,18 @@ Skills are discovered from `~/.llpm/skills/` and project-specific skill folders.
     title="Notes, Search, and Shell"
     subtitle="Capture project knowledge in Markdown notes, search it locally, and run carefully scoped shell commands when needed."
     class="hx-aspect-auto md:hx-aspect-[1.1/1] max-md:hx-min-h-[700px]"
+    style="background: radial-gradient(ellipse at 50% 80%,rgba(89,155,255,0.15),hsla(0,0%,100%,0));"
+  >}}
+
+Capture knowledge and keep it searchable:
+
+- Store notes as Markdown with YAML frontmatter under `~/.llpm/projects/{projectId}/notes/`.
+- Search notes locally with ripgrep-backed text search.
+- Run shell commands with explicit confirmation and audit logging.
+
+  {{< /hextra/feature-card >}}
+{{< /hextra/feature-grid >}}
+
     style="background: radial-gradient(ellipse at 50% 80%,rgba(80,120,200,0.15),hsla(0,0%,100%,0));"
   >}}
 
