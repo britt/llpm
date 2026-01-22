@@ -119,6 +119,75 @@ This homepage uses HTML-based cards (instead of feature-card shortcodes) to avoi
       <li>Use <code>/github</code> to browse/search repositories, then connect one to a project.</li>
     </ul>
 
+    <p>What a scan includes:</p>
+
+    <ul>
+      <li>Gitignore-aware file scanning with language/framework detection.</li>
+      <li>Dependency parsing across common package managers.</li>
+      <li>Documentation coverage checks.</li>
+      <li>Optional LLM-backed architecture analysis (including Mermaid diagrams).</li>
+    </ul>
+
+    <p>Scan results persist under <code>~/.llpm/projects/{projectId}/project.json</code> for reuse.</p>
+
+    <p>Flags:</p>
+
+    <ul>
+      <li><code>--force</code> refreshes cached scan results.</li>
+      <li><code>--no-llm</code> skips architecture analysis for faster, offline-friendly scans.</li>
+    </ul>
+  </div>
+
+  <div
+    class="hx-rounded-2xl hx-border hx-border-gray-200/50 dark:hx-border-gray-800/50 hx-bg-white/60 dark:hx-bg-neutral-900/40 hx-p-6"
+    style="background: radial-gradient(ellipse at 50% 80%,rgba(59,130,246,0.14),hsla(0,0%,100%,0));"
+  >
+    <h3 class="hx-text-xl hx-font-semibold">Skills and Guided Workflows</h3>
+    <p class="hx-mt-2 hx-text-gray-600 dark:hx-text-gray-300">
+      Use reusable workflows packaged as Agent Skills (<code>SKILL.md</code>) to guide planning, analysis, and documentation without rebuilding prompts for every task.
+    </p>
+
+    <p>Work with skills:</p>
+
+    <ul>
+      <li>Run <code>/skills list</code> to see bundled and user-defined skills.</li>
+      <li>Use <code>/skills test &lt;name&gt;</code> to preview a skill’s goal, inputs, tools, and sample runs.</li>
+      <li>Run <code>/skills reload</code> to pick up skill changes on disk.</li>
+      <li>Use <code>/skills reinstall</code> to restore bundled skills if local edits break them.</li>
+    </ul>
+
+    <p>Skills are discovered from <code>~/.llpm/skills/</code> and project-local skill folders (for repo-specific workflows).</p>
+  </div>
+
+  <div
+    class="hx-rounded-2xl hx-border hx-border-gray-200/50 dark:hx-border-gray-800/50 hx-bg-white/60 dark:hx-bg-neutral-900/40 hx-p-6"
+    style="background: radial-gradient(ellipse at 50% 80%,rgba(16,185,129,0.14),hsla(0,0%,100%,0));"
+  >
+    <h3 class="hx-text-xl hx-font-semibold">Notes, Search, and Shell</h3>
+    <p class="hx-mt-2 hx-text-gray-600 dark:hx-text-gray-300">
+      Capture project knowledge in Markdown notes, search it locally, and run carefully scoped shell commands when needed.
+    </p>
+
+    <p>Notes:</p>
+    <ul>
+      <li>Notes are Markdown files with YAML frontmatter under <code>~/.llpm/projects/{projectId}/notes/</code>.</li>
+      <li>Frontmatter stores title, tags, and metadata for organization and reuse.</li>
+    </ul>
+
+    <p>Search:</p>
+    <ul>
+      <li>Notes search uses ripgrep-based full-text search.</li>
+      <li>Search does not rely on embeddings or external vector indexes.</li>
+    </ul>
+
+    <p>Shell execution:</p>
+    <ul>
+      <li>Shell commands run through permission validation and explicit confirmation.</li>
+      <li>Commands can be audited via a local log when configured.</li>
+    </ul>
+  </div>
+</div>
+
     <p>Scan results are saved under <code>~/.llpm/projects/&lt;projectId&gt;/project.json</code>.</p>
   </div>
 </div>
