@@ -9,21 +9,31 @@ AI-powered product management CLI for GitHub issues, codebases, stakeholders, an
 
 ## Install
 
-LLPM is a Bun-based CLI.
+1. Install LLPM with Bun:
 
-```bash
-# Install the LLPM CLI globally with Bun
-bun add -g llpm
+   ```bash
+   bun add -g llpm
+   ```
 
-# Start LLPM
-llpm
-```
+2. Start LLPM:
 
-Next:
+   ```bash
+   llpm
+   ```
 
-- Configure at least one model provider (environment variables)
-- Run `/model providers` to confirm LLPM sees your credentials
-- Use `/model switch` to pick a model
+3. Configure at least one model provider (environment variables).
+
+4. Confirm LLPM sees your credentials:
+
+   ```text
+   /model providers
+   ```
+
+5. Pick a model:
+
+   ```text
+   /model switch
+   ```
 
 For prerequisites, provider setup, and other install options, see [Installation](./docs/getting-started/installation.md).
 
@@ -67,7 +77,7 @@ Scan results are saved to `~/.llpm/projects/{projectId}/project.json`.
 - Reload after editing skill files: `/skills reload`
 - Restore bundled skills: `/skills reinstall`
 
-Skills are discovered from `~/.llpm/skills/` and project-specific skill folders.
+Skills are discovered from `~/.llpm/skills/` and project skill folders.
 
 ### Notes, search, and shell
 
