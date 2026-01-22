@@ -23,7 +23,7 @@ layout: hextra-home
 
 LLPM is a Bun-based CLI.
 
-1. Install prerequisites first: Bun and Git available on your `PATH`.
+1. Install prerequisites: Bun and Git available on your `PATH`.
 2. Install LLPM globally.
 3. Start LLPM.
 
