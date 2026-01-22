@@ -47,7 +47,7 @@ For prerequisites, provider setup, and other install options, see [Installation]
     title="Multi-Provider Models"
     subtitle="Configure one or more providers, then switch models per session.
 
-- Use `/model providers` to confirm which providers are configured.
+- Use `/model providers` to see which providers are configured.
 - Use `/model switch` to pick a model (interactive), or `/model switch <provider>/<model>` to switch directly.
 - Use `/model list` to view the available catalog.
 - Use `/model update` to refresh the cached catalog from provider APIs.
@@ -80,7 +80,7 @@ LLPM caches the provider-fetched catalog in `~/.llpm/models.json` so model disco
 - Analyze a codebase with `/project scan` (active project or current working directory).
 - Use `/github` to browse and search repositories, then connect one to a project.
 
-A project scan summarizes codebase structure, dependencies, and documentation. Use it to start planning and issue work with concrete inputs, and to avoid re-scanning the same repository every session."
+A project scan summarizes codebase structure, dependencies, and documentation. Use it to plan and scope work with concrete inputs, and avoid re-scanning the same repository every session."
     class="hx-aspect-auto md:hx-aspect-[1.1/1] max-lg:hx-min-h-[620px]"
     style="background: radial-gradient(ellipse at 50% 80%,rgba(142,53,74,0.15),hsla(0,0%,100%,0));"
   >}}
@@ -93,8 +93,8 @@ A project scan summarizes codebase structure, dependencies, and documentation. U
 - Reload after edits with `/skills reload`.
 - Restore bundled skills with `/skills reinstall`.
 
-The built-in catalog covers requirement elicitation, stakeholder tracking, project planning, risk checks, and question generation—plus supporting workflows like documentation formatting, note consolidation, FAQ generation, meeting preparation, and research summaries."
-    class="hx-aspect-auto md:hx-aspect-[1.1/1] max-md:hx-min-h-[640px]"
+The built-in catalog covers requirement elicitation, stakeholder tracking, project planning, risk checks, and question generation."
+    class="hx-aspect-auto md:hx-aspect-[1.1/1] max-md:hx-min-h-[600px]"
     style="background: radial-gradient(ellipse at 50% 80%,rgba(221,210,59,0.15),hsla(0,0%,100%,0));"
   >}}
   {{< hextra/feature-card
