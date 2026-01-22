@@ -25,7 +25,7 @@ Next:
 - Run `/model providers` to confirm LLPM sees your credentials
 - Use `/model switch` to pick a model
 
-For prerequisites, provider setup, and other install options, see [Installation]({{< relref "docs/getting-started/installation.md" >}}).
+For prerequisites, provider setup, and other install options, see [Installation](./docs/getting-started/installation.md).
 
 ## What LLPM does
 
@@ -66,6 +66,7 @@ Scan results are saved to `~/.llpm/projects/{projectId}/project.json`.
 - Preview a skill: `/skills test <name>`
 - Reload after editing skill files: `/skills reload`
 - Restore bundled skills: `/skills reinstall`
+
 Skills are discovered from `~/.llpm/skills/` and project-specific skill folders.
 
 ### Notes, search, and shell
@@ -76,5 +77,5 @@ Skills are discovered from `~/.llpm/skills/` and project-specific skill folders.
 
 ## Next steps
 
-- Follow the setup guide: [Getting Started]({{< relref "docs/getting-started/_index.md" >}})
-- Learn the workflows: [User Guide]({{< relref "docs/user-guide/_index.md" >}})
+- Follow the setup guide: [Getting Started](./docs/getting-started/_index.md)
+- Learn the workflows: [User Guide](./docs/user-guide/_index.md)
