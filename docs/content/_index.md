@@ -110,28 +110,3 @@ Use the shell tool for short, auditable commands. Keep long-running workflows in
     style="background: radial-gradient(ellipse at 50% 80%,rgba(80,120,200,0.15),hsla(0,0%,100%,0));"
   >}}
 {{< /hextra/feature-grid >}}
-
-    subtitle="Use reusable workflows packaged as Agent Skills (`SKILL.md`) to guide planning, analysis, and documentation work.
-
-- Discover skills with `/skills list`.
-- Preview a skill with `/skills test <name>`.
-- Reload after edits with `/skills reload`.
-- Restore bundled skills with `/skills reinstall`.
-
-The built-in catalog covers requirement elicitation, stakeholder tracking, project planning, risk checks, and question generation."
-    class="hx-aspect-auto md:hx-aspect-[1.1/1] max-md:hx-min-h-[620px]"
-    style="background: radial-gradient(ellipse at 50% 80%,rgba(221,210,59,0.15),hsla(0,0%,100%,0));"
-  >}}
-  {{< hextra/feature-card
-    title="Notes, Search, and Shell"
-    subtitle="Capture project knowledge in Markdown notes, search it locally, and run carefully scoped shell commands when needed.
-
-- Notes are stored as Markdown files with YAML frontmatter.
-- Search uses ripgrep-based text search for fast local lookup.
-- Shell execution is configured in `~/.llpm/config.json`.
-
-Use the shell tool for short, auditable commands. Keep long-running workflows in normal terminal sessions."
-    class="hx-aspect-auto md:hx-aspect-[1.1/1] max-md:hx-min-h-[640px]"
-    style="background: radial-gradient(ellipse at 50% 80%,rgba(80,120,200,0.15),hsla(0,0%,100%,0));"
-  >}}
-{{< /hextra/feature-grid >}}
