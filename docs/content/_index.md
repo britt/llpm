@@ -3,32 +3,19 @@ title: LLPM Documentation
 layout: hextra-home
 ---
 
-{{< hextra/hero-badge >}}
-  <span>AI-Powered CLI</span>
-{{< /hextra/hero-badge >}}
+# Large Language Model Product Manager
 
-<div class="hx-mt-6 hx-mb-6">
-{{< hextra/hero-headline >}}
-  Large Language Model&nbsp;<br class="sm:hx-block hx-hidden" />Product Manager
-{{< /hextra/hero-headline >}}
-</div>
-
-<div class="hx-mb-12">
-{{< hextra/hero-subtitle >}}
-  AI-powered product management CLI for GitHub issues, codebases, stakeholders, and requirements.
-{{< /hextra/hero-subtitle >}}
-
-<div class="hx-mt-6">
+AI-powered product management CLI for GitHub issues, codebases, stakeholders, and requirements.
 
 ## Install
 
-LLPM is a Bun-based CLI. Install prerequisites first: Bun and Git available on your `PATH`.
+LLPM is a Bun-based CLI.
 
 ```bash
 # Install the LLPM CLI globally with Bun
 bun add -g llpm
 
-# Then start LLPM
+# Start LLPM
 llpm
 ```
 
@@ -40,44 +27,58 @@ Next:
 
 For prerequisites, provider setup, and other install options, see [Installation]({{< relref "docs/getting-started/installation.md" >}}).
 
-</div>
-</div>
+## What LLPM does
 
-<div class="hx-grid hx-grid-cols-1 md:hx-grid-cols-2 hx-gap-6">
-  <div class="hx-relative hx-rounded-xl hx-border hx-border-gray-200 dark:hx-border-neutral-800 hx-bg-white dark:hx-bg-neutral-900 hx-p-6 hx-shadow-sm"
-       style="background: radial-gradient(ellipse at 50% 80%,rgba(194,97,254,0.15),hsla(0,0%,100%,0));">
-    <h3 class="hx-text-xl hx-font-semibold hx-mb-2">Multi-Provider Models</h3>
-    <p class="hx-text-gray-600 dark:hx-text-gray-300 hx-mb-4">
-      Connect one or more providers, then switch models per project or task while LLPM keeps the catalog in sync with provider APIs.
-    </p>
+### Multi-provider models
 
-    <ul class="hx-list-disc hx-pl-6 hx-space-y-2 hx-text-gray-600 dark:hx-text-gray-300">
-      <li>Run <code>/model providers</code> to see which providers are configured and which credentials are missing.</li>
-      <li>Use <code>/model switch</code> to pick a model (interactive), or <code>/model switch &lt;provider&gt;/&lt;model&gt;</code> to switch directly.</li>
-      <li>Run <code>/model list</code> to inspect the most relevant models per provider, grouped by generation.</li>
-      <li>Use <code>/model update</code> to refresh the cached catalog from provider APIs and pull in newly released models.</li>
-    </ul>
+- Configure providers and credentials: `/model providers`
+- Switch models (interactive): `/model switch`
+- Switch models directly: `/model switch <provider>/<model>`
+- List models: `/model list` (use `/model list --all` to include unconfigured providers)
+- Refresh the cached catalog: `/model update`
 
-    <p class="hx-text-gray-600 dark:hx-text-gray-300 hx-mt-4">
-      <strong>Supported provider IDs:</strong> <code>openai</code>, <code>anthropic</code>, <code>groq</code>, <code>google-vertex</code>, <code>cerebras</code>.
-    </p>
+Supported provider IDs: `openai`, `anthropic`, `groq`, `google-vertex`, `cerebras`.
 
-    <div class="hx-text-gray-600 dark:hx-text-gray-300 hx-mt-4">
-      <p class="hx-mb-2"><strong>Example model IDs (from <code>MODELS.md</code>):</strong></p>
-      <p class="hx-mb-2">OpenAI: <code>gpt-5.2</code>, <code>gpt-5.2-mini</code>, <code>gpt-5.2-turbo</code>, <code>gpt-5.1</code>, <code>gpt-5.1-mini</code>, <code>gpt-5.1-turbo</code>, <code>gpt-4o</code>, <code>gpt-4o-mini</code>, <code>o4-mini</code>, <code>o3-mini</code></p>
-      <p class="hx-mb-2">Anthropic: <code>claude-sonnet-4-5</code>, <code>claude-opus-4-1</code>, <code>claude-sonnet-4</code>, <code>claude-opus-4</code>, <code>claude-3-7-sonnet-latest</code>, <code>claude-3-5-haiku-latest</code>, <code>claude-3-haiku</code></p>
-      <p class="hx-mb-2">Google Vertex: <code>gemini-2.5-pro</code>, <code>gemini-2.5-flash</code>, <code>gemini-2.5-ultra</code></p>
-      <p class="hx-mb-2">Groq: <code>meta-llama/llama-4-maverick-17b-128e-instruct</code>, <code>llama-3.3-70b-versatile</code>, <code>llama-3.1-70b-versatile</code>, <code>llama-3.1-8b-instant</code>, <code>deepseek-r1-distill-llama-70b</code>, <code>moonshotai/kimi-k2-instruct</code>, <code>openai/gpt-oss-120b</code>, <code>openai/gpt-oss-20b</code>, <code>qwen/qwen3-32b</code></p>
-      <p>Cerebras: <code>qwen-3-235b-a22b-instruct-2507</code>, <code>llama-3.3-70b</code>, <code>llama3.1-8b</code>, <code>llama3.1-70b</code></p>
-    </div>
+Example model IDs (from `MODELS.md`):
 
-    <p class="hx-text-gray-600 dark:hx-text-gray-300 hx-mt-4">
-      LLPM caches the provider-fetched catalog in <code>~/.llpm/models.json</code> so model discovery stays fast and consistent between sessions and across restarts.
-    </p>
-    <p class="hx-text-gray-600 dark:hx-text-gray-300 hx-mt-2">
-      If live discovery fails, LLPM falls back to a curated default catalog defined in <code>MODELS.md</code> so core models stay available even when provider APIs are unavailable.
-      If a provider is not configured, its models stay hidden from the selector, and the footer only shows models from configured providers so the interface always reflects usable models.
-    </p>
+- OpenAI: `gpt-5.2`, `gpt-5.2-mini`, `gpt-5.2-turbo`, `gpt-5.1`, `gpt-5.1-mini`, `gpt-5.1-turbo`, `gpt-4o`, `gpt-4o-mini`, `o4-mini`, `o3-mini`
+- Anthropic: `claude-sonnet-4-5`, `claude-opus-4-1`, `claude-sonnet-4`, `claude-opus-4`, `claude-3-7-sonnet-latest`, `claude-3-5-haiku-latest`, `claude-3-haiku`
+- Google Vertex: `gemini-2.5-pro`, `gemini-2.5-flash`, `gemini-2.5-ultra`
+- Groq: `meta-llama/llama-4-maverick-17b-128e-instruct`, `llama-3.3-70b-versatile`, `llama-3.1-70b-versatile`, `llama-3.1-8b-instant`, `deepseek-r1-distill-llama-70b`, `moonshotai/kimi-k2-instruct`, `openai/gpt-oss-120b`, `openai/gpt-oss-20b`, `qwen/qwen3-32b`
+- Cerebras: `qwen-3-235b-a22b-instruct-2507`, `llama-3.3-70b`, `llama3.1-8b`, `llama3.1-70b`
+
+Notes:
+
+- Model discovery is cached in `~/.llpm/models.json`.
+- If a provider is not configured, its models stay hidden from the selector and the footer only shows models from configured providers.
+
+### Projects, scans, and GitHub
+
+- Manage projects: `/project`
+- Scan a codebase: `/project scan` (uses the active project or the current working directory)
+- Connect and browse repositories: `/github`
+
+Scan results are saved to `~/.llpm/projects/{projectId}/project.json`.
+
+### Skills and guided workflows
+
+- List skills: `/skills list`
+- Preview a skill: `/skills test <name>`
+- Reload after editing skill files: `/skills reload`
+- Restore bundled skills: `/skills reinstall`
+
+Skills are discovered from `~/.llpm/skills/` and project-specific skill folders.
+
+### Notes, search, and shell
+
+- Notes are stored under `~/.llpm/projects/{projectId}/notes/` as Markdown files with YAML frontmatter.
+- Notes search uses ripgrep-based text search.
+- Shell execution is configured in `~/.llpm/config.json` under the `shell` section.
+
+## Next steps
+
+- Follow the setup guide: [Getting Started]({{< relref "docs/getting-started/_index.md" >}})
+- Learn the workflows: [User Guide]({{< relref "docs/user-guide/_index.md" >}})
   </div>
 
   <div class="hx-relative hx-rounded-xl hx-border hx-border-gray-200 dark:hx-border-neutral-800 hx-bg-white dark:hx-bg-neutral-900 hx-p-6 hx-shadow-sm"
