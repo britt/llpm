@@ -68,7 +68,9 @@ Example model IDs:
 - Groq: `llama-3.3-70b-versatile`, `meta-llama/llama-4-maverick-17b-128e-instruct`
 - Cerebras: `qwen-3-235b-a22b-instruct-2507`, `llama-3.3-70b`
 
-LLPM caches the provider-fetched catalog in `~/.llpm/models.json` so model discovery stays fast and consistent between sessions."
+LLPM caches the provider-fetched catalog in `~/.llpm/models.json` so model discovery stays fast and consistent between sessions.
+
+Tip: If a provider is not configured, its models are hidden from the selector and the footer."
     class="hx-aspect-auto md:hx-aspect-[1.1/1] max-md:hx-min-h-[640px]"
     style="background: radial-gradient(ellipse at 50% 80%,rgba(194,97,254,0.15),hsla(0,0%,100%,0));"
   >}}
