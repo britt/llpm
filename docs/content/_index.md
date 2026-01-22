@@ -13,7 +13,7 @@ LLPM is an AI-powered product management CLI that runs in your terminal.
 **Prerequisites**
 
 - [Bun](https://bun.com)
-- At least one configured model provider (OpenAI, Anthropic, Groq, Google Vertex AI, or Cerebras)
+- At least one configured model provider: OpenAI, Anthropic, Groq, Google Vertex AI, or Cerebras
 
 1. **Clone the repository.**
 
@@ -51,11 +51,81 @@ llpm
 
 ## What LLPM helps with
 
-- Manage work in GitHub (issues, pull requests, and projects)
-- Scan a codebase to understand structure, dependencies, and docs
-- Keep project notes as Markdown and search them with ripgrep
-- Track stakeholders, goals, and dependencies
-- Run a requirement-elicitation workflow to produce a requirements document
+### Use multiple model providers
+
+Connect one or more providers, then switch models per project or task.
+
+- See configured providers:
+
+  ```text
+  /model providers
+  ```
+
+- Switch models:
+
+  ```text
+  /model switch
+  ```
+
+Supported provider IDs:
+
+- `openai`
+- `anthropic`
+- `groq`
+- `google-vertex`
+- `cerebras`
+
+### Manage projects and scans
+
+Use projects to keep work, context, and artifacts organized.
+
+- Manage projects:
+
+  ```text
+  /project
+  ```
+
+- Scan a codebase to understand structure, dependencies, and docs:
+
+  ```text
+  /project scan
+  ```
+
+### Work in GitHub
+
+Use LLPM to work with GitHub issues and pull requests.
+
+- GitHub integration:
+
+  ```text
+  /github
+  ```
+
+### Use skills for guided workflows
+
+Use skills to run repeatable workflows (for example, requirement elicitation).
+
+- List skills:
+
+  ```text
+  /skills
+  ```
+
+- Reinstall bundled core skills (useful after upgrading):
+
+  ```text
+  /skills reinstall
+  ```
+
+### Keep notes as Markdown
+
+Store project notes as Markdown and search them using ripgrep.
+
+- Manage notes:
+
+  ```text
+  /notes
+  ```
 
 ## Quickstart
 
@@ -77,24 +147,8 @@ llpm
    /project
    ```
 
-## Model providers
-
-LLPM supports these model providers:
-
-- `openai`
-- `anthropic`
-- `groq`
-- `google-vertex`
-- `cerebras`
-
-To see what credentials each provider needs:
-
-```text
-/model providers
-```
-
 ## Next steps
 
-- [Getting Started](./docs/getting-started/)
 - [User Guide](./docs/user-guide/)
 - [Skills Reference](./docs/skills-reference/)
+- [Contributing](./docs/contributing/)
