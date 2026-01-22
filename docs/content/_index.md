@@ -134,26 +134,6 @@ shortcode parameter quoting issues during Hugo builds.
     </ul>
   </div>
 </div>
-    <p class="hx-text-gray-600 dark:hx-text-gray-300 hx-mb-4">
-      Connect work to the right repo, then generate project context on demand.
-    </p>
-
-    <ul class="hx-list-disc hx-pl-6 hx-space-y-2 hx-text-gray-600 dark:hx-text-gray-300">
-      <li>Use <code>/project</code> to add, list, switch, and remove projects.</li>
-      <li>Run <code>/project scan</code> to analyze a codebase (active project or current working directory).</li>
-      <li>Use <code>/github</code> to browse/search repositories, then connect one to a project so issues, pull requests, and notes share the same context.</li>
-    </ul>
-
-    <p class="hx-text-gray-600 dark:hx-text-gray-300 hx-mt-4">
-      A scan summarizes project files (gitignore-aware), languages/frameworks, dependencies, documentation, and high-level architecture descriptions.
-    </p>
-    <p class="hx-text-gray-600 dark:hx-text-gray-300 hx-mt-2">
-      LLPM persists scan results in <code>~/.llpm/projects/{projectId}/project.json</code>.
-    </p>
-    <p class="hx-text-gray-600 dark:hx-text-gray-300 hx-mt-2">
-      Use flags like <code>--force</code> to refresh cached scans or <code>--no-llm</code> for a fast static pass without calling model APIs.
-    </p>
-  </div>
 
   <div class="hx-rounded-xl hx-border hx-border-gray-200 dark:hx-border-neutral-800 hx-bg-white dark:hx-bg-neutral-900 hx-p-6" style="background: radial-gradient(ellipse at 50% 80%,rgba(221,210,59,0.15),hsla(0,0%,100%,0));">
     <h3 class="hx-text-xl hx-font-semibold hx-mb-2">Skills and guided workflows</h3>
