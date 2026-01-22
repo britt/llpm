@@ -46,12 +46,12 @@ For prerequisites, provider setup, and other install options, see [Installation]
 {{< hextra/feature-grid >}}
   {{< hextra/feature-card
     title="Multi-Provider Models"
-    subtitle="Connect one or more providers, then switch models as your work changes.
+    subtitle="Connect one or more providers, then switch models per project or task.
 
-- `/model providers` shows which providers are configured.
-- `/model switch` picks a model (interactive), or `/model switch <provider>/<model>` switches directly.
-- `/model list` shows available models for configured providers.
-- `/model update` refreshes the cached catalog from provider APIs.
+- Run `/model providers` to see which providers are configured.
+- Use `/model switch` to pick a model (interactive), or `/model switch <provider>/<model>` to switch directly.
+- Run `/model list` to list models for configured providers.
+- Use `/model update` to refresh the cached catalog from provider APIs.
 
 Supported provider IDs:
 
@@ -61,7 +61,7 @@ Supported provider IDs:
 - `google-vertex`
 - `cerebras`
 
-Example model IDs (from the built-in defaults):
+Example model IDs (from `MODELS.md`):
 
 - OpenAI: `gpt-5.2`, `gpt-5.2-mini`, `gpt-5.2-turbo`, `gpt-5.1`, `gpt-5.1-mini`, `gpt-5.1-turbo`, `gpt-4o`, `gpt-4o-mini`, `o4-mini`, `o3-mini`
 - Anthropic: `claude-sonnet-4-5`, `claude-opus-4-1`, `claude-sonnet-4`, `claude-opus-4`, `claude-3-7-sonnet-latest`, `claude-3-5-haiku-latest`, `claude-3-haiku`
