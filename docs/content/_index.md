@@ -157,7 +157,7 @@ This page avoids parameterized feature-card shortcodes and uses plain HTML.
     </ul>
 
     <p class="hx-mt-4">
-      See the <a href='{{< relref "docs/skills-reference/_index.md" >}}'>Skills Reference</a> for descriptions of the bundled skills.
+      See the <a href="{{< relref "docs/skills-reference/_index.md" >}}">Skills Reference</a> for descriptions of the bundled skills.
     </p>
   </div>
 
