@@ -71,6 +71,8 @@ Example model IDs (from `MODELS.md`):
 
 LLPM caches the provider-fetched catalog in `~/.llpm/models.json`.
 
+For details on providers, env vars, and model naming, see [Models](https://github.com/britt/llpm/blob/main/MODELS.md).
+
   {{< /hextra/feature-card >}}
 
   {{< hextra/feature-card
