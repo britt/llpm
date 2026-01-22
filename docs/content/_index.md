@@ -52,12 +52,12 @@ For prerequisites, optional global install, and provider setup, see [Installatio
 <!--
 Homepage feature boxes
 
-Avoid shortcode parameter quoting issues by using plain HTML instead of
-shortcodes-with-quoted-parameters.
+Use plain HTML instead of shortcode-based feature cards to avoid
+shortcode parameter quoting issues during Hugo builds.
 -->
+
 <div class="hx-mt-10 hx-grid hx-grid-cols-1 md:hx-grid-cols-2 hx-gap-6">
-  <div class="hx-rounded-xl hx-border hx-border-gray-200 dark:hx-border-neutral-800 hx-bg-white dark:hx-bg-neutral-900 hx-p-6"
-       style="background: radial-gradient(ellipse at 50% 80%,rgba(194,97,254,0.15),hsla(0,0%,100%,0));">
+  <div class="hx-rounded-xl hx-border hx-border-gray-200 dark:hx-border-neutral-800 hx-bg-white dark:hx-bg-neutral-900 hx-p-6" style="background: radial-gradient(ellipse at 50% 80%,rgba(194,97,254,0.15),hsla(0,0%,100%,0));">
     <h3 class="hx-text-xl hx-font-semibold hx-mb-2">Multi-provider models</h3>
     <p class="hx-text-gray-600 dark:hx-text-gray-300 hx-mb-4">
       Configure one or more providers, then switch models when the task changes. LLPM can refresh the model catalog from provider APIs and stores the result on disk for fast startup.
@@ -93,8 +93,7 @@ shortcodes-with-quoted-parameters.
     </p>
   </div>
 
-  <div class="hx-rounded-xl hx-border hx-border-gray-200 dark:hx-border-neutral-800 hx-bg-white dark:hx-bg-neutral-900 hx-p-6"
-       style="background: radial-gradient(ellipse at 50% 80%,rgba(142,53,74,0.15),hsla(0,0%,100%,0));">
+  <div class="hx-rounded-xl hx-border hx-border-gray-200 dark:hx-border-neutral-800 hx-bg-white dark:hx-bg-neutral-900 hx-p-6" style="background: radial-gradient(ellipse at 50% 80%,rgba(142,53,74,0.15),hsla(0,0%,100%,0));">
     <h3 class="hx-text-xl hx-font-semibold hx-mb-2">Projects, scans, and GitHub</h3>
     <p class="hx-text-gray-600 dark:hx-text-gray-300 hx-mb-4">
       Connect work to the right repo, then generate project context on demand.
@@ -117,8 +116,7 @@ shortcodes-with-quoted-parameters.
     </p>
   </div>
 
-  <div class="hx-rounded-xl hx-border hx-border-gray-200 dark:hx-border-neutral-800 hx-bg-white dark:hx-bg-neutral-900 hx-p-6"
-       style="background: radial-gradient(ellipse at 50% 80%,rgba(221,210,59,0.15),hsla(0,0%,100%,0));">
+  <div class="hx-rounded-xl hx-border hx-border-gray-200 dark:hx-border-neutral-800 hx-bg-white dark:hx-bg-neutral-900 hx-p-6" style="background: radial-gradient(ellipse at 50% 80%,rgba(221,210,59,0.15),hsla(0,0%,100%,0));">
     <h3 class="hx-text-xl hx-font-semibold hx-mb-2">Skills and guided workflows</h3>
     <p class="hx-text-gray-600 dark:hx-text-gray-300 hx-mb-4">
       Use reusable workflows packaged as Agent Skills (<code>SKILL.md</code>) to guide planning, analysis, and documentation.
@@ -136,8 +134,7 @@ shortcodes-with-quoted-parameters.
     </p>
   </div>
 
-  <div class="hx-rounded-xl hx-border hx-border-gray-200 dark:hx-border-neutral-800 hx-bg-white dark:hx-bg-neutral-900 hx-p-6"
-       style="background: radial-gradient(ellipse at 50% 80%,rgba(80,120,200,0.15),hsla(0,0%,100%,0));">
+  <div class="hx-rounded-xl hx-border hx-border-gray-200 dark:hx-border-neutral-800 hx-bg-white dark:hx-bg-neutral-900 hx-p-6" style="background: radial-gradient(ellipse at 50% 80%,rgba(80,120,200,0.15),hsla(0,0%,100%,0));">
     <h3 class="hx-text-xl hx-font-semibold hx-mb-2">Notes, search, and shell</h3>
     <p class="hx-text-gray-600 dark:hx-text-gray-300 hx-mb-4">
       Capture project knowledge in Markdown notes, search it locally, and run carefully scoped shell commands when needed.
@@ -151,11 +148,3 @@ shortcodes-with-quoted-parameters.
     </ul>
   </div>
 </div>
-
-<!--
-TODO: homepage refresh
-
-This file intentionally uses plain HTML for the feature grid.
-Reason: Hugo shortcodes with quoted params previously caused build failures.
--->
-
