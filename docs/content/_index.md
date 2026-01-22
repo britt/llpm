@@ -109,7 +109,8 @@ shortcode parameter quoting issues during Hugo builds.
     <p class="hx-text-gray-600 dark:hx-text-gray-300 hx-mt-4">
       LLPM persists scan results in <code>~/.llpm/projects/{projectId}/project.json</code>.
     </p>
-  </div>
+
+</div>
 
   <div class="hx-rounded-xl hx-border hx-border-gray-200 dark:hx-border-neutral-800 hx-bg-white dark:hx-bg-neutral-900 hx-p-6" style="background: radial-gradient(ellipse at 50% 80%,rgba(16,185,129,0.15),hsla(0,0%,100%,0));">
     <h3 class="hx-text-xl hx-font-semibold hx-mb-2">GitHub workflows</h3>
