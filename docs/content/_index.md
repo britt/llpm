@@ -14,9 +14,7 @@ Use it to work with:
 - Stakeholders and goals
 - Requirement elicitation
 
-## Install
-
-### Install dependencies (from source)
+## Install (from source)
 
 **Prerequisites**
 
@@ -42,7 +40,7 @@ Use it to work with:
    bun start
    ```
 
-### Next
+## Next
 
 1. **Check provider configuration.**
 
