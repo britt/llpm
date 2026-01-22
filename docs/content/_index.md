@@ -61,8 +61,8 @@ For prerequisites and provider setup, see [Installation]({{< relref "docs/gettin
 <!--
 Homepage feature boxes
 
-Use plain HTML instead of shortcode-based feature cards to avoid
-shortcode parameter quoting issues during Hugo builds.
+Note: Hugo shortcodes are sensitive to quoting and multiline parameters.
+Use plain HTML for the homepage grid to avoid build failures.
 -->
 
 <div class="hx-mt-10 hx-grid hx-grid-cols-1 md:hx-grid-cols-2 hx-gap-6">
