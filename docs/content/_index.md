@@ -46,34 +46,7 @@ For prerequisites, provider setup, and other install options, see [Installation]
 {{< hextra/feature-grid >}}
   {{< hextra/feature-card
     title="Multi-Provider Models"
-    subtitle="Connect one or more providers, then switch models per project or task while LLPM keeps the catalog in sync with provider APIs.
-
-- Run `/model providers` to see which providers are configured and which credentials are missing.
-- Use `/model switch` to pick a model (interactive), or `/model switch <provider>/<model>` to switch directly from the CLI or the web UI selector.
-- Run `/model list` to inspect the most relevant models per provider, grouped by generation.
-- Use `/model update` to refresh the cached catalog from provider APIs and pull in newly released models.
-
-Supported provider IDs:
-
-- `openai`
-- `anthropic`
-- `groq`
-- `google-vertex`
-- `cerebras`
-
-LLPM discovers models dynamically from provider APIs and groups them by generation, showing the top options per provider by default with an advanced toggle for full catalogs.
-Example model IDs (from `MODELS.md`):
-
-- OpenAI: `gpt-5.2`, `gpt-5.2-mini`, `gpt-5.2-turbo`, `gpt-5.1`, `gpt-5.1-mini`, `gpt-5.1-turbo`, `gpt-4o`, `gpt-4o-mini`, `o4-mini`, `o3-mini`
-- Anthropic: `claude-sonnet-4-5`, `claude-opus-4-1`, `claude-sonnet-4`, `claude-opus-4`, `claude-3-7-sonnet-latest`, `claude-3-5-haiku-latest`, `claude-3-haiku`
-- Google Vertex: `gemini-2.5-pro`, `gemini-2.5-flash`, `gemini-2.5-ultra`
-- Groq: `meta-llama/llama-4-maverick-17b-128e-instruct`, `llama-3.3-70b-versatile`, `llama-3.1-70b-versatile`, `llama-3.1-8b-instant`, `deepseek-r1-distill-llama-70b`, `moonshotai/kimi-k2-instruct`, `openai/gpt-oss-120b`, `openai/gpt-oss-20b`, `qwen/qwen3-32b`
-- Cerebras: `qwen-3-235b-instruct-2507`, `llama-3.3-70b`, `llama3.1-8b`, `llama3.1-70b`
-
-LLPM caches the provider-fetched catalog in `~/.llpm/models.json` so model discovery stays fast and consistent between sessions and across restarts.
-
-If live discovery fails, LLPM falls back to a curated default catalog defined in `MODELS.md` so core models stay available even when provider APIs are unavailable.
-If a provider is not configured, its models stay hidden from the selector, and the footer only shows models from configured providers so the interface always reflects usable models."
+    subtitle="Connect one or more providers, then switch models per project or task while LLPM keeps the catalog in sync with provider APIs.<br><br><ul><li>Run <code>/model providers</code> to see which providers are configured and which credentials are missing.</li><li>Use <code>/model switch</code> to pick a model (interactive), or <code>/model switch &lt;provider&gt;/&lt;model&gt;</code> to switch directly from the CLI or the web UI selector.</li><li>Run <code>/model list</code> to inspect the most relevant models per provider, grouped by generation.</li><li>Use <code>/model update</code> to refresh the cached catalog from provider APIs and pull in newly released models.</li></ul><br><strong>Supported provider IDs:</strong> <code>openai</code>, <code>anthropic</code>, <code>groq</code>, <code>google-vertex</code>, <code>cerebras</code>.<br><br><strong>Example model IDs (from <code>MODELS.md</code>):</strong><br>OpenAI: <code>gpt-5.2</code>, <code>gpt-5.2-mini</code>, <code>gpt-5.2-turbo</code>, <code>gpt-5.1</code>, <code>gpt-5.1-mini</code>, <code>gpt-5.1-turbo</code>, <code>gpt-4o</code>, <code>gpt-4o-mini</code>, <code>o4-mini</code>, <code>o3-mini</code><br>Anthropic: <code>claude-sonnet-4-5</code>, <code>claude-opus-4-1</code>, <code>claude-sonnet-4</code>, <code>claude-opus-4</code>, <code>claude-3-7-sonnet-latest</code>, <code>claude-3-5-haiku-latest</code>, <code>claude-3-haiku</code><br>Google Vertex: <code>gemini-2.5-pro</code>, <code>gemini-2.5-flash</code>, <code>gemini-2.5-ultra</code><br>Groq: <code>meta-llama/llama-4-maverick-17b-128e-instruct</code>, <code>llama-3.3-70b-versatile</code>, <code>llama-3.1-70b-versatile</code>, <code>llama-3.1-8b-instant</code>, <code>deepseek-r1-distill-llama-70b</code>, <code>moonshotai/kimi-k2-instruct</code>, <code>openai/gpt-oss-120b</code>, <code>openai/gpt-oss-20b</code>, <code>qwen/qwen3-32b</code><br>Cerebras: <code>qwen-3-235b-instruct-2507</code>, <code>llama-3.3-70b</code>, <code>llama3.1-8b</code>, <code>llama3.1-70b</code><br><br>LLPM caches the provider-fetched catalog in <code>~/.llpm/models.json</code> so model discovery stays fast and consistent between sessions and across restarts.<br><br>If live discovery fails, LLPM falls back to a curated default catalog defined in <code>MODELS.md</code> so core models stay available even when provider APIs are unavailable.<br>If a provider is not configured, its models stay hidden from the selector, and the footer only shows models from configured providers so the interface always reflects usable models."
     class="hx-aspect-auto md:hx-aspect-[1.1/1] max-md:hx-min-h-[900px]"
     style="background: radial-gradient(ellipse at 50% 80%,rgba(194,97,254,0.15),hsla(0,0%,100%,0));"
   >}}
