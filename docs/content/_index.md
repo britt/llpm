@@ -41,6 +41,8 @@ For prerequisites, provider setup, and other install options, see [Installation]
 
 ### Multi-provider models
 
+Connect one or more providers, then switch models per project or task.
+
 - Configure providers and credentials: `/model providers`
 - Switch models (interactive): `/model switch`
 - Switch models directly: `/model switch <provider>/<model>`
@@ -64,6 +66,8 @@ Notes:
 
 ### Projects, scans, and GitHub
 
+Scan your project so LLPM can summarize structure, detect frameworks, and review dependencies.
+
 - Manage projects: `/project`
 - Scan a codebase: `/project scan` (uses the active project or the current working directory)
 - Connect and browse repositories: `/github`
@@ -71,6 +75,8 @@ Notes:
 Scan results are saved to `~/.llpm/projects/{projectId}/project.json`.
 
 ### Skills and guided workflows
+
+Use skills to guide repeatable workflows (planning, elicitation, stakeholder updates, diagrams).
 
 - List skills: `/skills list`
 - Preview a skill: `/skills test <name>`
@@ -80,6 +86,8 @@ Scan results are saved to `~/.llpm/projects/{projectId}/project.json`.
 Skills are discovered from `~/.llpm/skills/` and project skill folders.
 
 ### Notes, search, and shell
+
+Capture decisions as markdown notes and search them with ripgrep.
 
 - Notes are stored under `~/.llpm/projects/{projectId}/notes/` as Markdown files with YAML frontmatter.
 - Notes search uses ripgrep-based text search.
