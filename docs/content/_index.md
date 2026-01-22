@@ -137,3 +137,9 @@ For prerequisites and provider setup, see [Installation]({{< relref "docs/gettin
     </ul>
   </div>
 </div>
+
+<!--
+Note: Avoid shortcode-based feature cards here.
+A previous version used the feature-card shortcode and failed Hugo builds with:
+"unterminated quoted string in shortcode parameter-argument".
+-->
