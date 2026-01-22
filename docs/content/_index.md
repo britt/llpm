@@ -22,21 +22,25 @@ layout: hextra-home
 
 ## Install
 
-LLPM is a Bun-based CLI. Install prerequisites first: Bun and Git available on your `PATH`.
+LLPM is a Bun-based CLI.
+
+1. Install Bun and Git.
+2. Install LLPM.
+3. Start LLPM.
 
 ```bash
 # Install the LLPM CLI globally with Bun
 bun add -g llpm
 
-# Then start LLPM
+# Start LLPM
 llpm
 ```
 
 Next:
 
-- Configure at least one model provider (environment variables)
-- Run `/model providers` to confirm LLPM sees your credentials
-- Use `/model switch` to pick a model
+- Configure at least one model provider (environment variables).
+- Run `/model providers` to confirm LLPM sees your credentials.
+- Use `/model switch` to pick a model.
 
 For prerequisites, provider setup, and other install options, see [Installation]({{< relref "docs/getting-started/installation.md" >}}).
 
