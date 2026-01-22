@@ -156,7 +156,7 @@ This page avoids parameterized feature-card shortcodes and uses plain HTML.
     </ul>
 
     <p class="hx-mt-4">
-      See the <a href="{{< relref "docs/skills-reference/_index.md" >}}">Skills Reference</a> for descriptions of the bundled skills.
+      See the <a href="{{< relref \"docs/skills-reference/_index.md\" >}}">Skills Reference</a> for descriptions of the bundled skills.
     </p>
   </div>
 
@@ -189,16 +189,9 @@ This page avoids parameterized feature-card shortcodes and uses plain HTML.
     </ul>
 
     <p class="hx-mt-4">
-      See <a href="{{< relref "docs/user-guide/commands.md" >}}">User Guide: Commands</a> and <a href="{{< relref "docs/user-guide/skills.md" >}}">User Guide: Skills</a>.
+      See <a href="{{< relref \"docs/user-guide/commands.md\" >}}">User Guide: Commands</a> and <a href="{{< relref \"docs/user-guide/skills.md\" >}}">User Guide: Skills</a>.
     </p>
   </div>
-</div>
-
-
-<div class="hx-mt-6 hx-mb-6">
-{{< hextra/hero-headline >}}
-  Large Language Model&nbsp;<br class="sm:hx-block hx-hidden" />Product Manager
-{{< /hextra/hero-headline >}}
 </div>
 
 <div class="hx-mb-12">
