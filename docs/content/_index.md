@@ -43,7 +43,7 @@ A previous version used a shortcode with quoted parameters and failed Hugo build
 This page uses plain HTML divs to create card-like sections.
 -->
 
-<!-- build marker: homepage uses div-based cards (no shortcodes) -->
+<!-- build marker: homepage uses div-based cards (no shortcodes or quoted-parameter cards) -->
 
 <div class="hx-mt-8 hx-rounded-xl hx-border hx-border-gray-200 dark:hx-border-neutral-800 hx-bg-white dark:hx-bg-neutral-900 hx-p-6">
 
