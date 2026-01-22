@@ -152,4 +152,10 @@ shortcodes-with-quoted-parameters.
   </div>
 </div>
 
-<!-- docs-homepage-normalize: keep a stable trailing newline -->
+<!--
+TODO: homepage refresh
+
+This file intentionally uses plain HTML for the feature grid.
+Reason: Hugo shortcodes with quoted params previously caused build failures.
+-->
+
