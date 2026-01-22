@@ -191,33 +191,6 @@ This homepage uses HTML "cards" instead of feature-card shortcodes to avoid frag
   </div>
 </div>
 
-    <p>What a scan includes:</p>
-
-    <ul>
-      <li>Gitignore-aware file scanning with language/framework detection.</li>
-      <li>Dependency parsing across common package managers.</li>
-      <li>Documentation coverage checks.</li>
-      <li>Optional LLM-backed architecture analysis (including Mermaid diagrams).</li>
-    </ul>
-
-    <p>Scan results persist under <code>~/.llpm/projects/{projectId}/project.json</code> for reuse.</p>
-
-    <p>Flags:</p>
-
-    <ul>
-      <li><code>--force</code> refreshes cached scan results.</li>
-      <li><code>--no-llm</code> skips architecture analysis for faster, offline-friendly scans.</li>
-    </ul>
-  </div>
-
-  <div
-    class="hx-rounded-2xl hx-border hx-border-gray-200/50 dark:hx-border-gray-800/50 hx-bg-white/60 dark:hx-bg-neutral-900/40 hx-p-6"
-    style="background: radial-gradient(ellipse at 50% 80%,rgba(59,130,246,0.14),hsla(0,0%,100%,0));"
-  >
-    <h3 class="hx-text-xl hx-font-semibold">Skills and Guided Workflows</h3>
-    <p class="hx-mt-2 hx-text-gray-600 dark:hx-text-gray-300">
-      Use reusable workflows packaged as Agent Skills (<code>SKILL.md</code>) to guide planning, analysis, and documentation without rebuilding prompts for every task.
-    </p>
 
     <p>Work with skills:</p>
 
