@@ -64,16 +64,7 @@ For prerequisites, provider setup, and other install options, see [Installation]
   >}}
   {{< hextra/feature-card
     title="Notes, Search, and Shell"
-    subtitle="Capture project knowledge in Markdown notes, search it locally, and run carefully scoped shell commands when needed.
-
-- Notes are stored as Markdown files with YAML frontmatter under `~/.llpm/projects/{projectId}/notes/`.
-Notes use YAML frontmatter to store titles, tags, and other metadata, making them easy to organize, grep, and feed into higher-level skills like consolidate-notes-summary, build-faq-from-issues, and prepare-meeting-agenda.
-- Search uses ripgrep-based text search for fast local lookup and does not rely on embeddings or external vector indexes.
-The Markdown-based NotesBackend keeps everything on disk, while ripgrep-powered search stays fast even for large workspaces and multi-project setups.
-- Shell execution is configured in `~/.llpm/config.json` (the `shell` section) as a global allowlist/denylist with timeouts and defaults.
-Every shell command goes through permission validation, explicit user confirmation (with optional skip-confirmation modes), and audit logging via the `run_shell_command` tool, so LLPM can suggest commands while still keeping execution controlled and traceable.
-
-Shell execution is designed for short, auditable commands that complement LLPM’s analysis and planning tools; longer workflows stay in normal terminal sessions."
+    subtitle="Capture project knowledge in Markdown notes, search it locally, and run carefully scoped shell commands when needed.<br><br><ul><li>Notes are stored as Markdown files with YAML frontmatter under <code>~/.llpm/projects/{projectId}/notes/</code>. YAML frontmatter stores titles, tags, and other metadata for organization and reuse in higher-level skills.</li><li>Search uses ripgrep-based text search for fast local lookup and does not rely on embeddings or external vector indexes.</li><li>Shell execution is configured in <code>~/.llpm/config.json</code> (the <code>shell</code> section) as a global allowlist/denylist with timeouts and defaults. Every shell command goes through permission validation, explicit user confirmation (with optional skip-confirmation modes), and audit logging via the <code>run_shell_command</code> tool.</li></ul><br>Shell execution is designed for short, auditable commands that complement LLPM’s analysis and planning tools; longer workflows stay in normal terminal sessions."
     class="hx-aspect-auto md:hx-aspect-[1.1/1] max-md:hx-min-h-[700px]"
     style="background: radial-gradient(ellipse at 50% 80%,rgba(80,120,200,0.15),hsla(0,0%,100%,0));"
   >}}
