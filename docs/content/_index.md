@@ -79,7 +79,7 @@ llpm
 
 ## What LLPM helps with
 
-## Model management (multi-provider)
+### Model management (multi-provider)
 
 LLPM supports multiple model providers and caches provider model catalogs.
 
