@@ -14,25 +14,12 @@ Use it to:
 - Track stakeholders and goals
 - Run requirement elicitation workflows
 
-## Install
+## Install (from source)
 
-LLPM is built on [Bun](https://bun.com).
+**Prerequisites**
 
-### Option 1: Install the CLI globally (recommended)
-
-1. **Install LLPM.**
-
-   ```bash
-   bun add -g llpm
-   ```
-
-2. **Run LLPM.**
-
-   ```bash
-   llpm
-   ```
-
-### Option 2: Run from source
+- [Bun](https://bun.com)
+- At least one configured model provider (see [Model providers](#model-providers))
 
 1. **Clone the repository.**
 
@@ -47,11 +34,26 @@ LLPM is built on [Bun](https://bun.com).
    bun install
    ```
 
-3. **Start LLPM.**
+3. **Configure environment variables.**
+
+   ```bash
+   cp .env.example .env
+   ```
+
+4. **Start LLPM.**
 
    ```bash
    bun start
    ```
+
+### Install globally (optional)
+
+To run `llpm` as a command, link it globally:
+
+```bash
+bun link
+llpm
+```
 
 ## Quickstart
 
@@ -75,7 +77,7 @@ LLPM is built on [Bun](https://bun.com).
 
 ## What LLPM helps with
 
-## Models (multi-provider)
+### Models (multi-provider)
 
 LLPM supports multiple model providers.
 
@@ -92,7 +94,7 @@ Example direct switch:
 /model switch cerebras/qwen-3-235b-a22b-instruct-2507
 ```
 
-## Projects and codebase scans
+### Projects and codebase scans
 
 Projects keep separate context for different repositories and directories.
 
@@ -101,7 +103,7 @@ Use these commands:
 - `/project` to manage projects
 - `/project scan` to scan a project directory
 
-## GitHub workflows
+### GitHub workflows
 
 LLPM includes slash commands for GitHub-oriented product work.
 
@@ -110,7 +112,7 @@ Use these commands:
 - `/github` to browse and search repositories
 - `/issue` to work with issues
 
-## Skills and guided workflows
+### Skills and guided workflows
 
 Skills are reusable workflow guides (planning, diagrams, requirement elicitation, stakeholder updates).
 
@@ -121,7 +123,7 @@ Use these commands:
 - `/skills reload`
 - `/skills reinstall`
 
-## Notes (Markdown) and search
+### Notes (Markdown) and search
 
 Notes are stored as Markdown files.
 
