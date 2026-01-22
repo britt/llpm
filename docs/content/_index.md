@@ -18,15 +18,19 @@ layout: hextra-home
   AI-powered product management CLI for GitHub issues, codebases, stakeholders, and requirements.
 
   Install with Bun, configure a provider, then start LLPM and work with slash commands.
-
-  ```bash
-  git clone https://github.com/britt/llpm.git
-  cd llpm
-  bun install
-  cp .env.example .env
-  bun start
-  ```
 {{< /hextra/hero-subtitle >}}
+
+<div class="hx-mt-6 hx-rounded-xl hx-border hx-border-gray-200 dark:hx-border-neutral-800 hx-bg-white dark:hx-bg-neutral-900 hx-p-6">
+
+```bash
+git clone https://github.com/britt/llpm.git
+cd llpm
+bun install
+cp .env.example .env
+bun start
+```
+
+</div>
 
 <!--
 Homepage note
