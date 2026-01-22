@@ -4,11 +4,15 @@ title: LLPM Documentation
 
 # LLPM
 
-LLPM is an AI-powered product management CLI for working with GitHub issues, local codebases, stakeholders, and requirement elicitation.
+LLPM is an AI-powered product management CLI for working with:
 
-## Install
+- GitHub issues and pull requests
+- Local projects (including codebase scanning)
+- Notes (stored as Markdown)
+- Stakeholders and goals
+- Requirement elicitation
 
-Install and run LLPM from source:
+## Install (from source)
 
 1. **Clone the repository.**
 
@@ -37,54 +41,67 @@ Install and run LLPM from source:
    bun start
    ```
 
-2. **Check which providers are configured.**
+2. **Configure at least one model provider.**
+
+   Run:
 
    ```text
    /model providers
    ```
 
-3. **Switch to a model.**
+   Then set the required environment variables for the provider you want to use.
+
+3. **Select a model.**
 
    ```text
    /model switch
    ```
 
+4. **Set up a project (optional).**
+
+   Run:
+
+   ```text
+   /project
+   ```
+
 ## What LLPM helps with
 
-### Multi-provider models
+### Multi-provider model management
 
-Connect one or more providers, then list, update, and switch models while you work.
+LLPM works with multiple model providers so you can switch models as you work.
 
-- List the current catalog: `/model list`
-- Refresh the catalog from provider APIs: `/model update`
+- See which providers are configured: `/model providers`
+- List available models: `/model list`
+- Refresh the cached model catalog from provider APIs: `/model update`
 - Switch interactively: `/model switch`
-- Switch directly: `/model switch cerebras/qwen-3-235b-a22b-instruct-2507`
+- Switch directly by ID: `/model switch cerebras/qwen-3-235b-a22b-instruct-2507`
 
-### Projects, scans, and GitHub
+### Projects, scans, and GitHub workflows
 
-Create projects to keep separate context for different repos and directories. Scan a codebase to help LLPM understand the project’s structure.
+Projects keep separate context for different repositories and directories.
 
 - Manage projects: `/project`
-- Scan a codebase: `/project scan`
-- Connect and browse repositories: `/github`
+- Scan the current project: `/project scan`
+- Work with GitHub repositories and issues: `/github`, `/issue`, `/project`
 
 ### Skills and guided workflows
 
-Use skills to guide repeatable workflows (planning, requirement elicitation, stakeholder updates, and diagrams).
+Skills guide repeatable workflows (planning, diagrams, requirement elicitation, stakeholder updates).
 
 - List skills: `/skills list`
 - Preview a skill: `/skills test <name>`
 - Reload after editing skill files: `/skills reload`
 - Restore bundled skills: `/skills reinstall`
 
-### Notes and search
+### Notes (Markdown) and search
 
-Store decisions as Markdown notes and search them with ripgrep.
+Notes are stored as Markdown files and can be searched with ripgrep.
 
-- Notes are stored under `~/.llpm/projects/{projectId}/notes/`.
+- Notes live under `~/.llpm/projects/{projectId}/notes/`.
 - Notes search uses ripgrep-based text search.
 
-## Configure a model provider
+## Model providers
 
 LLPM supports these model providers:
 
@@ -100,9 +117,9 @@ To see what credentials each provider needs, run:
 /model providers
 ```
 
-For the full model/provider configuration reference, see [Configuration](./docs/getting-started/configuration/).
+For the full configuration reference, see [Configuration](./docs/getting-started/configuration/).
 
-## What to do next
+## Next steps
 
 - Start here: [Getting Started](./docs/getting-started/)
 - Learn the workflows: [User Guide](./docs/user-guide/)
