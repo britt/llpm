@@ -67,6 +67,75 @@ Scan results are saved to `~/.llpm/projects/{projectId}/project.json`.
 - Reload after editing skill files: `/skills reload`
 - Restore bundled skills: `/skills reinstall`
 
+---
+title: LLPM Documentation
+layout: hextra-home
+---
+
+# Large Language Model Product Manager
+
+AI-powered product management CLI for GitHub issues, codebases, stakeholders, and requirements.
+
+## Install
+
+LLPM is a Bun-based CLI.
+
+```bash
+# Install the LLPM CLI globally with Bun
+bun add -g llpm
+
+# Start LLPM
+llpm
+```
+
+Next:
+
+- Configure at least one model provider (environment variables)
+- Run `/model providers` to confirm LLPM sees your credentials
+- Use `/model switch` to pick a model
+
+For prerequisites, provider setup, and other install options, see [Installation]({{< relref "docs/getting-started/installation.md" >}}).
+
+## What LLPM does
+
+### Multi-provider models
+
+- Configure providers and credentials: `/model providers`
+- Switch models (interactive): `/model switch`
+- Switch models directly: `/model switch <provider>/<model>`
+- List models: `/model list` (use `/model list --all` to include unconfigured providers)
+- Refresh the cached catalog: `/model update`
+
+Supported provider IDs: `openai`, `anthropic`, `groq`, `google-vertex`, `cerebras`.
+
+Example model IDs (from `MODELS.md`):
+
+- OpenAI: `gpt-5.2`, `gpt-5.2-mini`, `gpt-5.2-turbo`, `gpt-5.1`, `gpt-5.1-mini`, `gpt-5.1-turbo`, `gpt-4o`, `gpt-4o-mini`, `o4-mini`, `o3-mini`
+- Anthropic: `claude-sonnet-4-5`, `claude-opus-4-1`, `claude-sonnet-4`, `claude-opus-4`, `claude-3-7-sonnet-latest`, `claude-3-5-haiku-latest`, `claude-3-haiku`
+- Google Vertex: `gemini-2.5-pro`, `gemini-2.5-flash`, `gemini-2.5-ultra`
+- Groq: `meta-llama/llama-4-maverick-17b-128e-instruct`, `llama-3.3-70b-versatile`, `llama-3.1-70b-versatile`, `llama-3.1-8b-instant`, `deepseek-r1-distill-llama-70b`, `moonshotai/kimi-k2-instruct`, `openai/gpt-oss-120b`, `openai/gpt-oss-20b`, `qwen/qwen3-32b`
+- Cerebras: `qwen-3-235b-a22b-instruct-2507`, `llama-3.3-70b`, `llama3.1-8b`, `llama3.1-70b`
+
+Notes:
+
+- Model discovery is cached in `~/.llpm/models.json`.
+- If a provider is not configured, its models stay hidden from the selector and the footer only shows models from configured providers.
+
+### Projects, scans, and GitHub
+
+- Manage projects: `/project`
+- Scan a codebase: `/project scan` (uses the active project or the current working directory)
+- Connect and browse repositories: `/github`
+
+Scan results are saved to `~/.llpm/projects/{projectId}/project.json`.
+
+### Skills and guided workflows
+
+- List skills: `/skills list`
+- Preview a skill: `/skills test <name>`
+- Reload after editing skill files: `/skills reload`
+- Restore bundled skills: `/skills reinstall`
+
 Skills are discovered from `~/.llpm/skills/` and project-specific skill folders.
 
 ### Notes, search, and shell
@@ -75,84 +144,7 @@ Skills are discovered from `~/.llpm/skills/` and project-specific skill folders.
 - Notes search uses ripgrep-based text search.
 - Shell execution is configured in `~/.llpm/config.json` under the `shell` section.
 
+## Next steps
 
-  <div class="hx-relative hx-rounded-xl hx-border hx-border-gray-200 dark:hx-border-neutral-800 hx-bg-white dark:hx-bg-neutral-900 hx-p-6 hx-shadow-sm"
-       style="background: radial-gradient(ellipse at 50% 80%,rgba(142,53,74,0.15),hsla(0,0%,100%,0));">
-    <h3 class="hx-text-xl hx-font-semibold hx-mb-2">Projects, Scans, and GitHub</h3>
-    <p class="hx-text-gray-600 dark:hx-text-gray-300 hx-mb-4">
-      Tie work to the right repo, then generate rich project context on demand.
-    </p>
-
-    <ul class="hx-list-disc hx-pl-6 hx-space-y-2 hx-text-gray-600 dark:hx-text-gray-300">
-      <li>Use <code>/project</code> to add, list, switch, and remove projects, or to point LLPM at mono-repos and subdirectories.</li>
-      <li>Run <code>/project scan</code> to analyze a codebase (active project or current working directory) using the ProjectScanOrchestrator.</li>
-      <li>Use <code>/github</code> to browse/search repositories, then connect one to a project so issues, pull requests, and notes share the same context.</li>
-    </ul>
-
-    <p class="hx-text-gray-600 dark:hx-text-gray-300 hx-mt-4">
-      The scan orchestration parses architecture, dependencies, documentation, and Git history to build a structured project profile for downstream tools. A scan summarizes project files (gitignore-aware), languages/frameworks, dependencies, documentation, and high-level architecture descriptions.
-    </p>
-    <p class="hx-text-gray-600 dark:hx-text-gray-300 hx-mt-2">
-      LLPM persists scan results in <code>~/.llpm/projects/{projectId}/project.json</code> so repeat scans and follow-up commands stay fast.
-    </p>
-    <p class="hx-text-gray-600 dark:hx-text-gray-300 hx-mt-2">
-      Use flags like <code>--force</code> to refresh stale scans or <code>--no-llm</code> for a fast static pass without calling model APIs.
-      Scan results feed into skills such as project-analysis, context-aware-questions, at-risk-detection, project-planning, and requirement-elicitation so follow-up questions and risk reports stay grounded in the actual codebase and GitHub issues.
-    </p>
-    <p class="hx-text-gray-600 dark:hx-text-gray-300 hx-mt-2">
-      If LLPM starts inside a repo, it can auto-detect the matching project from the current working directory and will fall back to scanning the current directory when no project is configured.
-    </p>
-  </div>
-
-  <div class="hx-relative hx-rounded-xl hx-border hx-border-gray-200 dark:hx-border-neutral-800 hx-bg-white dark:hx-bg-neutral-900 hx-p-6 hx-shadow-sm"
-       style="background: radial-gradient(ellipse at 50% 80%,rgba(221,210,59,0.15),hsla(0,0%,100%,0));">
-    <h3 class="hx-text-xl hx-font-semibold hx-mb-2">Skills and Guided Workflows</h3>
-    <p class="hx-text-gray-600 dark:hx-text-gray-300 hx-mb-4">
-      Use reusable workflows packaged as Agent Skills (<code>SKILL.md</code>) to guide planning, analysis, and documentation without rebuilding prompts for every task.
-    </p>
-
-    <ul class="hx-list-disc hx-pl-6 hx-space-y-2 hx-text-gray-600 dark:hx-text-gray-300">
-      <li>Find skills with <code>/skills list</code> to see bundled and user-defined workflows.</li>
-      <li>Preview a skill with <code>/skills test &lt;name&gt;</code> to inspect its goal, inputs, tools, and sample runs before using it on real work.</li>
-      <li>Reload after edits with <code>/skills reload</code> so changes to skill files are picked up immediately.</li>
-      <li>Restore bundled skills with <code>/skills reinstall</code> if local experiments break the core collection.</li>
-    </ul>
-
-    <p class="hx-text-gray-600 dark:hx-text-gray-300 hx-mt-4">
-      Skills follow the Agent Skills specification and are discovered from <code>~/.llpm/skills/</code> and project-specific skill folders, so repositories can ship their own guided workflows alongside code.
-    </p>
-    <p class="hx-text-gray-600 dark:hx-text-gray-300 hx-mt-2">
-      The core collection includes skills for requirement elicitation, project planning, issue decomposition and dependency mapping, architecture diagramming, context-aware question generation, at-risk detection, stakeholder tracking, FAQ building from issues, note consolidation, meeting preparation, research summarization, and thread discussion summarization.
-    </p>
-    <p class="hx-text-gray-600 dark:hx-text-gray-300 hx-mt-2">
-      Each skill documents its flow, inputs, and expected outputs in its <code>SKILL.md</code> file, making it easy to audit behavior, adapt prompts to a team’s process, and create new skills tailored to a repository.
-    </p>
-  </div>
-
-  <div class="hx-relative hx-rounded-xl hx-border hx-border-gray-200 dark:hx-border-neutral-800 hx-bg-white dark:hx-bg-neutral-900 hx-p-6 hx-shadow-sm"
-       style="background: radial-gradient(ellipse at 50% 80%,rgba(80,120,200,0.15),hsla(0,0%,100%,0));">
-    <h3 class="hx-text-xl hx-font-semibold hx-mb-2">Notes, Search, and Shell</h3>
-    <p class="hx-text-gray-600 dark:hx-text-gray-300 hx-mb-4">
-      Capture project knowledge in Markdown notes, search it locally, and run carefully scoped shell commands when needed.
-    </p>
-
-    <ul class="hx-list-disc hx-pl-6 hx-space-y-2 hx-text-gray-600 dark:hx-text-gray-300">
-      <li>
-        Notes are stored as Markdown files with YAML frontmatter under <code>~/.llpm/projects/{projectId}/notes/</code>.
-        Notes use YAML frontmatter to store titles, tags, and other metadata, making them easy to organize, grep, and feed into higher-level skills like <code>consolidate-notes-summary</code>, <code>build-faq-from-issues</code>, and <code>prepare-meeting-agenda</code>.
-      </li>
-      <li>
-        Search uses ripgrep-based text search for fast local lookup and does not rely on embeddings or external vector indexes.
-        The Markdown-based NotesBackend keeps everything on disk, while ripgrep-powered search stays fast even for large workspaces and multi-project setups.
-      </li>
-      <li>
-        Shell execution is configured in <code>~/.llpm/config.json</code> (the <code>shell</code> section) as a global allowlist/denylist with timeouts and defaults.
-        Every shell command goes through permission validation, explicit user confirmation (with optional skip-confirmation modes), and audit logging via the <code>run_shell_command</code> tool, so LLPM can suggest commands while still keeping execution controlled and traceable.
-      </li>
-    </ul>
-
-    <p class="hx-text-gray-600 dark:hx-text-gray-300 hx-mt-4">
-      Shell execution is designed for short, auditable commands that complement LLPM’s analysis and planning tools; longer workflows stay in normal terminal sessions.
-    </p>
-  </div>
-</div>
+- Follow the setup guide: [Getting Started]({{< relref "docs/getting-started/_index.md" >}})
+- Learn the workflows: [User Guide]({{< relref "docs/user-guide/_index.md" >}})
