@@ -75,7 +75,7 @@ LLPM caches the provider-fetched catalog in `~/.llpm/models.json`.
 
   {{< hextra/feature-card
     title="Projects, Scans, and GitHub"
-    subtitle=`Tie work to the right repo, then generate project context on demand.`
+    subtitle="Tie work to the right repo, then generate project context on demand."
     class="hx-aspect-auto md:hx-aspect-[1.1/1] max-lg:hx-min-h-[780px]"
     style="background: radial-gradient(ellipse at 50% 80%,rgba(142,53,74,0.15),hsla(0,0%,100%,0));"
   >}}
