@@ -146,7 +146,7 @@ Avoid fragile quoting by using plain HTML cards (instead of feature-card shortco
       <li>Search notes with <code>ripgrep</code> (no embeddings/vector index required).</li>
     </ul>
 
-    <p class="hx-mt-4">See [User Guide: Commands]({{< relref "docs/user-guide/commands.md" >}}) and [User Guide: Skills]({{< relref "docs/user-guide/skills.md" >}}).</p>
+    <p class="hx-mt-4">See <a href="{{< relref \"docs/user-guide/commands.md\" >}}">User Guide: Commands</a> and <a href="{{< relref \"docs/user-guide/skills.md\" >}}">User Guide: Skills</a>.</p>
 
   <div
     class="hx-rounded-2xl hx-border hx-border-gray-200/50 dark:hx-border-gray-800/50 hx-bg-white/60 dark:hx-bg-neutral-900/40 hx-p-6"
