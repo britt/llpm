@@ -469,35 +469,6 @@ This homepage uses HTML-based cards (instead of feature-card shortcodes) to avoi
   </div>
 </div>
 
-<!-- homepage-stamp: 2026-01-22 -->
-
-
-<div class="hx-mt-6 hx-mb-6">
-{{< hextra/hero-headline >}}
-  Large Language Model&nbsp;<br class="sm:hx-block hx-hidden" />Product Manager
-{{< /hextra/hero-headline >}}
-</div>
-
-<div class="hx-mb-12">
-{{< hextra/hero-subtitle >}}
-  AI-powered product management CLI for GitHub issues, codebases, stakeholders, and requirements.
-{{< /hextra/hero-subtitle >}}
-</div>
-
-## Install
-
-LLPM is a Bun-based CLI.
-
-1. Install prerequisites first: Bun and Git available on your `PATH`.
-2. Install LLPM globally.
-3. Start LLPM.
-
-```bash
-bun add -g llpm
-llpm
-```
-
-Next:
 
 - Configure at least one model provider (environment variables).
 - Run `/model providers` to confirm LLPM sees your credentials.
