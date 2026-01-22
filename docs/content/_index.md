@@ -46,6 +46,12 @@ For prerequisites and provider setup, see [Installation]({{< relref "docs/gettin
 </div>
 </div>
 
+<!--
+Feature boxes
+
+Use plain HTML (not shortcodes with quoted parameters) so Hugo parsing
+cannot fail with an unterminated quoted shortcode argument.
+-->
 <div class="hx-mt-10 hx-space-y-6">
   <div class="hx-rounded-xl hx-border hx-border-gray-200 dark:hx-border-neutral-800 hx-bg-white dark:hx-bg-neutral-900 hx-p-6"
        style="background: radial-gradient(ellipse at 50% 80%,rgba(194,97,254,0.15),hsla(0,0%,100%,0));">
