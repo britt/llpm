@@ -158,7 +158,7 @@ This homepage uses HTML-based cards (instead of feature-card shortcodes) to avoi
     <ul>
       <li>Run <code>/skills</code> to list installed skills.</li>
       <li>Use <code>/skills reinstall</code> to refresh bundled core skills.</li>
-      <li>Review the <a href="{{< relref \"docs/skills-reference/\" >}}">Skills Reference</a> for what’s included.</li>
+      <li>Review the <a href="{{< relref "docs/skills-reference/" >}}">Skills Reference</a> for what’s included.</li>
     </ul>
   </div>
 </div>
