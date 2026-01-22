@@ -21,8 +21,13 @@ layout: hextra-home
 {{< /hextra/hero-subtitle >}}
 
 <!--
-The homepage uses plain HTML divs (instead of Hugo feature-card shortcodes)
-to avoid shortcode quoting issues.
+Homepage note
+
+Avoid shortcode-based feature cards here.
+A previous version used a shortcode with quoted parameters and failed Hugo builds with:
+"unterminated quoted string in shortcode parameter-argument".
+
+This page uses plain HTML divs to create card-like sections.
 -->
 
 <div class="hx-mt-8 hx-rounded-xl hx-border hx-border-gray-200 dark:hx-border-neutral-800 hx-bg-white dark:hx-bg-neutral-900 hx-p-6">
