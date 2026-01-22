@@ -152,8 +152,6 @@ Use plain HTML cards instead of parameterized shortcodes.
   </div>
 </div>
 
-
-<div class="hx-mt-6 hx-mb-6">
 {{< hextra/hero-headline >}}
   Large Language Model&nbsp;<br class="sm:hx-block hx-hidden" />Product Manager
 {{< /hextra/hero-headline >}}
