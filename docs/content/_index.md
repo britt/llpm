@@ -143,8 +143,6 @@ To see what credentials each provider needs:
 
 For full provider configuration and model reference, see [Getting Started: Configuration](./docs/getting-started/configuration/).
 
-LLPM is an AI-powered product management CLI that runs in your terminal.
-
 Use it to:
 
 - Work with GitHub issues and pull requests
