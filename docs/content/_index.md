@@ -47,7 +47,7 @@ For prerequisites, provider setup, and other install options, see [Installation]
 {{< hextra/feature-grid >}}
   {{< hextra/feature-card
     title="Multi-Provider Models"
-    subtitle="Connect one or more providers, then switch models per project or task. LLPM keeps the catalog in sync with provider APIs."
+    subtitle="Connect one or more providers, then switch models per project or task while LLPM keeps the catalog in sync with provider APIs."
     class="hx-aspect-auto md:hx-aspect-[1.1/1] max-md:hx-min-h-[900px]"
     style="background: radial-gradient(ellipse at 50% 80%,rgba(194,97,254,0.15),hsla(0,0%,100%,0));"
   >}}
@@ -118,6 +118,21 @@ Skills are discovered from `~/.llpm/skills/` and project-specific skill folders.
     title="Notes, Search, and Shell"
     subtitle="Capture project knowledge in Markdown notes, search it locally, and run carefully scoped shell commands when needed."
     class="hx-aspect-auto md:hx-aspect-[1.1/1] max-md:hx-min-h-[700px]"
+    style="background: radial-gradient(ellipse at 50% 80%,rgba(53,109,142,0.15),hsla(0,0%,100%,0));"
+  >}}
+
+Notes and search:
+
+- Store notes as Markdown files with YAML frontmatter under `~/.llpm/projects/{projectId}/notes/`.
+- Search notes locally (fast full-text search via ripgrep).
+
+Shell execution:
+
+- Run shell commands via the `run_shell_command` tool (permission-checked and audited).
+
+  {{< /hextra/feature-card >}}
+{{< /hextra/feature-grid >}}
+
     style="background: radial-gradient(ellipse at 50% 80%,rgba(89,155,255,0.15),hsla(0,0%,100%,0));"
   >}}
 
