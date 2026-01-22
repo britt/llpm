@@ -162,3 +162,5 @@ This homepage uses HTML-based cards (instead of feature-card shortcodes) to avoi
     </ul>
   </div>
 </div>
+
+<!-- homepage-stamp: 2026-01-22 -->
