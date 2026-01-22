@@ -14,9 +14,11 @@ Use it to work with:
 - Stakeholders and goals
 - Requirement elicitation
 
-## Install (from source)
+## Install
 
-### Prerequisites
+### Install dependencies (from source)
+
+**Prerequisites**
 
 - [Bun](https://bun.com)
 - At least one configured model provider (see [Model providers](#model-providers))
@@ -40,27 +42,21 @@ Use it to work with:
    bun start
    ```
 
-## Quickstart
+### Next
 
-1. **Start LLPM.**
-
-   ```bash
-   bun start
-   ```
-
-2. **Check provider configuration.**
+1. **Check provider configuration.**
 
    ```text
    /model providers
    ```
 
-3. **Switch models.**
+2. **Switch models.**
 
    ```text
    /model switch
    ```
 
-4. **Add or switch projects.**
+3. **Add or switch projects.**
 
    ```text
    /project
@@ -68,16 +64,16 @@ Use it to work with:
 
 ## What LLPM helps with
 
-### Multi-provider model management
+### Multi-provider models (with a cached catalog)
 
-Switch between multiple providers, so different projects or tasks can use different models.
+LLPM supports multiple LLM providers and stores a model catalog on disk so model selection stays fast.
 
-Common commands:
+Use these commands:
 
-- `/model providers` (see which providers are configured)
-- `/model list` (list models)
-- `/model update` (refresh the cached model catalog)
-- `/model switch` (switch interactively)
+- `/model providers` to see which providers are configured
+- `/model list` to list available models
+- `/model update` to refresh the cached model catalog
+- `/model switch` to switch models interactively
 
 Example direct switch:
 
@@ -85,21 +81,29 @@ Example direct switch:
 /model switch cerebras/qwen-3-235b-a22b-instruct-2507
 ```
 
-### Projects, scans, and GitHub workflows
+### Projects and codebase scans
 
 Projects keep separate context for different repositories and directories.
 
-Common commands:
+Use these commands:
 
-- `/project` (manage projects)
-- `/project scan` (scan a project directory)
-- `/github` and `/issue` (work with GitHub)
+- `/project` to manage projects
+- `/project scan` to scan a project directory
+
+### GitHub workflows
+
+LLPM includes slash commands for GitHub-oriented product work.
+
+Use these commands:
+
+- `/github` to browse and search repositories
+- `/issue` to work with issues
 
 ### Skills and guided workflows
 
-Skills guide repeatable workflows (planning, diagrams, requirement elicitation, stakeholder updates).
+Skills are reusable workflow guides (planning, diagrams, requirement elicitation, stakeholder updates).
 
-Common commands:
+Use these commands:
 
 - `/skills list`
 - `/skills test <name>`
@@ -128,6 +132,8 @@ To see what credentials each provider needs:
 ```text
 /model providers
 ```
+
+For full provider configuration and model reference, see [Model Providers and Configuration](../../MODELS.md).
 
 ## Next steps
 
