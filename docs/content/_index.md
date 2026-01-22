@@ -64,12 +64,12 @@ Example model IDs:
 
 - OpenAI: `gpt-5.2`, `gpt-4o-mini`, `o4-mini`
 - Anthropic: `claude-sonnet-4-5`, `claude-opus-4-1`
-- Google Vertex: `gemini-2.5-pro`
+- Google Vertex: `gemini-2.5-pro`, `gemini-2.5-flash`, `gemini-2.5-ultra`
 - Groq: `llama-3.3-70b-versatile`, `meta-llama/llama-4-maverick-17b-128e-instruct`
 - Cerebras: `qwen-3-235b-a22b-instruct-2507`, `llama-3.3-70b`
 
-LLPM caches the provider-fetched catalog in `~/.llpm/models.json` so model discovery stays fast and consistent between sessions."
-    class="hx-aspect-auto md:hx-aspect-[1.1/1] max-md:hx-min-h-[640px]"
+LLPM caches the provider-fetched catalog in `~/.llpm/models.json` so model discovery stays fast and consistent between sessions. For provider-specific setup details, see [Models]({{< relref "docs/getting-started/models.md" >}})."
+    class="hx-aspect-auto md:hx-aspect-[1.1/1] max-md:hx-min-h-[660px]"
     style="background: radial-gradient(ellipse at 50% 80%,rgba(194,97,254,0.15),hsla(0,0%,100%,0));"
   >}}
   {{< hextra/feature-card
@@ -81,7 +81,7 @@ LLPM caches the provider-fetched catalog in `~/.llpm/models.json` so model disco
 - Use `/github` to browse and search repositories, then connect one to a project.
 
 A project scan summarizes codebase structure, dependencies, and documentation. Use it to plan and scope work with concrete inputs, and avoid re-scanning the same repository every session."
-    class="hx-aspect-auto md:hx-aspect-[1.1/1] max-lg:hx-min-h-[620px]"
+    class="hx-aspect-auto md:hx-aspect-[1.1/1] max-lg:hx-min-h-[640px]"
     style="background: radial-gradient(ellipse at 50% 80%,rgba(142,53,74,0.15),hsla(0,0%,100%,0));"
   >}}
   {{< hextra/feature-card
@@ -94,7 +94,7 @@ A project scan summarizes codebase structure, dependencies, and documentation. U
 - Restore bundled skills with `/skills reinstall`.
 
 The built-in catalog covers requirement elicitation, stakeholder tracking, project planning, risk checks, and question generation."
-    class="hx-aspect-auto md:hx-aspect-[1.1/1] max-md:hx-min-h-[600px]"
+    class="hx-aspect-auto md:hx-aspect-[1.1/1] max-md:hx-min-h-[620px]"
     style="background: radial-gradient(ellipse at 50% 80%,rgba(221,210,59,0.15),hsla(0,0%,100%,0));"
   >}}
   {{< hextra/feature-card
@@ -106,7 +106,7 @@ The built-in catalog covers requirement elicitation, stakeholder tracking, proje
 - Shell execution is configured in `~/.llpm/config.json`.
 
 Use the shell tool for short, auditable commands. Keep long-running workflows in normal terminal sessions."
-    class="hx-aspect-auto md:hx-aspect-[1.1/1] max-md:hx-min-h-[620px]"
+    class="hx-aspect-auto md:hx-aspect-[1.1/1] max-md:hx-min-h-[640px]"
     style="background: radial-gradient(ellipse at 50% 80%,rgba(80,120,200,0.15),hsla(0,0%,100%,0));"
   >}}
 {{< /hextra/feature-grid >}}
