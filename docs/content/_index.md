@@ -5,37 +5,33 @@ layout: hextra-home
 
 # Large Language Model Product Manager
 
-AI-powered product management CLI for GitHub issues, codebases, stakeholders, and requirements.
+LLPM is an AI-powered product management CLI for working with GitHub issues, local codebases, stakeholders, and requirement elicitation.
 
 ## Install
 
-Follow the [Installation](./docs/getting-started/installation.md) guide.
+1. Install dependencies:
 
-### Quick start
+   ```bash
+   bun install
+   ```
 
-1. Start LLPM:
+2. Start LLPM:
 
    ```bash
    bun start
    ```
 
-2. Confirm your model provider credentials:
+3. Configure at least one model provider:
 
    ```text
    /model providers
    ```
 
-3. Pick a model:
-
-   ```text
-   /model switch
-   ```
-
 ## What LLPM does
 
-## Multi-provider models
+### Multi-provider models
 
-LLPM supports these providers:
+LLPM supports these model providers:
 
 - `openai`
 - `anthropic`
@@ -45,11 +41,11 @@ LLPM supports these providers:
 
 Use these commands:
 
-- Configure providers and credentials: `/model providers`
+- Configure provider credentials: `/model providers`
+- List models: `/model list`
 - Switch models (interactive): `/model switch`
 - Switch models directly: `/model switch <provider>/<model>`
-- List models: `/model list`
-- Refresh the cached catalog: `/model update`
+- Refresh the cached model catalog: `/model update`
 
 Default model IDs in the built-in catalog:
 
@@ -59,7 +55,7 @@ Default model IDs in the built-in catalog:
 - Google Vertex: `gemini-2.5-pro`, `gemini-2.5-flash`, `gemini-2.5-ultra`
 - Cerebras: `qwen-3-235b-a22b-instruct-2507`, `llama-3.3-70b`, `llama3.1-8b`, `llama3.1-70b`
 
-## Projects, scans, and GitHub
+### Projects, scans, and GitHub
 
 Use projects to keep separate context, repositories, and scan results.
 
@@ -67,7 +63,7 @@ Use projects to keep separate context, repositories, and scan results.
 - Scan a codebase: `/project scan`
 - Connect and browse repositories: `/github`
 
-## Skills and guided workflows
+### Skills and guided workflows
 
 Use skills to guide repeatable workflows (planning, elicitation, stakeholder updates, diagrams).
 
@@ -76,7 +72,7 @@ Use skills to guide repeatable workflows (planning, elicitation, stakeholder upd
 - Reload after editing skill files: `/skills reload`
 - Restore bundled skills: `/skills reinstall`
 
-## Notes and search
+### Notes and search
 
 Store decisions as markdown notes and search them with ripgrep.
 
