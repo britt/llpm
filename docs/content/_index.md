@@ -129,3 +129,15 @@ Notes and tools:
 
   {{< /hextra/feature-card >}}
 {{< /hextra/feature-grid >}}
+
+    style="background: radial-gradient(ellipse at 50% 80%,rgba(80,120,200,0.15),hsla(0,0%,100%,0));"
+  >}}
+
+Notes and tools:
+
+- Notes are stored under `~/.llpm/projects/{projectId}/notes/`.
+- Search uses ripgrep-based text search.
+- Shell execution is configured in `~/.llpm/config.json` (`shell` section) and runs via the `run_shell_command` tool.
+
+  {{< /hextra/feature-card >}}
+{{< /hextra/feature-grid >}}
