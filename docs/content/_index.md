@@ -52,21 +52,7 @@ For prerequisites, provider setup, and other install options, see [Installation]
   >}}
   {{< hextra/feature-card
     title="Projects, Scans, and GitHub"
-    subtitle="Tie work to the right repo, then generate rich project context on demand.
-
-- Use `/project` to add, list, switch, and remove projects, or to point LLPM at mono-repos and subdirectories.
-- Run `/project scan` to analyze a codebase (active project or current working directory) using the ProjectScanOrchestrator.
-- Use `/github` to browse/search repositories, then connect one to a project so issues, pull requests, and notes share the same context.
-
-The scan orchestration parses architecture, dependencies, documentation, and Git history to build a structured project profile for downstream tools.
-A scan summarizes project files (gitignore-aware), languages/frameworks, dependencies, documentation, and high-level architecture descriptions.
-
-LLPM persists scan results in `~/.llpm/projects/{projectId}/project.json` so repeat scans and follow-up commands stay fast.
-
-Use flags like `--force` to refresh stale scans or `--no-llm` for a fast static pass without calling model APIs.
-Scan results feed into skills such as project-analysis, context-aware-questions, at-risk-detection, project-planning, and requirement-elicitation so follow-up questions and risk reports stay grounded in the actual codebase and GitHub issues.
-
-If LLPM starts inside a repo, it can auto-detect the matching project from the current working directory and will fall back to scanning the current directory when no project is configured."
+    subtitle="Tie work to the right repo, then generate rich project context on demand.<br><br><ul><li>Use <code>/project</code> to add, list, switch, and remove projects, or to point LLPM at mono-repos and subdirectories.</li><li>Run <code>/project scan</code> to analyze a codebase (active project or current working directory) using the ProjectScanOrchestrator.</li><li>Use <code>/github</code> to browse/search repositories, then connect one to a project so issues, pull requests, and notes share the same context.</li></ul><br>The scan orchestration parses architecture, dependencies, documentation, and Git history to build a structured project profile for downstream tools. A scan summarizes project files (gitignore-aware), languages/frameworks, dependencies, documentation, and high-level architecture descriptions.<br><br>LLPM persists scan results in <code>~/.llpm/projects/{projectId}/project.json</code> so repeat scans and follow-up commands stay fast.<br><br>Use flags like <code>--force</code> to refresh stale scans or <code>--no-llm</code> for a fast static pass without calling model APIs. Scan results feed into skills such as project-analysis, context-aware-questions, at-risk-detection, project-planning, and requirement-elicitation so follow-up questions and risk reports stay grounded in the actual codebase and GitHub issues.<br><br>If LLPM starts inside a repo, it can auto-detect the matching project from the current working directory and will fall back to scanning the current directory when no project is configured."
     class="hx-aspect-auto md:hx-aspect-[1.1/1] max-lg:hx-min-h-[780px]"
     style="background: radial-gradient(ellipse at 50% 80%,rgba(142,53,74,0.15),hsla(0,0%,100%,0));"
   >}}
