@@ -6,7 +6,6 @@ layout: hextra-home
 {{< hextra/hero-badge >}}
   <span>AI-Powered CLI</span>
 {{< /hextra/hero-badge >}}
-
 <div class="hx-mt-6 hx-mb-6">
 {{< hextra/hero-headline >}}
   Large Language Model&nbsp;<br class="sm:hx-block hx-hidden" />Product Manager
