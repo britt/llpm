@@ -13,31 +13,6 @@ layout: hextra-home
 {{< /hextra/hero-headline >}}
 </div>
 
-<div class="hx-mb-12">
-{{< hextra/hero-subtitle >}}
-  AI-powered product management CLI for GitHub issues, codebases, stakeholders, and requirements.
-{{< /hextra/hero-subtitle >}}
-</div>
-
-## Install
-
-LLPM is a Bun-based CLI.
-
-1. Install prerequisites: Bun and Git available on your `PATH`.
-2. Install LLPM globally.
-3. Start LLPM.
-
-```bash
-bun add -g llpm
-llpm
-```
-
-Next:
-
-- Configure at least one model provider (environment variables).
-- Run `/model providers` to confirm LLPM sees your credentials.
-- Use `/model switch` to pick a model.
-
 For prerequisites, provider setup, and other install options, see [Installation]({{< relref "docs/getting-started/installation.md" >}}).
 
 - Follow [Quickstart]({{< relref "docs/getting-started/quickstart.md" >}}) for a first session and common slash commands.
