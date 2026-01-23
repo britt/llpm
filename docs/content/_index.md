@@ -61,35 +61,17 @@ bun link
 llpm
 ```
 
-## Quickstart
+## Get started
 
-1. **Start LLPM.**
+Follow the step-by-step guides:
 
-   ```text
-   llpm
-   ```
-
-2. **Check provider configuration.**
-
-   ```text
-   /model providers
-   ```
-
-3. **Switch models (optional).**
-
-   ```text
-   /model switch
-   ```
-
-4. **Scan a codebase (optional).**
-
-   ```text
-   /project scan
-   ```
+- [Installation](./docs/getting-started/installation/)
+- [Quickstart](./docs/getting-started/quickstart/)
+- [Configuration](./docs/getting-started/configuration/)
 
 ## What you can do
 
-## Models
+### Models
 
 LLPM supports these provider IDs:
 
@@ -99,7 +81,7 @@ LLPM supports these provider IDs:
 - `google-vertex`
 - `cerebras`
 
-Use the model commands to list available models, switch models, and refresh the local cache from provider APIs:
+Use model commands to list available models, switch models, and refresh the local cache from provider APIs:
 
 - **List configured models:**
 
@@ -127,7 +109,7 @@ Use the model commands to list available models, switch models, and refresh the 
 
 LLPM caches provider model lists in `~/.llpm/models.json`.
 
-## Projects and scans
+### Projects and scans
 
 Use projects to save a local path and (optionally) a GitHub repository.
 
@@ -151,7 +133,7 @@ Use projects to save a local path and (optionally) a GitHub repository.
 
 If no active project is set, `/project scan` scans the current working directory.
 
-## GitHub
+### GitHub
 
 Use a GitHub token to browse repositories and manage issues.
 
@@ -173,7 +155,7 @@ Use a GitHub token to browse repositories and manage issues.
   /issue create
   ```
 
-## Skills
+### Skills
 
 Use skills for guided workflows.
 
@@ -189,7 +171,7 @@ Use skills for guided workflows.
   /skills reinstall
   ```
 
-## Notes
+### Notes
 
 Write and search notes as Markdown files.
 
@@ -211,13 +193,6 @@ Write and search notes as Markdown files.
   /notes search
   ```
 
-  /notes add
-  ```
-
-- **Search notes:**
-
-  ```text
-  /notes search
   ```
 
 ## Next steps
