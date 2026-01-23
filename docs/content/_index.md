@@ -159,19 +159,92 @@ If no active project is set, `/project scan` scans the current working directory
   /notes search
   ```
 
-## Next steps
+---
+title: LLPM
+---
 
-- [Installation](./docs/getting-started/installation/)
-- [Quickstart](./docs/getting-started/quickstart/)
-- [Configuration](./docs/getting-started/configuration/)
-- [User Guide](/docs/user-guide/)
-- [Skills Reference](/docs/skills-reference/)
-- [Contributing](/docs/contributing/)
+# LLPM
 
+LLPM is an AI-powered product management CLI that runs in your terminal.
 
-### Projects and scans
+Use it to work across projects, GitHub, notes, and multiple model providers from a single terminal UI.
 
-Use projects to save a local path and (optionally) a GitHub repository.
+## Install
+
+1. **Install dependencies.**
+
+   ```bash
+   bun install
+   ```
+
+2. **Copy the example environment file.**
+
+   ```bash
+   cp .env.example .env
+   ```
+
+3. **Configure at least one model provider.**
+
+   In `.env`:
+
+   ```bash
+   # Configure at least one provider
+   OPENAI_API_KEY=your-openai-api-key-here
+   ANTHROPIC_API_KEY=your-anthropic-api-key-here
+   GROQ_API_KEY=your-groq-api-key-here
+   GOOGLE_VERTEX_PROJECT_ID=your-google-cloud-project-id
+   GOOGLE_VERTEX_REGION=us-central1  # Optional (defaults to us-central1)
+   CEREBRAS_API_KEY=your-cerebras-api-key-here
+
+   # Optional integrations
+   GITHUB_TOKEN=your-github-token-here
+   ```
+
+4. **Start LLPM.**
+
+   ```bash
+   bun start
+   ```
+
+## Configure models
+
+LLPM supports these provider IDs:
+
+- `openai`
+- `anthropic`
+- `groq`
+- `google-vertex`
+- `cerebras`
+
+Common model commands:
+
+- **Show provider configuration requirements:**
+
+  ```text
+  /model providers
+  ```
+
+- **List models (configured providers only):**
+
+  ```text
+  /model list
+  ```
+
+- **Switch models interactively:**
+
+  ```text
+  /model switch
+  ```
+
+- **Fetch the latest model catalog (optional):**
+
+  ```text
+  /model update
+  ```
+
+LLPM caches provider model lists in `~/.llpm/models.json`.
+
+## Work across projects
 
 - **List projects:**
 
@@ -185,7 +258,7 @@ Use projects to save a local path and (optionally) a GitHub repository.
   /project switch
   ```
 
-- **Scan a codebase for structure and dependencies:**
+- **Scan a codebase:**
 
   ```text
   /project scan
@@ -193,9 +266,7 @@ Use projects to save a local path and (optionally) a GitHub repository.
 
 If no active project is set, `/project scan` scans the current working directory.
 
-### GitHub
-
-Use a GitHub token to browse repositories and manage issues.
+## Use GitHub from the terminal
 
 - **List repositories:**
 
@@ -215,9 +286,49 @@ Use a GitHub token to browse repositories and manage issues.
   /issue create
   ```
 
-### Skills
+## Use guided workflows (skills)
 
-Use skills for guided workflows.
+- **List skills:**
+
+  ```text
+  /skills list
+  ```
+
+- **Reinstall bundled core skills (optional):**
+
+  ```text
+  /skills reinstall
+  ```
+
+## Keep project notes as Markdown
+
+- **List notes:**
+
+  ```text
+  /notes list
+  ```
+
+- **Create a note:**
+
+  ```text
+  /notes create
+  ```
+
+- **Search notes:**
+
+  ```text
+  /notes search
+  ```
+
+## Next steps
+
+- [Installation](./docs/getting-started/installation/)
+- [Quickstart](./docs/getting-started/quickstart/)
+- [Configuration](./docs/getting-started/configuration/)
+- [User Guide](/docs/user-guide/)
+- [Skills Reference](/docs/skills-reference/)
+- [Contributing](/docs/contributing/)
+
 
 - **List skills:**
 
