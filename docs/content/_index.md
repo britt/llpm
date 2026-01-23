@@ -137,7 +137,7 @@ Using raw HTML <div> blocks in this file avoids Hugo shortcode parameter parsing
       <li><code>/skills reinstall</code> to restore bundled skills.</li>
     </ul>
 
-    <p class="hx-mt-4">See the <a href="{{< relref \"docs/skills-reference/_index.md\" >}}">Skills Reference</a> for the full catalog.</p>
+    <p class="hx-mt-4">See the <a href="{{< relref "docs/skills-reference/_index.md" >}}">Skills Reference</a> for the full catalog.</p>
   </div>
 
   <div
@@ -155,10 +155,6 @@ Using raw HTML <div> blocks in this file avoids Hugo shortcode parameter parsing
     </ul>
   </div>
 </div>
----
-title: LLPM Documentation
-layout: hextra-home
----
 
 {{< hextra/hero-badge >}}
   <span>AI-Powered CLI</span>
