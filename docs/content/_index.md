@@ -96,15 +96,17 @@ LLPM caches provider model lists in `~/.llpm/models.json`.
 
 ### Work across projects
 
-- Add projects with a local path and optional GitHub repository.
-- Scan a codebase to understand structure and dependencies.
-- Run `/project scan` even if you have not configured a project yet (it scans the current working directory).
+Manage projects (local path + optional GitHub repository) and scan a codebase to understand its structure and dependencies.
 
 Common commands:
 
 - `/project list`
 - `/project switch`
 - `/project scan`
+
+Notes:
+
+- `/project scan` runs even if no project is configured yet (it scans the current working directory).
 
 ### Manage GitHub work
 
