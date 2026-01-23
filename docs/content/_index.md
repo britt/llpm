@@ -8,10 +8,10 @@ LLPM is an AI-powered product management CLI that runs in your terminal.
 
 Use LLPM to keep work close to the terminal:
 
-- Connect an LLM provider and switch models
-- Scan a codebase for context
-- Manage GitHub work
-- Keep notes and run guided workflows (skills)
+- Connect an LLM provider and switch models.
+- Scan a codebase for context.
+- Manage GitHub work.
+- Keep notes and run guided workflows (skills).
 
 ## Install
 
@@ -152,48 +152,6 @@ Use projects to keep work and context organized.
   ```text
   /project
   ```
-
-- Scan a codebase for structure and dependencies:
-
-  ```text
-  /project scan
-  ```
-
-- Use GitHub features:
-
-  ```text
-  /github
-  ```
-
-### Skills
-
-Use skills to run repeatable workflows.
-
-- List skills:
-
-  ```text
-  /skills
-  ```
-
-- Reinstall bundled core skills (useful after upgrading):
-
-  ```text
-  /skills reinstall
-  ```
-
-### Notes
-
-Store project notes as Markdown.
-
-```text
-/notes
-```
-
-## Next steps
-
-- [User Guide](/docs/user-guide/)
-- [Skills Reference](/docs/skills-reference/)
-- [Contributing](/docs/contributing/)
 
 - Scan a codebase for structure and dependencies:
 
