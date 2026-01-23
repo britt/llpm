@@ -82,6 +82,12 @@ llpm
 
 ## What LLPM helps with
 
+- **Use multiple model providers.** Connect one or more providers, then switch models per project or task.
+- **Manage projects and scans.** Scan a codebase to understand structure, dependencies, and docs.
+- **Work in GitHub.** Work with issues and pull requests from the terminal.
+- **Use skills for guided workflows.** Run repeatable workflows (for example, requirement elicitation).
+- **Keep notes as Markdown.** Store and search project notes using ripgrep.
+
 ## Use multiple model providers
 
 Connect one or more providers, then switch models per project or task.
