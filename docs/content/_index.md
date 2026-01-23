@@ -56,10 +56,10 @@ Use LLPM to:
 
 ## Start here
 
-- Read [Getting Started](./docs/getting-started/_index.md)
-- Follow the [Quickstart](./docs/getting-started/quickstart.md)
-- Learn workflows in the [User Guide](./docs/user-guide/_index.md)
-- Browse skills in the [Skills Reference](./docs/skills-reference/_index.md)
+- Read [Getting Started](./docs/getting-started/)
+- Follow the [Quickstart](./docs/getting-started/quickstart/)
+- Learn workflows in the [User Guide](./docs/user-guide/)
+- Browse skills in the [Skills Reference](./docs/skills-reference/)
 
 ## Key workflows
 
