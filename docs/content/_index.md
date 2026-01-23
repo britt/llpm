@@ -39,6 +39,7 @@ A previous version used a shortcode with quoted parameters and failed Hugo build
 
 This page uses plain HTML divs to create highlighted sections.
 -->
+
 <div class="hx-mt-8 hx-rounded-xl hx-border hx-border-gray-200 dark:hx-border-neutral-800 hx-bg-white dark:hx-bg-neutral-900 hx-p-6">
 
 ## Install
@@ -179,18 +180,6 @@ For prerequisites and provider setup, see [Installation]({{< relref "docs/gettin
 
     <p class="hx-text-gray-600 dark:hx-text-gray-300 hx-mt-2">
       For details, see [Commands]({{< relref "docs/user-guide/commands.md" >}}).
-    </p>
-  </div>
-</div>
-
-    <ul class="hx-list-disc hx-pl-6 hx-space-y-2 hx-text-gray-600 dark:hx-text-gray-300">
-      <li>Run <code>/project scan</code> to analyze the current project (or your current working directory if no project is set).</li>
-      <li>Use <code>--no-llm</code> for faster scans without architecture analysis.</li>
-      <li>Use <code>--force</code> to rescan even when cached results exist.</li>
-    </ul>
-
-    <p class="hx-text-gray-600 dark:hx-text-gray-300 hx-mt-4">
-      LLPM persists scan results in <code>~/.llpm/projects/{projectId}/project.json</code>.
     </p>
   </div>
 
