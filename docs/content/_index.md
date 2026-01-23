@@ -6,6 +6,7 @@ layout: hextra-home
 {{< hextra/hero-badge >}}
   <span>AI-Powered CLI</span>
 {{< /hextra/hero-badge >}}
+
 <div class="hx-mt-6 hx-mb-6">
 {{< hextra/hero-headline >}}
   Large Language Model&nbsp;<br class="sm:hx-block hx-hidden" />Product Manager
@@ -98,15 +99,6 @@ For prerequisites and provider setup, see [Installation]({{< relref "docs/gettin
     </p>
 
     <p class="hx-text-gray-600 dark:hx-text-gray-300 hx-mt-2">
-      Example model IDs:<br>
-      OpenAI: <code>gpt-5.2</code>, <code>gpt-4o</code>, <code>o4-mini</code><br>
-      Anthropic: <code>claude-sonnet-4-5</code>, <code>claude-opus-4-1</code><br>
-      Groq: <code>meta-llama/llama-4-maverick-17b-128e-instruct</code>, <code>llama-3.3-70b-versatile</code>, <code>deepseek-r1-distill-llama-70b</code><br>
-      Google Vertex AI: <code>gemini-2.5-pro</code>, <code>gemini-2.5-flash</code>, <code>gemini-2.5-ultra</code><br>
-      Cerebras: <code>qwen-3-235b-a22b-instruct-2507</code>, <code>llama-3.3-70b</code>, <code>llama3.1-8b</code>, <code>llama3.1-70b</code>
-    </p>
-
-    <p class="hx-text-gray-600 dark:hx-text-gray-300 hx-mt-2">
       LLPM caches the provider-fetched catalog in <code>~/.llpm/models.json</code>. If live discovery fails, LLPM falls back to curated defaults.
     </p>
 
@@ -151,6 +143,17 @@ For prerequisites and provider setup, see [Installation]({{< relref "docs/gettin
     </p>
 
     <ul class="hx-list-disc hx-pl-6 hx-space-y-2 hx-text-gray-600 dark:hx-text-gray-300">
+      <li>Use <code>/notes</code> to capture project knowledge and search it.</li>
+      <li>Use <code>/stakeholder</code> to manage stakeholders and goals.</li>
+      <li>Use requirement elicitation tools to guide discovery and generate a markdown requirements document.</li>
+    </ul>
+
+    <p class="hx-text-gray-600 dark:hx-text-gray-300 hx-mt-4">
+      Next: read the <a href="{{< relref "docs/user-guide/_index.md" >}}">User Guide</a> and the <a href="{{< relref "docs/skills-reference/_index.md" >}}">Skills Reference</a>.
+    </p>
+  </div>
+</div>
+
 ---
 title: LLPM Documentation
 layout: hextra-home
