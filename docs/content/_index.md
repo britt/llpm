@@ -6,7 +6,7 @@ title: LLPM
 
 LLPM is an AI-powered product management CLI that runs in your terminal.
 
-Use it to manage projects, work with GitHub, organize notes, and switch between multiple AI model providers.
+Use it to manage projects, work with GitHub, organize Markdown notes, and switch between multiple AI model providers.
 
 ## Install and run
 
@@ -31,16 +31,15 @@ If you are running LLPM from the repository:
    In `.env`:
 
    ```bash
+   # Required: configure at least one
    OPENAI_API_KEY=your-openai-api-key
    ANTHROPIC_API_KEY=your-anthropic-api-key
    GROQ_API_KEY=your-groq-api-key
-
-   # Optional providers
    CEREBRAS_API_KEY=your-cerebras-api-key
    GOOGLE_VERTEX_PROJECT_ID=your-project-id
-   GOOGLE_VERTEX_REGION=us-central1
 
-   # Optional integrations
+   # Optional
+   GOOGLE_VERTEX_REGION=us-central1
    GITHUB_TOKEN=your-github-token
    ```
 
@@ -64,6 +63,16 @@ Use `/model providers` to see which providers are configured.
 
 For provider setup and example model IDs, see [Model Providers and Configuration](../../MODELS.md).
 
+### Refresh the model list
+
+LLPM can fetch the latest model lists from provider APIs:
+
+```text
+/model update
+```
+
+LLPM caches provider model lists in `~/.llpm/models.json`.
+
 ## Quickstart
 
 1. **List configured providers.**
@@ -83,14 +92,6 @@ For provider setup and example model IDs, see [Model Providers and Configuration
    ```text
    /model switch
    ```
-
-4. **Refresh the cached model catalog (optional).**
-
-   ```text
-   /model update
-   ```
-
-LLPM caches provider model lists in `~/.llpm/models.json`.
 
 ## What you can do with LLPM
 
