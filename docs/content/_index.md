@@ -114,8 +114,6 @@ Common commands:
 
 - `/notes list`
 - `/notes add`
-- `/notes search`
-
 ---
 title: LLPM
 ---
@@ -234,6 +232,31 @@ Common commands:
 - `/notes add`
 - `/notes search`
 
+## Model providers
+
+LLPM supports these provider IDs:
+
+- `openai`
+- `anthropic`
+- `groq`
+- `google-vertex`
+- `cerebras`
+
+Example model IDs from the built-in defaults (`src/types/models.ts`):
+
+- OpenAI: `gpt-5.2`, `gpt-4o-mini`
+- Anthropic: `claude-sonnet-4-5`, `claude-opus-4-1`
+- Groq: `meta-llama/llama-4-maverick-17b-128e-instruct`, `llama-3.3-70b-versatile`
+- Google Vertex AI: `gemini-2.5-pro`, `gemini-2.5-flash`
+- Cerebras: `qwen-3-235b-a22b-instruct-2507`, `llama-3.3-70b`
+
+## Next steps
+
+- Start with [Getting Started](./docs/_index.md)
+- Follow the [Installation guide](./docs/getting-started/installation.md)
+- Run through the [Quickstart](./docs/getting-started/quickstart.md)
+- Learn common workflows in the [User Guide](./docs/user-guide/_index.md)
+- Browse available workflows in the [Skills Reference](./docs/skills-reference/_index.md)
 ## Model providers
 
 LLPM supports these provider IDs:
