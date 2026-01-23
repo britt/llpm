@@ -495,7 +495,3 @@ For prerequisites and provider setup, see [Installation]({{< relref "docs/gettin
     </ul>
   </div>
 </div>
-
-    </ul>
-  </div>
-</div>
