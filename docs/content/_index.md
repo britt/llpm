@@ -10,8 +10,6 @@ Use it to manage projects, work with GitHub, organize Markdown notes, and switch
 
 ## Install
 
-### Install from source
-
 1. **Clone the repository.**
 
    ```bash
@@ -54,12 +52,14 @@ Use it to manage projects, work with GitHub, organize Markdown notes, and switch
    bun start
    ```
 
-### Install globally (optional)
+To install LLPM globally (optional):
 
 ```bash
 bun link
 llpm
 ```
+
+For more detail, see [Installation](./docs/getting-started/installation.md).
 
 ## Quick start
 
@@ -85,7 +85,7 @@ llpm
 
 ### Multi-provider model management
 
-Connect one or more providers, then switch models per project or task.
+Connect one or more providers, then list, update, and switch models.
 
 Common commands:
 
@@ -96,7 +96,7 @@ Common commands:
 
 ### Projects, scans, and GitHub
 
-LLPM tracks projects (local path + optional GitHub repository) and can scan a codebase to understand its structure and dependencies.
+Track projects (local path + optional GitHub repository), and scan codebases to understand structure and dependencies.
 
 Common commands:
 
@@ -107,7 +107,7 @@ Common commands:
 
 ### Skills and guided workflows
 
-LLPM includes a skills system for reusable, tool-driven workflows.
+Use skills as reusable, tool-driven workflows.
 
 Common commands:
 
@@ -117,7 +117,7 @@ Common commands:
 
 ### Notes and search
 
-LLPM stores notes as Markdown files and supports text search.
+Store notes as Markdown files and run text search.
 
 Common commands:
 
