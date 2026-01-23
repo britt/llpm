@@ -16,8 +16,6 @@ Use LLPM to:
 
 ## Install
 
-### Option 1: Run from the repo
-
 1. **Clone the repository**
 
    ```bash
@@ -40,6 +38,7 @@ Use LLPM to:
    OPENAI_API_KEY=sk-...
    ANTHROPIC_API_KEY=sk-ant-...
    GROQ_API_KEY=gsk_...
+   CEREBRAS_API_KEY=your-cerebras-api-key
 
    # Optional: GitHub integration
    GITHUB_TOKEN=ghp_...
@@ -47,9 +46,6 @@ Use LLPM to:
    # Optional: Google Vertex AI
    GOOGLE_VERTEX_PROJECT_ID=your-google-cloud-project-id
    GOOGLE_VERTEX_REGION=us-central1
-
-   # Optional: Cerebras
-   CEREBRAS_API_KEY=your-cerebras-api-key
    ```
 
 4. **Start LLPM**
@@ -57,15 +53,6 @@ Use LLPM to:
    ```bash
    bun start
    ```
-
-### Option 2: Link as a global command (optional)
-
-From the repository directory:
-
-```bash
-bun link
-llpm
-```
 
 ## Get started
 
