@@ -52,62 +52,6 @@ Use it to manage projects, work with GitHub, organize Markdown notes, and switch
    bun start
    ```
 
----
-title: LLPM
----
-
-# LLPM
-
-LLPM is an AI-powered product management CLI that runs in your terminal.
-
-Use it to manage projects, work with GitHub, organize Markdown notes, and switch between multiple AI model providers.
-
-## Install
-
-1. **Clone the repository.**
-
-   ```bash
-   git clone https://github.com/britt/llpm.git
-   cd llpm
-   ```
-
-2. **Install dependencies.**
-
-   ```bash
-   bun install
-   ```
-
-3. **Create a `.env` file.**
-
-   ```bash
-   cp .env.example .env
-   ```
-
-4. **Configure at least one model provider.**
-
-   Add one (or more) of these to `.env`:
-
-   ```bash
-   # Configure at least one
-   OPENAI_API_KEY=your-openai-api-key
-   ANTHROPIC_API_KEY=your-anthropic-api-key
-   GROQ_API_KEY=your-groq-api-key
-   CEREBRAS_API_KEY=your-cerebras-api-key
-   GOOGLE_VERTEX_PROJECT_ID=your-google-cloud-project-id
-
-   # Optional
-   GOOGLE_VERTEX_REGION=us-central1
-   GITHUB_TOKEN=your-github-token
-   ```
-
-5. **Start LLPM.**
-
-   ```bash
-   bun start
-   ```
-
-For the full setup, see [Installation](./docs/getting-started/installation/).
-
 ## Quickstart
 
 1. **List configured providers.**
@@ -145,8 +89,6 @@ LLPM supports these provider IDs:
 - `groq`
 - `google-vertex`
 - `cerebras`
-
-For provider setup and example model IDs, see [Model Providers and Configuration](../../MODELS.md).
 
 ## What you can do with LLPM
 
@@ -195,28 +137,12 @@ Common commands:
 
 ## Next steps
 
-- [Installation](./docs/getting-started/installation/)
-- [Quickstart](./docs/getting-started/quickstart/)
-- [Configuration](./docs/getting-started/configuration/)
-- [User Guide](./docs/user-guide/)
-- [Skills Reference](./docs/skills-reference/)
-- [Contributing](./docs/contributing/)
-
-## Quickstart
-
-1. **List configured providers.**
-
-   ```text
-   /model providers
-   ```
-
-2. **Refresh the cached model catalog (optional).**
-
-   ```text
-   /model update
-   ```
-
-   LLPM caches provider model lists in `~/.llpm/models.json`.
+- [Installation]({{< relref "docs/getting-started/installation.md" >}})
+- [Quickstart]({{< relref "docs/getting-started/quickstart.md" >}})
+- [Configuration]({{< relref "docs/getting-started/configuration.md" >}})
+- [User Guide]({{< relref "docs/user-guide" >}})
+- [Skills Reference]({{< relref "docs/skills-reference" >}})
+- [Contributing]({{< relref "docs/contributing" >}})
 
 3. **List models (configured providers only).**
 
