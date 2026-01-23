@@ -118,6 +118,8 @@ Using raw HTML <div> blocks in this file avoids Hugo shortcode parameter parsing
 
     <p class="hx-mt-4">Scan results are stored per project under <code>~/.llpm/projects/&lt;projectId&gt;/project.json</code>.</p>
   </div>
+</div>
+
 
   <div
     class="hx-rounded-2xl hx-border hx-border-gray-200/50 dark:hx-border-gray-800/50 hx-bg-white/60 dark:hx-bg-neutral-900/40 hx-p-6"
