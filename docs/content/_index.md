@@ -6,13 +6,13 @@ title: LLPM
 
 LLPM is an AI-powered product management CLI that runs in your terminal.
 
-Use LLPM to:
+LLPM helps with:
 
-- work with **projects** (local paths, with optional GitHub remotes)
-- manage **GitHub issues** and **pull requests**
-- keep **markdown notes**
-- run **skills** (guided workflows)
-- **switch models** across multiple providers
+- **Projects**: track projects (local paths, optional GitHub remotes)
+- **GitHub**: manage issues and pull requests from the terminal
+- **Notes**: keep markdown notes and search them
+- **Skills**: run guided workflows for common PM tasks
+- **Models**: switch models across multiple providers
 
 ## Install
 
