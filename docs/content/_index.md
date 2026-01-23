@@ -161,43 +161,6 @@ For prerequisites and provider setup, see [Installation]({{< relref "docs/gettin
   </div>
 </div>
 
-{{< hextra/hero-badge >}}
-  <span>AI-Powered CLI</span>
-{{< /hextra/hero-badge >}}
-
-<div class="hx-mt-6 hx-mb-6">
-{{< hextra/hero-headline >}}
-  Large Language Model&nbsp;<br class="sm:hx-block hx-hidden" />Product Manager
-{{< /hextra/hero-headline >}}
-</div>
-
-<div class="hx-mb-12">
-{{< hextra/hero-subtitle >}}
-  AI-powered product management CLI for GitHub issues, codebases, stakeholders, and requirements.
-
-  Install with Bun, configure a provider, then start LLPM and work with slash commands.
-{{< /hextra/hero-subtitle >}}
-
-<div class="hx-mt-6 hx-rounded-xl hx-border hx-border-gray-200 dark:hx-border-neutral-800 hx-bg-white dark:hx-bg-neutral-900 hx-p-6">
-
-```bash
-bun install llpm
-llpm
-```
-
-</div>
-</div>
-
-<!--
-Homepage note
-
-Avoid shortcode-based feature cards here.
-A previous version used a shortcode with quoted parameters and failed Hugo builds with:
-"unterminated quoted string in shortcode parameter-argument".
-
-This page uses plain HTML divs to create highlighted sections.
--->
-
 <div class="hx-mt-8 hx-rounded-xl hx-border hx-border-gray-200 dark:hx-border-neutral-800 hx-bg-white dark:hx-bg-neutral-900 hx-p-6">
 
 ## Install
