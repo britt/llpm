@@ -196,68 +196,11 @@ Write and search notes as Markdown files.
 
 ## Next steps
 
-- Read the user guide in the left navigation.
+- Read the [Getting Started](./docs/getting-started/) guide.
+- Read the [User Guide](./docs/user-guide/) for workflows and slash commands.
 - Configure a model provider in your `.env` file.
 - Run `/help` to see all available commands.
 
-
-   ```text
-   /project scan
-   ```
-
-## What LLPM helps with
-
-### Models
-
-Use a single CLI to manage multiple providers.
-
-- List providers and required env vars:
-
-  ```text
-  /model providers
-  ```
-
-- Switch models interactively:
-
-  ```text
-  /model switch
-  ```
-
-- Refresh the model list from provider APIs (optional):
-
-  ```text
-  /model update
-  ```
-
-Supported provider IDs:
-
-- `openai`
-- `anthropic`
-- `groq`
-- `google-vertex`
-- `cerebras`
-
-Example Cerebras model ID:
-
-- `qwen-3-235b-a22b-instruct-2507`
-
-### Projects, scans, and GitHub
-
-Use projects to keep work and context organized.
-
-- Manage projects:
-
-  ```text
-  /project
-  ```
-
-- Scan a codebase for structure and dependencies:
-
-  ```text
-  /project scan
-  ```
-
-- Use GitHub features:
 
   ```text
   /github
