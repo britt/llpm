@@ -10,8 +10,6 @@ Use it to work across projects, GitHub, and multiple model providers from a sing
 
 ## Install
 
-### Install from source
-
 1. **Clone the repository.**
 
    ```bash
