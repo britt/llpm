@@ -63,7 +63,7 @@ Use LLPM to:
 
 ## What to try first
 
-### 1) Switch models across providers
+## 1) Switch models across providers
 
 1. **List configured providers**
 
@@ -89,7 +89,7 @@ Use LLPM to:
    /model switch
    ```
 
-### 2) Track projects (and scan codebases)
+## 2) Track projects (and scan codebases)
 
 1. **List projects**
 
@@ -109,7 +109,7 @@ Use LLPM to:
    /project scan
    ```
 
-### 3) Use skills (guided workflows)
+## 3) Use skills (guided workflows)
 
 1. **List skills**
 
@@ -123,18 +123,13 @@ Use LLPM to:
    /skills show <skill-name>
    ```
 
-
-   ```text
-   /skills show <skill-name>
-   ```
-
 3. **Reinstall bundled skills**
 
    ```text
    /skills reinstall
    ```
 
-### 4) Keep markdown notes
+## 4) Keep markdown notes
 
 1. **List notes**
 
