@@ -10,6 +10,8 @@ Use it to manage projects, work with GitHub, organize Markdown notes, and switch
 
 ## Install
 
+### Install from source
+
 1. **Clone the repository.**
 
    ```bash
@@ -52,7 +54,7 @@ Use it to manage projects, work with GitHub, organize Markdown notes, and switch
    bun start
    ```
 
-To install LLPM globally (optional):
+### (Optional) Link as a global command
 
 ```bash
 bun link
@@ -69,7 +71,7 @@ For more detail, see [Installation](./docs/getting-started/installation.md).
    llpm
    ```
 
-2. **List configured providers.**
+2. **Check configured providers.**
 
    ```text
    /model providers
