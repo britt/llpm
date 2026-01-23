@@ -115,9 +115,73 @@ For prerequisites and provider setup, see [Installation]({{< relref "docs/gettin
 
   <div class="hx-rounded-xl hx-border hx-border-gray-200 dark:hx-border-neutral-800 hx-bg-white dark:hx-bg-neutral-900 hx-p-6" style="background: radial-gradient(ellipse at 50% 80%, rgba(59,130,246,0.15), hsla(0,0%,100%,0));">
     <h3 class="hx-text-xl hx-font-semibold hx-mb-2">Project context + scans</h3>
+
     <p class="hx-text-gray-600 dark:hx-text-gray-300 hx-mb-4">
       Scan a repo to summarize languages, frameworks, dependencies, and documentation coverage. Optionally include an LLM-generated architecture summary.
     </p>
+
+    <ul class="hx-list-disc hx-pl-6 hx-space-y-2 hx-text-gray-600 dark:hx-text-gray-300">
+      <li>Run <code>/project</code> to view the current project.</li>
+      <li>Run <code>/project scan</code> to generate a scan (use <code>--force</code> to rescan, or <code>--no-llm</code> to skip LLM architecture analysis).</li>
+      <li>Use <code>/github</code> to connect issues and pull requests to project work.</li>
+    </ul>
+
+    <p class="hx-text-gray-600 dark:hx-text-gray-300 hx-mt-4">
+      Scan results are saved under <code>~/.llpm/projects/{projectId}/project.json</code>.
+    </p>
+
+    <p class="hx-text-gray-600 dark:hx-text-gray-300 hx-mt-2">
+      LLPM also auto-detects the current project from your working directory when possible, so you can run commands in a repo without manually switching projects first.
+    </p>
+
+    <p class="hx-text-gray-600 dark:hx-text-gray-300 hx-mt-2">
+      For details, see [Projects]({{< relref "docs/user-guide/projects.md" >}}).
+    </p>
+  </div>
+
+  <div class="hx-rounded-xl hx-border hx-border-gray-200 dark:hx-border-neutral-800 hx-bg-white dark:hx-bg-neutral-900 hx-p-6" style="background: radial-gradient(ellipse at 50% 80%, rgba(16,185,129,0.15), hsla(0,0%,100%,0));">
+    <h3 class="hx-text-xl hx-font-semibold hx-mb-2">Skills + workflows</h3>
+
+    <p class="hx-text-gray-600 dark:hx-text-gray-300 hx-mb-4">
+      LLPM skills follow the Agent Skills <code>SKILL.md</code> format. Skills describe repeatable workflows (planning, analysis, documentation, research) that guide the assistant’s behavior.
+    </p>
+
+    <ul class="hx-list-disc hx-pl-6 hx-space-y-2 hx-text-gray-600 dark:hx-text-gray-300">
+      <li>Run <code>/skills list</code> to see available skills.</li>
+      <li>Use <code>/skills show &lt;skill-name&gt;</code> to inspect a skill definition.</li>
+      <li>Use <code>/skills reinstall</code> to refresh the bundled core skills.</li>
+    </ul>
+
+    <p class="hx-text-gray-600 dark:hx-text-gray-300 hx-mt-4">
+      Core skills include requirement elicitation, stakeholder tracking, project planning, architecture diagrams, dependency mapping, risk detection, and more.
+    </p>
+
+    <p class="hx-text-gray-600 dark:hx-text-gray-300 hx-mt-2">
+      For details, see [Skills]({{< relref "docs/user-guide/skills.md" >}}) and the [Skills Reference]({{< relref "docs/skills-reference/_index.md" >}}).
+    </p>
+  </div>
+
+  <div class="hx-rounded-xl hx-border hx-border-gray-200 dark:hx-border-neutral-800 hx-bg-white dark:hx-bg-neutral-900 hx-p-6" style="background: radial-gradient(ellipse at 50% 80%, rgba(249,115,22,0.15), hsla(0,0%,100%,0));">
+    <h3 class="hx-text-xl hx-font-semibold hx-mb-2">Notes + requirements</h3>
+
+    <p class="hx-text-gray-600 dark:hx-text-gray-300 hx-mb-4">
+      Keep lightweight notes per project, then generate requirements docs when you need a structured handoff.
+    </p>
+
+    <ul class="hx-list-disc hx-pl-6 hx-space-y-2 hx-text-gray-600 dark:hx-text-gray-300">
+      <li>Use <code>/notes</code> to add, update, list, and search notes.</li>
+      <li>Use requirement elicitation tools to guide a structured requirements conversation and generate a markdown document.</li>
+    </ul>
+
+    <p class="hx-text-gray-600 dark:hx-text-gray-300 hx-mt-4">
+      Notes are stored as markdown files under <code>~/.llpm/projects/{projectId}/notes/</code> and searched via <code>rg</code> (ripgrep).
+    </p>
+
+    <p class="hx-text-gray-600 dark:hx-text-gray-300 hx-mt-2">
+      For details, see [Commands]({{< relref "docs/user-guide/commands.md" >}}).
+    </p>
+  </div>
+</div>
 
     <ul class="hx-list-disc hx-pl-6 hx-space-y-2 hx-text-gray-600 dark:hx-text-gray-300">
       <li>Run <code>/project scan</code> to analyze the current project (or your current working directory if no project is set).</li>
