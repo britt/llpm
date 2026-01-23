@@ -55,51 +55,35 @@ LLPM supports these provider IDs:
 - `google-vertex`
 - `cerebras`
 
-To check whether a provider is configured, run:
+For provider setup details and example model IDs, see [Model Providers and Configuration](../../../MODELS.md).
 
-```text
-/model providers
-```
+## Quickstart
 
-## Switch models
+1. **Confirm which providers are configured.**
 
-Common model commands:
+   ```text
+   /model providers
+   ```
 
-- **List models (configured providers only):**
+2. **List models (configured providers only).**
 
-  ```text
-  /model list
-  ```
+   ```text
+   /model list
+   ```
 
-- **Switch models interactively:**
+3. **Switch models.**
 
-  ```text
-  /model switch
-  ```
+   ```text
+   /model switch
+   ```
 
-- **Switch to a specific model:**
+4. **(Optional) Refresh the cached model catalog.**
 
-  ```text
-  /model switch <provider>/<model-id>
-  ```
-
-- **Fetch the latest model catalog (optional):**
-
-  ```text
-  /model update
-  ```
+   ```text
+   /model update
+   ```
 
 LLPM caches provider model lists in `~/.llpm/models.json`.
-
-Example model IDs (by provider):
-
-- OpenAI: `gpt-5.2`, `gpt-4o`, `o4-mini`
-- Anthropic: `claude-sonnet-4-5`, `claude-opus-4-1`
-- Groq: `llama-3.3-70b-versatile`, `meta-llama/llama-4-maverick-17b-128e-instruct`
-- Google Vertex: `gemini-2.5-pro`, `gemini-2.5-flash`
-- Cerebras: `qwen-3-235b-a22b-instruct-2507`, `llama-3.3-70b`
-
-For full configuration details and more model examples, see [Model Providers and Configuration](../../../MODELS.md).
 
 ## What you can do with LLPM
 
@@ -179,7 +163,6 @@ If no active project is set, `/project scan` scans the current working directory
   /notes search
   ```
 
-
 ## Next steps
 
 - [Installation](./docs/getting-started/installation/)
@@ -188,35 +171,6 @@ If no active project is set, `/project scan` scans the current working directory
 - [User Guide](/docs/user-guide/)
 - [Skills Reference](/docs/skills-reference/)
 - [Contributing](/docs/contributing/)
-
-
-- **List skills:**
-
-  ```text
-  /skills list
-  ```
-
-- **Reinstall bundled core skills (optional):**
-
-  ```text
-  /skills reinstall
-  ```
-
-### Notes
-
-Write and search notes as Markdown files.
-
-- **List notes:**
-
-  ```text
-  /notes list
-  ```
-
-- **Create a note:**
-
-  ```text
-  /notes create
-  ```
 
 - **Search notes:**
 
