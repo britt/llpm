@@ -106,23 +106,23 @@ LLPM combines a terminal chat UI with project-management focused tools.
 
 ## Core workflows
 
-## Models
+### Models
 
-Use a single CLI to manage multiple providers.
+Use one CLI to manage multiple providers.
 
-- List providers and required env vars:
+- **List providers and required env vars:**
 
   ```text
   /model providers
   ```
 
-- Switch models interactively:
+- **Switch models interactively:**
 
   ```text
   /model switch
   ```
 
-- Refresh the model list from provider APIs (optional):
+- **Refresh the model list from provider APIs (optional):**
 
   ```text
   /model update
@@ -136,83 +136,83 @@ Supported provider IDs:
 - `google-vertex`
 - `cerebras`
 
-## Projects and scans
+### Projects and scans
 
 Use projects to save a local path and (optionally) a GitHub repository.
 
-- List projects:
+- **List projects:**
 
   ```text
   /project list
   ```
 
-- Switch projects:
+- **Switch projects:**
 
   ```text
   /project switch
   ```
 
-- Scan a codebase for context:
+- **Scan a codebase for context:**
 
   ```text
   /project scan
   ```
 
-## GitHub
+### GitHub
 
 Use LLPM with a GitHub token to browse repositories and manage issues.
 
-- List repositories:
+- **List repositories:**
 
   ```text
   /github list
   ```
 
-- List issues:
+- **List issues:**
 
   ```text
   /issue list
   ```
 
-- Create an issue:
+- **Create an issue:**
 
   ```text
   /issue create
   ```
 
-## Skills
+### Skills
 
 Use skills for guided workflows.
 
-- List skills:
+- **List skills:**
 
   ```text
   /skills list
   ```
 
-- Reinstall bundled skills (optional):
+- **Reinstall bundled skills (optional):**
 
   ```text
   /skills reinstall
   ```
 
-## Notes
+### Notes
 
 Keep project notes and search them.
 
-- List notes:
+- **List notes:**
 
   ```text
   /notes list
   ```
 
-- Add a note:
+- **Add a note:**
 
   ```text
   /notes add
   ```
 
-- Search notes:
+- **Search notes:**
 
   ```text
   /notes search
@@ -220,44 +220,10 @@ Keep project notes and search them.
 
 ## Next steps
 
-- Read the user guide: [Docs index](./docs/)
+- Read the docs index: [Docs](./docs/)
 - Learn the skills system: [Skills Reference](./docs/skills-reference/)
 - Contribute to LLPM: [Contributing](./docs/contributing/)
 
-Optionally allow LLPM to run commands in your project.
-
-- Open shell settings in `~/.llpm/config.json`.
-- Use `/help` to find the shell command and read its safety prompt.
-
-## Next steps
-
-- Read the docs index: [Docs](./docs/_index.md)
-- Get started: [Getting Started](./docs/getting-started/_index.md)
-- Learn skills: [Skills Reference](./docs/skills-reference/_index.md)
-- Contribute: [Contributing](./docs/contributing/_index.md)
-
-
-Example Cerebras model ID:
-
-- `qwen-3-235b-a22b-instruct-2507`
-
-### Projects, scans, and GitHub
-
-Use projects to keep work and context organized.
-
-- Manage projects:
-
-  ```text
-  /project
-  ```
-
-- Scan a codebase for structure and dependencies:
-
-  ```text
-  /project scan
-  ```
-
-- Use GitHub features:
 
   ```text
   /github
