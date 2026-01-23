@@ -82,33 +82,27 @@ llpm
 
 ## What LLPM helps with
 
-- **Use multiple model providers.** Connect one or more providers, then switch models per project or task.
-- **Manage projects and scans.** Scan a codebase to understand structure, dependencies, and docs.
-- **Work in GitHub.** Work with issues and pull requests from the terminal.
-- **Use skills for guided workflows.** Run repeatable workflows (for example, requirement elicitation).
-- **Keep notes as Markdown.** Store and search project notes using ripgrep.
-
-## Use multiple model providers
+### Multi-provider models
 
 Connect one or more providers, then switch models per project or task.
 
-1. **List configured providers.**
+- List configured providers:
 
-   ```text
-   /model providers
-   ```
+  ```text
+  /model providers
+  ```
 
-2. **Switch models.**
+- Switch models:
 
-   ```text
-   /model switch
-   ```
+  ```text
+  /model switch
+  ```
 
-3. **Fetch the latest model list from provider APIs (optional).**
+- Fetch the latest model list from provider APIs (optional):
 
-   ```text
-   /model update
-   ```
+  ```text
+  /model update
+  ```
 
 Supported provider IDs:
 
@@ -118,47 +112,45 @@ Supported provider IDs:
 - `google-vertex`
 - `cerebras`
 
-## Manage projects and scans
+### Projects, scans, and GitHub
 
-Use projects to keep work, context, and artifacts organized.
+Use projects to keep work, context, and artifacts organized. Scan a codebase to understand structure, dependencies, and docs.
 
-1. **Manage projects.**
+- Show the current project:
 
-   ```text
-   /project
-   ```
+  ```text
+  /project
+  ```
 
-2. **Scan a codebase to understand structure, dependencies, and docs.**
+- Scan a codebase:
 
-   ```text
-   /project scan
-   ```
+  ```text
+  /project scan
+  ```
 
-## Work in GitHub
+- Work in GitHub:
 
-Use LLPM to work with GitHub issues and pull requests.
+  ```text
+  /github
+  ```
 
-```text
-/github
-```
-
-## Use skills for guided workflows
+### Skills and guided workflows
 
 Use skills to run repeatable workflows (for example, requirement elicitation).
 
-1. **List skills.**
+- List skills:
 
-   ```text
-   /skills
-   ```
+  ```text
+  /skills
+  ```
 
-2. **Reinstall bundled core skills (useful after upgrading).**
+- Reinstall bundled core skills (useful after upgrading):
 
-   ```text
-   /skills reinstall
-   ```
+  ```text
+  /skills reinstall
+  ```
 
-## Keep notes as Markdown
+### Notes
 
 Store project notes as Markdown and search them using ripgrep.
 
