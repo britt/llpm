@@ -251,6 +251,7 @@ This page avoids parameterized feature-card shortcodes and uses plain HTML.
   </div>
 </div>
 
+
 <div class="hx-mb-12">
 {{< hextra/hero-subtitle >}}
   AI-powered product management CLI for GitHub issues, codebases, stakeholders, and requirements.
