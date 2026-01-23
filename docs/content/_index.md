@@ -96,7 +96,7 @@ For provider setup and example model IDs, see [Model Providers and Configuration
 
 ## What you can do with LLPM
 
-### Work across projects
+## Work across projects
 
 Manage projects (local path + optional GitHub repository) and scan a codebase to understand its structure and dependencies.
 
@@ -110,7 +110,7 @@ Notes:
 
 - `/project scan` runs even if no project is configured yet (it scans the current working directory).
 
-### Manage GitHub work
+## Manage GitHub work
 
 Use a GitHub token to browse repositories and manage issues.
 
@@ -120,7 +120,7 @@ Common commands:
 - `/issue list`
 - `/issue create`
 
-### Use skills for guided workflows
+## Use skills for guided workflows
 
 Skills are guided workflows that help the assistant follow consistent patterns.
 
@@ -129,7 +129,7 @@ Common commands:
 - `/skills list`
 - `/skills reinstall`
 
-### Keep notes in Markdown
+## Keep notes in Markdown
 
 Notes are stored as Markdown files.
 
