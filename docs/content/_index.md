@@ -326,19 +326,6 @@ For prerequisites and provider setup, see [Installation]({{< relref "docs/gettin
   </div>
 </div>
 
-git clone https://github.com/britt/llpm.git
-cd llpm
-bun install
-cp .env.example .env
-# Edit .env and set at least one provider key
-bun start
-```
-
-Next:
-
-- Run `/model providers` to confirm LLPM sees your credentials.
-- Use `/model switch` to pick a model.
-
 Optional: install globally from the repo root.
 
 ```bash
