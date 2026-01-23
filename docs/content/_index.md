@@ -155,8 +155,6 @@ Using raw HTML <div> blocks in this file avoids Hugo shortcode parameter parsing
   </div>
 </div>
 
-LLPM is a Bun-based CLI.
-
 1. Install Bun and ensure Git is on your `PATH`.
 2. Install LLPM:
 
