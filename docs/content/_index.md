@@ -127,12 +127,6 @@ Using raw HTML <div> blocks in this file avoids Hugo shortcode parameter parsing
   </div>
 </div>
 
-<div class="hx-mt-6 hx-mb-6">{{< hextra/hero-headline >}}
-  Large Language Model&nbsp;<br class="sm:hx-block hx-hidden" />Product Manager
-{{< /hextra/hero-headline >}}</div>
-
-## Install
-
 1. Install Bun and ensure Git is on your `PATH`.
 2. Install LLPM:
 
