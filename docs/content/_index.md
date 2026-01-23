@@ -82,7 +82,7 @@ llpm
 
 ## What LLPM helps with
 
-### Multi-provider models
+## Multi-provider models
 
 Connect one or more providers, then switch models per project or task.
 
@@ -112,11 +112,61 @@ Supported provider IDs:
 - `google-vertex`
 - `cerebras`
 
-### Projects, scans, and GitHub
+Example Cerebras model ID:
+
+- `qwen-3-235b-a22b-instruct-2507`
+
+## Projects, scans, and GitHub
 
 Use projects to keep work, context, and artifacts organized. Scan a codebase to understand structure, dependencies, and docs.
 
 - Show the current project:
+
+  ```text
+  /project
+  ```
+
+- Scan a codebase:
+
+  ```text
+  /project scan
+  ```
+
+- Work in GitHub:
+
+  ```text
+  /github
+  ```
+
+## Skills and guided workflows
+
+Use skills to run repeatable workflows (for example, requirement elicitation).
+
+- List skills:
+
+  ```text
+  /skills
+  ```
+
+- Reinstall bundled core skills (useful after upgrading):
+
+  ```text
+  /skills reinstall
+  ```
+
+## Notes
+
+Store project notes as Markdown and search them using ripgrep.
+
+```text
+/notes
+```
+
+## Next steps
+
+- [User Guide](/docs/user-guide/)
+- [Skills Reference](/docs/skills-reference/)
+- [Contributing](/docs/contributing/)
 
   ```text
   /project
