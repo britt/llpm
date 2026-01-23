@@ -185,43 +185,6 @@ Use notes to keep lightweight project context in markdown.
   /notes
   ```
 
-   ```
-
-5. **Start LLPM.**
-
-   ```bash
-   bun start
-   ```
-
-### Install globally (optional)
-
-To run `llpm` as a command, link it globally:
-
-```bash
-bun link
-llpm
-```
-
-## Quickstart
-
-1. **Start LLPM.**
-
-   ```text
-   llpm
-   ```
-
-2. **Confirm provider configuration.**
-
-   ```text
-   /model providers
-   ```
-
-3. **Switch models (optional).**
-
-   ```text
-   /model switch
-   ```
-
 4. **Scan a codebase (optional).**
 
    ```text
