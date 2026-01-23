@@ -37,11 +37,11 @@ For prerequisites, provider setup, and other install options, see [Installation]
 
 <!--
 NOTE:
-This homepage avoids parameterized shortcodes (for example, feature-card params)
+This homepage avoids parameterized shortcode arguments (for example, feature-card params)
 to prevent Hugo parse errors like:
   unterminated quoted string in shortcode parameter-argument
 
-Use raw HTML <div> blocks instead.
+Using raw HTML <div> blocks in this file avoids Hugo shortcode parameter parsing entirely.
 -->
 
 <div class="hx-grid hx-gap-6 hx-mt-10 lg:hx-grid-cols-2">
