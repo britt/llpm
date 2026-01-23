@@ -106,7 +106,7 @@ LLPM combines a terminal chat UI with project-management focused tools.
 
 ## Core workflows
 
-### Models
+## Models
 
 Use a single CLI to manage multiple providers.
 
@@ -136,7 +136,7 @@ Supported provider IDs:
 - `google-vertex`
 - `cerebras`
 
-### Projects and scans
+## Projects and scans
 
 Use projects to save a local path and (optionally) a GitHub repository.
 
@@ -158,7 +158,7 @@ Use projects to save a local path and (optionally) a GitHub repository.
   /project scan
   ```
 
-### GitHub
+## GitHub
 
 Use LLPM with a GitHub token to browse repositories and manage issues.
 
@@ -180,7 +180,7 @@ Use LLPM with a GitHub token to browse repositories and manage issues.
   /issue create
   ```
 
-### Skills
+## Skills
 
 Use skills for guided workflows.
 
@@ -196,7 +196,7 @@ Use skills for guided workflows.
   /skills reinstall
   ```
 
-### Notes
+## Notes
 
 Keep project notes and search them.
 
