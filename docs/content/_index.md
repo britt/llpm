@@ -40,8 +40,8 @@ Use it to manage projects, work with GitHub, organize Markdown notes, and switch
    OPENAI_API_KEY=your-openai-api-key
    ANTHROPIC_API_KEY=your-anthropic-api-key
    GROQ_API_KEY=your-groq-api-key
-   CEREBRAS_API_KEY=your-cerebras-api-key
    GOOGLE_VERTEX_PROJECT_ID=your-google-cloud-project-id
+   CEREBRAS_API_KEY=your-cerebras-api-key
 
    # Optional
    GOOGLE_VERTEX_REGION=us-central1
@@ -60,52 +60,6 @@ Use it to manage projects, work with GitHub, organize Markdown notes, and switch
 bun link
 llpm
 ```
-
-## Quickstart
-
-1. **List configured providers.**
-
-   ```text
-   /model providers
-   ```
-
-2. **Refresh the cached model catalog (optional).**
-
-   ```text
-   /model update
-   ```
-
-   LLPM caches provider model lists in `~/.llpm/models.json`.
-
-3. **List models (configured providers only).**
-
-   ```text
-   /model list
-   ```
-
-4. **Switch models.**
-
-   ```text
-   /model switch
-   ```
-
-## Model providers
-
-LLPM supports these provider IDs:
-
-- `openai`
-- `anthropic`
-- `groq`
-- `google-vertex`
-- `cerebras`
-
-Example model IDs from the built-in defaults (`src/types/models.ts`):
-
-- OpenAI: `gpt-5.2`, `gpt-4o-mini`
-- Anthropic: `claude-sonnet-4-5`, `claude-opus-4-1`
-- Groq: `llama-3.3-70b-versatile`, `deepseek-r1-distill-llama-70b`
-- Google Vertex AI: `gemini-2.5-pro`, `gemini-2.5-flash`
-- Cerebras: `qwen-3-235b-a22b-instruct-2507`, `llama-3.3-70b`
 
 ## What you can do with LLPM
 
@@ -141,7 +95,7 @@ Common commands:
 - `/skills show <skill-name>`
 - `/skills reinstall`
 
-### Notes, search, and shell
+### Notes and search
 
 LLPM stores notes as Markdown files and supports text search.
 
@@ -151,36 +105,26 @@ Common commands:
 - `/notes add`
 - `/notes search`
 
-## Next steps
+## Model providers
 
-- Follow the Getting Started guides: [Getting Started](./docs/getting-started/_index.md)
-- Learn the available commands: [Commands](./docs/user-guide/commands.md)
-- Browse the skills catalog: [Skills Reference](./docs/skills-reference/_index.md)
+LLPM supports these provider IDs:
 
-Notes:
+- `openai`
+- `anthropic`
+- `groq`
+- `google-vertex`
+- `cerebras`
 
-- `/project scan` runs even if no project is configured yet (it scans the current working directory).
+Example model IDs from the built-in defaults (`src/types/models.ts`):
 
-Common commands:
-
-- `/skills list`
-- `/skills reinstall`
-
-### Keep notes in Markdown
-
-Notes are stored as Markdown files.
-
-Common commands:
-
-- `/notes list`
-- `/notes create`
-- `/notes search`
+- OpenAI: `gpt-5.2`, `gpt-4o-mini`
+- Anthropic: `claude-sonnet-4-5`, `claude-opus-4-1`
+- Groq: `meta-llama/llama-4-maverick-17b-128e-instruct`, `llama-3.3-70b-versatile`
+- Google Vertex AI: `gemini-2.5-pro`, `gemini-2.5-flash`
+- Cerebras: `qwen-3-235b-a22b-instruct-2507`, `llama-3.3-70b`
 
 ## Next steps
 
-- [Installation](./docs/getting-started/installation/)
-- [Quickstart](./docs/getting-started/quickstart/)
-- [Configuration](./docs/getting-started/configuration/)
-- [User Guide](./docs/user-guide/)
-- [Skills Reference](./docs/skills-reference/)
-- [Contributing](./docs/contributing/)
+- Start with: [Getting Started](./docs/getting-started/_index.md)
+- Learn commands: [Commands](./docs/user-guide/commands.md)
+- Browse skills: [Skills Reference](./docs/skills-reference/_index.md)
