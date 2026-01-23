@@ -119,6 +119,44 @@ Common commands:
 - `/project switch`
 - `/project scan`
 
+### Use GitHub inside your terminal
+
+Connect a project to a GitHub repository, then list and triage issues and pull requests.
+
+Common commands:
+
+- `/github status`
+- `/issue list`
+- `/issue show`
+- `/project at-risk`
+
+### Use skills for repeatable workflows
+
+Use built-in skills (and create your own) to guide workflows like requirement elicitation, stakeholder tracking, and project planning.
+
+Common commands:
+
+- `/skills list`
+- `/skills show`
+- `/skills reinstall`
+
+### Keep lightweight Markdown notes
+
+Store notes as Markdown files and search them using ripgrep.
+
+Common commands:
+
+- `/notes add`
+- `/notes list`
+- `/notes search`
+
+## Next steps
+
+- Follow the Getting Started guides: [Getting Started](./docs/getting-started/_index.md)
+- Learn the available commands: [Commands](./docs/user-guide/commands.md)
+- Browse the skills catalog: [Skills Reference](./docs/skills-reference/_index.md)
+
+
 Notes:
 
 - `/project scan` runs even if no project is configured yet (it scans the current working directory).
