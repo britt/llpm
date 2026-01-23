@@ -61,19 +61,13 @@ bun link
 llpm
 ```
 
-## Get started
-
-Follow the step-by-step guides:
-
-- [Installation](./docs/getting-started/installation/)
-- [Quickstart](./docs/getting-started/quickstart/)
-- [Configuration](./docs/getting-started/configuration/)
-
 ## What you can do
 
-### Models
+### Use models from multiple providers
 
-LLPM supports these provider IDs:
+Configure one or more providers, then switch models with the `/model` command.
+
+Supported provider IDs:
 
 - `openai`
 - `anthropic`
@@ -81,7 +75,7 @@ LLPM supports these provider IDs:
 - `google-vertex`
 - `cerebras`
 
-Use model commands to list available models, switch models, and refresh the local cache from provider APIs:
+Common model commands:
 
 - **List configured models:**
 
@@ -89,16 +83,16 @@ Use model commands to list available models, switch models, and refresh the loca
   /model list
   ```
 
-- **Show provider configuration requirements:**
-
-  ```text
-  /model providers
-  ```
-
 - **Switch models interactively:**
 
   ```text
   /model switch
+  ```
+
+- **Show provider configuration requirements:**
+
+  ```text
+  /model providers
   ```
 
 - **Fetch the latest model catalog (optional):**
@@ -109,9 +103,9 @@ Use model commands to list available models, switch models, and refresh the loca
 
 LLPM caches provider model lists in `~/.llpm/models.json`.
 
-### Projects and scans
+### Work across projects (and scan a codebase)
 
-Use projects to save a local path and (optionally) a GitHub repository.
+Save a local path as a project, then scan a codebase to understand structure and dependencies.
 
 - **List projects:**
 
@@ -125,7 +119,7 @@ Use projects to save a local path and (optionally) a GitHub repository.
   /project switch
   ```
 
-- **Scan a codebase for structure and dependencies:**
+- **Scan a codebase:**
 
   ```text
   /project scan
@@ -133,9 +127,9 @@ Use projects to save a local path and (optionally) a GitHub repository.
 
 If no active project is set, `/project scan` scans the current working directory.
 
-### GitHub
+### Use GitHub from the terminal
 
-Use a GitHub token to browse repositories and manage issues.
+Connect a GitHub token to browse repositories and manage issues.
 
 - **List repositories:**
 
@@ -155,9 +149,9 @@ Use a GitHub token to browse repositories and manage issues.
   /issue create
   ```
 
-### Skills
+### Use guided workflows (skills)
 
-Use skills for guided workflows.
+Use skills for repeatable workflows like planning, elicitation, and review.
 
 - **List skills:**
 
@@ -171,9 +165,9 @@ Use skills for guided workflows.
   /skills reinstall
   ```
 
-### Notes
+### Keep project notes as Markdown
 
-Write and search notes as Markdown files.
+Create and search notes as Markdown files.
 
 - **List notes:**
 
@@ -195,9 +189,13 @@ Write and search notes as Markdown files.
 
 ## Next steps
 
+- [Installation](./docs/getting-started/installation/)
+- [Quickstart](./docs/getting-started/quickstart/)
+- [Configuration](./docs/getting-started/configuration/)
 - [User Guide](/docs/user-guide/)
 - [Skills Reference](/docs/skills-reference/)
 - [Contributing](/docs/contributing/)
+
 
 Follow the step-by-step guides:
 
