@@ -9,7 +9,6 @@ layout: hextra-home
 
 ## Install
 
-
 1. Install Bun and ensure Git is on your `PATH`.
 2. Install LLPM:
 
@@ -138,6 +137,22 @@ Using raw HTML <div> blocks in this file avoids Hugo shortcode parameter parsing
 
   <div
     class="hx-rounded-2xl hx-border hx-border-gray-200/50 dark:hx-border-gray-800/50 hx-bg-white/60 dark:hx-bg-neutral-900/40 hx-p-6"
+    style="background: radial-gradient(ellipse at 50% 80%,rgba(16,185,129,0.15),hsla(0,0%,100%,0));"
+  >
+    <h3 class="hx-text-xl hx-font-semibold">Notes and Search</h3>
+    <p class="hx-mt-2 hx-text-gray-600 dark:hx-text-gray-300">
+      Capture project knowledge in Markdown notes, then search it locally.
+    </p>
+
+    <ul class="hx-mt-4">
+      <li>Notes are stored under <code>~/.llpm/projects/&lt;projectId&gt;/notes/</code>.</li>
+      <li>Search uses <code>ripgrep</code>-based full-text search.</li>
+    </ul>
+
+    <p class="hx-mt-4"><a href="{{< relref "docs/user-guide/projects.md" >}}">Project setup</a> and <a href="{{< relref "docs/user-guide/commands.md" >}}">commands</a> show how these features fit into a daily workflow.</p>
+  </div>
+</div>
+
     style="background: radial-gradient(ellipse at 50% 80%,rgba(16,185,129,0.15),hsla(0,0%,100%,0));"
   >
     <h3 class="hx-text-xl hx-font-semibold">Notes and Search</h3>
