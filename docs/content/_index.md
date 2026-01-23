@@ -81,7 +81,7 @@ For prerequisites and provider setup, see [Installation]({{< relref "docs/gettin
   <div class="hx-rounded-xl hx-border hx-border-gray-200 dark:hx-border-neutral-800 hx-bg-white dark:hx-bg-neutral-900 hx-p-6" style="background: radial-gradient(ellipse at 50% 80%, rgba(194,97,254,0.15), hsla(0,0%,100%,0));">
     <h3 class="hx-text-xl hx-font-semibold hx-mb-2">Multi-provider models</h3>
     <p class="hx-text-gray-600 dark:hx-text-gray-300 hx-mb-4">
-      Configure one or more providers, then switch models when the task changes. Use live model discovery to fetch each provider’s current catalog, then rely on the local cache for fast switching.
+      Configure one or more providers, then switch models when the task changes. Use live model discovery to fetch each providers current catalog, then rely on the local cache for fast switching.
       This makes it practical to keep multiple provider keys configured and choose the right model per task without leaving the CLI.
     </p>
 
@@ -144,7 +144,7 @@ For prerequisites and provider setup, see [Installation]({{< relref "docs/gettin
     <h3 class="hx-text-xl hx-font-semibold hx-mb-2">Skills + workflows</h3>
 
     <p class="hx-text-gray-600 dark:hx-text-gray-300 hx-mb-4">
-      LLPM skills follow the Agent Skills <code>SKILL.md</code> format. Skills describe repeatable workflows (planning, analysis, documentation, research) that guide the assistant’s behavior.
+      LLPM skills follow the Agent Skills <code>SKILL.md</code> format. Skills describe repeatable workflows (planning, analysis, documentation, research) that guide the assistants behavior.
     </p>
 
     <ul class="hx-list-disc hx-pl-6 hx-space-y-2 hx-text-gray-600 dark:hx-text-gray-300">
