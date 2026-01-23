@@ -193,11 +193,30 @@ Write and search notes as Markdown files.
   /notes search
   ```
 
-## Next steps
+---
+title: LLPM
+---
 
-- [User Guide](/docs/user-guide/)
-- [Skills Reference](/docs/skills-reference/)
-- [Contributing](/docs/contributing/)
+# LLPM
+
+LLPM is an AI-powered product management CLI that runs in your terminal.
+
+Use it to work across projects, GitHub, and multiple model providers from a single terminal UI.
+
+## Install
+
+1. **Clone the repository.**
+
+   ```bash
+   git clone https://github.com/britt/llpm.git
+   cd llpm
+   ```
+
+2. **Install dependencies.**
+
+   ```bash
+   bun install
+   ```
 
 3. **Copy the example environment file.**
 
@@ -258,6 +277,123 @@ LLPM supports these provider IDs:
 - `cerebras`
 
 Use model commands to list available models, switch models, and refresh the local cache from provider APIs:
+
+- **List configured models:**
+
+  ```text
+  /model list
+  ```
+
+- **Show provider configuration requirements:**
+
+  ```text
+  /model providers
+  ```
+
+- **Switch models interactively:**
+
+  ```text
+  /model switch
+  ```
+
+- **Fetch the latest model catalog (optional):**
+
+  ```text
+  /model update
+  ```
+
+LLPM caches provider model lists in `~/.llpm/models.json`.
+
+### Projects and scans
+
+Use projects to save a local path and (optionally) a GitHub repository.
+
+- **List projects:**
+
+  ```text
+  /project list
+  ```
+
+- **Switch projects:**
+
+  ```text
+  /project switch
+  ```
+
+- **Scan a codebase for structure and dependencies:**
+
+  ```text
+  /project scan
+  ```
+
+If no active project is set, `/project scan` scans the current working directory.
+
+### GitHub
+
+Use a GitHub token to browse repositories and manage issues.
+
+- **List repositories:**
+
+  ```text
+  /github list
+  ```
+
+- **List issues:**
+
+  ```text
+  /issue list
+  ```
+
+- **Create an issue:**
+
+  ```text
+  /issue create
+  ```
+
+### Skills
+
+Use skills for guided workflows.
+
+- **List skills:**
+
+  ```text
+  /skills list
+  ```
+
+- **Reinstall bundled core skills (optional):**
+
+  ```text
+  /skills reinstall
+  ```
+
+### Notes
+
+Write and search notes as Markdown files.
+
+- **List notes:**
+
+  ```text
+  /notes list
+  ```
+
+- **Create a note:**
+
+  ```text
+  /notes create
+  ```
+
+- **Search notes:**
+
+  ```text
+  /notes search
+  ```
+
+## Next steps
+
+- [User Guide](/docs/user-guide/)
+- [Skills Reference](/docs/skills-reference/)
+- [Contributing](/docs/contributing/)
+
 
 - **List configured models:**
 
