@@ -46,7 +46,27 @@ Use LLPM to keep work close to the terminal:
    cp .env.example .env
    ```
 
-4. **Start LLPM.**
+4. **Configure at least one provider.**
+
+   ```bash
+   # OpenAI
+   OPENAI_API_KEY=...
+
+   # Anthropic
+   ANTHROPIC_API_KEY=...
+
+   # Groq
+   GROQ_API_KEY=...
+
+   # Cerebras
+   CEREBRAS_API_KEY=...
+
+   # Google Vertex AI
+   GOOGLE_VERTEX_PROJECT_ID=...
+   GOOGLE_VERTEX_REGION=us-central1  # Optional (defaults to us-central1)
+   ```
+
+5. **Start LLPM.**
 
    ```bash
    bun start
@@ -69,7 +89,7 @@ llpm
    llpm
    ```
 
-2. **List configured providers.**
+2. **Confirm provider configuration.**
 
    ```text
    /model providers
@@ -81,10 +101,9 @@ llpm
    /model switch
    ```
 
-4. **Set up and scan a project.**
+4. **Scan a codebase (optional).**
 
    ```text
-   /project
    /project scan
    ```
 
@@ -92,21 +111,21 @@ llpm
 
 ### Multi-provider models
 
-Connect one or more providers and switch models without leaving the terminal.
+Use a single CLI to manage multiple providers.
 
-- Show configured providers:
+- List providers and required env vars:
 
   ```text
   /model providers
   ```
 
-- Switch models:
+- Switch models interactively:
 
   ```text
   /model switch
   ```
 
-- Fetch the latest model list from provider APIs (optional):
+- Refresh the model list from provider APIs (optional):
 
   ```text
   /model update
@@ -126,7 +145,7 @@ Example Cerebras model ID:
 
 ### Projects, scans, and GitHub
 
-Use projects to keep work and context organized, including scanning a codebase.
+Use projects to keep work and context organized.
 
 - Manage projects:
 
@@ -134,7 +153,7 @@ Use projects to keep work and context organized, including scanning a codebase.
   /project
   ```
 
-- Scan a codebase:
+- Scan a codebase for structure and dependencies:
 
   ```text
   /project scan
@@ -164,7 +183,7 @@ Use skills to run repeatable workflows.
 
 ### Notes
 
-Store project notes as Markdown and search them using ripgrep.
+Store project notes as Markdown.
 
 ```text
 /notes
