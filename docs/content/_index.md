@@ -150,5 +150,7 @@ Using raw HTML <div> blocks in this file avoids Hugo shortcode parameter parsing
       <li>Notes are stored under <code>~/.llpm/projects/&lt;projectId&gt;/notes/</code>.</li>
       <li>Search uses <code>ripgrep</code>-based full-text search.</li>
     </ul>
+
+    <p class="hx-mt-4"><a href="{{< relref \"docs/user-guide/projects.md\" >}}">Project setup</a> and <a href="{{< relref \"docs/user-guide/commands.md\" >}}">commands</a> show how these features fit into a daily workflow.</p>
   </div>
 </div>
