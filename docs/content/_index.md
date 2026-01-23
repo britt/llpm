@@ -123,6 +123,11 @@ Use LLPM to:
    /skills show <skill-name>
    ```
 
+
+   ```text
+   /skills show <skill-name>
+   ```
+
 3. **Reinstall bundled skills**
 
    ```text
