@@ -27,22 +27,10 @@ bun install llpm
 llpm
 ```
 
-</div>
-</div>
-
-<!--
-Homepage note
-
-Avoid shortcode-based feature cards here.
-A previous version used a shortcode with quoted parameters and failed Hugo builds with:
-"unterminated quoted string in shortcode parameter-argument".
-
-This page uses plain HTML divs to create card-like sections.
--->
-
-<!-- build marker: homepage uses div-based sections (no shortcodes that take quoted params) -->
-
-<div class="hx-mt-8 hx-rounded-xl hx-border hx-border-gray-200 dark:hx-border-neutral-800 hx-bg-white dark:hx-bg-neutral-900 hx-p-6">
+---
+title: LLPM Documentation
+layout: hextra-home
+---
 
 ## Install
 
