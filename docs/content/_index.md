@@ -49,103 +49,116 @@ bun link
 llpm
 ```
 
-## What LLPM helps with
+## Get started
 
-- **Use multiple model providers**
+1. **Configure a provider.**
 
-  Connect one or more providers, then switch models per project or task.
+   Use `.env` (after `cp .env.example .env`) or environment variables.
 
-  - See configured providers:
+2. **Start LLPM.**
 
-    ```text
-    /model providers
-    ```
+   ```text
+   llpm
+   ```
 
-  - Switch models:
-
-    ```text
-    /model switch
-    ```
-
-  Supported provider IDs:
-
-  - `openai`
-  - `anthropic`
-  - `groq`
-  - `google-vertex`
-  - `cerebras`
-
-- **Manage projects and scans**
-
-  Use projects to keep work, context, and artifacts organized.
-
-  - Manage projects:
-
-    ```text
-    /project
-    ```
-
-  - Scan a codebase to understand structure, dependencies, and docs:
-
-    ```text
-    /project scan
-    ```
-
-- **Work in GitHub**
-
-  Use LLPM to work with GitHub issues and pull requests.
-
-  - GitHub integration:
-
-    ```text
-    /github
-    ```
-
-- **Use skills for guided workflows**
-
-  Use skills to run repeatable workflows (for example, requirement elicitation).
-
-  - List skills:
-
-    ```text
-    /skills
-    ```
-
-  - Reinstall bundled core skills (useful after upgrading):
-
-    ```text
-    /skills reinstall
-    ```
-
-- **Keep notes as Markdown**
-
-  Store project notes as Markdown and search them using ripgrep.
-
-  - Manage notes:
-
-    ```text
-    /notes
-    ```
-
-## Quickstart
-
-1. **Check provider configuration.**
+3. **List configured providers.**
 
    ```text
    /model providers
    ```
 
-2. **Switch models (optional).**
+4. **Switch models (optional).**
 
    ```text
    /model switch
    ```
 
-3. **Manage projects.**
+5. **Set up and scan a project.**
 
    ```text
    /project
+   /project scan
    ```
+
+## What LLPM helps with
+
+### Use multiple model providers
+
+Connect one or more providers, then switch models per project or task.
+
+- **List configured providers.**
+
+  ```text
+  /model providers
+  ```
+
+- **Switch models.**
+
+  ```text
+  /model switch
+  ```
+
+- **Fetch the latest model list from provider APIs (optional).**
+
+  ```text
+  /model update
+  ```
+
+Supported provider IDs:
+
+- `openai`
+- `anthropic`
+- `groq`
+- `google-vertex`
+- `cerebras`
+
+### Manage projects and scans
+
+Use projects to keep work, context, and artifacts organized.
+
+- **Manage projects.**
+
+  ```text
+  /project
+  ```
+
+- **Scan a codebase to understand structure, dependencies, and docs.**
+
+  ```text
+  /project scan
+  ```
+
+### Work in GitHub
+
+Use LLPM to work with GitHub issues and pull requests.
+
+```text
+/github
+```
+
+### Use skills for guided workflows
+
+Use skills to run repeatable workflows (for example, requirement elicitation).
+
+- **List skills.**
+
+  ```text
+  /skills
+  ```
+
+- **Reinstall bundled core skills (useful after upgrading).**
+
+  ```text
+  /skills reinstall
+  ```
+
+### Keep notes as Markdown
+
+Store project notes as Markdown and search them using ripgrep.
+
+```text
+/notes
+```
 
 ## Next steps
 
