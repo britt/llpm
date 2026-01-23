@@ -32,6 +32,40 @@ Next:
 
 See: [Installation]({{< relref "docs/getting-started/installation.md" >}})
 
+---
+---
+
+# LLPM
+
+AI-powered product management CLI for GitHub issues, codebases, stakeholders, and requirements.
+
+<div class="hx-mt-6"></div>
+
+## Install
+
+LLPM is a Bun-based CLI.
+
+1. Install [Bun](https://bun.sh/) and ensure `bun` is on your `PATH`.
+2. Install LLPM:
+
+   ```bash
+   bun add -g llpm
+   ```
+
+3. Start LLPM:
+
+   ```bash
+   llpm
+   ```
+
+Next:
+
+- Configure at least one model provider (via environment variables).
+- Run `/model providers` to confirm credentials are detected.
+- Use `/model switch` to select a model.
+
+See: [Installation]({{< relref "docs/getting-started/installation.md" >}})
+
 ## Features
 
 <div class="hx-mt-8 hx-grid hx-gap-6 md:hx-grid-cols-2">
@@ -145,55 +179,4 @@ See: [Installation]({{< relref "docs/getting-started/installation.md" >}})
 
     <p class="hx-mt-4"><a href="{{< relref "docs/user-guide/projects.md" >}}">Project setup</a> and <a href="{{< relref "docs/user-guide/commands.md" >}}">commands</a> show how these features fit into a daily workflow.</p>
   </div>
-</div>
-
-  </div>
-
-  <div
-    class="hx-rounded-2xl hx-border hx-border-gray-200/50 dark:hx-border-gray-800/50 hx-bg-white/60 dark:hx-bg-neutral-900/40 hx-p-6"
-    style="background: radial-gradient(ellipse at 50% 80%,rgba(16,185,129,0.15),hsla(0,0%,100%,0));"
-  >
-    <h3 class="hx-text-xl hx-font-semibold">Notes and Search</h3>
-    <p class="hx-mt-2 hx-text-gray-600 dark:hx-text-gray-300">
-      Capture project knowledge in Markdown notes, then search it locally.
-    </p>
-
-    <ul class="hx-mt-4">
-      <li>Notes are stored under <code>~/.llpm/projects/&lt;projectId&gt;/notes/</code>.</li>
-      <li>Search uses <code>ripgrep</code>-based full-text search.</li>
-    </ul>
-
-    <p class="hx-mt-4"><a href="{{< relref "docs/user-guide/projects.md" >}}">Project setup</a> and <a href="{{< relref "docs/user-guide/commands.md" >}}">commands</a> show how these features fit into a daily workflow.</p>
-  </div>
-</div>
-
-      Use reusable workflows packaged as Agent Skills (<code>SKILL.md</code>) to guide planning, analysis, and documentation.
-    </p>
-
-    <ul class="hx-mt-4">
-      <li><code>/skills list</code> to review available skills.</li>
-      <li><code>/skills reload</code> to reload skills after edits.</li>
-      <li><code>/skills reinstall</code> to restore bundled skills.</li>
-    </ul>
-
-    <p class="hx-mt-4">See the <a href="{{< relref "docs/skills-reference/_index.md" >}}">Skills Reference</a> for the full catalog.</p>
-  </div>
-
-  <div
-    class="hx-rounded-2xl hx-border hx-border-gray-200/50 dark:hx-border-gray-800/50 hx-bg-white/60 dark:hx-bg-neutral-900/40 hx-p-6"
-    style="background: radial-gradient(ellipse at 50% 80%,rgba(16,185,129,0.15),hsla(0,0%,100%,0));"
-  >
-    <h3 class="hx-text-xl hx-font-semibold">Notes and Search</h3>
-    <p class="hx-mt-2 hx-text-gray-600 dark:hx-text-gray-300">
-      Capture project knowledge in Markdown notes, then search it locally.
-    </p>
-
-    <ul class="hx-mt-4">
-      <li>Notes are stored under <code>~/.llpm/projects/&lt;projectId&gt;/notes/</code>.</li>
-      <li>Search uses <code>ripgrep</code>-based full-text search.</li>
-    </ul>
-
-    <p class="hx-mt-4"><a href="{{< relref "docs/user-guide/projects.md" >}}">Project setup</a> and <a href="{{< relref "docs/user-guide/commands.md" >}}">commands</a> show how these features fit into a daily workflow.</p>
-  </div>
-
 </div>
