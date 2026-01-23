@@ -55,7 +55,7 @@ LLPM supports these provider IDs:
 - `google-vertex`
 - `cerebras`
 
-For provider setup details and example model IDs, see [Model Providers and Configuration](../../../MODELS.md).
+For provider setup details and example model IDs, see [Model Providers and Configuration](./docs/getting-started/model-providers/).
 
 ## Quickstart
 
@@ -168,76 +168,10 @@ If no active project is set, `/project scan` scans the current working directory
 - [Installation](./docs/getting-started/installation/)
 - [Quickstart](./docs/getting-started/quickstart/)
 - [Configuration](./docs/getting-started/configuration/)
-- [User Guide](/docs/user-guide/)
-- [Skills Reference](/docs/skills-reference/)
-- [Contributing](/docs/contributing/)
-
-  /project list
-  ```
-
-- **Switch projects:**
-
-  ```text
-  /project switch
-  ```
-
-- **Scan a codebase for structure and dependencies:**
-
-  ```text
-  /project scan
-  ```
-
-If no active project is set, `/project scan` scans the current working directory.
-
-### GitHub
-
-Use a GitHub token to browse repositories and manage issues.
-
-- **List repositories:**
-
-  ```text
-  /github list
-  ```
-
-- **List issues:**
-
-  ```text
-  /issue list
-  ```
-
-- **Create an issue:**
-
-  ```text
-  /issue create
-  ```
-
-### Skills
-
-Use skills for guided workflows.
-
-- **List skills:**
-
-  ```text
-  /skills list
-  ```
-
-- **Reinstall bundled core skills (optional):**
-
-  ```text
-  /skills reinstall
-  ```
-
-### Notes
-
-Write and search notes as Markdown files.
-
-- **List notes:**
-
-  ```text
-  /notes list
-  ```
-
-- **Create a note:**
+- [User Guide](./docs/user-guide/)
+- [Skills Reference](./docs/skills-reference/)
+- [Contributing](./docs/contributing/)
+**
 
   ```text
   /notes create
