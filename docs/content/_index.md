@@ -6,13 +6,6 @@ title: LLPM
 
 LLPM is an AI-powered product management CLI that runs in your terminal.
 
-Use LLPM to:
-
-- Connect an LLM provider and switch models.
-- Scan a codebase for context.
-- Manage GitHub work.
-- Keep notes and run guided workflows (skills).
-
 ## Install
 
 ### Install from source
@@ -109,7 +102,9 @@ llpm
 
 ## What LLPM helps with
 
-### Models
+LLPM combines a terminal chat UI with project-management focused tools.
+
+## Models
 
 Use a single CLI to manage multiple providers.
 
@@ -138,6 +133,103 @@ Supported provider IDs:
 - `groq`
 - `google-vertex`
 - `cerebras`
+
+## Projects and scans
+
+Use projects to save a local path and (optionally) a GitHub repository.
+
+- List projects:
+
+  ```text
+  /project list
+  ```
+
+- Switch projects:
+
+  ```text
+  /project switch
+  ```
+
+- Scan a codebase for context:
+
+  ```text
+  /project scan
+  ```
+
+## GitHub
+
+Use LLPM with a GitHub token to browse repositories and manage issues.
+
+- List repositories:
+
+  ```text
+  /github list
+  ```
+
+- List issues:
+
+  ```text
+  /issue list
+  ```
+
+- Create an issue:
+
+  ```text
+  /issue create
+  ```
+
+## Skills
+
+Use skills for guided workflows.
+
+- List skills:
+
+  ```text
+  /skills list
+  ```
+
+- Reinstall bundled skills (optional):
+
+  ```text
+  /skills reinstall
+  ```
+
+## Notes
+
+Keep project notes and search them.
+
+- List notes:
+
+  ```text
+  /notes list
+  ```
+
+- Add a note:
+
+  ```text
+  /notes add
+  ```
+
+- Search notes:
+
+  ```text
+  /notes search
+  ```
+
+## Shell
+
+Optionally allow LLPM to run commands in your project.
+
+- Open shell settings in `~/.llpm/config.json`.
+- Use `/help` to find the shell command and read its safety prompt.
+
+## Next steps
+
+- Read the docs index: [Docs](./docs/_index.md)
+- Get started: [Getting Started](./docs/getting-started/_index.md)
+- Learn skills: [Skills Reference](./docs/skills-reference/_index.md)
+- Contribute: [Contributing](./docs/contributing/_index.md)
+
 
 Example Cerebras model ID:
 
