@@ -6,17 +6,15 @@ title: LLPM
 
 LLPM is an AI-powered product management CLI that runs in your terminal.
 
-Use it to:
+LLPM helps with:
 
-- manage projects
-- work with GitHub issues and pull requests
-- organize Markdown notes
-- use skills (guided workflows)
-- switch between multiple AI model providers
+- project tracking (local path + optional GitHub repository)
+- GitHub issues and pull requests
+- Markdown notes
+- skills (guided workflows)
+- switching between multiple AI model providers
 
 ## Install
-
-Follow the same install flow used in [Installation](./docs/getting-started/installation.md):
 
 1. **Clone the repository**
 
@@ -65,60 +63,97 @@ bun link
 llpm
 ```
 
-## What you can do with LLPM
+## Common workflows
 
-### Work with models across providers
+### Switch models across providers
 
-Configure one or more providers, then list, update, and switch models.
+1. **List configured providers**
 
-Common commands:
+   ```text
+   /model providers
+   ```
 
-- `/model providers`
-- `/model list`
-- `/model update`
-- `/model switch`
+2. **List available models**
+
+   ```text
+   /model list
+   ```
+
+3. **Fetch the latest model catalog**
+
+   ```text
+   /model update
+   ```
+
+4. **Switch models**
+
+   ```text
+   /model switch
+   ```
 
 ### Track projects (and scan codebases)
 
-Track projects (local path + optional GitHub repository). Run scans to capture a snapshot of project structure and dependencies.
+1. **List projects**
 
-Common commands:
+   ```text
+   /project list
+   ```
 
-- `/project list`
-- `/project switch`
-- `/project scan`
+2. **Switch to a project**
 
-### Connect to GitHub
+   ```text
+   /project switch
+   ```
 
-Link a repository and check connection status.
+3. **Scan a project**
 
-Common commands:
-
-- `/github status`
+   ```text
+   /project scan
+   ```
 
 ### Use skills (guided workflows)
 
-Skills are reusable, tool-driven workflows.
+1. **List skills**
 
-Common commands:
+   ```text
+   /skills list
+   ```
 
-- `/skills list`
-- `/skills show <skill-name>`
-- `/skills reinstall`
+2. **Show a skill**
+
+   ```text
+   /skills show <skill-name>
+   ```
+
+3. **Reinstall bundled skills**
+
+   ```text
+   /skills reinstall
+   ```
 
 ### Keep Markdown notes
 
-Store notes as Markdown files and search them.
+1. **List notes**
 
-Common commands:
+   ```text
+   /notes list
+   ```
 
-- `/notes list`
-- `/notes add`
-- `/notes search`
+2. **Add a note**
+
+   ```text
+   /notes add
+   ```
+
+3. **Search notes**
+
+   ```text
+   /notes search
+   ```
 
 ## Model providers
 
-LLPM supports these provider IDs:
+Provider IDs (from `src/types/models.ts`):
 
 - `openai`
 - `anthropic`
@@ -126,7 +161,7 @@ LLPM supports these provider IDs:
 - `google-vertex`
 - `cerebras`
 
-Example model IDs from the built-in defaults (`src/types/models.ts`):
+Example default model IDs (also from `src/types/models.ts`):
 
 - OpenAI: `gpt-5.2`, `gpt-4o-mini`
 - Anthropic: `claude-sonnet-4-5`, `claude-opus-4-1`
