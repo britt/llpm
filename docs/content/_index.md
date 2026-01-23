@@ -109,15 +109,82 @@ llpm
 
 ## What LLPM helps with
 
-### Multi-provider models
+### Models
 
-Work with multiple providers in one CLI.
+Use a single CLI to manage multiple providers.
 
 - List providers and required env vars:
 
   ```text
   /model providers
   ```
+
+- Switch models interactively:
+
+  ```text
+  /model switch
+  ```
+
+- Refresh the model list from provider APIs (optional):
+
+  ```text
+  /model update
+  ```
+
+Supported provider IDs:
+
+- `openai`
+- `anthropic`
+- `groq`
+- `google-vertex`
+- `cerebras`
+
+Example Cerebras model ID:
+
+- `qwen-3-235b-a22b-instruct-2507`
+
+### Projects, scans, and GitHub
+
+Use projects to keep work and context organized.
+
+- Manage projects:
+
+  ```text
+  /project
+  ```
+
+- Scan a codebase for structure and dependencies:
+
+  ```text
+  /project scan
+  ```
+
+- Use GitHub features:
+
+  ```text
+  /github
+  ```
+
+### Skills
+
+Use skills to run repeatable workflows.
+
+- List skills:
+
+  ```text
+  /skills
+  ```
+
+### Notes
+
+Use notes to keep lightweight project context in markdown.
+
+- Open the notes menu:
+
+  ```text
+  /notes
+  ```
+
 
 - Switch models interactively:
 
