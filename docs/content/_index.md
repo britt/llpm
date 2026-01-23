@@ -147,8 +147,6 @@ See: [Installation]({{< relref "docs/getting-started/installation.md" >}})
   </div>
 </div>
 
-    <p class="hx-mt-4">Connect and manage providers:</p>
-
     <ul class="hx-mt-2">
       <li><code>/model providers</code> to see which providers are configured and which credentials are missing.</li>
       <li>
