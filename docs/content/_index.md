@@ -6,7 +6,7 @@ title: LLPM Documentation
 
 LLPM is an AI-powered product management CLI that runs in your terminal.
 
-Use LLPM to work across projects in a consistent way: connect an LLM provider, scan a codebase for context, manage GitHub work, and keep notes and workflows close to the terminal.
+LLPM helps keep work close to the terminal: connect an LLM provider, scan a codebase for context, manage GitHub work, and keep notes and workflows in one place.
 
 ## Install
 
@@ -15,7 +15,12 @@ Use LLPM to work across projects in a consistent way: connect an LLM provider, s
 **Prerequisites**
 
 - [Bun](https://bun.com)
-- At least one configured model provider: OpenAI, Anthropic, Groq, Google Vertex AI, or Cerebras
+- At least one configured model provider:
+  - OpenAI
+  - Anthropic
+  - Groq
+  - Google Vertex AI
+  - Cerebras
 
 1. **Clone the repository.**
 
@@ -138,7 +143,7 @@ Use projects to keep work and context organized.
 
 ### Skills and guided workflows
 
-Use skills to run repeatable workflows (for example, requirement elicitation).
+Use skills to run repeatable workflows.
 
 - List skills:
 
