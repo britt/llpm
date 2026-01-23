@@ -102,7 +102,15 @@ For prerequisites and provider setup, see [Installation]({{< relref "docs/gettin
       Anthropic: <code>claude-sonnet-4-5</code>, <code>claude-opus-4-1</code><br>
       Groq: <code>meta-llama/llama-4-maverick-17b-128e-instruct</code>, <code>llama-3.3-70b-versatile</code>, <code>deepseek-r1-distill-llama-70b</code><br>
       Google Vertex: <code>gemini-2.5-pro</code>, <code>gemini-2.5-flash</code>, <code>gemini-2.5-ultra</code><br>
-      Cerebras: <code>qwen-3-235b-a22b-instruct-2507</code>, <code>llama-3.3-70b</code>
+      Cerebras: <code>qwen-3-235b-a22b-instruct-2507</code>, <code>llama-3.3-70b</code>, <code>llama3.1-8b</code>
+    </p>
+
+    <p class="hx-text-gray-600 dark:hx-text-gray-300 hx-mt-2">
+      LLPM caches the provider-fetched catalog in <code>~/.llpm/models.json</code>. If live discovery fails, LLPM falls back to curated defaults.
+    </p>
+
+    <p class="hx-text-gray-600 dark:hx-text-gray-300 hx-mt-2">
+      For environment variables and provider setup steps, see the <a href="{{< relref "docs/getting-started/configuration.md" >}}">Configuration</a> guide.
     </p>
   </div>
 
