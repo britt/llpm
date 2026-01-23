@@ -56,3 +56,7 @@ GROQ_API_KEY=gsk_...
 # Optional: GitHub integration
 GITHUB_TOKEN=ghp_...
 ```
+
+## Runtime note
+
+Node.js is not required. LLPM uses Bun as its runtime.
