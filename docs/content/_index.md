@@ -91,7 +91,7 @@ llpm
 
 ### Models
 
-Use a single CLI to work with multiple providers.
+Connect one or more providers, then switch models per project or task.
 
 - **List providers and required environment variables:**
 
@@ -123,7 +123,7 @@ LLPM caches provider model lists in `~/.llpm/models.json`.
 
 ### Projects and scans
 
-Save a local path and (optionally) a GitHub repository as a project.
+Save a local path and (optionally) a GitHub repository as a project, then scan the codebase to build context for planning and analysis.
 
 - **List projects:**
 
@@ -145,7 +145,7 @@ Save a local path and (optionally) a GitHub repository as a project.
 
 ### GitHub
 
-Use a GitHub token to browse repositories and manage issues.
+Connect a GitHub token to browse repositories, create issues, and review work without leaving the terminal.
 
 - **List repositories:**
 
@@ -167,7 +167,7 @@ Use a GitHub token to browse repositories and manage issues.
 
 ### Skills
 
-Use skills for guided workflows.
+Use skills for guided workflows (for example: requirement elicitation, stakeholder tracking, or project planning).
 
 - **List skills:**
 
@@ -175,7 +175,7 @@ Use skills for guided workflows.
   /skills list
   ```
 
-- **Reinstall bundled skills (optional).**
+- **Reinstall bundled skills (optional):**
 
   ```text
   /skills reinstall
@@ -198,6 +198,11 @@ Write and search notes as Markdown files.
   ```
 
 ---
+
+## Next steps
+
+- Browse the docs: [Docs](./docs/)
+
 title: LLPM
 ---
 
