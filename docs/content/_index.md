@@ -89,7 +89,7 @@ llpm
 
 ## What you can do
 
-### Models
+## Models
 
 Use a single CLI to work with multiple providers.
 
@@ -118,6 +118,101 @@ Supported provider IDs:
 - `groq`
 - `google-vertex`
 - `cerebras`
+
+LLPM caches provider model lists in `~/.llpm/models.json`.
+
+Example Cerebras model ID:
+
+- `qwen-3-235b-a22b-instruct-2507`
+
+## Projects and scans
+
+Save a local path and (optionally) a GitHub repository as a project.
+
+- **List projects:**
+
+  ```text
+  /project list
+  ```
+
+- **Switch projects:**
+
+  ```text
+  /project switch
+  ```
+
+- **Scan a codebase for structure and dependencies:**
+
+  ```text
+  /project scan
+  ```
+
+## GitHub
+
+Use a GitHub token to browse repositories and manage issues.
+
+- **List repositories:**
+
+  ```text
+  /github list
+  ```
+
+- **List issues:**
+
+  ```text
+  /issue list
+  ```
+
+- **Create an issue:**
+
+  ```text
+  /issue create
+  ```
+
+## Skills
+
+Use skills for guided workflows.
+
+- **List skills:**
+
+  ```text
+  /skills list
+  ```
+
+- **Reinstall bundled core skills (optional):**
+
+  ```text
+  /skills reinstall
+  ```
+
+## Notes
+
+Write and search notes as Markdown files.
+
+- **List notes:**
+
+  ```text
+  /notes list
+  ```
+
+- **Create a note:**
+
+  ```text
+  /notes add
+  ```
+
+- **Search notes:**
+
+  ```text
+  /notes search
+  ```
+
+## Next steps
+
+- [User Guide](/docs/user-guide/)
+- [Skills Reference](/docs/skills-reference/)
+- [Contributing](/docs/contributing/)
+
 
 LLPM caches provider model lists in `~/.llpm/models.json`.
 
