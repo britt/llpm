@@ -151,7 +151,7 @@ For prerequisites and provider setup, see [Installation]({{< relref "docs/gettin
 </div>
 
 <div class="hx-mt-10 hx-text-center">
-  <a class="hx-inline-flex hx-items-center hx-justify-center hx-rounded-md hx-bg-primary-600 hx-px-4 hx-py-2 hx-text-white hover:hx-bg-primary-700 dark:hx-bg-primary-500 dark:hover:hx-bg-primary-600" href="{{< relref \"docs/getting-started/installation.md\" >}}">
+  <a class="hx-inline-flex hx-items-center hx-justify-center hx-rounded-md hx-bg-primary-600 hx-px-4 hx-py-2 hx-text-white hover:hx-bg-primary-700 dark:hx-bg-primary-500 dark:hover:hx-bg-primary-600" href="{{< relref "docs/getting-started/installation.md" >}}">
     Read the installation guide
   </a>
 </div>
