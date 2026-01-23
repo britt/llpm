@@ -157,10 +157,6 @@ For prerequisites and provider setup, see [Installation]({{< relref "docs/gettin
 </div>
 
     <p class="hx-text-gray-600 dark:hx-text-gray-300 hx-mt-2">
-      LLPM caches the provider-fetched catalog in <code>~/.llpm/models.json</code>. If live discovery fails, LLPM falls back to curated defaults.
-    </p>
-
-    <p class="hx-text-gray-600 dark:hx-text-gray-300 hx-mt-2">
       For environment variables and provider setup steps, see the <a href="{{< relref "docs/getting-started/configuration.md" >}}">Configuration</a> guide.
     </p>
   </div>
