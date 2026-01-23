@@ -8,11 +8,9 @@ LLPM is an AI-powered product management CLI that runs in your terminal.
 
 Use it to manage projects, work with GitHub, organize Markdown notes, and switch between multiple AI model providers.
 
-## Install and run
+## Install
 
-Follow the [Installation](./docs/getting-started/installation/) guide for the full setup.
-
-If you are running LLPM from the repository:
+### Install from source
 
 1. **Install dependencies.**
 
@@ -48,6 +46,8 @@ If you are running LLPM from the repository:
    ```bash
    bun start
    ```
+
+For the full setup, see [Installation](./docs/getting-started/installation/).
 
 ## Choose a model provider
 
