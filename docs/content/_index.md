@@ -264,10 +264,8 @@ For prerequisites and provider setup, see [Installation]({{< relref "docs/gettin
     <p class="hx-text-gray-600 dark:hx-text-gray-300 hx-mt-4">
       Next: read the <a href="{{< relref "docs/user-guide/_index.md" >}}">User Guide</a> and the <a href="{{< relref "docs/skills-reference/_index.md" >}}">Skills Reference</a>.
     </p>
----
-title: LLPM Documentation
-layout: hextra-home
----
+  </div>
+</div>
 
 {{< hextra/hero-badge >}}
   <span>AI-Powered CLI</span>
