@@ -190,34 +190,7 @@ This page avoids parameterized feature-card shortcodes and uses plain HTML.
     </p>
   </div>
 </div>
-  >
-    <h3 class="hx-text-xl hx-font-semibold">Skills and Guided Workflows</h3>
-    <p class="hx-mt-2 hx-text-gray-600 dark:hx-text-gray-300">
-      Use reusable workflows packaged as Agent Skills (<code>SKILL.md</code>) to guide planning, analysis, and documentation.
-    </p>
 
-    <p class="hx-mt-4">Manage skills:</p>
-
-    <ul class="hx-mt-2">
-      <li><code>/skills list</code> to view bundled and user-defined skills.</li>
-      <li><code>/skills test &lt;name&gt;</code> to preview a skill’s goal, inputs, tools, and sample runs.</li>
-      <li><code>/skills reload</code> to reload skills and pick up changes to <code>SKILL.md</code> files.</li>
-      <li><code>/skills reinstall</code> to restore bundled skills if local changes break them.</li>
-    </ul>
-
-    <p class="hx-mt-4">Skill discovery:</p>
-
-    <ul class="hx-mt-2">
-      <li>User skills in <code>~/.llpm/skills/</code>.</li>
-      <li>Project skills in <code>.skills/</code> (commit workflows with your repo).</li>
-    </ul>
-
-    <p class="hx-mt-4">
-      See the <a href="{{< relref "docs/skills-reference/_index.md" >}}">Skills Reference</a> for descriptions of the bundled skills.
-    </p>
-  </div>
-
-  <div
     class="hx-rounded-2xl hx-border hx-border-gray-200/50 dark:hx-border-gray-800/50 hx-bg-white/60 dark:hx-bg-neutral-900/40 hx-p-6"
     style="background: radial-gradient(ellipse at 50% 80%,rgba(53,123,142,0.15),hsla(0,0%,100%,0));"
   >
