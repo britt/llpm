@@ -6,35 +6,24 @@ title: LLPM
 
 LLPM is an AI-powered product management CLI that runs in your terminal.
 
-Use LLPM to:
-
-- **Track projects** (local paths, optional GitHub remotes)
-- **Work with GitHub** (issues and pull requests)
-- **Keep markdown notes** (and search them)
-- **Run skills** (guided workflows for common PM tasks)
-- **Switch models** across multiple providers
-
 ## Install
 
-1. **Clone the repository**
+1. Clone the repository:
 
    ```bash
    git clone https://github.com/britt/llpm.git
    cd llpm
    ```
 
-2. **Install dependencies**
+2. Install dependencies:
 
    ```bash
    bun install
    ```
 
-3. **Configure environment**
-
-   Create a `.env` file with at least one provider API key.
+3. Create a `.env` file with at least one provider API key:
 
    ```bash
-   # AI Providers (configure at least one)
    OPENAI_API_KEY=sk-...
    ANTHROPIC_API_KEY=sk-ant-...
    GROQ_API_KEY=gsk_...
@@ -48,7 +37,7 @@ Use LLPM to:
    GITHUB_TOKEN=ghp_...
    ```
 
-4. **Start LLPM**
+4. Start LLPM:
 
    ```bash
    bun start
@@ -56,98 +45,53 @@ Use LLPM to:
 
 ## Start here
 
-- Read [Getting Started](./docs/getting-started/)
-- Follow the [Quickstart](./docs/getting-started/quickstart/)
-- Learn workflows in the [User Guide](./docs/user-guide/)
-- Browse skills in the [Skills Reference](./docs/skills-reference/)
+- [Getting Started](./docs/getting-started/)
+- [Quickstart](./docs/getting-started/quickstart/)
+- [User Guide](./docs/user-guide/)
+- [Skills Reference](./docs/skills-reference/)
 
-## Key workflows
+## What LLPM does
 
-### Switch models across providers
+- **Projects**: track local projects and optionally associate a GitHub repo.
+- **GitHub**: work with issues and pull requests.
+- **Notes**: keep Markdown notes and search them.
+- **Skills**: run guided workflows for common PM tasks.
+- **Models**: switch between multiple model providers.
 
-1. **List configured providers**
+## Common commands
 
-   ```text
-   /model providers
-   ```
+### Models
 
-2. **List available models**
+```text
+/model providers
+/model list
+/model update
+/model switch
+```
 
-   ```text
-   /model list
-   ```
+### Projects
 
-3. **Fetch the latest model catalog**
+```text
+/project list
+/project switch
+/project scan
+```
 
-   ```text
-   /model update
-   ```
+### Skills
 
-4. **Switch models**
+```text
+/skills list
+/skills show <skill-name>
+/skills reinstall
+```
 
-   ```text
-   /model switch
-   ```
+### Notes
 
-### Track projects (and scan codebases)
-
-1. **List projects**
-
-   ```text
-   /project list
-   ```
-
-2. **Switch to a project**
-
-   ```text
-   /project switch
-   ```
-
-3. **Scan a project**
-
-   ```text
-   /project scan
-   ```
-
-### Use skills (guided workflows)
-
-1. **List skills**
-
-   ```text
-   /skills list
-   ```
-
-2. **Show a skill**
-
-   ```text
-   /skills show <skill-name>
-   ```
-
-3. **Reinstall bundled skills**
-
-   ```text
-   /skills reinstall
-   ```
-
-### Keep markdown notes
-
-1. **List notes**
-
-   ```text
-   /notes list
-   ```
-
-2. **Add a note**
-
-   ```text
-   /notes add
-   ```
-
-3. **Search notes**
-
-   ```text
-   /notes search
-   ```
+```text
+/notes list
+/notes add
+/notes search
+```
 
 ## Model providers
 
