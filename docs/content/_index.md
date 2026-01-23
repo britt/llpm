@@ -82,27 +82,27 @@ llpm
 
 ## What LLPM helps with
 
-### Use multiple model providers
+## Use multiple model providers
 
 Connect one or more providers, then switch models per project or task.
 
-- **List configured providers.**
+1. **List configured providers.**
 
-  ```text
-  /model providers
-  ```
+   ```text
+   /model providers
+   ```
 
-- **Switch models.**
+2. **Switch models.**
 
-  ```text
-  /model switch
-  ```
+   ```text
+   /model switch
+   ```
 
-- **Fetch the latest model list from provider APIs (optional).**
+3. **Fetch the latest model list from provider APIs (optional).**
 
-  ```text
-  /model update
-  ```
+   ```text
+   /model update
+   ```
 
 Supported provider IDs:
 
@@ -112,23 +112,23 @@ Supported provider IDs:
 - `google-vertex`
 - `cerebras`
 
-### Manage projects and scans
+## Manage projects and scans
 
 Use projects to keep work, context, and artifacts organized.
 
-- **Manage projects.**
+1. **Manage projects.**
 
-  ```text
-  /project
-  ```
+   ```text
+   /project
+   ```
 
-- **Scan a codebase to understand structure, dependencies, and docs.**
+2. **Scan a codebase to understand structure, dependencies, and docs.**
 
-  ```text
-  /project scan
-  ```
+   ```text
+   /project scan
+   ```
 
-### Work in GitHub
+## Work in GitHub
 
 Use LLPM to work with GitHub issues and pull requests.
 
@@ -136,23 +136,23 @@ Use LLPM to work with GitHub issues and pull requests.
 /github
 ```
 
-### Use skills for guided workflows
+## Use skills for guided workflows
 
 Use skills to run repeatable workflows (for example, requirement elicitation).
 
-- **List skills.**
+1. **List skills.**
 
-  ```text
-  /skills
-  ```
+   ```text
+   /skills
+   ```
 
-- **Reinstall bundled core skills (useful after upgrading).**
+2. **Reinstall bundled core skills (useful after upgrading).**
 
-  ```text
-  /skills reinstall
-  ```
+   ```text
+   /skills reinstall
+   ```
 
-### Keep notes as Markdown
+## Keep notes as Markdown
 
 Store project notes as Markdown and search them using ripgrep.
 
