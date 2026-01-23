@@ -193,51 +193,12 @@ Write and search notes as Markdown files.
   /notes search
   ```
 
-  ```
-
 ## Next steps
 
 - [User Guide](/docs/user-guide/)
 - [Skills Reference](/docs/skills-reference/)
 - [Contributing](/docs/contributing/)
----
-title: LLPM
----
 
-# LLPM
-
-LLPM is an AI-powered product management CLI that runs in your terminal.
-
-Use it to work across projects, GitHub, and multiple model providers from a single terminal UI.
-
-## Install
-
-1. **Clone the repository.**
-
-   ```bash
-   git clone https://github.com/britt/llpm.git
-   cd llpm
-   ```
-
-2. **Install dependencies.**
-
-   ```bash
-   bun install
-   ```
-
-3. **Copy the example environment file.**
-
-   ```bash
-   cp .env.example .env
-   ```
-
-4. **Configure at least one model provider.**
-
-   In `.env`:
-
-   ```bash
-   # Configure at least one provider
-   OPENAI_API_KEY=your-openai-api-key-here
    ANTHROPIC_API_KEY=your-anthropic-api-key-here
    GROQ_API_KEY=your-groq-api-key-here
    GOOGLE_VERTEX_PROJECT_ID=your-google-cloud-project-id
