@@ -28,7 +28,7 @@ Next:
 - Run `/model providers` to confirm credentials are detected.
 - Use `/model switch` to select a model.
 
-See: [Installation]({{< relref "docs/getting-started/installation.md" >}})
+See: [Installation]({{< relref "docs/getting-started/installation.md" >}}) 
 
 ## Features
 
