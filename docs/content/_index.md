@@ -107,116 +107,93 @@ llpm
    /project scan
    ```
 
----
-title: LLPM
----
+## What LLPM helps with
 
-# LLPM
+### Models
 
-LLPM is an AI-powered product management CLI that runs in your terminal.
+Use a single CLI to manage multiple providers.
 
-Use LLPM to keep work close to the terminal:
+- List providers and required env vars:
 
-- Connect an LLM provider and switch models.
-- Scan a codebase for context.
-- Manage GitHub work.
-- Keep notes and run guided workflows (skills).
+  ```text
+  /model providers
+  ```
 
-## Install
+- Switch models interactively:
 
-### Install from source
+  ```text
+  /model switch
+  ```
 
-**Prerequisites**
+- Refresh the model list from provider APIs (optional):
 
-- [Bun](https://bun.com)
-- At least one configured model provider:
-  - OpenAI (`openai`)
-  - Anthropic (`anthropic`)
-  - Groq (`groq`)
-  - Google Vertex AI (`google-vertex`)
-  - Cerebras (`cerebras`)
+  ```text
+  /model update
+  ```
 
-1. **Clone the repository.**
+Supported provider IDs:
 
-   ```bash
-   git clone https://github.com/britt/llpm.git
-   cd llpm
-   ```
+- `openai`
+- `anthropic`
+- `groq`
+- `google-vertex`
+- `cerebras`
 
-2. **Install dependencies.**
+Example Cerebras model ID:
 
-   ```bash
-   bun install
-   ```
+- `qwen-3-235b-a22b-instruct-2507`
 
-3. **Create a local `.env` file.**
+### Projects, scans, and GitHub
 
-   ```bash
-   cp .env.example .env
-   ```
+Use projects to keep work and context organized.
 
-4. **Configure at least one provider.**
+- Manage projects:
 
-   ```bash
-   # OpenAI
-   OPENAI_API_KEY=...
+  ```text
+  /project
+  ```
 
-   # Anthropic
-   ANTHROPIC_API_KEY=...
+- Scan a codebase for structure and dependencies:
 
-   # Groq
-   GROQ_API_KEY=...
+  ```text
+  /project scan
+  ```
 
-   # Cerebras
-   CEREBRAS_API_KEY=...
+- Use GitHub features:
 
-   # Google Vertex AI
-   GOOGLE_VERTEX_PROJECT_ID=...
-   GOOGLE_VERTEX_REGION=us-central1  # Optional (defaults to us-central1)
-   ```
+  ```text
+  /github
+  ```
 
-5. **Start LLPM.**
+### Skills
 
-   ```bash
-   bun start
-   ```
+Use skills to run repeatable workflows.
 
-### Install globally (optional)
+- List skills:
 
-To run `llpm` as a command, link it globally:
+  ```text
+  /skills
+  ```
 
-```bash
-bun link
-llpm
+- Reinstall bundled core skills (useful after upgrading):
+
+  ```text
+  /skills reinstall
+  ```
+
+### Notes
+
+Store project notes as Markdown.
+
+```text
+/notes
 ```
 
-## Quickstart
+## Next steps
 
-1. **Start LLPM.**
-
-   ```text
-   llpm
-   ```
-
-2. **Confirm provider configuration.**
-
-   ```text
-   /model providers
-   ```
-
-3. **Switch models (optional).**
-
-   ```text
-   /model switch
-   ```
-
-4. **Scan a codebase (optional).**
-
-   ```text
-   /project scan
-   ```
-
-## What LLPM helps with
+- [User Guide](/docs/user-guide/)
+- [Skills Reference](/docs/skills-reference/)
+- [Contributing](/docs/contributing/)
 
 ## Models
 
