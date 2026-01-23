@@ -22,7 +22,7 @@ Use it to work across projects, GitHub, notes, and multiple model providers from
    cp .env.example .env
    ```
 
-3. **Configure at least one model provider.**
+3. **Configure at least one provider.**
 
    In `.env`:
 
@@ -45,7 +45,7 @@ Use it to work across projects, GitHub, notes, and multiple model providers from
    bun start
    ```
 
-## Configure models
+## Choose a model provider
 
 LLPM supports these provider IDs:
 
@@ -55,13 +55,15 @@ LLPM supports these provider IDs:
 - `google-vertex`
 - `cerebras`
 
+To check whether a provider is configured, run:
+
+```text
+/model providers
+```
+
+## Switch models
+
 Common model commands:
-
-- **Show provider configuration requirements:**
-
-  ```text
-  /model providers
-  ```
 
 - **List models (configured providers only):**
 
@@ -75,6 +77,12 @@ Common model commands:
   /model switch
   ```
 
+- **Switch to a specific model:**
+
+  ```text
+  /model switch <provider>/<model-id>
+  ```
+
 - **Fetch the latest model catalog (optional):**
 
   ```text
@@ -83,7 +91,19 @@ Common model commands:
 
 LLPM caches provider model lists in `~/.llpm/models.json`.
 
-## Work across projects
+Example model IDs (by provider):
+
+- OpenAI: `gpt-5.2`, `gpt-4o`, `o4-mini`
+- Anthropic: `claude-sonnet-4-5`, `claude-opus-4-1`
+- Groq: `llama-3.3-70b-versatile`, `meta-llama/llama-4-maverick-17b-128e-instruct`
+- Google Vertex: `gemini-2.5-pro`, `gemini-2.5-flash`
+- Cerebras: `qwen-3-235b-a22b-instruct-2507`, `llama-3.3-70b`
+
+For full configuration details and more model examples, see [Model Providers and Configuration](../../../MODELS.md).
+
+## What you can do with LLPM
+
+### Work across projects
 
 - **List projects:**
 
@@ -105,7 +125,7 @@ LLPM caches provider model lists in `~/.llpm/models.json`.
 
 If no active project is set, `/project scan` scans the current working directory.
 
-## Use GitHub from the terminal
+### Use GitHub from the terminal
 
 - **List repositories:**
 
@@ -125,7 +145,7 @@ If no active project is set, `/project scan` scans the current working directory
   /issue create
   ```
 
-## Use guided workflows (skills)
+### Use guided workflows (skills)
 
 - **List skills:**
 
@@ -139,7 +159,7 @@ If no active project is set, `/project scan` scans the current working directory
   /skills reinstall
   ```
 
-## Keep project notes as Markdown
+### Keep project notes as Markdown
 
 - **List notes:**
 
@@ -158,6 +178,7 @@ If no active project is set, `/project scan` scans the current working directory
   ```text
   /notes search
   ```
+
 
 ---
 title: LLPM
