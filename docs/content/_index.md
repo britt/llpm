@@ -6,30 +6,23 @@ title: LLPM
 
 LLPM is an AI-powered product management CLI that runs in your terminal.
 
-Use it to work across projects, GitHub, and multiple model providers from a single terminal UI.
+Use it to work across projects, GitHub, notes, and multiple model providers from a single terminal UI.
 
 ## Install
 
-1. **Clone the repository.**
-
-   ```bash
-   git clone https://github.com/britt/llpm.git
-   cd llpm
-   ```
-
-2. **Install dependencies.**
+1. **Install dependencies.**
 
    ```bash
    bun install
    ```
 
-3. **Copy the example environment file.**
+2. **Copy the example environment file.**
 
    ```bash
    cp .env.example .env
    ```
 
-4. **Configure at least one model provider.**
+3. **Configure at least one model provider.**
 
    In `.env`:
 
@@ -46,28 +39,15 @@ Use it to work across projects, GitHub, and multiple model providers from a sing
    GITHUB_TOKEN=your-github-token-here
    ```
 
-5. **Start LLPM.**
+4. **Start LLPM.**
 
    ```bash
    bun start
    ```
 
-### Install globally (optional)
+## Configure models
 
-To run `llpm` as a command, link it globally:
-
-```bash
-bun link
-llpm
-```
-
-## What you can do
-
-## Use models from multiple providers
-
-Configure one or more providers, then switch models with the `/model` command.
-
-Supported provider IDs:
+LLPM supports these provider IDs:
 
 - `openai`
 - `anthropic`
@@ -77,7 +57,13 @@ Supported provider IDs:
 
 Common model commands:
 
-- **List configured models:**
+- **Show provider configuration requirements:**
+
+  ```text
+  /model providers
+  ```
+
+- **List models (configured providers only):**
 
   ```text
   /model list
@@ -89,12 +75,6 @@ Common model commands:
   /model switch
   ```
 
-- **Show provider configuration requirements:**
-
-  ```text
-  /model providers
-  ```
-
 - **Fetch the latest model catalog (optional):**
 
   ```text
@@ -103,9 +83,7 @@ Common model commands:
 
 LLPM caches provider model lists in `~/.llpm/models.json`.
 
-## Work across projects (and scan a codebase)
-
-Save a local path as a project, then scan a codebase to understand structure and dependencies.
+## Work across projects
 
 - **List projects:**
 
@@ -129,8 +107,6 @@ If no active project is set, `/project scan` scans the current working directory
 
 ## Use GitHub from the terminal
 
-Connect a GitHub token to browse repositories and manage issues.
-
 - **List repositories:**
 
   ```text
@@ -151,8 +127,6 @@ Connect a GitHub token to browse repositories and manage issues.
 
 ## Use guided workflows (skills)
 
-Use skills for repeatable workflows like planning, elicitation, and review.
-
 - **List skills:**
 
   ```text
@@ -166,8 +140,6 @@ Use skills for repeatable workflows like planning, elicitation, and review.
   ```
 
 ## Keep project notes as Markdown
-
-Create and search notes as Markdown files.
 
 - **List notes:**
 
@@ -196,28 +168,6 @@ Create and search notes as Markdown files.
 - [Skills Reference](/docs/skills-reference/)
 - [Contributing](/docs/contributing/)
 
-  /model list
-  ```
-
-- **Show provider configuration requirements:**
-
-  ```text
-  /model providers
-  ```
-
-- **Switch models interactively:**
-
-  ```text
-  /model switch
-  ```
-
-- **Fetch the latest model catalog (optional):**
-
-  ```text
-  /model update
-  ```
-
-LLPM caches provider model lists in `~/.llpm/models.json`.
 
 ### Projects and scans
 
