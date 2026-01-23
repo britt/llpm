@@ -109,15 +109,58 @@ Example model IDs from the built-in defaults (`src/types/models.ts`):
 
 ## What you can do with LLPM
 
-### Work across projects
+## What you can do with LLPM
 
-Manage projects (local path + optional GitHub repository) and scan a codebase to understand its structure and dependencies.
+### Multi-provider model management
+
+Connect one or more providers, then switch models per project or task.
+
+Common commands:
+
+- `/model providers`
+- `/model list`
+- `/model update`
+- `/model switch`
+
+### Projects, scans, and GitHub
+
+LLPM tracks projects (local path + optional GitHub repository) and can scan a codebase to understand its structure and dependencies.
 
 Common commands:
 
 - `/project list`
 - `/project switch`
 - `/project scan`
+- `/github status`
+
+### Skills and guided workflows
+
+LLPM includes a skills system for reusable, tool-driven workflows.
+
+Common commands:
+
+- `/skills list`
+- `/skills show <skill-name>`
+- `/skills reinstall`
+
+### Notes, search, and shell
+
+LLPM stores notes as Markdown files and supports text search.
+
+Common commands:
+
+- `/notes list`
+- `/notes add`
+- `/notes search`
+
+LLPM can also run shell commands through a dedicated tool when enabled.
+
+Related documentation:
+
+- [Getting Started](./docs/getting-started/_index.md)
+- [User Guide](./docs/user-guide/_index.md)
+- [Skills Reference](./docs/skills-reference/_index.md)
+
 
 ### Use GitHub inside your terminal
 
