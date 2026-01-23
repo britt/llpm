@@ -101,7 +101,7 @@ llpm
 
 ### Models
 
-Work with multiple providers from one CLI.
+Use a single CLI to manage multiple providers.
 
 - **List providers and required environment variables:**
 
@@ -121,7 +121,7 @@ Work with multiple providers from one CLI.
   /model update
   ```
 
-Model providers supported by LLPM:
+Supported providers:
 
 - `openai`
 - `anthropic`
@@ -198,6 +198,27 @@ Write and search notes as Markdown files.
 - **List notes:**
 
   ```text
+  /notes list
+  ```
+
+- **Create a note:**
+
+  ```text
+  /notes add
+  ```
+
+- **Search notes:**
+
+  ```text
+  /notes search
+  ```
+
+## Next steps
+
+- Read the user guide in the left navigation.
+- Configure a model provider in your `.env` file.
+- Run `/help` to see all available commands.
+
   /notes list
   ```
 
