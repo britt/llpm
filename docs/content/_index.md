@@ -61,9 +61,9 @@ Use LLPM to:
 - Learn workflows in the [User Guide](./docs/user-guide/_index.md)
 - Browse skills in the [Skills Reference](./docs/skills-reference/_index.md)
 
-## What to try first
+## Key workflows
 
-### 1) Switch models across providers
+### Switch models across providers
 
 1. **List configured providers**
 
@@ -89,7 +89,7 @@ Use LLPM to:
    /model switch
    ```
 
-### 2) Track projects (and scan codebases)
+### Track projects (and scan codebases)
 
 1. **List projects**
 
@@ -109,7 +109,7 @@ Use LLPM to:
    /project scan
    ```
 
-### 3) Use skills (guided workflows)
+### Use skills (guided workflows)
 
 1. **List skills**
 
@@ -129,7 +129,7 @@ Use LLPM to:
    /skills reinstall
    ```
 
-### 4) Keep markdown notes
+### Keep markdown notes
 
 1. **List notes**
 
@@ -159,7 +159,7 @@ Provider IDs (from `src/types/models.ts`):
 - `google-vertex`
 - `cerebras`
 
-Example default model IDs (also from `src/types/models.ts`):
+Example default model IDs (from `src/types/models.ts`):
 
 - OpenAI: `gpt-5.2`, `gpt-4o-mini`
 - Anthropic: `claude-sonnet-4-5`, `claude-opus-4-1`
