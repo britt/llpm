@@ -10,18 +10,6 @@ Use it to work across projects, GitHub, and multiple model providers from a sing
 
 ## Install
 
-### Install from source
-
-**Prerequisites**
-
-- [Bun](https://bun.com)
-- At least one configured model provider:
-  - OpenAI (`openai`)
-  - Anthropic (`anthropic`)
-  - Groq (`groq`)
-  - Google Vertex AI (`google-vertex`)
-  - Cerebras (`cerebras`)
-
 1. **Clone the repository.**
 
    ```bash
@@ -62,15 +50,6 @@ Use it to work across projects, GitHub, and multiple model providers from a sing
    bun start
    ```
 
-### Install globally (optional)
-
-To run `llpm` as a command, link it globally:
-
-```bash
-bun link
-llpm
-```
-
 ## Quickstart
 
 1. **Start LLPM.**
@@ -97,11 +76,11 @@ llpm
    /project scan
    ```
 
-## What LLPM helps with
+## What you can do
 
 ### Models
 
-Use a single CLI to manage multiple providers.
+Use a single CLI to work with multiple providers.
 
 - **List providers and required environment variables:**
 
@@ -218,45 +197,6 @@ Write and search notes as Markdown files.
 - Read the user guide in the left navigation.
 - Configure a model provider in your `.env` file.
 - Run `/help` to see all available commands.
-
-
-  /notes list
-  ```
-
-- **Create a note:**
-
-  ```text
-  /notes add
-  ```
-
-- **Search notes:**
-
-  ```text
-  /notes search
-  ```
-
-## Next steps
-
-- Read the user guide in the left navigation.
-- Configure a model provider in your `.env` file.
-- Run `/help` to see all available commands.
-
-  ```
-
-## Notes
-
-Use notes to keep lightweight project context in markdown.
-
-- Open the notes menu:
-
-  ```text
-  /notes
-  ```
-
-
-   ```text
-   /model switch
-   ```
 
 4. **Scan a codebase (optional).**
 
