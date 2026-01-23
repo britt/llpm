@@ -6,11 +6,15 @@ title: LLPM
 
 LLPM is an AI-powered product management CLI that runs in your terminal.
 
-Use it to manage projects, work with GitHub, organize Markdown notes, and switch between multiple AI model providers.
+Use it to:
+
+- manage projects
+- work with GitHub issues and pull requests
+- organize Markdown notes
+- use skills (guided workflows)
+- switch between multiple AI model providers
 
 ## Install
-
-### Install from source
 
 1. Clone the repository.
 
@@ -54,21 +58,16 @@ Use it to manage projects, work with GitHub, organize Markdown notes, and switch
    bun start
    ```
 
-### (Optional) Link as a global command
+(Optional) Link as a global command:
 
 ```bash
 bun link
 llpm
 ```
 
-For more detail, see:
-
-- [Installation](./docs/getting-started/installation.md)
-- [Quickstart](./docs/getting-started/quickstart.md)
-
 ## What you can do with LLPM
 
-### Models (multi-provider)
+### Work with models across providers
 
 Configure one or more providers, then list, update, and switch models.
 
@@ -79,9 +78,9 @@ Common commands:
 - `/model update`
 - `/model switch`
 
-### Projects (with scanning)
+### Track projects (and scan codebases)
 
-Track projects (local path + optional GitHub repository), and scan codebases to understand structure and dependencies.
+Track projects (local path + optional GitHub repository). Run scans to capture a snapshot of project structure and dependencies.
 
 Common commands:
 
@@ -89,17 +88,17 @@ Common commands:
 - `/project switch`
 - `/project scan`
 
-### GitHub integration
+### Connect to GitHub
 
-Connect a GitHub repository and check status.
+Link a repository and check connection status.
 
 Common commands:
 
 - `/github status`
 
-### Skills (guided workflows)
+### Use skills (guided workflows)
 
-Use skills as reusable, tool-driven workflows.
+Skills are reusable, tool-driven workflows.
 
 Common commands:
 
@@ -107,7 +106,7 @@ Common commands:
 - `/skills show <skill-name>`
 - `/skills reinstall`
 
-### Notes (Markdown)
+### Keep Markdown notes
 
 Store notes as Markdown files and search them.
 
@@ -137,6 +136,8 @@ Example model IDs from the built-in defaults (`src/types/models.ts`):
 
 ## Next steps
 
-- Start with: [Getting Started](./docs/getting-started/_index.md)
-- Learn commands: [Commands](./docs/user-guide/commands.md)
-- Browse skills: [Skills Reference](./docs/skills-reference/_index.md)
+- Start with [Getting Started](./docs/getting-started/_index.md)
+- Follow the [Installation guide](./docs/getting-started/installation.md)
+- Run through the [Quickstart](./docs/getting-started/quickstart.md)
+- Learn common workflows in the [User Guide](./docs/user-guide/_index.md)
+- Browse available workflows in the [Skills Reference](./docs/skills-reference/_index.md)
