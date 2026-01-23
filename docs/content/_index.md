@@ -80,7 +80,7 @@ Use it to work across projects, GitHub, and multiple model providers from a sing
 
 ## What you can do
 
-### Models
+## Models
 
 Use a single CLI to work with multiple providers.
 
@@ -112,7 +112,7 @@ Supported providers:
 
 LLPM caches provider model lists in `~/.llpm/models.json`.
 
-### Projects and scans
+## Projects and scans
 
 Save a local path and (optionally) a GitHub repository as a project.
 
@@ -134,7 +134,7 @@ Save a local path and (optionally) a GitHub repository as a project.
   /project scan
   ```
 
-### GitHub
+## GitHub
 
 Use a GitHub token to browse repositories and manage issues.
 
@@ -156,7 +156,7 @@ Use a GitHub token to browse repositories and manage issues.
   /issue create
   ```
 
-### Skills
+## Skills
 
 Use skills for guided workflows.
 
@@ -172,7 +172,7 @@ Use skills for guided workflows.
   /skills reinstall
   ```
 
-### Notes
+## Notes
 
 Write and search notes as Markdown files.
 
@@ -198,6 +198,7 @@ Write and search notes as Markdown files.
 
 - Read the [Getting Started](./docs/getting-started/) guide.
 - Read the [User Guide](./docs/user-guide/) for workflows and slash commands.
+
 - Configure a model provider in your `.env` file.
 - Run `/help` to see all available commands.
 
