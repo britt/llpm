@@ -193,30 +193,11 @@ Write and search notes as Markdown files.
   /notes search
   ```
 
----
-title: LLPM
----
+## Next steps
 
-# LLPM
-
-LLPM is an AI-powered product management CLI that runs in your terminal.
-
-Use it to work across projects, GitHub, and multiple model providers from a single terminal UI.
-
-## Install
-
-1. **Clone the repository.**
-
-   ```bash
-   git clone https://github.com/britt/llpm.git
-   cd llpm
-   ```
-
-2. **Install dependencies.**
-
-   ```bash
-   bun install
-   ```
+- [User Guide](/docs/user-guide/)
+- [Skills Reference](/docs/skills-reference/)
+- [Contributing](/docs/contributing/)
 
 3. **Copy the example environment file.**
 
