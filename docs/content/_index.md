@@ -206,11 +206,3 @@ Using raw HTML <div> blocks in this file avoids Hugo shortcode parameter parsing
     </ul>
   </div>
 </div>
-
-
-    <ul class="hx-mt-4">
-      <li>Notes are stored under <code>~/.llpm/projects/&lt;projectId&gt;/notes/</code>.</li>
-      <li>Search uses <code>ripgrep</code>-based full-text search.</li>
-    </ul>
-  </div>
-</div>
