@@ -23,7 +23,7 @@ Use it to work across projects, GitHub, and multiple model providers from a sing
    bun install
    ```
 
-3. **Create a local `.env` file.**
+3. **Copy the example environment file.**
 
    ```bash
    cp .env.example .env
@@ -31,14 +31,16 @@ Use it to work across projects, GitHub, and multiple model providers from a sing
 
 4. **Configure at least one provider.**
 
+   In `.env`:
+
    ```bash
-   # AI Providers (configure at least one)
+   # Configure at least one provider
    OPENAI_API_KEY=your-openai-api-key-here
    ANTHROPIC_API_KEY=your-anthropic-api-key-here
    GROQ_API_KEY=your-groq-api-key-here
-   CEREBRAS_API_KEY=your-cerebras-api-key-here
    GOOGLE_VERTEX_PROJECT_ID=your-google-cloud-project-id
    GOOGLE_VERTEX_REGION=us-central1  # Optional (defaults to us-central1)
+   CEREBRAS_API_KEY=your-cerebras-api-key-here
 
    # Optional integrations
    GITHUB_TOKEN=your-github-token-here
