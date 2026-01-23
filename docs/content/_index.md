@@ -6,7 +6,12 @@ title: LLPM Documentation
 
 LLPM is an AI-powered product management CLI that runs in your terminal.
 
-LLPM helps keep work close to the terminal: connect an LLM provider, scan a codebase for context, manage GitHub work, and keep notes and workflows in one place.
+Use LLPM to keep work close to the terminal:
+
+- Connect an LLM provider and switch models
+- Scan a codebase for context
+- Manage GitHub work
+- Keep notes and run guided workflows (skills)
 
 ## Install
 
@@ -87,7 +92,7 @@ llpm
 
 ### Multi-provider models
 
-Connect one or more providers, then switch models per project or task.
+Connect one or more providers, then choose a model for the task at hand.
 
 - Show configured providers:
 
