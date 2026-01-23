@@ -46,6 +46,8 @@ NOTE:
 This homepage avoids parameterized shortcode arguments (for example, feature-card params)
 to prevent Hugo parse errors like:
   unterminated quoted string in shortcode parameter-argument
+
+Using raw HTML <div> blocks in this file avoids Hugo shortcode parameter parsing entirely.
 -->
 
 <div class="hx-mt-12 hx-grid hx-gap-6 md:hx-grid-cols-2">
