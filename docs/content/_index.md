@@ -6,6 +6,8 @@ title: LLPM
 
 LLPM is an AI-powered product management CLI that runs in your terminal.
 
+Use it to work across projects, GitHub, and multiple model providers from a single terminal UI.
+
 ## Install
 
 ### Install from source
@@ -42,21 +44,16 @@ LLPM is an AI-powered product management CLI that runs in your terminal.
 4. **Configure at least one provider.**
 
    ```bash
-   # OpenAI
-   OPENAI_API_KEY=...
-
-   # Anthropic
-   ANTHROPIC_API_KEY=...
-
-   # Groq
-   GROQ_API_KEY=...
-
-   # Cerebras
-   CEREBRAS_API_KEY=...
-
-   # Google Vertex AI
-   GOOGLE_VERTEX_PROJECT_ID=...
+   # AI Providers (configure at least one)
+   OPENAI_API_KEY=your-openai-api-key-here
+   ANTHROPIC_API_KEY=your-anthropic-api-key-here
+   GROQ_API_KEY=your-groq-api-key-here
+   CEREBRAS_API_KEY=your-cerebras-api-key-here
+   GOOGLE_VERTEX_PROJECT_ID=your-google-cloud-project-id
    GOOGLE_VERTEX_REGION=us-central1  # Optional (defaults to us-central1)
+
+   # Optional integrations
+   GITHUB_TOKEN=your-github-token-here
    ```
 
 5. **Start LLPM.**
@@ -102,15 +99,11 @@ llpm
 
 ## What LLPM helps with
 
-LLPM combines a terminal chat UI with project-management focused tools.
-
-## Core workflows
-
 ### Models
 
-Use one CLI to manage multiple providers.
+Work with multiple providers from one CLI.
 
-- **List providers and required env vars:**
+- **List providers and required environment variables:**
 
   ```text
   /model providers
@@ -128,7 +121,7 @@ Use one CLI to manage multiple providers.
   /model update
   ```
 
-Supported provider IDs:
+Model providers supported by LLPM:
 
 - `openai`
 - `anthropic`
@@ -136,9 +129,11 @@ Supported provider IDs:
 - `google-vertex`
 - `cerebras`
 
+LLPM caches provider model lists in `~/.llpm/models.json`.
+
 ### Projects and scans
 
-Use projects to save a local path and (optionally) a GitHub repository.
+Save a local path and (optionally) a GitHub repository as a project.
 
 - **List projects:**
 
@@ -160,7 +155,7 @@ Use projects to save a local path and (optionally) a GitHub repository.
 
 ### GitHub
 
-Use LLPM with a GitHub token to browse repositories and manage issues.
+Use a GitHub token to browse repositories and manage issues.
 
 - **List repositories:**
 
@@ -197,6 +192,26 @@ Use skills for guided workflows.
   ```
 
 ### Notes
+
+Write and search notes as Markdown files.
+
+- **Create a note:**
+
+  ```text
+  /notes add
+  ```
+
+- **Search notes:**
+
+  ```text
+  /notes search
+  ```
+
+## Next steps
+
+- Read the user guide in the left navigation.
+- Configure a model provider in your `.env` file.
+- Run `/help` to see all available commands.
 
 Keep project notes and search them.
 
