@@ -6,7 +6,9 @@ title: LLPM
 
 LLPM is an AI-powered product management CLI that runs in your terminal.
 
-## Install
+Use it to manage projects, collaborate via GitHub, keep notes, run guided “skills”, and switch between LLM providers.
+
+## Install (from source)
 
 1. Clone the repository:
 
@@ -52,24 +54,11 @@ LLPM is an AI-powered product management CLI that runs in your terminal.
 
 ## What LLPM does
 
-- **Projects**: track local projects and optionally associate a GitHub repo.
-- **GitHub**: work with issues and pull requests.
-- **Notes**: keep Markdown notes and search them.
-- **Skills**: run guided workflows for common PM tasks.
-- **Models**: switch between multiple model providers.
+### Work in projects
 
-## Common commands
+Track local projects and (optionally) associate a GitHub repo.
 
-### Models
-
-```text
-/model providers
-/model list
-/model update
-/model switch
-```
-
-### Projects
+Common commands:
 
 ```text
 /project list
@@ -77,7 +66,27 @@ LLPM is an AI-powered product management CLI that runs in your terminal.
 /project scan
 ```
 
-### Skills
+### Integrate with GitHub
+
+Work with GitHub issues and pull requests (requires `GITHUB_TOKEN` in `.env`).
+
+### Keep notes
+
+Keep Markdown notes and search them.
+
+Common commands:
+
+```text
+/notes list
+/notes add
+/notes search
+```
+
+### Run skills
+
+Run guided workflows for common PM tasks.
+
+Common commands:
 
 ```text
 /skills list
@@ -85,12 +94,17 @@ LLPM is an AI-powered product management CLI that runs in your terminal.
 /skills reinstall
 ```
 
-### Notes
+### Switch models
+
+Connect one or more providers and switch between models.
+
+Common commands:
 
 ```text
-/notes list
-/notes add
-/notes search
+/model providers
+/model list
+/model update
+/model switch
 ```
 
 ## Model providers
