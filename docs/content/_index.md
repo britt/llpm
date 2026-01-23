@@ -212,18 +212,3 @@ For prerequisites and provider setup, see [Installation]({{< relref "docs/gettin
     </p>
   </div>
 </div>
-
-      Keep lightweight project knowledge in notes, run a requirement-elicitation flow to generate a markdown requirements document, and track stakeholders + goals.
-    </p>
-
-    <ul class="hx-list-disc hx-pl-6 hx-space-y-2 hx-text-gray-600 dark:hx-text-gray-300">
-      <li>Use <code>/notes</code> to capture project knowledge and search it.</li>
-      <li>Use <code>/stakeholder</code> to manage stakeholders and goals.</li>
-      <li>Use requirement elicitation tools to guide discovery and generate a markdown requirements document.</li>
-    </ul>
-
-    <p class="hx-text-gray-600 dark:hx-text-gray-300 hx-mt-4">
-      Next: read the <a href="{{< relref "docs/user-guide/_index.md" >}}">User Guide</a> and the <a href="{{< relref "docs/skills-reference/_index.md" >}}">Skills Reference</a>.
-    </p>
-  </div>
-</div>
