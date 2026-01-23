@@ -175,16 +175,142 @@ Use skills to run repeatable workflows.
   /skills
   ```
 
-## Notes
+---
+title: LLPM
+---
 
-Use notes to keep lightweight project context in markdown.
+# LLPM
 
-- Open the notes menu:
+LLPM is an AI-powered product management CLI that runs in your terminal.
+
+Use LLPM to:
+
+- Connect an LLM provider and switch models.
+- Scan a codebase for context.
+- Manage GitHub work.
+- Keep notes and run guided workflows (skills).
+
+## Install
+
+### Install from source
+
+**Prerequisites**
+
+- [Bun](https://bun.com)
+- At least one configured model provider:
+  - OpenAI (`openai`)
+  - Anthropic (`anthropic`)
+  - Groq (`groq`)
+  - Google Vertex AI (`google-vertex`)
+  - Cerebras (`cerebras`)
+
+1. **Clone the repository.**
+
+   ```bash
+   git clone https://github.com/britt/llpm.git
+   cd llpm
+   ```
+
+2. **Install dependencies.**
+
+   ```bash
+   bun install
+   ```
+
+3. **Create a local `.env` file.**
+
+   ```bash
+   cp .env.example .env
+   ```
+
+4. **Configure at least one provider.**
+
+   ```bash
+   # OpenAI
+   OPENAI_API_KEY=...
+
+   # Anthropic
+   ANTHROPIC_API_KEY=...
+
+   # Groq
+   GROQ_API_KEY=...
+
+   # Cerebras
+   CEREBRAS_API_KEY=...
+
+   # Google Vertex AI
+   GOOGLE_VERTEX_PROJECT_ID=...
+   GOOGLE_VERTEX_REGION=us-central1  # Optional (defaults to us-central1)
+   ```
+
+5. **Start LLPM.**
+
+   ```bash
+   bun start
+   ```
+
+### Install globally (optional)
+
+To run `llpm` as a command, link it globally:
+
+```bash
+bun link
+llpm
+```
+
+## Quickstart
+
+1. **Start LLPM.**
+
+   ```text
+   llpm
+   ```
+
+2. **Confirm provider configuration.**
+
+   ```text
+   /model providers
+   ```
+
+3. **Switch models (optional).**
+
+   ```text
+   /model switch
+   ```
+
+4. **Scan a codebase (optional).**
+
+   ```text
+   /project scan
+   ```
+
+## What LLPM helps with
+
+## Multi-provider models
+
+Work with multiple providers in one CLI.
+
+- List providers and required env vars:
 
   ```text
-  /notes
+  /model providers
   ```
 
+- Switch models interactively:
+
+  ```text
+  /model switch
+  ```
+
+- Refresh the model list from provider APIs (optional):
+
+  ```text
+  /model update
+  ```
+
+Supported provider IDs:
+
+- `openai`
 - `anthropic`
 - `groq`
 - `google-vertex`
@@ -228,36 +354,14 @@ Use skills to run repeatable workflows.
 
 ## Notes
 
-Store project notes as Markdown.
+Use notes to keep lightweight project context in markdown.
 
-```text
-/notes
-```
+- Open the notes menu:
 
-### Install globally (optional)
+  ```text
+  /notes
+  ```
 
-To run `llpm` as a command, link it globally:
-
-```bash
-bun link
-llpm
-```
-
-## Quickstart
-
-1. **Start LLPM.**
-
-   ```text
-   llpm
-   ```
-
-2. **Confirm provider configuration.**
-
-   ```text
-   /model providers
-   ```
-
-3. **Switch models (optional).**
 
    ```text
    /model switch
