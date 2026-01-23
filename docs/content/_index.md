@@ -16,6 +16,8 @@ Use LLPM to:
 
 ## Install
 
+### Option 1: Run from the repo
+
 1. **Clone the repository**
 
    ```bash
@@ -56,7 +58,9 @@ Use LLPM to:
    bun start
    ```
 
-(Optional) Link as a global command:
+### Option 2: Link as a global command (optional)
+
+From the repository directory:
 
 ```bash
 bun link
