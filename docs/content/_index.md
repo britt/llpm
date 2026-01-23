@@ -179,6 +179,7 @@ Use skills to run repeatable workflows.
 
   ```text
   /skills reinstall
+   
   ```
 
 ### Notes
@@ -189,15 +190,6 @@ Store project notes as Markdown.
 /notes
 ```
 
----
-title: LLPM
----
-
-# LLPM
-
-LLPM is an AI-powered product management CLI that runs in your terminal.
-
-Use LLPM to keep work close to the terminal:
 
 - Connect an LLM provider and switch models.
 - Scan a codebase for context.
