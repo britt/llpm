@@ -75,8 +75,7 @@ This page avoids parameterized feature-card shortcodes and uses plain HTML.
     <p class="hx-mt-4">Supported provider IDs: <code>openai</code>, <code>anthropic</code>, <code>groq</code>, <code>google-vertex</code>, <code>cerebras</code>.</p>
 
     <p class="hx-mt-4">
-      Example model IDs:
-      Model catalogs can change over time; use <code>/model list</code> and <code>/model update</code> to see what is available for the configured providers.
+      Example model IDs: Model catalogs can change over time; use <code>/model list</code> and <code>/model update</code> to see what is available for the configured providers.
     </p>
 
     <ul class="hx-mt-2">
@@ -156,7 +155,7 @@ This page avoids parameterized feature-card shortcodes and uses plain HTML.
     </ul>
 
     <p class="hx-mt-4">
-      See the <a href="{{< relref "docs/skills-reference/_index.md" >}}">Skills Reference</a> for descriptions of the bundled skills.
+      See the <a href="{{< relref \"docs/skills-reference/_index.md\" >}}">Skills Reference</a> for descriptions of the bundled skills.
     </p>
   </div>
 
@@ -189,7 +188,7 @@ This page avoids parameterized feature-card shortcodes and uses plain HTML.
     </ul>
 
     <p class="hx-mt-4">
-      See <a href="{{< relref "docs/user-guide/commands.md" >}}">User Guide: Commands</a> and <a href="{{< relref "docs/user-guide/skills.md" >}}">User Guide: Skills</a>.
+      See <a href="{{< relref \"docs/user-guide/commands.md\" >}}">User Guide: Commands</a> and <a href="{{< relref \"docs/user-guide/skills.md\" >}}">User Guide: Skills</a>.
     </p>
   </div>
 </div>
