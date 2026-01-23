@@ -107,115 +107,6 @@ llpm
    /project scan
    ```
 
----
-title: LLPM Documentation
----
-
-# LLPM
-
-LLPM is an AI-powered product management CLI that runs in your terminal.
-
-Use LLPM to keep work close to the terminal:
-
-- Connect an LLM provider and switch models
-- Scan a codebase for context
-- Manage GitHub work
-- Keep notes and run guided workflows (skills)
-
-## Install
-
-### Install from source
-
-**Prerequisites**
-
-- [Bun](https://bun.com)
-- At least one configured model provider:
-  - OpenAI (`openai`)
-  - Anthropic (`anthropic`)
-  - Groq (`groq`)
-  - Google Vertex AI (`google-vertex`)
-  - Cerebras (`cerebras`)
-
-1. **Clone the repository.**
-
-   ```bash
-   git clone https://github.com/britt/llpm.git
-   cd llpm
-   ```
-
-2. **Install dependencies.**
-
-   ```bash
-   bun install
-   ```
-
-3. **Create a local `.env` file.**
-
-   ```bash
-   cp .env.example .env
-   ```
-
-4. **Configure at least one provider.**
-
-   ```bash
-   # OpenAI
-   OPENAI_API_KEY=...
-
-   # Anthropic
-   ANTHROPIC_API_KEY=...
-
-   # Groq
-   GROQ_API_KEY=...
-
-   # Cerebras
-   CEREBRAS_API_KEY=...
-
-   # Google Vertex AI
-   GOOGLE_VERTEX_PROJECT_ID=...
-   GOOGLE_VERTEX_REGION=us-central1  # Optional (defaults to us-central1)
-   ```
-
-5. **Start LLPM.**
-
-   ```bash
-   bun start
-   ```
-
-### Install globally (optional)
-
-To run `llpm` as a command, link it globally:
-
-```bash
-bun link
-llpm
-```
-
-## Quickstart
-
-1. **Start LLPM.**
-
-   ```text
-   llpm
-   ```
-
-2. **Confirm provider configuration.**
-
-   ```text
-   /model providers
-   ```
-
-3. **Switch models (optional).**
-
-   ```text
-   /model switch
-   ```
-
-4. **Scan a codebase (optional).**
-
-   ```text
-   /project scan
-   ```
-
 ## What LLPM helps with
 
 ### Models
@@ -275,49 +166,34 @@ Use projects to keep work and context organized.
   ```
 
 ### Skills
-### Models
 
-Use a single CLI to manage multiple providers.
+Use skills to run repeatable workflows.
 
-- List providers and required env vars:
-
-  ```text
-  /model providers
-  ```
-
-- Switch models interactively:
+- List skills:
 
   ```text
-  /model switch
+  /skills
   ```
 
-- Refresh the model list from provider APIs (optional):
+- Reinstall bundled core skills (useful after upgrading):
 
   ```text
-  /model update
+  /skills reinstall
   ```
 
-Supported provider IDs:
+### Notes
 
-- `openai`
-- `anthropic`
-- `groq`
-- `google-vertex`
-- `cerebras`
+Store project notes as Markdown.
 
-Example Cerebras model ID:
+```text
+/notes
+```
 
-- `qwen-3-235b-a22b-instruct-2507`
+## Next steps
 
-### Projects, scans, and GitHub
-
-Use projects to keep work and context organized.
-
-- Manage projects:
-
-  ```text
-  /project
-  ```
+- [User Guide](/docs/user-guide/)
+- [Skills Reference](/docs/skills-reference/)
+- [Contributing](/docs/contributing/)
 
 - Scan a codebase for structure and dependencies:
 
