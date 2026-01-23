@@ -195,6 +195,12 @@ Use skills for guided workflows.
 
 Write and search notes as Markdown files.
 
+- **List notes:**
+
+  ```text
+  /notes list
+  ```
+
 - **Create a note:**
 
   ```text
