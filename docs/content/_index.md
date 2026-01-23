@@ -185,39 +185,6 @@ Use notes to keep lightweight project context in markdown.
   /notes
   ```
 
----
-title: LLPM
----
-
-# LLPM
-
-LLPM is an AI-powered product management CLI that runs in your terminal.
-
-Use LLPM to keep work close to the terminal:
-
-- Connect an LLM provider and switch models.
-- Scan a codebase for context.
-- Manage GitHub work.
-- Keep notes and run guided workflows (skills).
-
-## Install
-
-### Install from source
-
-**Prerequisites**
-
-- [Bun](https://bun.com)
-- At least one configured model provider:
-  - OpenAI (`openai`)
-  - Anthropic (`anthropic`)
-  - Groq (`groq`)
-  - Google Vertex AI (`google-vertex`)
-  - Cerebras (`cerebras`)
-
-1. **Clone the repository.**
-
-   ```bash
-   git clone https://github.com/britt/llpm.git
    cd llpm
    ```
 
