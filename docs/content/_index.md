@@ -76,44 +76,6 @@ For prerequisites and provider setup, see [Installation]({{< relref "docs/gettin
 
 </div>
 
-
-<div class="hx-mt-8 hx-rounded-xl hx-border hx-border-gray-200 dark:hx-border-neutral-800 hx-bg-white dark:hx-bg-neutral-900 hx-p-6">
-
-## Install
-
-LLPM is a Bun-based CLI.
-
-1. Clone the repository.
-2. Install dependencies.
-3. Create a `.env` file.
-4. Configure at least one provider.
-5. Start LLPM.
-
-```bash
-git clone https://github.com/britt/llpm.git
-cd llpm
-bun install
-cp .env.example .env
-# Edit .env and set at least one provider key
-bun start
-```
-
-Next:
-
-- Run `/model providers` to confirm LLPM sees your credentials.
-- Use `/model switch` to pick a model.
-
-Optional: install globally from the repo root.
-
-```bash
-bun link
-llpm
-```
-
-For prerequisites and provider setup, see [Installation]({{< relref "docs/getting-started/installation.md" >}}).
-
-</div>
-
 <div class="hx-mt-10 hx-grid hx-grid-cols-1 md:hx-grid-cols-2 hx-gap-6">
   <div class="hx-rounded-xl hx-border hx-border-gray-200 dark:hx-border-neutral-800 hx-bg-white dark:hx-bg-neutral-900 hx-p-6" style="background: radial-gradient(ellipse at 50% 80%, rgba(194,97,254,0.15), hsla(0,0%,100%,0));">
     <h3 class="hx-text-xl hx-font-semibold hx-mb-2">Multi-provider models</h3>
