@@ -109,7 +109,9 @@ llpm
 
 ## What LLPM helps with
 
-### Multi-provider models
+## What LLPM helps with
+
+### Models
 
 Use a single CLI to manage multiple providers.
 
@@ -165,7 +167,7 @@ Use projects to keep work and context organized.
   /github
   ```
 
-### Skills and guided workflows
+### Skills
 
 Use skills to run repeatable workflows.
 
