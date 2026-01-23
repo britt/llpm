@@ -219,6 +219,7 @@ Write and search notes as Markdown files.
 - Configure a model provider in your `.env` file.
 - Run `/help` to see all available commands.
 
+
   /notes list
   ```
 
