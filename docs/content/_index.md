@@ -166,3 +166,5 @@ Example default model IDs (from `src/types/models.ts`):
 - Groq: `meta-llama/llama-4-maverick-17b-128e-instruct`, `llama-3.3-70b-versatile`
 - Google Vertex AI: `gemini-2.5-pro`, `gemini-2.5-flash`
 - Cerebras: `qwen-3-235b-a22b-instruct-2507`, `llama-3.3-70b`
+
+<!-- homepage refresh: keep this page pure Markdown (no Hugo shortcodes) -->
