@@ -5,8 +5,6 @@
 
 AI-powered product management CLI for GitHub issues, codebases, stakeholders, and requirements.
 
-<div class="hx-mt-6"></div>
-
 ## Install
 
 LLPM is a Bun-based CLI.
