@@ -197,31 +197,114 @@ Write and search notes as Markdown files.
   /notes add
   ```
 
-- **Search notes:**
+---
+title: LLPM
+---
 
-  ```text
-  /notes search
-  ```
+# LLPM
 
-## Next steps
+LLPM is an AI-powered product management CLI that runs in your terminal.
 
-- Read the [Getting Started](./docs/getting-started/) guide.
-- Read the [User Guide](./docs/user-guide/) for workflows and slash commands.
+Use it to work across projects, GitHub, and multiple model providers from a single terminal UI.
 
-- Configure a model provider in your `.env` file.
-- Run `/help` to see all available commands.
+## Install
+
+1. **Clone the repository.**
+
+   ```bash
+   git clone https://github.com/britt/llpm.git
+   cd llpm
+   ```
+
+2. **Install dependencies.**
+
+   ```bash
+   bun install
+   ```
+
+3. **Copy the example environment file.**
+
+   ```bash
+   cp .env.example .env
+   ```
+
+4. **Configure at least one model provider.**
+
+   In `.env`:
+
+   ```bash
+   # Configure at least one provider
+   OPENAI_API_KEY=your-openai-api-key-here
+   ANTHROPIC_API_KEY=your-anthropic-api-key-here
+   GROQ_API_KEY=your-groq-api-key-here
+   GOOGLE_VERTEX_PROJECT_ID=your-google-cloud-project-id
+   GOOGLE_VERTEX_REGION=us-central1  # Optional (defaults to us-central1)
+   CEREBRAS_API_KEY=your-cerebras-api-key-here
+
+   # Optional integrations
+   GITHUB_TOKEN=your-github-token-here
+   ```
+
+5. **Start LLPM.**
+
+   ```bash
+   bun start
+   ```
+
+### Install globally (optional)
+
+To run `llpm` as a command, link it globally:
+
+```bash
+bun link
+llpm
+```
+
+## Quickstart
+
+1. **Start LLPM.**
+
+   ```text
+   llpm
+   ```
+
+2. **Confirm provider configuration.**
+
+   ```text
+   /model providers
+   ```
+
+3. **Switch models (optional).**
+
+   ```text
+   /model switch
+   ```
+
+4. **Scan a codebase (optional).**
+
+   ```text
+   /project scan
+   ```
+
+## What you can do
+
+### Models
+
+Use a single CLI to work with multiple providers.
+
+- **List providers and required environment variables:**
 
   ```text
   /model providers
   ```
 
-- Switch models interactively:
+- **Switch models interactively:**
 
   ```text
   /model switch
   ```
 
-- Refresh the model list from provider APIs (optional):
+- **Refresh the model list from provider APIs (optional):**
 
   ```text
   /model update
@@ -235,43 +318,67 @@ Supported provider IDs:
 - `google-vertex`
 - `cerebras`
 
+LLPM caches provider model lists in `~/.llpm/models.json`.
+
 Example Cerebras model ID:
 
 - `qwen-3-235b-a22b-instruct-2507`
 
-### Projects, scans, and GitHub
+### Projects and scans
 
-Use projects to keep work and context organized.
+Save a local path and (optionally) a GitHub repository as a project.
 
-- Manage projects:
+- **List projects:**
 
   ```text
-  /project
+  /project list
   ```
 
-- Scan a codebase for structure and dependencies:
+- **Switch projects:**
+
+  ```text
+  /project switch
+  ```
+
+- **Scan a codebase for structure and dependencies:**
 
   ```text
   /project scan
   ```
 
-- Use GitHub features:
+### GitHub
+
+Use a GitHub token to browse repositories and manage issues.
+
+- **List repositories:**
 
   ```text
-  /github
+  /github list
+  ```
+
+- **List issues:**
+
+  ```text
+  /issue list
+  ```
+
+- **Create an issue:**
+
+  ```text
+  /issue create
   ```
 
 ### Skills
 
-Use skills to run repeatable workflows.
+Use skills for guided workflows.
 
-- List skills:
+- **List skills:**
 
   ```text
-  /skills
+  /skills list
   ```
 
-- Reinstall bundled core skills (useful after upgrading):
+- **Reinstall bundled core skills (optional):**
 
   ```text
   /skills reinstall
@@ -279,34 +386,25 @@ Use skills to run repeatable workflows.
 
 ### Notes
 
-Store project notes as Markdown.
+Write and search notes as Markdown files.
 
-```text
-/notes
-```
-
-## Next steps
-
-- [User Guide](/docs/user-guide/)
-- [Skills Reference](/docs/skills-reference/)
-- [Contributing](/docs/contributing/)
-
-  /skills
-  ```
-
-- Reinstall bundled core skills (useful after upgrading):
+- **List notes:**
 
   ```text
-  /skills reinstall
+  /notes list
   ```
 
-## Notes
+- **Create a note:**
 
-Store project notes as Markdown.
+  ```text
+  /notes add
+  ```
 
-```text
-/notes
-```
+- **Search notes:**
+
+  ```text
+  /notes search
+  ```
 
 ## Next steps
 
@@ -314,10 +412,6 @@ Store project notes as Markdown.
 - [Skills Reference](/docs/skills-reference/)
 - [Contributing](/docs/contributing/)
 
-
-Use a single CLI to manage multiple providers.
-
-- List providers and required env vars:
 
   ```text
   /model providers
