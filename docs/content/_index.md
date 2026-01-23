@@ -267,8 +267,3 @@ For prerequisites, provider setup, and other install options, see [Installation]
   </div>
 
 </div>
-
-
-    <p class="hx-mt-4"><a href="{{< relref "docs/user-guide/projects.md" >}}">Project setup</a> and <a href="{{< relref "docs/user-guide/commands.md" >}}">commands</a> show how these features fit into a daily workflow.</p>
-  </div>
-</div>
