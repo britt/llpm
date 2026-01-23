@@ -10,34 +10,41 @@ Use it to manage projects, work with GitHub, organize Markdown notes, and switch
 
 ## Install
 
-1. **Install dependencies.**
+1. **Clone the repository.**
+
+   ```bash
+   git clone https://github.com/britt/llpm.git
+   cd llpm
+   ```
+
+2. **Install dependencies.**
 
    ```bash
    bun install
    ```
 
-2. **Create a `.env` file.**
+3. **Create a `.env` file.**
 
    ```bash
    cp .env.example .env
    ```
 
-3. **Configure at least one model provider.**
+4. **Configure at least one model provider.**
 
    ```bash
-   # Required: configure at least one
+   # At least one AI provider is required
    OPENAI_API_KEY=your-openai-api-key
    ANTHROPIC_API_KEY=your-anthropic-api-key
    GROQ_API_KEY=your-groq-api-key
    CEREBRAS_API_KEY=your-cerebras-api-key
-   GOOGLE_VERTEX_PROJECT_ID=your-project-id
+   GOOGLE_VERTEX_PROJECT_ID=your-google-cloud-project-id
 
    # Optional
    GOOGLE_VERTEX_REGION=us-central1
    GITHUB_TOKEN=your-github-token
    ```
 
-4. **Start LLPM.**
+5. **Start LLPM.**
 
    ```bash
    bun start
