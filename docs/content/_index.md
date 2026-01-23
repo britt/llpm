@@ -65,11 +65,10 @@ llpm
 
 ## Get started
 
-1. Follow [Getting Started](./docs/getting-started/_index.md)
-2. Read the [Installation guide](./docs/getting-started/installation.md)
-3. Run through the [Quickstart](./docs/getting-started/quickstart.md)
-4. Learn common workflows in the [User Guide](./docs/user-guide/_index.md)
-5. Browse available workflows in the [Skills Reference](./docs/skills-reference/_index.md)
+- Follow [Getting Started](./docs/getting-started/_index.md)
+- Run through the [Quickstart](./docs/getting-started/quickstart.md)
+- Learn common workflows in the [User Guide](./docs/user-guide/_index.md)
+- Browse guided workflows in the [Skills Reference](./docs/skills-reference/_index.md)
 
 ## Common workflows
 
