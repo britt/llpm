@@ -219,45 +219,6 @@ Write and search notes as Markdown files.
 - Configure a model provider in your `.env` file.
 - Run `/help` to see all available commands.
 
-Keep project notes and search them.
-
-- **List notes:**
-
-  ```text
-  /notes list
-  ```
-
-- **Add a note:**
-
-  ```text
-  /notes add
-  ```
-
-- **Search notes:**
-
-  ```text
-  /notes search
-  ```
-
-## Next steps
-
-- Read the docs index: [Docs](./docs/)
-- Learn the skills system: [Skills Reference](./docs/skills-reference/)
-- Contribute to LLPM: [Contributing](./docs/contributing/)
-
-
-  ```text
-  /github
-  ```
-
-### Skills
-
-Use skills to run repeatable workflows.
-
-- List skills:
-
-  ```text
-  /skills
   ```
 
 ### Notes
