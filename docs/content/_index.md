@@ -97,7 +97,7 @@ For prerequisites and provider setup, see [Installation]({{< relref "docs/gettin
     </p>
 
     <p class="hx-text-gray-600 dark:hx-text-gray-300 hx-mt-2">
-      Example model IDs:<br>
+      Example model IDs (from <code>src/types/models.ts</code>):<br>
       OpenAI: <code>gpt-5.2</code>, <code>gpt-4o</code>, <code>o4-mini</code><br>
       Anthropic: <code>claude-sonnet-4-5</code>, <code>claude-opus-4-1</code>, <code>claude-3-5-haiku-latest</code><br>
       Groq: <code>meta-llama/llama-4-maverick-17b-128e-instruct</code>, <code>llama-3.3-70b-versatile</code>, <code>qwen/qwen3-32b</code><br>
@@ -176,88 +176,22 @@ For prerequisites and provider setup, see [Installation]({{< relref "docs/gettin
   </div>
 </div>
 
----
-title: LLPM Documentation
-layout: hextra-home
----
+<div class="hx-mt-10 hx-rounded-xl hx-border hx-border-gray-200 dark:hx-border-neutral-800 hx-bg-white dark:hx-bg-neutral-900 hx-p-6">
 
-{{< hextra/hero-badge >}}
-  <span>AI-Powered CLI</span>
-{{< /hextra/hero-badge >}}
+## Next steps
 
-<div class="hx-mt-6 hx-mb-6">
-{{< hextra/hero-headline >}}
-  Large Language Model&nbsp;<br class="sm:hx-block hx-hidden" />Product Manager
-{{< /hextra/hero-headline >}}
-</div>
+1. Follow the [Installation]({{< relref "docs/getting-started/installation.md" >}}) guide.
+2. Configure a provider in `.env`.
+3. Start LLPM and run:
 
-<div class="hx-mb-12">
-{{< hextra/hero-subtitle >}}
-  AI-powered product management CLI for GitHub issues, codebases, stakeholders, and requirements.
-
-  Install with Bun, configure a provider, then start LLPM and work with slash commands.
-{{< /hextra/hero-subtitle >}}
-
-<div class="hx-mt-6 hx-rounded-xl hx-border hx-border-gray-200 dark:hx-border-neutral-800 hx-bg-white dark:hx-bg-neutral-900 hx-p-6">
-
-```bash
-bun install llpm
-llpm
+```text
+/model providers
+/model update
+/model switch
 ```
 
 </div>
-</div>
 
-<!--
-Homepage note
-
-Avoid shortcode-based feature cards here.
-A previous version used a shortcode with quoted parameters and failed Hugo builds with:
-"unterminated quoted string in shortcode parameter-argument".
-
-This page uses plain HTML divs for highlighted sections.
--->
-
-<div class="hx-mt-8 hx-rounded-xl hx-border hx-border-gray-200 dark:hx-border-neutral-800 hx-bg-white dark:hx-bg-neutral-900 hx-p-6">
-
-## Install
-
-LLPM is a Bun-based CLI.
-
-1. Clone the repository.
-2. Install dependencies.
-3. Create a `.env` file.
-4. Configure at least one provider.
-5. Start LLPM.
-
-```bash
-git clone https://github.com/britt/llpm.git
-cd llpm
-bun install
-cp .env.example .env
-# Edit .env and set at least one provider key
-bun start
-```
-
-Next:
-
-- Run `/model providers` to confirm LLPM sees your credentials.
-- Use `/model switch` to pick a model.
-
-Optional: install globally from the repo root.
-
-```bash
-bun link
-llpm
-```
-
-For prerequisites and provider setup, see [Installation]({{< relref "docs/getting-started/installation.md" >}}).
-
-</div>
-
-<div class="hx-mt-10 hx-grid hx-grid-cols-1 md:hx-grid-cols-2 hx-gap-6">
-  <div class="hx-rounded-xl hx-border hx-border-gray-200 dark:hx-border-neutral-800 hx-bg-white dark:hx-bg-neutral-900 hx-p-6" style="background: radial-gradient(ellipse at 50% 80%, rgba(194,97,254,0.15), hsla(0,0%,100%,0));">
-    <h3 class="hx-text-xl hx-font-semibold hx-mb-2">Multi-provider models</h3>
     <p class="hx-text-gray-600 dark:hx-text-gray-300 hx-mb-4">
       Configure one or more providers, then switch models when the task changes. Use live model discovery to fetch each provider’s current catalog, then rely on the local cache for fast switching.
       This makes it practical to keep multiple provider keys configured and choose the right model per task without leaving the CLI.
