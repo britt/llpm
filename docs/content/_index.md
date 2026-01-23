@@ -161,6 +161,49 @@ For prerequisites and provider setup, see [Installation]({{< relref "docs/gettin
   </div>
 </div>
 
+    </p>
+
+    <ul class="hx-list-disc hx-pl-6 hx-space-y-2 hx-text-gray-600 dark:hx-text-gray-300">
+      <li>Run <code>/project scan</code> to analyze the current project (or your current working directory if no project is set).</li>
+      <li>Use <code>--no-llm</code> for faster scans without architecture analysis.</li>
+      <li>Use <code>--force</code> to rescan even when cached results exist.</li>
+    </ul>
+
+    <p class="hx-text-gray-600 dark:hx-text-gray-300 hx-mt-4">
+      LLPM persists scan results in <code>~/.llpm/projects/{projectId}/project.json</code>.
+    </p>
+  </div>
+
+  <div class="hx-rounded-xl hx-border hx-border-gray-200 dark:hx-border-neutral-800 hx-bg-white dark:hx-bg-neutral-900 hx-p-6" style="background: radial-gradient(ellipse at 50% 80%, rgba(16,185,129,0.15), hsla(0,0%,100%,0));">
+    <h3 class="hx-text-xl hx-font-semibold hx-mb-2">GitHub workflows</h3>
+    <p class="hx-text-gray-600 dark:hx-text-gray-300 hx-mb-4">
+      Work with issues and pull requests from the CLI. Combine GitHub tools with skills like issue decomposition, risk detection, and context-aware questions.
+    </p>
+
+    <ul class="hx-list-disc hx-pl-6 hx-space-y-2 hx-text-gray-600 dark:hx-text-gray-300">
+      <li>Use <code>/github</code> to browse and connect repositories.</li>
+      <li>Use <code>/issue</code> and <code>/project</code> commands to inspect and manage work.</li>
+    </ul>
+  </div>
+
+  <div class="hx-rounded-xl hx-border hx-border-gray-200 dark:hx-border-neutral-800 hx-bg-white dark:hx-bg-neutral-900 hx-p-6" style="background: radial-gradient(ellipse at 50% 80%, rgba(245,158,11,0.15), hsla(0,0%,100%,0));">
+    <h3 class="hx-text-xl hx-font-semibold hx-mb-2">Notes, requirements, stakeholders</h3>
+    <p class="hx-text-gray-600 dark:hx-text-gray-300 hx-mb-4">
+      Keep lightweight project knowledge in notes, run a requirement-elicitation flow to generate a markdown requirements document, and track stakeholders + goals.
+    </p>
+
+    <ul class="hx-list-disc hx-pl-6 hx-space-y-2 hx-text-gray-600 dark:hx-text-gray-300">
+      <li>Use <code>/notes</code> to capture project knowledge and search it.</li>
+      <li>Use <code>/stakeholder</code> to manage stakeholders and goals.</li>
+      <li>Use requirement elicitation tools to guide discovery and generate a markdown requirements document.</li>
+    </ul>
+
+    <p class="hx-text-gray-600 dark:hx-text-gray-300 hx-mt-4">
+      Next: read the <a href="{{< relref "docs/user-guide/_index.md" >}}">User Guide</a> and the <a href="{{< relref "docs/skills-reference/_index.md" >}}">Skills Reference</a>.
+    </p>
+  </div>
+</div>
+
 
     <p class="hx-text-gray-600 dark:hx-text-gray-300 hx-mt-4">
       LLPM persists scan results in <code>~/.llpm/projects/{projectId}/project.json</code>.
