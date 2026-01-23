@@ -29,6 +29,7 @@ Next:
 - Use `/model switch` to select a model.
 
 See: [Installation]({{< relref "docs/getting-started/installation.md" >}})
+
 ## Features
 
 <div class="hx-mt-8 hx-grid hx-gap-6 md:hx-grid-cols-2">
