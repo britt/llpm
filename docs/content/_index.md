@@ -10,8 +10,6 @@ Use it to manage projects, work with GitHub, organize Markdown notes, and switch
 
 ## Install
 
-### Install from source
-
 1. **Install dependencies.**
 
    ```bash
@@ -24,9 +22,7 @@ Use it to manage projects, work with GitHub, organize Markdown notes, and switch
    cp .env.example .env
    ```
 
-3. **Configure at least one provider.**
-
-   In `.env`:
+3. **Configure at least one model provider.**
 
    ```bash
    # Required: configure at least one
@@ -49,7 +45,35 @@ Use it to manage projects, work with GitHub, organize Markdown notes, and switch
 
 For the full setup, see [Installation](./docs/getting-started/installation/).
 
-## Choose a model provider
+## Quickstart
+
+1. **List configured providers.**
+
+   ```text
+   /model providers
+   ```
+
+2. **Refresh the cached model catalog (optional).**
+
+   ```text
+   /model update
+   ```
+
+   LLPM caches provider model lists in `~/.llpm/models.json`.
+
+3. **List models (configured providers only).**
+
+   ```text
+   /model list
+   ```
+
+4. **Switch models.**
+
+   ```text
+   /model switch
+   ```
+
+## Model providers
 
 LLPM supports these provider IDs:
 
@@ -59,39 +83,7 @@ LLPM supports these provider IDs:
 - `google-vertex`
 - `cerebras`
 
-Use `/model providers` to see which providers are configured.
-
 For provider setup and example model IDs, see [Model Providers and Configuration](../../MODELS.md).
-
-### Refresh the model list
-
-LLPM can fetch the latest model lists from provider APIs:
-
-```text
-/model update
-```
-
-LLPM caches provider model lists in `~/.llpm/models.json`.
-
-## Quickstart
-
-1. **List configured providers.**
-
-   ```text
-   /model providers
-   ```
-
-2. **List models (configured providers only).**
-
-   ```text
-   /model list
-   ```
-
-3. **Switch models.**
-
-   ```text
-   /model switch
-   ```
 
 ## What you can do with LLPM
 
