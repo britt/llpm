@@ -29,7 +29,7 @@ Use it to work across projects, GitHub, and multiple model providers from a sing
    cp .env.example .env
    ```
 
-4. **Configure at least one provider.**
+4. **Configure at least one model provider.**
 
    In `.env`:
 
@@ -44,169 +44,6 @@ Use it to work across projects, GitHub, and multiple model providers from a sing
 
    # Optional integrations
    GITHUB_TOKEN=your-github-token-here
-   ```
-
-5. **Start LLPM.**
-
-   ```bash
-   bun start
-   ```
-
-## Quickstart
-
-1. **Start LLPM.**
-
-   ```text
-   llpm
-   ```
-
-2. **Confirm provider configuration.**
-
-   ```text
-   /model providers
-   ```
-
-3. **Switch models (optional).**
-
-   ```text
-   /model switch
-   ```
-
-4. **Scan a codebase (optional).**
-
-   ```text
-   /project scan
-   ```
-
-## What you can do
-
-## Models
-
-Use a single CLI to work with multiple providers.
-
-- **List providers and required environment variables:**
-
-  ```text
-  /model providers
-  ```
-
-- **Switch models interactively:**
-
-  ```text
-  /model switch
-  ```
-
-- **Refresh the model list from provider APIs (optional):**
-
-  ```text
-  /model update
-  ```
-
-Supported providers:
-
-- `openai`
-- `anthropic`
-- `groq`
-- `google-vertex`
-- `cerebras`
-
-LLPM caches provider model lists in `~/.llpm/models.json`.
-
-## Projects and scans
-
-Save a local path and (optionally) a GitHub repository as a project.
-
-- **List projects:**
-
-  ```text
-  /project list
-  ```
-
-- **Switch projects:**
-
-  ```text
-  /project switch
-  ```
-
-- **Scan a codebase for context:**
-
-  ```text
-  /project scan
-  ```
-
-## GitHub
-
-Use a GitHub token to browse repositories and manage issues.
-
-- **List repositories:**
-
-  ```text
-  /github list
-  ```
-
-- **List issues:**
-
-  ```text
-  /issue list
-  ```
-
-- **Create an issue:**
-
-  ```text
-  /issue create
-  ```
-
-## Skills
-
-Use skills for guided workflows.
-
-- **List skills:**
-
-  ```text
-  /skills list
-  ```
-
-- **Reinstall bundled skills (optional).**
-
-  ```text
-  /skills reinstall
-  ```
-
-## Notes
-
-Write and search notes as Markdown files.
-
-- **List notes:**
-
-  ```text
-  /notes list
-  ```
-
-- **Create a note:**
-
-  ```text
-  /notes add
-  ```
-
-- **Search notes:**
-
-  ```text
-  /notes search
-  ```
-
-## Next steps
-
-- Read the [Getting Started](./docs/getting-started/) guide.
-- Read the [User Guide](./docs/user-guide/) for workflows and slash commands.
-
-- Configure a model provider in your `.env` file.
-- Run `/help` to see all available commands.
-
-
-
-   # Google Vertex AI
-   GOOGLE_VERTEX_PROJECT_ID=...
-   GOOGLE_VERTEX_REGION=us-central1  # Optional (defaults to us-central1)
    ```
 
 5. **Start LLPM.**
@@ -250,13 +87,129 @@ llpm
    /project scan
    ```
 
-## What LLPM helps with
+## What you can do
 
 ### Models
 
-Use a single CLI to manage multiple providers.
+Use a single CLI to work with multiple providers.
 
-- List providers and required env vars:
+- **List providers and required environment variables:**
+
+  ```text
+  /model providers
+  ```
+
+- **Switch models interactively:**
+
+  ```text
+  /model switch
+  ```
+
+- **Refresh the model list from provider APIs (optional):**
+
+  ```text
+  /model update
+  ```
+
+Supported providers:
+
+- `openai`
+- `anthropic`
+- `groq`
+- `google-vertex`
+- `cerebras`
+
+LLPM caches provider model lists in `~/.llpm/models.json`.
+
+### Projects and scans
+
+Save a local path and (optionally) a GitHub repository as a project.
+
+- **List projects:**
+
+  ```text
+  /project list
+  ```
+
+- **Switch projects:**
+
+  ```text
+  /project switch
+  ```
+
+- **Scan a codebase for context:**
+
+  ```text
+  /project scan
+  ```
+
+### GitHub
+
+Use a GitHub token to browse repositories and manage issues.
+
+- **List repositories:**
+
+  ```text
+  /github list
+  ```
+
+- **List issues:**
+
+  ```text
+  /issue list
+  ```
+
+- **Create an issue:**
+
+  ```text
+  /issue create
+  ```
+
+### Skills
+
+Use skills for guided workflows.
+
+- **List skills:**
+
+  ```text
+  /skills list
+  ```
+
+- **Reinstall bundled skills (optional).**
+
+  ```text
+  /skills reinstall
+  ```
+
+### Notes
+
+Write and search notes as Markdown files.
+
+- **List notes:**
+
+  ```text
+  /notes list
+  ```
+
+- **Create a note:**
+
+  ```text
+  /notes add
+  ```
+
+- **Search notes:**
+
+  ```text
+  /notes search
+  ```
+
+## Next steps
+
+- Read the [Getting Started](./docs/getting-started/) guide.
+- Read the [User Guide](./docs/user-guide/) for workflows and slash commands.
+
+- Configure a model provider in your `.env` file.
+- Run `/help` to see all available commands.
 
   ```text
   /model providers
