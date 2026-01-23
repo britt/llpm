@@ -73,7 +73,7 @@ bun link
 llpm
 ```
 
-For prerequisites and provider setup, see [Installation]({{< relref "docs/getting-started/installation.md" >}}).
+      For prerequisites and provider setup, see <a href="{{< relref "docs/getting-started/installation.md" >}}">Installation</a>.
 
 </div>
 
