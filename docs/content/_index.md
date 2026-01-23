@@ -165,102 +165,24 @@ Use projects to keep work and context organized.
   /github
   ```
 
----
-title: LLPM
----
+### Skills
 
-# LLPM
+Use skills to run repeatable workflows.
 
-LLPM is an AI-powered product management CLI that runs in your terminal.
+- List skills:
 
-Use LLPM to keep work close to the terminal:
+  ```text
+  /skills
+  ```
 
-- Connect an LLM provider and switch models.
-- Scan a codebase for context.
-- Manage GitHub work.
-- Keep notes and run guided workflows (skills).
+### Notes
 
-## Install
+Store project notes as Markdown.
 
-### Install from source
-
-**Prerequisites**
-
-- [Bun](https://bun.com)
-- At least one configured model provider:
-  - OpenAI (`openai`)
-  - Anthropic (`anthropic`)
-  - Groq (`groq`)
-  - Google Vertex AI (`google-vertex`)
-  - Cerebras (`cerebras`)
-
-1. **Clone the repository.**
-
-   ```bash
-   git clone https://github.com/britt/llpm.git
-   cd llpm
-   ```
-
-2. **Install dependencies.**
-
-   ```bash
-   bun install
-   ```
-
-3. **Create a local `.env` file.**
-
-   ```bash
-   cp .env.example .env
-   ```
-
-4. **Configure at least one provider.**
-
-   ```bash
-   # OpenAI
-   OPENAI_API_KEY=...
-
-   # Anthropic
-   ANTHROPIC_API_KEY=...
-
-   # Groq
-   GROQ_API_KEY=...
-
-   # Cerebras
-   CEREBRAS_API_KEY=...
-
-   # Google Vertex AI
-   GOOGLE_VERTEX_PROJECT_ID=...
-   GOOGLE_VERTEX_REGION=us-central1  # Optional (defaults to us-central1)
-   ```
-
-5. **Start LLPM.**
-
-   ```bash
-   bun start
-   ```
-
-### Install globally (optional)
-
-To run `llpm` as a command, link it globally:
-
-```bash
-bun link
-llpm
+```text
+/notes
 ```
 
-## Quickstart
-
-1. **Start LLPM.**
-
-   ```text
-   llpm
-   ```
-
-2. **Confirm provider configuration.**
-
-   ```text
-   /model providers
-   ```
 
 3. **Switch models (optional).**
 
