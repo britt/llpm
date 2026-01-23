@@ -185,39 +185,6 @@ Use notes to keep lightweight project context in markdown.
   /notes
   ```
 
-
-  ```text
-  /model switch
-  ```
-
-- Refresh the model list from provider APIs (optional):
-
-  ```text
-  /model update
-  ```
-
-Supported provider IDs:
-
-- `openai`
-- `anthropic`
-- `groq`
-- `google-vertex`
-- `cerebras`
-
-Example Cerebras model ID:
-
-- `qwen-3-235b-a22b-instruct-2507`
-
-## Projects, scans, and GitHub
-
-Use projects to keep work and context organized.
-
-- Manage projects:
-
-  ```text
-  /project
-  ```
-
 - Scan a codebase for structure and dependencies:
 
   ```text
