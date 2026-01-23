@@ -61,6 +61,26 @@ bun link
 llpm
 ```
 
+## Quick start
+
+1. **Start LLPM.**
+
+   ```bash
+   llpm
+   ```
+
+2. **List configured providers.**
+
+   ```text
+   /model providers
+   ```
+
+3. **Pick a model.**
+
+   ```text
+   /model switch
+   ```
+
 ## What you can do with LLPM
 
 ### Multi-provider model management
