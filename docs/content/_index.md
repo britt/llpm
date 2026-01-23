@@ -31,8 +31,10 @@ Use it to manage projects, work with GitHub, organize Markdown notes, and switch
 
 4. **Configure at least one model provider.**
 
+   Add one (or more) of these to `.env`:
+
    ```bash
-   # At least one AI provider is required
+   # Configure at least one
    OPENAI_API_KEY=your-openai-api-key
    ANTHROPIC_API_KEY=your-anthropic-api-key
    GROQ_API_KEY=your-groq-api-key
