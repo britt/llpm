@@ -185,39 +185,6 @@ Use notes to keep lightweight project context in markdown.
   /notes
   ```
 
-   cd llpm
-   ```
-
-2. **Install dependencies.**
-
-   ```bash
-   bun install
-   ```
-
-3. **Create a local `.env` file.**
-
-   ```bash
-   cp .env.example .env
-   ```
-
-4. **Configure at least one provider.**
-
-   ```bash
-   # OpenAI
-   OPENAI_API_KEY=...
-
-   # Anthropic
-   ANTHROPIC_API_KEY=...
-
-   # Groq
-   GROQ_API_KEY=...
-
-   # Cerebras
-   CEREBRAS_API_KEY=...
-
-   # Google Vertex AI
-   GOOGLE_VERTEX_PROJECT_ID=...
-   GOOGLE_VERTEX_REGION=us-central1  # Optional (defaults to us-central1)
    ```
 
 5. **Start LLPM.**
