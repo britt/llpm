@@ -69,7 +69,7 @@ llpm
    llpm
    ```
 
-2. **Confirm provider configuration.**
+2. **Check provider configuration.**
 
    ```text
    /model providers
@@ -91,9 +91,23 @@ llpm
 
 ## Models
 
-Use a single CLI to work with multiple providers.
+LLPM supports these provider IDs:
 
-- **List providers and required environment variables:**
+- `openai`
+- `anthropic`
+- `groq`
+- `google-vertex`
+- `cerebras`
+
+Use the model commands to list available models, switch models, and refresh the local cache from provider APIs:
+
+- **List configured models:**
+
+  ```text
+  /model list
+  ```
+
+- **Show provider configuration requirements:**
 
   ```text
   /model providers
@@ -105,29 +119,17 @@ Use a single CLI to work with multiple providers.
   /model switch
   ```
 
-- **Refresh the model list from provider APIs (optional):**
+- **Fetch the latest model catalog (optional):**
 
   ```text
   /model update
   ```
 
-Supported provider IDs:
-
-- `openai`
-- `anthropic`
-- `groq`
-- `google-vertex`
-- `cerebras`
-
 LLPM caches provider model lists in `~/.llpm/models.json`.
-
-Example Cerebras model ID:
-
-- `qwen-3-235b-a22b-instruct-2507`
 
 ## Projects and scans
 
-Save a local path and (optionally) a GitHub repository as a project.
+Use projects to save a local path and (optionally) a GitHub repository.
 
 - **List projects:**
 
@@ -146,6 +148,8 @@ Save a local path and (optionally) a GitHub repository as a project.
   ```text
   /project scan
   ```
+
+If no active project is set, `/project scan` scans the current working directory.
 
 ## GitHub
 
@@ -198,6 +202,15 @@ Write and search notes as Markdown files.
 - **Create a note:**
 
   ```text
+  /notes create
+  ```
+
+- **Search notes:**
+
+  ```text
+  /notes search
+  ```
+
   /notes add
   ```
 
