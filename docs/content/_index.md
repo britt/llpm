@@ -10,6 +10,8 @@ Use it to manage projects, work with GitHub, organize Markdown notes, and switch
 
 ## Install
 
+### Install from source
+
 1. **Clone the repository.**
 
    ```bash
@@ -52,6 +54,13 @@ Use it to manage projects, work with GitHub, organize Markdown notes, and switch
    bun start
    ```
 
+### Install globally (optional)
+
+```bash
+bun link
+llpm
+```
+
 ## Quickstart
 
 1. **List configured providers.**
@@ -89,6 +98,14 @@ LLPM supports these provider IDs:
 - `groq`
 - `google-vertex`
 - `cerebras`
+
+Example model IDs from the built-in defaults (`src/types/models.ts`):
+
+- OpenAI: `gpt-5.2`, `gpt-4o-mini`
+- Anthropic: `claude-sonnet-4-5`, `claude-opus-4-1`
+- Groq: `llama-3.3-70b-versatile`, `deepseek-r1-distill-llama-70b`
+- Google Vertex AI: `gemini-2.5-pro`, `gemini-2.5-flash`
+- Cerebras: `qwen-3-235b-a22b-instruct-2507`, `llama-3.3-70b`
 
 ## What you can do with LLPM
 
