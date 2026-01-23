@@ -61,33 +61,16 @@ bun link
 llpm
 ```
 
-For more detail, see [Installation](./docs/getting-started/installation.md).
+For more detail, see:
 
-## Quick start
-
-1. Start LLPM.
-
-   ```bash
-   llpm
-   ```
-
-2. Check configured providers.
-
-   ```text
-   /model providers
-   ```
-
-3. Pick a model.
-
-   ```text
-   /model switch
-   ```
+- [Installation](./docs/getting-started/installation.md)
+- [Quickstart](./docs/getting-started/quickstart.md)
 
 ## What you can do with LLPM
 
-### Multi-provider model management
+### Models (multi-provider)
 
-Connect one or more providers, then list, update, and switch models.
+Configure one or more providers, then list, update, and switch models.
 
 Common commands:
 
@@ -96,7 +79,7 @@ Common commands:
 - `/model update`
 - `/model switch`
 
-### Projects, scans, and GitHub
+### Projects (with scanning)
 
 Track projects (local path + optional GitHub repository), and scan codebases to understand structure and dependencies.
 
@@ -105,9 +88,16 @@ Common commands:
 - `/project list`
 - `/project switch`
 - `/project scan`
+
+### GitHub integration
+
+Connect a GitHub repository and check status.
+
+Common commands:
+
 - `/github status`
 
-### Skills and guided workflows
+### Skills (guided workflows)
 
 Use skills as reusable, tool-driven workflows.
 
@@ -117,9 +107,9 @@ Common commands:
 - `/skills show <skill-name>`
 - `/skills reinstall`
 
-### Notes and search
+### Notes (Markdown)
 
-Store notes as Markdown files and run text search.
+Store notes as Markdown files and search them.
 
 Common commands:
 
