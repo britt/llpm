@@ -109,8 +109,6 @@ Example model IDs from the built-in defaults (`src/types/models.ts`):
 
 ## What you can do with LLPM
 
-## What you can do with LLPM
-
 ### Multi-provider model management
 
 Connect one or more providers, then switch models per project or task.
@@ -153,70 +151,15 @@ Common commands:
 - `/notes add`
 - `/notes search`
 
-LLPM can also run shell commands through a dedicated tool when enabled.
-
-Related documentation:
-
-- [Getting Started](./docs/getting-started/_index.md)
-- [User Guide](./docs/user-guide/_index.md)
-- [Skills Reference](./docs/skills-reference/_index.md)
-
-
-### Use GitHub inside your terminal
-
-Connect a project to a GitHub repository, then list and triage issues and pull requests.
-
-Common commands:
-
-- `/github status`
-- `/issue list`
-- `/issue show`
-- `/project at-risk`
-
-### Use skills for repeatable workflows
-
-Use built-in skills (and create your own) to guide workflows like requirement elicitation, stakeholder tracking, and project planning.
-
-Common commands:
-
-- `/skills list`
-- `/skills show`
-- `/skills reinstall`
-
-### Keep lightweight Markdown notes
-
-Store notes as Markdown files and search them using ripgrep.
-
-Common commands:
-
-- `/notes add`
-- `/notes list`
-- `/notes search`
-
 ## Next steps
 
 - Follow the Getting Started guides: [Getting Started](./docs/getting-started/_index.md)
 - Learn the available commands: [Commands](./docs/user-guide/commands.md)
 - Browse the skills catalog: [Skills Reference](./docs/skills-reference/_index.md)
 
-
 Notes:
 
 - `/project scan` runs even if no project is configured yet (it scans the current working directory).
-
-### Manage GitHub work
-
-Use a GitHub token to browse repositories and manage issues.
-
-Common commands:
-
-- `/github list`
-- `/issue list`
-- `/issue create`
-
-### Use skills for guided workflows
-
-Skills are guided workflows that help the assistant follow consistent patterns.
 
 Common commands:
 
