@@ -92,7 +92,7 @@ LLPM supports these provider IDs:
 
 ## What you can do with LLPM
 
-## Work across projects
+### Work across projects
 
 Manage projects (local path + optional GitHub repository) and scan a codebase to understand its structure and dependencies.
 
@@ -106,7 +106,7 @@ Notes:
 
 - `/project scan` runs even if no project is configured yet (it scans the current working directory).
 
-## Manage GitHub work
+### Manage GitHub work
 
 Use a GitHub token to browse repositories and manage issues.
 
@@ -116,7 +116,7 @@ Common commands:
 - `/issue list`
 - `/issue create`
 
-## Use skills for guided workflows
+### Use skills for guided workflows
 
 Skills are guided workflows that help the assistant follow consistent patterns.
 
@@ -125,7 +125,7 @@ Common commands:
 - `/skills list`
 - `/skills reinstall`
 
-## Keep notes in Markdown
+### Keep notes in Markdown
 
 Notes are stored as Markdown files.
 
@@ -144,80 +144,6 @@ Common commands:
 - [Skills Reference]({{< relref "docs/skills-reference" >}})
 - [Contributing]({{< relref "docs/contributing" >}})
 
-3. **List models (configured providers only).**
-
-   ```text
-   /model list
-   ```
-
-4. **Switch models.**
-
-   ```text
-   /model switch
-   ```
-
-## Model providers
-
-LLPM supports these provider IDs:
-
-- `openai`
-- `anthropic`
-- `groq`
-- `google-vertex`
-- `cerebras`
-
-For provider setup and example model IDs, see [Model Providers and Configuration](../../MODELS.md).
-
-## What you can do with LLPM
-
-## Work across projects
-
-Manage projects (local path + optional GitHub repository) and scan a codebase to understand its structure and dependencies.
-
-Common commands:
-
-- `/project list`
-- `/project switch`
-- `/project scan`
-
-Notes:
-
-- `/project scan` runs even if no project is configured yet (it scans the current working directory).
-
-## Manage GitHub work
-
-Use a GitHub token to browse repositories and manage issues.
-
-Common commands:
-
-- `/github list`
-- `/issue list`
-- `/issue create`
-
-## Use skills for guided workflows
-
-Skills are guided workflows that help the assistant follow consistent patterns.
-
-Common commands:
-
-- `/skills list`
-- `/skills reinstall`
-
-## Keep notes in Markdown
-
-Notes are stored as Markdown files.
-
-Common commands:
-
-- `/notes list`
-- `/notes create`
-- `/notes search`
-
-## Next steps
-
-- [Installation](./docs/getting-started/installation/)
-- [Quickstart](./docs/getting-started/quickstart/)
-- [Configuration](./docs/getting-started/configuration/)
 - [User Guide](./docs/user-guide/)
 - [Skills Reference](./docs/skills-reference/)
 - [Contributing](./docs/contributing/)
