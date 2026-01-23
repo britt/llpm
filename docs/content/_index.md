@@ -44,6 +44,7 @@ to prevent Hugo parse errors like:
 Using raw HTML <div> blocks in this file avoids Hugo shortcode parameter parsing entirely.
 -->
 
+<div class="hx-grid hx-gap-6 hx-mt-10 lg:hx-grid-cols-2">
   <div
     class="hx-rounded-2xl hx-border hx-border-gray-200/50 dark:hx-border-gray-800/50 hx-bg-white/60 dark:hx-bg-neutral-900/40 hx-p-6"
     style="background: radial-gradient(ellipse at 50% 80%,rgba(194,97,254,0.15),hsla(0,0%,100%,0));"
