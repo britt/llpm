@@ -137,9 +137,9 @@ Common commands:
 
 ## Next steps
 
-- [Installation]({{< relref "docs/getting-started/installation.md" >}})
-- [Quickstart]({{< relref "docs/getting-started/quickstart.md" >}})
-- [Configuration]({{< relref "docs/getting-started/configuration.md" >}})
+- [Installation](./docs/getting-started/installation/)
+- [Quickstart](./docs/getting-started/quickstart/)
+- [Configuration](./docs/getting-started/configuration/)
 - [User Guide](./docs/user-guide/)
 - [Skills Reference](./docs/skills-reference/)
 - [Contributing](./docs/contributing/)
