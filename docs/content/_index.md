@@ -84,6 +84,7 @@ For prerequisites and provider setup, see [Installation]({{< relref "docs/gettin
     <h3 class="hx-text-xl hx-font-semibold hx-mb-2">Multi-provider models</h3>
     <p class="hx-text-gray-600 dark:hx-text-gray-300 hx-mb-4">
       Configure one or more providers, then switch models when the task changes. Use live model discovery to fetch each provider’s current catalog, then rely on the local cache for fast switching.
+      This makes it practical to keep multiple provider keys configured and choose the right model per task without leaving the CLI.
     </p>
 
     <ul class="hx-list-disc hx-pl-6 hx-space-y-2 hx-text-gray-600 dark:hx-text-gray-300">
