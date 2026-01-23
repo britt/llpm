@@ -21,11 +21,11 @@ Use LLPM to keep work close to the terminal:
 
 - [Bun](https://bun.com)
 - At least one configured model provider:
-  - OpenAI
-  - Anthropic
-  - Groq
-  - Google Vertex AI
-  - Cerebras
+  - OpenAI (`openai`)
+  - Anthropic (`anthropic`)
+  - Groq (`groq`)
+  - Google Vertex AI (`google-vertex`)
+  - Cerebras (`cerebras`)
 
 1. **Clone the repository.**
 
@@ -92,7 +92,7 @@ llpm
 
 ### Multi-provider models
 
-Connect one or more providers, then choose a model for the task at hand.
+Connect one or more providers and switch models without leaving the terminal.
 
 - Show configured providers:
 
@@ -126,7 +126,7 @@ Example Cerebras model ID:
 
 ### Projects, scans, and GitHub
 
-Use projects to keep work and context organized.
+Use projects to keep work and context organized, including scanning a codebase.
 
 - Manage projects:
 
