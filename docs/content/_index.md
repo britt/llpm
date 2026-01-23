@@ -197,28 +197,6 @@ Create and search notes as Markdown files.
 - [Contributing](/docs/contributing/)
 
 
-Follow the step-by-step guides:
-
-- [Installation](./docs/getting-started/installation/)
-- [Quickstart](./docs/getting-started/quickstart/)
-- [Configuration](./docs/getting-started/configuration/)
-
-## What you can do
-
-### Models
-
-LLPM supports these provider IDs:
-
-- `openai`
-- `anthropic`
-- `groq`
-- `google-vertex`
-- `cerebras`
-
-Use model commands to list available models, switch models, and refresh the local cache from provider APIs:
-
-- **List configured models:**
-
   ```text
   /model list
   ```
