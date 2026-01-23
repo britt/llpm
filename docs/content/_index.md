@@ -219,45 +219,6 @@ Write and search notes as Markdown files.
 - Configure a model provider in your `.env` file.
 - Run `/help` to see all available commands.
 
-
-- `groq`
-- `google-vertex`
-- `cerebras`
-
-Example Cerebras model ID:
-
-- `qwen-3-235b-a22b-instruct-2507`
-
-## Projects, scans, and GitHub
-
-Use projects to keep work and context organized.
-
-- Manage projects:
-
-  ```text
-  /project
-  ```
-
-- Scan a codebase for structure and dependencies:
-
-  ```text
-  /project scan
-  ```
-
-- Use GitHub features:
-
-  ```text
-  /github
-  ```
-
-## Skills
-
-Use skills to run repeatable workflows.
-
-- List skills:
-
-  ```text
-  /skills
   ```
 
 ## Notes
