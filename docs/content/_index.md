@@ -49,31 +49,27 @@ bun link
 llpm
 ```
 
-## Get started
+## Quickstart
 
-1. **Configure a provider.**
-
-   Use `.env` (after `cp .env.example .env`) or environment variables.
-
-2. **Start LLPM.**
+1. **Start LLPM.**
 
    ```text
    llpm
    ```
 
-3. **List configured providers.**
+2. **List configured providers.**
 
    ```text
    /model providers
    ```
 
-4. **Switch models (optional).**
+3. **Switch models (optional).**
 
    ```text
    /model switch
    ```
 
-5. **Set up and scan a project.**
+4. **Set up and scan a project.**
 
    ```text
    /project
@@ -82,7 +78,7 @@ llpm
 
 ## What LLPM helps with
 
-## Multi-provider models
+### Multi-provider models
 
 Connect one or more providers, then switch models per project or task.
 
@@ -116,57 +112,11 @@ Example Cerebras model ID:
 
 - `qwen-3-235b-a22b-instruct-2507`
 
-## Projects, scans, and GitHub
+### Projects, scans, and GitHub
 
 Use projects to keep work, context, and artifacts organized. Scan a codebase to understand structure, dependencies, and docs.
 
 - Show the current project:
-
-  ```text
-  /project
-  ```
-
-- Scan a codebase:
-
-  ```text
-  /project scan
-  ```
-
-- Work in GitHub:
-
-  ```text
-  /github
-  ```
-
-## Skills and guided workflows
-
-Use skills to run repeatable workflows (for example, requirement elicitation).
-
-- List skills:
-
-  ```text
-  /skills
-  ```
-
-- Reinstall bundled core skills (useful after upgrading):
-
-  ```text
-  /skills reinstall
-  ```
-
-## Notes
-
-Store project notes as Markdown and search them using ripgrep.
-
-```text
-/notes
-```
-
-## Next steps
-
-- [User Guide](/docs/user-guide/)
-- [Skills Reference](/docs/skills-reference/)
-- [Contributing](/docs/contributing/)
 
   ```text
   /project
