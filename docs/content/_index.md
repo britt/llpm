@@ -160,6 +160,6 @@ Store project notes as Markdown and search them using ripgrep.
 
 ## Next steps
 
-- [User Guide](./docs/user-guide/)
-- [Skills Reference](./docs/skills-reference/)
-- [Contributing](./docs/contributing/)
+- [User Guide](/docs/user-guide/)
+- [Skills Reference](/docs/skills-reference/)
+- [Contributing](/docs/contributing/)
