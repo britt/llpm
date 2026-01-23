@@ -196,19 +196,18 @@ For prerequisites and provider setup, see [Installation]({{< relref "docs/gettin
   </div>
 
   <div class="hx-rounded-xl hx-border hx-border-gray-200 dark:hx-border-neutral-800 hx-bg-white dark:hx-bg-neutral-900 hx-p-6" style="background: radial-gradient(ellipse at 50% 80%, rgba(245,158,11,0.15), hsla(0,0%,100%,0));">
-    <h3 class="hx-text-xl hx-font-semibold hx-mb-2">Notes, requirements, stakeholders</h3>
+    <h3 class="hx-text-xl hx-font-semibold hx-mb-2">Stakeholders + goals</h3>
     <p class="hx-text-gray-600 dark:hx-text-gray-300 hx-mb-4">
-      Keep lightweight project knowledge in notes, run a requirement-elicitation flow to generate a markdown requirements document, and track stakeholders + goals.
+      Track stakeholders and goals in a markdown-backed store so project context stays close to your work.
     </p>
 
     <ul class="hx-list-disc hx-pl-6 hx-space-y-2 hx-text-gray-600 dark:hx-text-gray-300">
-      <li>Use <code>/notes</code> to capture project knowledge and search it.</li>
-      <li>Use <code>/stakeholder</code> to manage stakeholders and goals.</li>
-      <li>Use requirement elicitation tools to guide discovery and generate a markdown requirements document.</li>
+      <li>Use <code>/stakeholder</code> to list and manage stakeholders.</li>
+      <li>Use <code>/stakeholder goal</code> to add, list, and update goals.</li>
     </ul>
 
     <p class="hx-text-gray-600 dark:hx-text-gray-300 hx-mt-4">
-      Next: read the <a href="{{< relref "docs/user-guide/_index.md" >}}">User Guide</a> and the <a href="{{< relref "docs/skills-reference/_index.md" >}}">Skills Reference</a>.
+      Next: read the <a href="{{< relref "docs/user-guide/_index.md" >}}">User Guide</a>.
     </p>
   </div>
 </div>
