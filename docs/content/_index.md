@@ -142,62 +142,54 @@ This page avoids parameterized feature-card shortcodes and uses plain HTML.
       <li><code>/skills list</code> to view bundled and user-defined skills.</li>
       <li><code>/skills test &lt;name&gt;</code> to preview a skill’s goal, inputs, tools, and sample runs.</li>
       <li><code>/skills reload</code> to reload skills and pick up changes to <code>SKILL.md</code> files.</li>
-      <li><code>/skills reinstall</code> to restore bundled skills.</li>
+      <li><code>/skills reinstall</code> to restore bundled skills if local changes break them.</li>
+    </ul>
+
+    <p class="hx-mt-4">Skill discovery:</p>
+
+    <ul class="hx-mt-2">
+      <li>User skills in <code>~/.llpm/skills/</code>.</li>
+      <li>Project skills in <code>.skills/</code> (commit workflows with your repo).</li>
     </ul>
 
     <p class="hx-mt-4">
-      Skills cover workflows like requirement elicitation, project planning, issue decomposition, architecture diagramming, context-aware question generation, at-risk detection, and stakeholder tracking.
+      See the <a href="{{< relref "docs/skills-reference/_index.md" >}}">Skills Reference</a> for descriptions of the bundled skills.
     </p>
   </div>
 
   <div
     class="hx-rounded-2xl hx-border hx-border-gray-200/50 dark:hx-border-gray-800/50 hx-bg-white/60 dark:hx-bg-neutral-900/40 hx-p-6"
-    style="background: radial-gradient(ellipse at 50% 80%,rgba(59,130,246,0.12),hsla(0,0%,100%,0));"
+    style="background: radial-gradient(ellipse at 50% 80%,rgba(53,123,142,0.15),hsla(0,0%,100%,0));"
   >
     <h3 class="hx-text-xl hx-font-semibold">Notes, Search, and Shell</h3>
     <p class="hx-mt-2 hx-text-gray-600 dark:hx-text-gray-300">
       Capture project knowledge in Markdown notes, search it locally, and run carefully scoped shell commands when needed.
     </p>
 
-    <ul class="hx-mt-4">
-      <li>Notes live under <code>~/.llpm/projects/{projectId}/notes/</code> as Markdown files with YAML frontmatter.</li>
-      <li>Search uses ripgrep for fast local full-text search.</li>
-      <li>Shell execution is gated by configuration and user confirmation (via <code>run_shell_command</code>).</li>
+    <p class="hx-mt-4">Notes:</p>
+    <ul class="hx-mt-2">
+      <li>Notes are Markdown files with YAML frontmatter under <code>~/.llpm/projects/{projectId}/notes/</code>.</li>
+      <li>Frontmatter stores title, tags, and metadata for organization and reuse.</li>
     </ul>
+
+    <p class="hx-mt-4">Search:</p>
+    <ul class="hx-mt-2">
+      <li>Notes search uses ripgrep-based full-text search.</li>
+      <li>Search does not rely on embeddings or external vector indexes.</li>
+    </ul>
+
+    <p class="hx-mt-4">Shell execution:</p>
+    <ul class="hx-mt-2">
+      <li>Shell commands run through permission validation and explicit confirmation.</li>
+      <li>Shell must be enabled in global settings (<code>~/.llpm/config.json</code>, <code>shell</code> section).</li>
+      <li>Commands can be audited via a local log when configured.</li>
+    </ul>
+
+    <p class="hx-mt-4">
+      See <a href="{{< relref "docs/user-guide/commands.md" >}}">User Guide: Commands</a> and <a href="{{< relref "docs/user-guide/skills.md" >}}">User Guide: Skills</a>.
+    </p>
   </div>
 </div>
-
-
-  <div
-    class="hx-rounded-2xl hx-border hx-border-gray-200/50 dark:hx-border-gray-800/50 hx-bg-white/60 dark:hx-bg-neutral-900/40 hx-p-6"
-    style="background: radial-gradient(ellipse at 50% 80%,rgba(142,53,74,0.15),hsla(0,0%,100%,0));"
-  >
-    <h3 class="hx-text-xl hx-font-semibold">Projects, Scans, and GitHub</h3>
-    <p class="hx-mt-2 hx-text-gray-600 dark:hx-text-gray-300">
-      Keep work anchored to the right repository, then generate reusable project context with a structured scan of files, dependencies, documentation, and architecture.
-    </p>
-
-    <p class="hx-mt-4">Work with projects and GitHub:</p>
-
-    <ul class="hx-mt-2">
-      <li><code>/project</code> to add, list, switch, and remove projects.</li>
-      <li><code>/project scan</code> to analyze a codebase (active project or current working directory).</li>
-      <li><code>/github</code> to browse/search repositories, then connect one to a project.</li>
-    </ul>
-
-    <p class="hx-mt-4">Project scan output includes:</p>
-
-    <ul class="hx-mt-2">
-      <li>Detected languages, frameworks, and project type</li>
-      <li>Documentation overview</li>
-      <li>Dependencies (by package manager)</li>
-      <li>Optional architecture analysis (LLM-powered)</li>
-    </ul>
-  </div>
-
-  <div
-    class="hx-rounded-2xl hx-border hx-border-gray-200/50 dark:hx-border-gray-800/50 hx-bg-white/60 dark:hx-bg-neutral-900/40 hx-p-6"
-    style="background: radial-gradient(ellipse at 50% 80%,rgba(40,121,61,0.12),hsla(0,0%,100%,0));"
   >
     <h3 class="hx-text-xl hx-font-semibold">Skills and Guided Workflows</h3>
     <p class="hx-mt-2 hx-text-gray-600 dark:hx-text-gray-300">
