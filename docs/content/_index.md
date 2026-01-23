@@ -109,7 +109,7 @@ llpm
 
 ## What LLPM helps with
 
-## Multi-provider models
+### Multi-provider models
 
 Work with multiple providers in one CLI.
 
@@ -143,7 +143,7 @@ Example Cerebras model ID:
 
 - `qwen-3-235b-a22b-instruct-2507`
 
-## Projects, scans, and GitHub
+### Projects, scans, and GitHub
 
 Use projects to keep work and context organized.
 
@@ -165,7 +165,7 @@ Use projects to keep work and context organized.
   /github
   ```
 
-## Skills
+### Skills
 
 Use skills to run repeatable workflows.
 
@@ -175,7 +175,7 @@ Use skills to run repeatable workflows.
   /skills
   ```
 
-## Notes
+### Notes
 
 Use notes to keep lightweight project context in markdown.
 
@@ -185,39 +185,6 @@ Use notes to keep lightweight project context in markdown.
   /notes
   ```
 
-- Scan a codebase for structure and dependencies:
-
-  ```text
-  /project scan
-  ```
-
-- Use GitHub features:
-
-  ```text
-  /github
-  ```
-
-## Skills
-
-Use skills to run repeatable workflows.
-
-- List skills:
-
-
-   cp .env.example .env
-   ```
-
-4. **Configure at least one provider.**
-
-   ```bash
-   # OpenAI
-   OPENAI_API_KEY=...
-
-   # Anthropic
-   ANTHROPIC_API_KEY=...
-
-   # Groq
-   GROQ_API_KEY=...
 
    # Cerebras
    CEREBRAS_API_KEY=...
