@@ -10,6 +10,8 @@ Use it to work across projects, GitHub, and multiple model providers from a sing
 
 ## Install
 
+### Install from source
+
 1. **Clone the repository.**
 
    ```bash
@@ -63,7 +65,7 @@ llpm
 
 ## What you can do
 
-### Use models from multiple providers
+## Use models from multiple providers
 
 Configure one or more providers, then switch models with the `/model` command.
 
@@ -103,7 +105,7 @@ Common model commands:
 
 LLPM caches provider model lists in `~/.llpm/models.json`.
 
-### Work across projects (and scan a codebase)
+## Work across projects (and scan a codebase)
 
 Save a local path as a project, then scan a codebase to understand structure and dependencies.
 
@@ -127,7 +129,7 @@ Save a local path as a project, then scan a codebase to understand structure and
 
 If no active project is set, `/project scan` scans the current working directory.
 
-### Use GitHub from the terminal
+## Use GitHub from the terminal
 
 Connect a GitHub token to browse repositories and manage issues.
 
@@ -149,7 +151,7 @@ Connect a GitHub token to browse repositories and manage issues.
   /issue create
   ```
 
-### Use guided workflows (skills)
+## Use guided workflows (skills)
 
 Use skills for repeatable workflows like planning, elicitation, and review.
 
@@ -165,7 +167,7 @@ Use skills for repeatable workflows like planning, elicitation, and review.
   /skills reinstall
   ```
 
-### Keep project notes as Markdown
+## Keep project notes as Markdown
 
 Create and search notes as Markdown files.
 
@@ -196,8 +198,6 @@ Create and search notes as Markdown files.
 - [Skills Reference](/docs/skills-reference/)
 - [Contributing](/docs/contributing/)
 
-
-  ```text
   /model list
   ```
 
