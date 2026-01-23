@@ -166,7 +166,7 @@ Use skills for guided workflows.
   /skills list
   ```
 
-- **Reinstall bundled skills (optional):**
+- **Reinstall bundled skills (optional).**
 
   ```text
   /skills reinstall
@@ -201,22 +201,6 @@ Write and search notes as Markdown files.
 - Configure a model provider in your `.env` file.
 - Run `/help` to see all available commands.
 
-
-  ```text
-  /github
-  ```
-
-### Skills
-
-Use skills to run repeatable workflows.
-
-- List skills:
-
-  ```text
-  /skills
-  ```
-
-- Reinstall bundled core skills (useful after upgrading):
 
   ```text
   /skills reinstall
