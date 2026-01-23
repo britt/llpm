@@ -6,9 +6,13 @@ title: LLPM
 
 LLPM is an AI-powered product management CLI that runs in your terminal.
 
-Use it to work across projects, GitHub, notes, and multiple model providers from a single terminal UI.
+Use it to manage projects, work with GitHub, organize notes, and switch between multiple AI model providers.
 
-## Install
+## Install and run
+
+Follow the [Installation](./docs/getting-started/installation/) guide for the full setup.
+
+If you are running LLPM from the repository:
 
 1. **Install dependencies.**
 
@@ -16,7 +20,7 @@ Use it to work across projects, GitHub, notes, and multiple model providers from
    bun install
    ```
 
-2. **Copy the example environment file.**
+2. **Create a `.env` file.**
 
    ```bash
    cp .env.example .env
@@ -27,16 +31,17 @@ Use it to work across projects, GitHub, notes, and multiple model providers from
    In `.env`:
 
    ```bash
-   # Configure at least one provider
-   OPENAI_API_KEY=your-openai-api-key-here
-   ANTHROPIC_API_KEY=your-anthropic-api-key-here
-   GROQ_API_KEY=your-groq-api-key-here
-   GOOGLE_VERTEX_PROJECT_ID=your-google-cloud-project-id
-   GOOGLE_VERTEX_REGION=us-central1  # Optional (defaults to us-central1)
-   CEREBRAS_API_KEY=your-cerebras-api-key-here
+   OPENAI_API_KEY=your-openai-api-key
+   ANTHROPIC_API_KEY=your-anthropic-api-key
+   GROQ_API_KEY=your-groq-api-key
+
+   # Optional providers
+   CEREBRAS_API_KEY=your-cerebras-api-key
+   GOOGLE_VERTEX_PROJECT_ID=your-project-id
+   GOOGLE_VERTEX_REGION=us-central1
 
    # Optional integrations
-   GITHUB_TOKEN=your-github-token-here
+   GITHUB_TOKEN=your-github-token
    ```
 
 4. **Start LLPM.**
@@ -55,11 +60,13 @@ LLPM supports these provider IDs:
 - `google-vertex`
 - `cerebras`
 
-For provider setup details and example model IDs, see [Model Providers and Configuration](../../MODELS.md).
+Use `/model providers` to see which providers are configured.
+
+For provider setup and example model IDs, see [Model Providers and Configuration](../../MODELS.md).
 
 ## Quickstart
 
-1. **Confirm which providers are configured.**
+1. **List configured providers.**
 
    ```text
    /model providers
@@ -77,7 +84,7 @@ For provider setup details and example model IDs, see [Model Providers and Confi
    /model switch
    ```
 
-4. **(Optional) Refresh the cached model catalog.**
+4. **Refresh the cached model catalog (optional).**
 
    ```text
    /model update
@@ -87,102 +94,46 @@ LLPM caches provider model lists in `~/.llpm/models.json`.
 
 ## What you can do with LLPM
 
-### Multi-provider models
+### Work across projects
 
-- Connect one or more providers, then switch models per project or task.
-- Refresh provider model lists on demand with `/model update`.
-- Keep model selection consistent with configured providers.
-
-Example Cerebras model ID:
-
-- `qwen-3-235b-a22b-instruct-2507`
-
-### Projects and scans
-
-- Save a local path and (optionally) a GitHub repository as a project.
+- Add projects with a local path and optional GitHub repository.
 - Scan a codebase to understand structure and dependencies.
+- Run `/project scan` even if you have not configured a project yet (it scans the current working directory).
 
 Common commands:
 
-- **List projects:**
+- `/project list`
+- `/project switch`
+- `/project scan`
 
-  ```text
-  /project list
-  ```
-
-- **Switch projects:**
-
-  ```text
-  /project switch
-  ```
-
-- **Scan a codebase:**
-
-  ```text
-  /project scan
-  ```
-
-If no active project is set, `/project scan` scans the current working directory.
-
-### GitHub
+### Manage GitHub work
 
 Use a GitHub token to browse repositories and manage issues.
 
-- **List repositories:**
+Common commands:
 
-  ```text
-  /github list
-  ```
+- `/github list`
+- `/issue list`
+- `/issue create`
 
-- **List issues:**
-
-  ```text
-  /issue list
-  ```
-
-- **Create an issue:**
-
-  ```text
-  /issue create
-  ```
-
-### Skills and guided workflows
+### Use skills for guided workflows
 
 Skills are guided workflows that help the assistant follow consistent patterns.
 
-- **List skills:**
+Common commands:
 
-  ```text
-  /skills list
-  ```
+- `/skills list`
+- `/skills reinstall`
 
-- **Reinstall bundled core skills (optional):**
-
-  ```text
-  /skills reinstall
-  ```
-
-### Notes, search, and shell
+### Keep notes in Markdown
 
 Notes are stored as Markdown files.
 
-- **List notes:**
+Common commands:
 
-  ```text
-  /notes list
-  ```
-
-- **Create a note:**
-
-  ```text
-  /notes create
-  ```
-
-- **Search notes:**
-
-  ```text
-  /notes search
-  ```
+- `/notes list`
+- `/notes create`
+- `/notes search`
 
 ## Next steps
 
@@ -193,11 +144,6 @@ Notes are stored as Markdown files.
 - [Skills Reference](./docs/skills-reference/)
 - [Contributing](./docs/contributing/)
 
-- **Create a note:**
-
-  ```text
-  /notes add
-  ```
 
 - **Search notes:**
 
