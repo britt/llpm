@@ -89,55 +89,7 @@ Use skills to run repeatable workflows.
 
 - List skills:
 
-  ```text
-  /skills
-  ```
 
----
-title: LLPM
----
-
-# LLPM
-
-LLPM is an AI-powered product management CLI that runs in your terminal.
-
-Use LLPM to:
-
-- Connect an LLM provider and switch models.
-- Scan a codebase for context.
-- Manage GitHub work.
-- Keep notes and run guided workflows (skills).
-
-## Install
-
-### Install from source
-
-**Prerequisites**
-
-- [Bun](https://bun.com)
-- At least one configured model provider:
-  - OpenAI (`openai`)
-  - Anthropic (`anthropic`)
-  - Groq (`groq`)
-  - Google Vertex AI (`google-vertex`)
-  - Cerebras (`cerebras`)
-
-1. **Clone the repository.**
-
-   ```bash
-   git clone https://github.com/britt/llpm.git
-   cd llpm
-   ```
-
-2. **Install dependencies.**
-
-   ```bash
-   bun install
-   ```
-
-3. **Create a local `.env` file.**
-
-   ```bash
    cp .env.example .env
    ```
 
