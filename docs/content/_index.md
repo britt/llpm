@@ -109,7 +109,7 @@ llpm
 
 ## What LLPM helps with
 
-### Multi-provider models
+## Multi-provider models
 
 Work with multiple providers in one CLI.
 
@@ -143,7 +143,7 @@ Example Cerebras model ID:
 
 - `qwen-3-235b-a22b-instruct-2507`
 
-### Projects, scans, and GitHub
+## Projects, scans, and GitHub
 
 Use projects to keep work and context organized.
 
@@ -165,7 +165,7 @@ Use projects to keep work and context organized.
   /github
   ```
 
-### Skills
+## Skills
 
 Use skills to run repeatable workflows.
 
@@ -175,49 +175,9 @@ Use skills to run repeatable workflows.
   /skills
   ```
 
-### Notes
+## Notes
 
 Use notes to keep lightweight project context in markdown.
-
----
-title: LLPM
----
-
-# LLPM
-
-LLPM is an AI-powered product management CLI that runs in your terminal.
-
-Use LLPM to:
-
-- Connect an LLM provider and switch models.
-- Scan a codebase for context.
-- Manage GitHub work.
-- Keep notes and run guided workflows (skills).
-
-## Install
-
-### Install from source
-
-**Prerequisites**
-
-- [Bun](https://bun.com)
-- At least one configured model provider:
-  - OpenAI (`openai`)
-  - Anthropic (`anthropic`)
-  - Groq (`groq`)
-  - Google Vertex AI (`google-vertex`)
-  - Cerebras (`cerebras`)
-
-1. **Clone the repository.**
-
-   ```bash
-   git clone https://github.com/britt/llpm.git
-   cd llpm
-   ```
-
-2. **Install dependencies.**
-
-   ```bash
    bun install
    ```
 
