@@ -6,13 +6,13 @@ title: LLPM
 
 LLPM is an AI-powered product management CLI that runs in your terminal.
 
-LLPM helps with:
+Use LLPM to:
 
-- project tracking (local path + optional GitHub repository)
-- GitHub issues and pull requests
-- Markdown notes
-- skills (guided workflows)
-- switching between multiple AI model providers
+- track projects (local path + optional GitHub repository)
+- work with GitHub issues and pull requests
+- keep Markdown notes
+- run skills (guided workflows)
+- switch between multiple AI model providers
 
 ## Install
 
@@ -62,6 +62,14 @@ LLPM helps with:
 bun link
 llpm
 ```
+
+## Get started
+
+1. Follow [Getting Started](./docs/getting-started/_index.md)
+2. Read the [Installation guide](./docs/getting-started/installation.md)
+3. Run through the [Quickstart](./docs/getting-started/quickstart.md)
+4. Learn common workflows in the [User Guide](./docs/user-guide/_index.md)
+5. Browse available workflows in the [Skills Reference](./docs/skills-reference/_index.md)
 
 ## Common workflows
 
@@ -168,11 +176,3 @@ Example default model IDs (also from `src/types/models.ts`):
 - Groq: `meta-llama/llama-4-maverick-17b-128e-instruct`, `llama-3.3-70b-versatile`
 - Google Vertex AI: `gemini-2.5-pro`, `gemini-2.5-flash`
 - Cerebras: `qwen-3-235b-a22b-instruct-2507`, `llama-3.3-70b`
-
-## Next steps
-
-- Start with [Getting Started](./docs/_index.md)
-- Follow the [Installation guide](./docs/getting-started/installation.md)
-- Run through the [Quickstart](./docs/getting-started/quickstart.md)
-- Learn common workflows in the [User Guide](./docs/user-guide/_index.md)
-- Browse available workflows in the [Skills Reference](./docs/skills-reference/_index.md)
