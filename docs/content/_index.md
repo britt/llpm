@@ -80,100 +80,6 @@ For prerequisites and provider setup, see [Installation]({{< relref "docs/gettin
 <div class="hx-mt-10 hx-grid hx-grid-cols-1 md:hx-grid-cols-2 hx-gap-6">
   <div class="hx-rounded-xl hx-border hx-border-gray-200 dark:hx-border-neutral-800 hx-bg-white dark:hx-bg-neutral-900 hx-p-6" style="background: radial-gradient(ellipse at 50% 80%, rgba(194,97,254,0.15), hsla(0,0%,100%,0));">
     <h3 class="hx-text-xl hx-font-semibold hx-mb-2">Multi-provider models</h3>
-    <p class="hx-m-0 hx-text-gray-700 dark:hx-text-neutral-200">
-      Connect one or more providers, then switch models per project or task while LLPM keeps the catalog in sync with provider APIs.<br><br>
-      Use these commands to manage models:
-      <ul>
-        <li><code>/model providers</code> to see configured providers</li>
-        <li><code>/model update</code> to refresh the local model catalog</li>
-        <li><code>/model switch</code> to select a model</li>
-      </ul>
-      Supported provider IDs: <code>openai</code>, <code>anthropic</code>, <code>groq</code>, <code>google-vertex</code>, <code>cerebras</code>.
-    </p>
-  </div>
-
-  <div class="hx-rounded-xl hx-border hx-border-gray-200 dark:hx-border-neutral-800 hx-bg-white dark:hx-bg-neutral-900 hx-p-6" style="background: radial-gradient(ellipse at 50% 80%, rgba(16,185,129,0.15), hsla(0,0%,100%,0));">
-    <h3 class="hx-text-xl hx-font-semibold hx-mb-2">Projects and scans</h3>
-    <p class="hx-m-0 hx-text-gray-700 dark:hx-text-neutral-200">
-      Use projects to scope work to a repo (or a local directory) and to persist scans that LLPM can reference later.<br><br>
-      Common commands:
-      <ul>
-        <li><code>/project list</code> and <code>/project switch</code></li>
-        <li><code>/project scan</code> to analyze a codebase</li>
-        <li><code>/github</code> to work with issues/PRs/projects</li>
-      </ul>
-      Scans are saved under <code>~/.llpm/projects/{projectId}/project.json</code>.
-    </p>
-  </div>
-
-  <div class="hx-rounded-xl hx-border hx-border-gray-200 dark:hx-border-neutral-800 hx-bg-white dark:hx-bg-neutral-900 hx-p-6" style="background: radial-gradient(ellipse at 50% 80%, rgba(59,130,246,0.15), hsla(0,0%,100%,0));">
-    <h3 class="hx-text-xl hx-font-semibold hx-mb-2">Skills</h3>
-    <p class="hx-m-0 hx-text-gray-700 dark:hx-text-neutral-200">
-      Skills are documented workflows (Agent Skills spec) that teach LLPM how to perform repeatable tasks in a consistent way.<br><br>
-      Store skills in <code>skills/</code> (repo), <code>.skills/</code> (repo), or under <code>~/.llpm/skills/</code>.
-      Use <code>/skills list</code> to see what’s installed.
-    </p>
-  </div>
-
-  <div class="hx-rounded-xl hx-border hx-border-gray-200 dark:hx-border-neutral-800 hx-bg-white dark:hx-bg-neutral-900 hx-p-6" style="background: radial-gradient(ellipse at 50% 80%, rgba(245,158,11,0.15), hsla(0,0%,100%,0));">
-    <h3 class="hx-text-xl hx-font-semibold hx-mb-2">Notes and requirements</h3>
-    <p class="hx-m-0 hx-text-gray-700 dark:hx-text-neutral-200">
-      Capture meeting notes, decisions, and requirements as markdown files and search them with ripgrep-based full-text search.<br><br>
-      Use <code>/notes</code> to create and manage notes. Use requirement elicitation tools to produce a requirements document from an elicitation session.
-    </p>
-  </div>
-</div>
-
-<div class="hx-mt-10 hx-text-center">
-  <a class="hx-inline-flex hx-items-center hx-justify-center hx-rounded-md hx-bg-primary-600 hx-px-4 hx-py-2 hx-text-white hover:hx-bg-primary-700 dark:hx-bg-primary-500 dark:hover:hx-bg-primary-600" href="{{< relref \"docs/getting-started/installation.md\" >}}">
-    Read the installation guide
-  </a>
-</div>
-
-
-This page uses plain HTML divs to create highlighted sections.
--->
-
-<div class="hx-mt-8 hx-rounded-xl hx-border hx-border-gray-200 dark:hx-border-neutral-800 hx-bg-white dark:hx-bg-neutral-900 hx-p-6">
-
-## Install
-
-LLPM is a Bun-based CLI.
-
-1. Clone the repository.
-2. Install dependencies.
-3. Create a `.env` file.
-4. Configure at least one provider.
-5. Start LLPM.
-
-```bash
-git clone https://github.com/britt/llpm.git
-cd llpm
-bun install
-cp .env.example .env
-# Edit .env and set at least one provider key
-bun start
-```
-
-Next:
-
-- Run `/model providers` to confirm LLPM sees your credentials.
-- Use `/model switch` to pick a model.
-
-Optional: install globally from the repo root.
-
-```bash
-bun link
-llpm
-```
-
-For prerequisites and provider setup, see [Installation]({{< relref "docs/getting-started/installation.md" >}}).
-
-</div>
-
-<div class="hx-mt-10 hx-grid hx-grid-cols-1 md:hx-grid-cols-2 hx-gap-6">
-  <div class="hx-rounded-xl hx-border hx-border-gray-200 dark:hx-border-neutral-800 hx-bg-white dark:hx-bg-neutral-900 hx-p-6" style="background: radial-gradient(ellipse at 50% 80%, rgba(194,97,254,0.15), hsla(0,0%,100%,0));">
-    <h3 class="hx-text-xl hx-font-semibold hx-mb-2">Multi-provider models</h3>
     <p class="hx-text-gray-600 dark:hx-text-gray-300 hx-mb-4">
       Configure one or more providers, then switch models when the task changes. Use live model discovery to fetch each provider’s current catalog, then rely on the local cache for fast switching.
       This makes it practical to keep multiple provider keys configured and choose the right model per task without leaving the CLI.
@@ -198,6 +104,57 @@ For prerequisites and provider setup, see [Installation]({{< relref "docs/gettin
       Google Vertex: <code>gemini-2.5-pro</code>, <code>gemini-2.5-flash</code>, <code>gemini-2.5-ultra</code><br>
       Cerebras: <code>qwen-3-235b-a22b-instruct-2507</code>, <code>llama-3.3-70b</code>
     </p>
+  </div>
+
+  <div class="hx-rounded-xl hx-border hx-border-gray-200 dark:hx-border-neutral-800 hx-bg-white dark:hx-bg-neutral-900 hx-p-6" style="background: radial-gradient(ellipse at 50% 80%, rgba(16,185,129,0.15), hsla(0,0%,100%,0));">
+    <h3 class="hx-text-xl hx-font-semibold hx-mb-2">Projects and scans</h3>
+    <p class="hx-text-gray-600 dark:hx-text-gray-300 hx-mb-4">
+      Use projects to scope work to a repo (or a local directory) and to persist scans that LLPM can reference later.
+      A scan summarizes languages, frameworks, dependencies, and documentation signals so you can ask better questions and plan work with more context.
+    </p>
+
+    <ul class="hx-list-disc hx-pl-6 hx-space-y-2 hx-text-gray-600 dark:hx-text-gray-300">
+      <li>Run <code>/project list</code> and <code>/project switch</code> to select a project.</li>
+      <li>Run <code>/project scan</code> to analyze a codebase and save the results for later.</li>
+      <li>Use <code>/github</code> to work with issues, pull requests, and projects.</li>
+    </ul>
+
+    <p class="hx-text-gray-600 dark:hx-text-gray-300 hx-mt-4">
+      Scans are saved under <code>~/.llpm/projects/{projectId}/project.json</code>.
+    </p>
+  </div>
+
+  <div class="hx-rounded-xl hx-border hx-border-gray-200 dark:hx-border-neutral-800 hx-bg-white dark:hx-bg-neutral-900 hx-p-6" style="background: radial-gradient(ellipse at 50% 80%, rgba(59,130,246,0.15), hsla(0,0%,100%,0));">
+    <h3 class="hx-text-xl hx-font-semibold hx-mb-2">Skills</h3>
+    <p class="hx-text-gray-600 dark:hx-text-gray-300 hx-mb-4">
+      Skills are documented workflows (Agent Skills spec) that teach LLPM how to perform repeatable tasks in a consistent way.
+      Use them to standardize planning, analysis, research, and communication work across projects.
+    </p>
+
+    <p class="hx-text-gray-600 dark:hx-text-gray-300">
+      Store skills in <code>skills/</code> (repo), <code>.skills/</code> (repo), or under <code>~/.llpm/skills/</code>.
+      Run <code>/skills list</code> to see what’s installed.
+    </p>
+  </div>
+
+  <div class="hx-rounded-xl hx-border hx-border-gray-200 dark:hx-border-neutral-800 hx-bg-white dark:hx-bg-neutral-900 hx-p-6" style="background: radial-gradient(ellipse at 50% 80%, rgba(245,158,11,0.15), hsla(0,0%,100%,0));">
+    <h3 class="hx-text-xl hx-font-semibold hx-mb-2">Notes and requirements</h3>
+    <p class="hx-text-gray-600 dark:hx-text-gray-300 hx-mb-4">
+      Capture meeting notes, decisions, and requirements as markdown files and search them with ripgrep-based full-text search.
+      Use requirement elicitation tools to run a structured Q&A session and generate a requirements document.
+    </p>
+
+    <p class="hx-text-gray-600 dark:hx-text-gray-300">
+      Use <code>/notes</code> to create and manage notes.
+    </p>
+  </div>
+</div>
+
+<div class="hx-mt-10 hx-text-center">
+  <a class="hx-inline-flex hx-items-center hx-justify-center hx-rounded-md hx-bg-primary-600 hx-px-4 hx-py-2 hx-text-white hover:hx-bg-primary-700 dark:hx-bg-primary-500 dark:hover:hx-bg-primary-600" href="{{< relref "docs/getting-started/installation.md" >}}">
+    Read the installation guide
+  </a>
+</div>
 
     <p class="hx-text-gray-600 dark:hx-text-gray-300 hx-mt-2">
       LLPM caches the provider-fetched catalog in <code>~/.llpm/models.json</code>. If live discovery fails, LLPM falls back to curated defaults.
