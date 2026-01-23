@@ -6,13 +6,13 @@ title: LLPM
 
 LLPM is an AI-powered product management CLI that runs in your terminal.
 
-LLPM helps with:
+Use LLPM to:
 
-- **Projects**: track projects (local paths, optional GitHub remotes)
-- **GitHub**: manage issues and pull requests from the terminal
-- **Notes**: keep markdown notes and search them
-- **Skills**: run guided workflows for common PM tasks
-- **Models**: switch models across multiple providers
+- **Track projects** (local paths, optional GitHub remotes)
+- **Work with GitHub** (issues and pull requests)
+- **Keep markdown notes** (and search them)
+- **Run skills** (guided workflows for common PM tasks)
+- **Switch models** across multiple providers
 
 ## Install
 
@@ -54,16 +54,16 @@ LLPM helps with:
    bun start
    ```
 
-## Get started
+## Start here
 
-- Follow [Getting Started](./docs/getting-started/_index.md)
-- Run through the [Quickstart](./docs/getting-started/quickstart.md)
-- Learn common workflows in the [User Guide](./docs/user-guide/_index.md)
-- Browse guided workflows in the [Skills Reference](./docs/skills-reference/_index.md)
+- Read [Getting Started](./docs/getting-started/_index.md)
+- Follow the [Quickstart](./docs/getting-started/quickstart.md)
+- Learn workflows in the [User Guide](./docs/user-guide/_index.md)
+- Browse skills in the [Skills Reference](./docs/skills-reference/_index.md)
 
 ## What to try first
 
-### Switch models across providers
+### 1) Switch models across providers
 
 1. **List configured providers**
 
@@ -89,7 +89,7 @@ LLPM helps with:
    /model switch
    ```
 
-### Track projects (and scan codebases)
+### 2) Track projects (and scan codebases)
 
 1. **List projects**
 
@@ -109,7 +109,7 @@ LLPM helps with:
    /project scan
    ```
 
-### Use skills (guided workflows)
+### 3) Use skills (guided workflows)
 
 1. **List skills**
 
@@ -129,7 +129,7 @@ LLPM helps with:
    /skills reinstall
    ```
 
-### Keep markdown notes
+### 4) Keep markdown notes
 
 1. **List notes**
 
