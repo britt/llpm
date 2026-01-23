@@ -1,38 +1,3 @@
----
-title: LLPM Documentation
-layout: hextra-home
----
-
-{{< hextra/hero-badge >}}
-  <span>AI-Powered CLI</span>
-{{< /hextra/hero-badge >}}
-
-<div class="hx-mt-6 hx-mb-6">
-{{< hextra/hero-headline >}}
-  Large Language Model&nbsp;<br class="sm:hx-block hx-hidden" />Product Manager
-{{< /hextra/hero-headline >}}
-</div>
-
-<div class="hx-mb-12">
-{{< hextra/hero-subtitle >}}
-  AI-powered product management CLI for GitHub issues, codebases, stakeholders, and requirements.
-
-  Install with Bun, configure a provider, then start LLPM and work with slash commands.
-{{< /hextra/hero-subtitle >}}
-
-<div class="hx-mt-6 hx-rounded-xl hx-border hx-border-gray-200 dark:hx-border-neutral-800 hx-bg-white dark:hx-bg-neutral-900 hx-p-6">
-
-```bash
-bun install llpm
-llpm
-```
-
----
-title: LLPM Documentation
-layout: hextra-home
----
-
-## Install
 
 LLPM is a Bun-based CLI.
 
