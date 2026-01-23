@@ -32,40 +32,6 @@ Next:
 
 See: [Installation]({{< relref "docs/getting-started/installation.md" >}})
 
----
----
-
-# LLPM
-
-AI-powered product management CLI for GitHub issues, codebases, stakeholders, and requirements.
-
-<div class="hx-mt-6"></div>
-
-## Install
-
-LLPM is a Bun-based CLI.
-
-1. Install [Bun](https://bun.sh/) and ensure `bun` is on your `PATH`.
-2. Install LLPM:
-
-   ```bash
-   bun add -g llpm
-   ```
-
-3. Start LLPM:
-
-   ```bash
-   llpm
-   ```
-
-Next:
-
-- Configure at least one model provider (via environment variables).
-- Run `/model providers` to confirm credentials are detected.
-- Use `/model switch` to select a model.
-
-See: [Installation]({{< relref "docs/getting-started/installation.md" >}})
-
 ## Features
 
 <div class="hx-mt-8 hx-grid hx-gap-6 md:hx-grid-cols-2">
