@@ -68,6 +68,8 @@ Using raw HTML <div> blocks in this file avoids Hugo shortcode parameter parsing
 
     <p class="hx-mt-4">Supported provider IDs: <code>openai</code>, <code>anthropic</code>, <code>groq</code>, <code>google-vertex</code>, <code>cerebras</code>.</p>
 
+    <p class="hx-mt-4">Tip: Run <code>/model update</code> to refresh the cached catalog from provider APIs.</p>
+
     <p class="hx-mt-4">
       Example model IDs (from <code>DEFAULT_MODELS</code> in <code>src/types/models.ts</code>):
     </p>
