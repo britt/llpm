@@ -167,45 +167,6 @@ This page avoids parameterized feature-card shortcodes and uses plain HTML.
     </p>
   </div>
 </div>
-
-<div class="hx-mb-12">
-{{< hextra/hero-subtitle >}}
-  AI-powered product management CLI for GitHub issues, codebases, stakeholders, and requirements.
-{{< /hextra/hero-subtitle >}}
-</div>
-
-## Install
-
-LLPM is a Bun-based CLI.
-
-1. Install prerequisites: Bun and Git available on your `PATH`.
-2. Install LLPM globally.
-3. Start LLPM.
-
-```bash
-bun add -g llpm
-llpm
-```
-
-Next:
-
-- Configure at least one model provider (environment variables).
-- Run `/model providers` to confirm LLPM sees your credentials.
-- Use `/model switch` to pick a model.
-
-For prerequisites, provider setup, and other install options, see [Installation]({{< relref "docs/getting-started/installation.md" >}}).
-
-- Follow [Quickstart]({{< relref "docs/getting-started/quickstart.md" >}}) for a first session and common slash commands.
-- Review [Configuration]({{< relref "docs/getting-started/configuration.md" >}}) for environment variables and setup.
-
-<!--
-NOTE:
-A previous homepage build failed with:
-  unterminated quoted string in shortcode parameter-argument
-This page avoids parameterized feature-card shortcodes and uses plain HTML.
--->
-
-<div class="hx-mt-12 hx-grid hx-gap-6 md:hx-grid-cols-2">
   <div
     class="hx-rounded-2xl hx-border hx-border-gray-200/50 dark:hx-border-gray-800/50 hx-bg-white/60 dark:hx-bg-neutral-900/40 hx-p-6"
     style="background: radial-gradient(ellipse at 50% 80%,rgba(194,97,254,0.15),hsla(0,0%,100%,0));"
