@@ -106,7 +106,7 @@ See: [Installation]({{< relref "docs/getting-started/installation.md" >}})
 
     <p class="hx-mt-4">Scan results are stored per project under <code>~/.llpm/projects/&lt;projectId&gt;/project.json</code>.</p>
 
-    <p class="hx-mt-4"><a href="{{< relref \"docs/user-guide/projects.md\" >}}">Projects</a> and <a href="{{< relref \"docs/user-guide/github-integration.md\" >}}">GitHub Integration</a> show a typical setup.</p>
+    <p class="hx-mt-4"><a href="{{< relref "docs/user-guide/projects.md" >}}">Projects</a> and <a href="{{< relref "docs/user-guide/github-integration.md" >}}">GitHub Integration</a> show a typical setup.</p>
   </div>
 
   <div
@@ -124,7 +124,7 @@ See: [Installation]({{< relref "docs/getting-started/installation.md" >}})
       <li><code>/skills reinstall</code> to restore bundled skills.</li>
     </ul>
 
-    <p class="hx-mt-4">See the <a href="{{< relref \"docs/skills-reference/_index.md\" >}}">Skills Reference</a> for the full catalog.</p>
+    <p class="hx-mt-4">See the <a href="{{< relref "docs/skills-reference/_index.md" >}}">Skills Reference</a> for the full catalog.</p>
   </div>
 
   <div
@@ -141,13 +141,10 @@ See: [Installation]({{< relref "docs/getting-started/installation.md" >}})
       <li>Search uses <code>ripgrep</code>-based full-text search.</li>
     </ul>
 
-    <p class="hx-mt-4"><a href="{{< relref \"docs/user-guide/projects.md\" >}}">Project setup</a> and <a href="{{< relref \"docs/user-guide/commands.md\" >}}">commands</a> show how these features fit into a daily workflow.</p>
+    <p class="hx-mt-4"><a href="{{< relref "docs/user-guide/projects.md" >}}">Project setup</a> and <a href="{{< relref "docs/user-guide/commands.md" >}}">commands</a> show how these features fit into a daily workflow.</p>
   </div>
 </div>
 
-    class="hx-rounded-2xl hx-border hx-border-gray-200/50 dark:hx-border-gray-800/50 hx-bg-white/60 dark:hx-bg-neutral-900/40 hx-p-6"
-    style="background: radial-gradient(ellipse at 50% 80%,rgba(142,53,74,0.15),hsla(0,0%,100%,0));"
-  >
     <h3 class="hx-text-xl hx-font-semibold">Projects, Scans, and GitHub</h3>
     <p class="hx-mt-2 hx-text-gray-600 dark:hx-text-gray-300">
       Keep work anchored to the right repository, then generate reusable project context with a structured scan of files, dependencies, documentation, and architecture.
