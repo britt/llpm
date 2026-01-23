@@ -186,39 +186,6 @@ Use notes to keep lightweight project context in markdown.
   ```
 
 
-   # Cerebras
-   CEREBRAS_API_KEY=...
-
-   # Google Vertex AI
-   GOOGLE_VERTEX_PROJECT_ID=...
-   GOOGLE_VERTEX_REGION=us-central1  # Optional (defaults to us-central1)
-   ```
-
-5. **Start LLPM.**
-
-   ```bash
-   bun start
-   ```
-
-### Install globally (optional)
-
-To run `llpm` as a command, link it globally:
-
-```bash
-bun link
-llpm
-```
-
-## Quickstart
-
-1. **Start LLPM.**
-
-   ```text
-   llpm
-   ```
-
-2. **Confirm provider configuration.**
-
    ```text
    /model providers
    ```
