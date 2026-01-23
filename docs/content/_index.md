@@ -154,5 +154,3 @@ For prerequisites and provider setup, see [Installation]({{< relref "docs/gettin
       <li>Use <code>/notes</code> to add, list, and search notes (search uses ripgrep).</li>
       <li>Use <code>/stakeholder</code> to manage stakeholders and goals.</li>
     </ul>
-  </div>
-</div>
