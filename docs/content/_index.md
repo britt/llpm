@@ -199,25 +199,6 @@ Write and search notes as Markdown files.
 - [Skills Reference](/docs/skills-reference/)
 - [Contributing](/docs/contributing/)
 
-- `anthropic`
-- `groq`
-- `google-vertex`
-- `cerebras`
-
-LLPM caches provider model lists in `~/.llpm/models.json`.
-
-Example Cerebras model ID:
-
-- `qwen-3-235b-a22b-instruct-2507`
-
-## Projects and scans
-
-Save a local path and (optionally) a GitHub repository as a project.
-
-- **List projects:**
-
-  ```text
-  /project list
   ```
 
 - **Switch projects:**
