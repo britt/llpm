@@ -34,18 +34,18 @@ Use LLPM to:
    Create a `.env` file with at least one provider API key.
 
    ```bash
-   # At least one AI provider is required
+   # AI Providers (configure at least one)
    OPENAI_API_KEY=sk-...
    ANTHROPIC_API_KEY=sk-ant-...
    GROQ_API_KEY=gsk_...
    CEREBRAS_API_KEY=your-cerebras-api-key
 
-   # Optional: GitHub integration
-   GITHUB_TOKEN=ghp_...
-
    # Optional: Google Vertex AI
    GOOGLE_VERTEX_PROJECT_ID=your-google-cloud-project-id
    GOOGLE_VERTEX_REGION=us-central1
+
+   # Optional: GitHub integration
+   GITHUB_TOKEN=ghp_...
    ```
 
 4. **Start LLPM**
