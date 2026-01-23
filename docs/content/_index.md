@@ -193,12 +193,125 @@ Write and search notes as Markdown files.
   /notes search
   ```
 
-## Next steps
+---
+title: LLPM
+---
 
-- [User Guide](/docs/user-guide/)
-- [Skills Reference](/docs/skills-reference/)
-- [Contributing](/docs/contributing/)
+# LLPM
 
+LLPM is an AI-powered product management CLI that runs in your terminal.
+
+Use it to work across projects, GitHub, and multiple model providers from a single terminal UI.
+
+## Install
+
+1. **Clone the repository.**
+
+   ```bash
+   git clone https://github.com/britt/llpm.git
+   cd llpm
+   ```
+
+2. **Install dependencies.**
+
+   ```bash
+   bun install
+   ```
+
+3. **Copy the example environment file.**
+
+   ```bash
+   cp .env.example .env
+   ```
+
+4. **Configure at least one model provider.**
+
+   In `.env`:
+
+   ```bash
+   # Configure at least one provider
+   OPENAI_API_KEY=your-openai-api-key-here
+   ANTHROPIC_API_KEY=your-anthropic-api-key-here
+   GROQ_API_KEY=your-groq-api-key-here
+   GOOGLE_VERTEX_PROJECT_ID=your-google-cloud-project-id
+   GOOGLE_VERTEX_REGION=us-central1  # Optional (defaults to us-central1)
+   CEREBRAS_API_KEY=your-cerebras-api-key-here
+
+   # Optional integrations
+   GITHUB_TOKEN=your-github-token-here
+   ```
+
+5. **Start LLPM.**
+
+   ```bash
+   bun start
+   ```
+
+### Install globally (optional)
+
+To run `llpm` as a command, link it globally:
+
+```bash
+bun link
+llpm
+```
+
+## Get started
+
+Follow the step-by-step guides:
+
+- [Installation](./docs/getting-started/installation/)
+- [Quickstart](./docs/getting-started/quickstart/)
+- [Configuration](./docs/getting-started/configuration/)
+
+## What you can do
+
+### Models
+
+LLPM supports these provider IDs:
+
+- `openai`
+- `anthropic`
+- `groq`
+- `google-vertex`
+- `cerebras`
+
+Use model commands to list available models, switch models, and refresh the local cache from provider APIs:
+
+- **List configured models:**
+
+  ```text
+  /model list
+  ```
+
+- **Show provider configuration requirements:**
+
+  ```text
+  /model providers
+  ```
+
+- **Switch models interactively:**
+
+  ```text
+  /model switch
+  ```
+
+- **Fetch the latest model catalog (optional):**
+
+  ```text
+  /model update
+  ```
+
+LLPM caches provider model lists in `~/.llpm/models.json`.
+
+### Projects and scans
+
+Use projects to save a local path and (optionally) a GitHub repository.
+
+- **List projects:**
+
+  ```text
+  /project list
   ```
 
 - **Switch projects:**
@@ -213,7 +326,9 @@ Write and search notes as Markdown files.
   /project scan
   ```
 
-## GitHub
+If no active project is set, `/project scan` scans the current working directory.
+
+### GitHub
 
 Use a GitHub token to browse repositories and manage issues.
 
@@ -235,7 +350,7 @@ Use a GitHub token to browse repositories and manage issues.
   /issue create
   ```
 
-## Skills
+### Skills
 
 Use skills for guided workflows.
 
@@ -251,13 +366,34 @@ Use skills for guided workflows.
   /skills reinstall
   ```
 
-## Notes
+### Notes
 
 Write and search notes as Markdown files.
 
 - **List notes:**
 
   ```text
+  /notes list
+  ```
+
+- **Create a note:**
+
+  ```text
+  /notes create
+  ```
+
+- **Search notes:**
+
+  ```text
+  /notes search
+  ```
+
+## Next steps
+
+- [User Guide](/docs/user-guide/)
+- [Skills Reference](/docs/skills-reference/)
+- [Contributing](/docs/contributing/)
+
   /notes list
   ```
 
