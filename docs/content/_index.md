@@ -55,7 +55,7 @@ LLPM supports these provider IDs:
 - `google-vertex`
 - `cerebras`
 
-For provider setup details and example model IDs, see [Model Providers and Configuration](./docs/getting-started/model-providers/).
+For provider setup details and example model IDs, see [Model Providers and Configuration](../../MODELS.md).
 
 ## Quickstart
 
@@ -87,7 +87,22 @@ LLPM caches provider model lists in `~/.llpm/models.json`.
 
 ## What you can do with LLPM
 
-### Work across projects
+### Multi-provider models
+
+- Connect one or more providers, then switch models per project or task.
+- Refresh provider model lists on demand with `/model update`.
+- Keep model selection consistent with configured providers.
+
+Example Cerebras model ID:
+
+- `qwen-3-235b-a22b-instruct-2507`
+
+### Projects and scans
+
+- Save a local path and (optionally) a GitHub repository as a project.
+- Scan a codebase to understand structure and dependencies.
+
+Common commands:
 
 - **List projects:**
 
@@ -109,7 +124,9 @@ LLPM caches provider model lists in `~/.llpm/models.json`.
 
 If no active project is set, `/project scan` scans the current working directory.
 
-### Use GitHub from the terminal
+### GitHub
+
+Use a GitHub token to browse repositories and manage issues.
 
 - **List repositories:**
 
@@ -129,7 +146,9 @@ If no active project is set, `/project scan` scans the current working directory
   /issue create
   ```
 
-### Use guided workflows (skills)
+### Skills and guided workflows
+
+Skills are guided workflows that help the assistant follow consistent patterns.
 
 - **List skills:**
 
@@ -143,7 +162,9 @@ If no active project is set, `/project scan` scans the current working directory
   /skills reinstall
   ```
 
-### Keep project notes as Markdown
+### Notes, search, and shell
+
+Notes are stored as Markdown files.
 
 - **List notes:**
 
@@ -171,59 +192,6 @@ If no active project is set, `/project scan` scans the current working directory
 - [User Guide](./docs/user-guide/)
 - [Skills Reference](./docs/skills-reference/)
 - [Contributing](./docs/contributing/)
-
-- `cerebras`
-
-LLPM caches provider model lists in `~/.llpm/models.json`.
-
-Example Cerebras model ID:
-
-- `qwen-3-235b-a22b-instruct-2507`
-
-### Projects and scans
-
-Save a local path and (optionally) a GitHub repository as a project.
-
-- **List projects:**
-
-  ```text
-  /project list
-  ```
-
-- **Switch projects:**
-
-  ```text
-  /project switch
-  ```
-
-- **Scan a codebase for structure and dependencies:**
-
-  ```text
-  /project scan
-  ```
-
-### GitHub
-
-Use a GitHub token to browse repositories and manage issues.
-
-- **List repositories:**
-
-  ```text
-  /github list
-  ```
-
-- **List issues:**
-
-  ```text
-  /issue list
-  ```
-
-- **Create an issue:**
-
-  ```text
-  /issue create
-  ```
-
 ### Skills
 
 Use skills for guided workflows.
