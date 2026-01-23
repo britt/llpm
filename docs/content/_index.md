@@ -5,8 +5,7 @@ layout: hextra-home
 
 <div class="hx-mt-6 hx-mb-6">{{< hextra/hero-headline >}}
   Large Language Model&nbsp;<br class="sm:hx-block hx-hidden" />Product Manager
-{{< /hextra/hero-headline >}}
-</div>
+{{< /hextra/hero-headline >}}</div>
 
 ## Install
 
@@ -134,11 +133,7 @@ Using raw HTML <div> blocks in this file avoids Hugo shortcode parameter parsing
 
     <p class="hx-mt-4">See the <a href="{{< relref "docs/skills-reference/_index.md" >}}">Skills Reference</a> for the full catalog.</p>
   </div>
-
-  <div
-    class="hx-rounded-2xl hx-border hx-border-gray-200/50 dark:hx-border-gray-800/50 hx-bg-white/60 dark:hx-bg-neutral-900/40 hx-p-6"
-    style="background: radial-gradient(ellipse at 50% 80%,rgba(16,185,129,0.15),hsla(0,0%,100%,0));"
-  >
+</div>
 ---
 title: LLPM Documentation
 layout: hextra-home
