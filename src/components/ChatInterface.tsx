@@ -17,6 +17,52 @@ import { RequestLogDisplay } from './RequestLogDisplay';
 import { renderMarkdown, isASCIICapableTerminal } from '../utils/markdownRenderer';
 import { useScreenSize } from "fullscreen-ink";
 
+/**
+ * Get the display content for a message.
+ * Extracted as a pure function for testability.
+ */
+export function getMessageDisplayContent(message: Message): string {
+  const isSystemMessage = message.role === 'system';
+  const isUINotification = message.role === 'ui-notification';
+  const isUserMessage = message.role === 'user';
+
+  // System messages: add "System:" prefix, no markdown
+  if (isSystemMessage) {
+    return `System: ${message.content}`;
+  }
+
+  // User messages: add "> " prefix, no markdown
+  if (isUserMessage) {
+    return `> ${message.content}`;
+  }
+
+  // For assistant AND ui-notification messages, render markdown if supported
+  if ((message.role === 'assistant' || isUINotification) && isASCIICapableTerminal()) {
+    try {
+      return renderMarkdown(message.content);
+    } catch (error) {
+      console.error('Failed to render markdown:', error);
+      return message.content;
+    }
+  }
+
+  return message.content;
+}
+
+/**
+ * Get the text color for a message based on its role.
+ * Extracted as a pure function for testability.
+ */
+export function getMessageTextColor(message: Message): string {
+  if (message.role === 'system' || message.role === 'ui-notification') {
+    return '#cb9774';
+  }
+  if (message.role === 'user') {
+    return 'white';
+  }
+  return 'brightWhite';
+}
+
 interface ChatInterfaceProps {
   completedMessages: Message[];
   activeMessages: Message[];
@@ -145,42 +191,16 @@ const ProjectStatus = memo(
 
 // Individual message component to prevent full rerenders
 const MessageItem = memo(({ message }: { message: Message }) => {
-  const isSystemMessage = message.role === 'system' || message.role === 'ui-notification';
-  const isUserMessage = message.role === 'user';
-
-  // const backgroundColor = useMemo(() => {
-  //   if (message.role === 'system' || message.role === 'ui-notification') return '#2e1d11';
-  //   if (message.role === 'assistant') return 'black';
-  //   return '#333';
-  // }, [message.role]);
   const backgroundColor = '';
 
   const textColor = useMemo(() => {
-    if (message.role === 'system' || message.role === 'ui-notification') return '#cb9774';
-    if (message.role === 'user') return 'white';
-    // All messages use white text for consistency
-    return 'brightWhite';
+    return getMessageTextColor(message);
   }, [message.role]);
 
-  // Render markdown synchronously for assistant messages
+  // Render markdown synchronously for assistant and ui-notification messages
   const displayContent = useMemo(() => {
-    if (isSystemMessage) {
-      return `System: ${message.content}`;
-    }
-    if (isUserMessage) {
-      return `> ${message.content}`;
-    }
-    // For assistant messages, render markdown if terminal supports it
-    if (message.role === 'assistant' && isASCIICapableTerminal()) {
-      try {
-        return renderMarkdown(message.content);
-      } catch (error) {
-        console.error('Failed to render markdown:', error);
-        return message.content;
-      }
-    }
-    return message.content;
-  }, [message.role, message.content, isSystemMessage, isUserMessage]);
+    return getMessageDisplayContent(message);
+  }, [message.role, message.content]);
 
   return (
     <Box
