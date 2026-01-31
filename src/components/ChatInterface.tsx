@@ -25,6 +25,7 @@ export function getMessageDisplayContent(message: Message): string {
   const isSystemMessage = message.role === 'system';
   const isUINotification = message.role === 'ui-notification';
   const isUserMessage = message.role === 'user';
+  const isAssistantMessage = message.role === 'assistant';
 
   // System messages: add "System:" prefix, no markdown
   if (isSystemMessage) {
@@ -37,7 +38,7 @@ export function getMessageDisplayContent(message: Message): string {
   }
 
   // For assistant AND ui-notification messages, render markdown if supported
-  if ((message.role === 'assistant' || isUINotification) && isASCIICapableTerminal()) {
+  if ((isAssistantMessage || isUINotification) && isASCIICapableTerminal()) {
     try {
       return renderMarkdown(message.content);
     } catch (error) {

@@ -100,12 +100,18 @@ describe('MessageItem display content', () => {
       expect(getMessageDisplayContent(uiNotificationMessage)).toBe('**Skills**');
     });
 
-    it('should handle markdown rendering errors gracefully', () => {
-      // Re-mock to throw an error
+    it('should handle markdown rendering errors gracefully', async () => {
+      // Reset modules to allow fresh mock
+      vi.resetModules();
+
+      // Mock renderMarkdown to throw an error
       vi.doMock('../utils/markdownRenderer', () => ({
         renderMarkdown: () => { throw new Error('Render failed'); },
         isASCIICapableTerminal: () => true
       }));
+
+      // Dynamically import to get the fresh mock
+      const { getMessageDisplayContent: getMessageDisplayContentWithError } = await import('./ChatInterface');
 
       const message: Message = {
         role: 'ui-notification',
@@ -114,9 +120,15 @@ describe('MessageItem display content', () => {
       };
 
       // Should fall back to raw content without crashing
-      // Note: This test validates error handling behavior
-      const result = getMessageDisplayContent(message);
-      expect(result).toBeDefined();
+      const result = getMessageDisplayContentWithError(message);
+      expect(result).toBe('Content with error');
+
+      // Restore original mock for subsequent tests
+      vi.resetModules();
+      vi.doMock('../utils/markdownRenderer', () => ({
+        renderMarkdown: (content: string) => `[RENDERED]${content}[/RENDERED]`,
+        isASCIICapableTerminal: vi.fn(() => true)
+      }));
     });
   });
 
