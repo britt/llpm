@@ -1,15 +1,14 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import type { Message } from '../types';
 
-// Import the function we'll create/export to make message display testable
-import { getMessageDisplayContent, getMessageTextColor } from './ChatInterface';
-
-// Mock the markdownRenderer module
+// Mock the markdownRenderer module before importing the functions
 vi.mock('../utils/markdownRenderer', () => ({
   renderMarkdown: (content: string) => `[RENDERED]${content}[/RENDERED]`,
   isASCIICapableTerminal: vi.fn(() => true)
 }));
 
+// Import from the extracted utils module (doesn't depend on Ink components)
+import { getMessageDisplayContent, getMessageTextColor } from '../utils/messageDisplay';
 import { isASCIICapableTerminal } from '../utils/markdownRenderer';
 
 describe('MessageItem display content', () => {
@@ -111,7 +110,7 @@ describe('MessageItem display content', () => {
       }));
 
       // Dynamically import to get the fresh mock
-      const { getMessageDisplayContent: getMessageDisplayContentWithError } = await import('./ChatInterface');
+      const { getMessageDisplayContent: getMessageDisplayContentWithError } = await import('../utils/messageDisplay');
 
       const message: Message = {
         role: 'ui-notification',
