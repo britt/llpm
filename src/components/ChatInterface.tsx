@@ -14,8 +14,8 @@ import ModelSelector from './ModelSelector';
 import NotesSelector from './NotesSelector';
 import type { QueuedMessage } from '../hooks/useChat';
 import { RequestLogDisplay } from './RequestLogDisplay';
-import { renderMarkdown, isASCIICapableTerminal } from '../utils/markdownRenderer';
 import { useScreenSize } from "fullscreen-ink";
+import { getMessageDisplayContent, getMessageTextColor } from '../utils/messageDisplay';
 
 interface ChatInterfaceProps {
   completedMessages: Message[];
@@ -145,42 +145,16 @@ const ProjectStatus = memo(
 
 // Individual message component to prevent full rerenders
 const MessageItem = memo(({ message }: { message: Message }) => {
-  const isSystemMessage = message.role === 'system' || message.role === 'ui-notification';
-  const isUserMessage = message.role === 'user';
-
-  // const backgroundColor = useMemo(() => {
-  //   if (message.role === 'system' || message.role === 'ui-notification') return '#2e1d11';
-  //   if (message.role === 'assistant') return 'black';
-  //   return '#333';
-  // }, [message.role]);
   const backgroundColor = '';
 
   const textColor = useMemo(() => {
-    if (message.role === 'system' || message.role === 'ui-notification') return '#cb9774';
-    if (message.role === 'user') return 'white';
-    // All messages use white text for consistency
-    return 'brightWhite';
+    return getMessageTextColor(message);
   }, [message.role]);
 
-  // Render markdown synchronously for assistant messages
+  // Render markdown synchronously for assistant and ui-notification messages
   const displayContent = useMemo(() => {
-    if (isSystemMessage) {
-      return `System: ${message.content}`;
-    }
-    if (isUserMessage) {
-      return `> ${message.content}`;
-    }
-    // For assistant messages, render markdown if terminal supports it
-    if (message.role === 'assistant' && isASCIICapableTerminal()) {
-      try {
-        return renderMarkdown(message.content);
-      } catch (error) {
-        console.error('Failed to render markdown:', error);
-        return message.content;
-      }
-    }
-    return message.content;
-  }, [message.role, message.content, isSystemMessage, isUserMessage]);
+    return getMessageDisplayContent(message);
+  }, [message.role, message.content]);
 
   return (
     <Box
