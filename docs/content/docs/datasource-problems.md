@@ -1,21 +1,24 @@
 ---
-title: Datasource problem statements (needs source)
-description: Placeholder page for datasource problem statements pending access to the referenced specification.
-toc: true
+title: Datasource recording rules: problem statements
 ---
 
-This page is intended to summarize the problem statements from **“Product Spec: Datasource Recording Rules”** and provide examples of how they might cause issues for users.
+This page summarizes the problem statements from the provided product specification (“Datasource Recording Rules”). The source specification content is not available in this repository, and the referenced Notion document is not accessible from this environment.
 
-The referenced source document is not available in the current documentation update environment, so the summary and examples cannot be added without risking incorrect or invented details.
+## Source material
 
-## What is needed to complete this page
+- Product specification link (Notion): https://www.notion.so/Product-Spec-Datasource-Recording-Rules-2fef366d7aa0805db81bf16c6587f3f4
 
-- The text of the problem statements from the referenced spec.
-- Any defined terms (for example, “datasource”, “recording”, and “rules”) as written in the spec.
+## Problem statements (pending)
+
+No problem statements can be quoted or summarized here without the text of the specification.
+
+## Examples of user impact (pending)
+
+Examples cannot be authored without knowing the specific problem statements described in the specification.
 
 ## Next step
 
-Paste the problem statements (or export the spec content) into this repository (or provide it via an accessible link) and update this page with:
+Provide one of the following so the problem statements and examples can be written precisely:
 
-- A brief bullet list of the problem statements.
-- 1–2 concrete user-facing examples per statement.
+- Paste the “Problem statements” section (or the full spec) into the ticket or chat.
+- Export the Notion page as Markdown and add it to the repository.
