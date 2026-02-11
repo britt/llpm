@@ -1,6 +1,6 @@
 ---
 title: "Datasource recording issue summary (DEMO-4)"
-description: "Placeholder summary for Jira issue DEMO-4; records evidence limits and provides a template for a grounded summary."
+description: "Placeholder for Jira issue DEMO-4; documents evidence limits and provides a template for a grounded summary."
 ---
 
 ## Source
@@ -11,9 +11,11 @@ description: "Placeholder summary for Jira issue DEMO-4; records evidence limits
 
 The Jira issue content for **DEMO-4** is not accessible from within this documentation update environment, so the issue cannot be summarized here without guessing.
 
+This page intentionally avoids paraphrasing the issue title, acceptance criteria, or reproduction steps without directly quoting the Jira text.
+
 ## Next step
 
-Paste the issue description (or a redacted export) into this page, then replace the placeholder sections above with a real summary grounded in that text.
+Paste the issue description (or a redacted export) into this page, then replace this placeholder with a summary grounded in that text.
 
 Recommended paste format:
 
