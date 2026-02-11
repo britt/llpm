@@ -19,7 +19,7 @@ The source material for this page is a Notion document:
 **Why it causes problems**
 
 - Editing becomes blocked because the rule’s saved query configuration does not load into the editor.
-- Review workflows break because the running query cannot be verified from the editor.
+- Review workflows break because the query configuration cannot be inspected from the editor.
 
 **Example scenario**
 
@@ -58,3 +58,9 @@ The source material for this page is a Notion document:
 1. A cloud recording rule is edited and the query editor loads the saved queries.
 2. A data source recording rule is edited and the query editor does not load the saved queries.
 3. The difference is interpreted as a user error or data corruption, rather than an inconsistency between rule types.
+
+## Problem statement summary (brief)
+
+- The data source recording rule editor does not hydrate the `queries` array when an existing rule is opened for editing.
+- Query configuration review and modification after initial creation becomes impractical, which drives delete-and-recreate workarounds.
+- Behavior differs between cloud recording rules and data source recording rules, despite both using similar editing workflows.
