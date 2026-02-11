@@ -8,13 +8,13 @@ This page summarizes which customers are waiting on which features.
 
 ## Source of truth
 
-The requested source of truth is a Google Sheet:
+The source of truth is a Google Sheet:
 
 - https://docs.google.com/spreadsheets/d/15aQSU5Qdqqi08-_Yhdv8buK_GgXIeQVHqfa3u-DV7B8/edit?gid=997300960#gid=997300960
 
-That sheet is not available from within this repository, so this page is currently a **template**.
+That sheet is not available from within this repository, so this page is currently a template.
 
-To complete this page, copy the sheet contents into the repository (for example, as `docs/customers.csv`) or paste an export (CSV or Markdown table) into this file, then fill in the sections below.
+To complete this page, copy the sheet contents into the repository (for example, as `docs/customers.csv`) or paste an export (CSV or Markdown table) into this file, then populate the tables below.
 
 Recommended workflow (keeps this page reviewable in Git):
 
@@ -22,6 +22,19 @@ Recommended workflow (keeps this page reviewable in Git):
 2. Save the export into the repository (for example: `docs/customers.csv`).
 3. Update the tables in this file from the CSV.
 4. In the PR description, link to the spreadsheet tab used for the export.
+
+Minimum required fields (add columns if the sheet contains more detail):
+
+- `Customer`
+- `Feature`
+- `Notes / links`
+
+Paste area (optional)
+
+```text
+# Paste a CSV export here (optional). Example headers:
+Customer,Feature,Notes / links
+```
 
 This file is intentionally written so it can be updated without needing to access Google Docs from the documentation build environment.
 
