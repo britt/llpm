@@ -12,7 +12,7 @@ The Jira issue content for **DEMO-4** is not accessible from within this documen
 
 ## What was checked
 
-To avoid inventing details, the repository was searched for text that could ground a summary of DEMO-4 (for example, references to the issue key or terms such as “datasource” and “recording”). No matches were found in the source repository for:
+To avoid inventing details, a limited repository scan was performed for text that could ground a summary of DEMO-4 (for example, references to the issue key or terms such as “datasource” and “recording”). No matches were found for filenames containing:
 
 - `DEMO-4`
 - `datasource`
