@@ -20,9 +20,13 @@ The detailed customer waitlist is maintained outside this repository in the Goog
 
 ## Customer waitlist
 
+Note: This table must be maintained manually by contributors with access to the internal Google Drive folder referenced in the "Source of truth" section. Automated documentation tooling, including AI assistants, cannot access that folder.
 | Customer | Feature | What is blocked / needed | Priority | Target version / date | Source artifact |
 | --- | --- | --- | --- | --- | --- |
 
+<!-- TODO: Populate the "Customer waitlist" table above using data from the internal Google Drive folder referenced in the "Source of truth" section. For each customer, capture: name, short description, logo path (if available), case study summary, relevant metadata (e.g., industry, size, key use cases), and a concrete source artifact reference (document name, slide name, or spreadsheet tab) from that folder. -->
+<!-- TODO: This table is still empty because automated documentation tooling cannot access the internal Google Drive folder. A maintainer with access should review the folder and add one row per customer with the fields described above. -->
+<!-- TODO: When a field for a given customer is missing or ambiguous, add an inline TODO comment in that table cell describing the specific information needed (for example, missing logo path, unclear primary use case, or unknown target date). -->
 ## Update checklist
 
 - Each row includes a concrete source artifact reference.
