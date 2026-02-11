@@ -15,6 +15,14 @@ Included issue links:
 - [DOC-33: lethal trifecta](https://linear.app/docholiday/issue/DOC-33/lethal-trifecta)
 - [DOC-32: help](https://linear.app/docholiday/issue/DOC-32/help)
 
+## Issues reviewed (as written)
+
+The following items are described in the linked issues. They are listed here to help triage and follow up, but they are not confirmed by the reviewed code commits unless explicitly called out in later sections.
+
+- **DOC-34** describes updated contributor guidelines and labels the update as a breaking change.
+- **DOC-33** describes a breaking change related to untrusted input handling.
+- **DOC-32** is a request to update release notes and write unrelated content; it does not describe a specific breaking change.
+
 ## Breaking changes in the reviewed commit range
 
 ### `ui-notification` chat messages change their on-screen formatting
