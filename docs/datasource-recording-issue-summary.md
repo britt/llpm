@@ -1,18 +1,19 @@
 ---
 title: Datasource recording issue summary (DEMO-4)
+description: Summary placeholder for Jira issue DEMO-4
 ---
 
 # Datasource recording issue summary (DEMO-4)
 
 This page is intended to summarize Jira issue **DEMO-4**:
 
-- https://sandgarden-dev.atlassian.net/jira/software/projects/DEMO/boards/34?selectedIssue=DEMO-4
+- https://sandgarden-dev.atlassian.net/rest/api/2/issue/DEMO-4
 
 ## Status
 
 The Jira issue content is not accessible from the current documentation update environment.
 
-To create a real summary in this file, copy the relevant text from the Jira issue into the repository (for example, as a quoted block in this page or as an attached text file in the docs repo), then update the sections below.
+To create a real summary in this file, copy the relevant text from the Jira issue into the repository (for example, as a quoted block in this page), then update the sections below.
 
 ## Summary (to be filled from Jira)
 
