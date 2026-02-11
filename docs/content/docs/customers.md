@@ -1,6 +1,5 @@
 ---
 title: Customers
-description: Customer requests and feature waitlist tracking
 ---
 
 ## Scope
