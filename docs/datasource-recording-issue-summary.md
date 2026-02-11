@@ -15,6 +15,13 @@ The Jira issue content is not accessible from the current documentation update e
 
 To create a real summary in this file, copy the relevant text from the Jira issue into the repository (for example, as a quoted block in this page), then update the sections below.
 
+If the issue can be made accessible to this environment, provide one of the following:
+
+- A pasted JSON payload from `GET /rest/api/2/issue/DEMO-4` (sanitized as needed).
+- A pasted copy of the issue fields in plain text (summary, description, steps, acceptance criteria).
+
+Once available, replace the sections below with the issue’s actual content.
+
 ## Summary (to be filled from Jira)
 
 Add a short paragraph that covers:
