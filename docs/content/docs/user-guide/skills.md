@@ -22,6 +22,8 @@ View all discovered skills:
 /skills list
 ```
 
+If a command prints UI notifications that include Markdown formatting, LLPM renders that Markdown in the chat output (instead of showing the raw Markdown characters).
+
 ### Test a Skill
 
 Preview skill content without enabling:
