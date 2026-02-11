@@ -11,7 +11,7 @@ This page is intended to summarize Jira issue **DEMO-4**:
 
 ## Status
 
-The Jira issue content is not accessible from the current documentation update environment.
+The Jira issue content is not accessible from the current documentation update environment, so this page cannot include an accurate summary of the issue at this time.
 
 To create a real summary in this file, copy the relevant text from the Jira issue into the repository (for example, as a quoted block in this page), then update the sections below.
 
