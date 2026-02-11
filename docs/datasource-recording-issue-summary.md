@@ -1,5 +1,6 @@
 ---
 title: "Datasource recording issue summary (DEMO-4)"
+description: "Placeholder summary for Jira issue DEMO-4; includes constraints and how to provide source text for a grounded summary."
 ---
 
 ## Source
@@ -21,3 +22,21 @@ To avoid inventing details, a limited repository scan was performed for text tha
 ## Next step
 
 Paste the issue description (or a redacted export) into this page, then replace the placeholder sections above with a real summary grounded in that text.
+
+Recommended paste format:
+
+```text
+Title:
+
+Problem:
+
+Expected behavior:
+
+Actual behavior:
+
+Steps to reproduce:
+
+Environment:
+
+Notes / links:
+```
