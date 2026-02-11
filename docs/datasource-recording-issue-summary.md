@@ -1,6 +1,6 @@
 ---
 title: "Datasource recording issue summary (DEMO-4)"
-description: "Placeholder summary for Jira issue DEMO-4; includes constraints and how to provide source text for a grounded summary."
+description: "Placeholder summary for Jira issue DEMO-4; explains current evidence limits and how to provide issue text for a grounded summary."
 ---
 
 ## Source
