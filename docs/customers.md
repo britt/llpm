@@ -14,7 +14,25 @@ The requested source of truth is a Google Sheet:
 
 That sheet is not available from within this repository, so this page is currently a **template**.
 
-To complete this page, copy the sheet contents into the repository (for example, as `docs/customers.csv`) or paste an export (CSV/Markdown table) into this file, then fill in the sections below.
+To complete this page, copy the sheet contents into the repository (for example, as `docs/customers.csv`) or paste an export (CSV or Markdown table) into this file, then fill in the sections below.
+
+Recommended workflow (keeps this page reviewable in Git):
+
+1. Export the sheet to CSV.
+2. Save the export into the repository (for example: `docs/customers.csv`).
+3. Update the tables in this file from the CSV.
+4. In the PR description, link to the spreadsheet tab used for the export.
+
+This file is intentionally written so it can be updated without needing to access Google Docs from the documentation build environment.
+
+## What to capture
+
+Use short, customer-facing feature names. Prefer one feature per row in the “Features → customers waiting” table.
+
+If the sheet includes extra columns (for example: priority, target version, owner, or status), either:
+
+- Add columns to the tables below, or
+- Capture those details in the “Notes / links” column.
 
 ## Customers → features they are waiting on
 
