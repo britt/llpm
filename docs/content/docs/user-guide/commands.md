@@ -53,3 +53,11 @@ LLPM provides slash commands for quick access to features.
 | `/skills disable <name>` | Disable a skill |
 | `/skills reload` | Rescan skill directories |
 | `/skills reinstall` | Reinstall from repository |
+
+## Output formatting
+
+Some commands output informational messages that are formatted as markdown.
+
+- System messages are prefixed with `System:`.
+- User messages are prefixed with `> `.
+- Assistant and `ui-notification` messages render markdown (when the terminal supports it).
