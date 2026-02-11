@@ -1,6 +1,6 @@
 ---
 title: "Datasource recording issue summary (DEMO-4)"
-description: "Placeholder summary for Jira issue DEMO-4; explains current evidence limits and how to provide issue text for a grounded summary."
+description: "Placeholder summary for Jira issue DEMO-4; records evidence limits and provides a template for a grounded summary."
 ---
 
 ## Source
@@ -10,14 +10,6 @@ description: "Placeholder summary for Jira issue DEMO-4; explains current eviden
 ## Summary
 
 The Jira issue content for **DEMO-4** is not accessible from within this documentation update environment, so the issue cannot be summarized here without guessing.
-
-## What was checked
-
-To avoid inventing details, a limited repository scan was performed for text that could ground a summary of DEMO-4 (for example, references to the issue key or terms such as “datasource” and “recording”). No matches were found for filenames containing:
-
-- `DEMO-4`
-- `datasource`
-- `recording`
 
 ## Next step
 
