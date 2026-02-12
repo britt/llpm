@@ -13,6 +13,8 @@ The Jira issue content for **DEMO-4** is not accessible from within this documen
 
 This page intentionally avoids paraphrasing the issue title, acceptance criteria, or reproduction steps without directly quoting the Jira text.
 
+If Jira access is available in the authoring environment, replace the placeholder below with a concise summary that is grounded in the issue text.
+
 ## Next step
 
 Paste the issue description (or a redacted export) into this page, then replace this placeholder with a summary grounded in that text.
