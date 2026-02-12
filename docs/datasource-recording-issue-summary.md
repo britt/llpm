@@ -5,7 +5,8 @@ description: "Placeholder for Jira issue DEMO-4; documents evidence limits and p
 
 ## Source
 
-- Jira issue: https://sandgarden-dev.atlassian.net/jira/software/projects/DEMO/boards/34?selectedIssue=DEMO-4
+- Jira issue (DEMO-4): https://sandgarden-dev.atlassian.net/jira/software/projects/DEMO/boards/34?selectedIssue=DEMO-4
+- Related link provided in request (DEMO-3): https://sandgarden-dev.atlassian.net/browse/DEMO-3
 
 ## Summary
 
@@ -13,7 +14,7 @@ The Jira issue content for **DEMO-4** is not accessible from within this documen
 
 This page intentionally avoids paraphrasing the issue title, acceptance criteria, or reproduction steps without directly quoting the Jira text.
 
-If Jira access is available in the authoring environment, replace the placeholder below with a concise summary that is grounded in the issue text.
+If Jira access is available in the authoring environment, replace the placeholder below with a concise summary grounded in the issue text.
 
 ## Next step
 
