@@ -10,11 +10,24 @@ Perfect for developers who want to organize multiple projects, interact with Git
 
 ```bash
 npm install -g @britt/llpm
-# or
-bun install -g @britt/llpm
 ```
 
 After installation, run `llpm` to start the CLI.
+
+### With Bun
+
+Bun blocks postinstall scripts from packages not in its trusted list. To install with Bun, first add `@britt/llpm` to your global `~/.bunfig.toml`:
+
+```toml
+[install]
+trustedDependencies = ["@britt/llpm"]
+```
+
+Then install:
+
+```bash
+bun install -g @britt/llpm
+```
 
 ### From Source
 
