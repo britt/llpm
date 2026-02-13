@@ -10,9 +10,11 @@ LLPM uses [Vitest](https://vitest.dev/) for testing, with a strong emphasis on T
 | Command | Description |
 |---------|-------------|
 | `bun run test` | Run the test suite once |
-| `bun run test:watch` | Run tests in watch mode (recommended during development) |
-| `bun run test:coverage` | Run tests with coverage report |
+| `bun run test --watch` | Run tests in watch mode |
+| `bun run test --coverage` | Run tests with coverage report |
 | `bun run test:ui` | Open the Vitest UI for interactive testing |
+
+`bun run test` is used instead of `bun test`, because `bun test` invokes Bun's native test runner rather than Vitest.
 
 ## Test File Conventions
 
@@ -20,7 +22,7 @@ Test files are co-located with their source files:
 
 - **Location**: Same directory as the source file
 - **Naming**: `<filename>.test.ts` or `<filename>.spec.ts`
-- **Example**: `src/utils/config.ts` -> `src/utils/config.test.ts`
+- **Example**: `src/commands/help.ts` -> `src/commands/help.test.ts`
 
 ## Test Structure
 
@@ -28,41 +30,37 @@ Tests follow a consistent structure using Vitest's `describe` and `it` blocks:
 
 ```typescript
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { myFunction } from './myModule';
+import { functionToTest } from './moduleToTest';
 
-describe('myFunction', () => {
+describe('ModuleName', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it('should return expected result for valid input', () => {
-    const result = myFunction('valid input');
-    expect(result).toBe('expected output');
+  it('should handle the normal case', () => {
+    const result = functionToTest('input');
+    expect(result).toBe('expected');
   });
 
-  it('should throw error for invalid input', () => {
-    expect(() => myFunction('')).toThrow('Invalid input');
-  });
-
-  it('should handle edge cases correctly', () => {
-    const result = myFunction(null);
-    expect(result).toBeNull();
+  it('should handle edge cases', () => {
+    expect(() => functionToTest(null)).toThrow();
   });
 });
 ```
 
+Key conventions:
+
+- Use descriptive test names
+- Structure tests as Arrange, Act, Assert
+- Mock external dependencies with `vi.mock()` and avoid real API calls
+- Clear mocks in `beforeEach` for isolation
+- Test both success and error paths
+
 ## Coverage Requirements
 
-LLPM maintains strict coverage thresholds:
+Coverage thresholds are enforced in `vitest.config.ts`, and some modules have per-file thresholds.
 
-| Metric | Minimum Coverage |
-|--------|-----------------|
-| Lines | 90%+ |
-| Functions | 90%+ |
-| Branches | 85%+ |
-| Statements | 90%+ |
-
-Run `bun run test:coverage` to verify coverage meets these thresholds.
+Run `bun run test --coverage` to generate a coverage report.
 
 ## TDD Workflow
 
