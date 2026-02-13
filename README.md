@@ -6,13 +6,28 @@ Perfect for developers who want to organize multiple projects, interact with Git
 
 ## Installation
 
+### From NPM (recommended)
+
 ```bash
 npm install -g @britt/llpm
+# or
+bun install -g @britt/llpm
+```
+
+After installation, run `llpm` to start the CLI.
+
+### From Source
+
+```bash
+git clone https://github.com/britt/llpm.git
+cd llpm
+bun install
+bun run start
 ```
 
 ### Requirements
 
-- Node.js 18 or later
+- Node.js 18+ or [Bun](https://bun.sh) runtime
 - API key for at least one AI provider (OpenAI, Anthropic, Groq, or Google Vertex AI)
 - GitHub token (optional, for GitHub integration features)
 
@@ -72,84 +87,41 @@ Full documentation available at: **https://britt.github.io/llpm/**
 - `/registry` - View model registry information
 - `/debug` - Show recent debug logs for troubleshooting
 
-## Prerequisites
+## Configuration
 
-### Required
-- [Bun](https://bun.com) runtime
-- At least one AI provider API key (see configuration below)
-
-## Setup
-
-1. **Install dependencies:**
-
-   ```bash
-   bun install
-   ```
-
-2. **Configure environment variables:**
-
-   ```bash
-   cp .env.example .env
-   ```
-
-   Then edit `.env` and configure at least one AI provider:
-
-   ```bash
-   # AI Providers (configure at least one)
-   OPENAI_API_KEY=your-openai-api-key-here
-   ANTHROPIC_API_KEY=your-anthropic-api-key-here
-   GROQ_API_KEY=your-groq-api-key-here
-   CEREBRAS_API_KEY=your-cerebras-api-key-here
-   GOOGLE_VERTEX_PROJECT_ID=your-google-cloud-project-id
-   GOOGLE_VERTEX_REGION=us-central1  # Optional, defaults to us-central1
-
-   # Optional integrations
-   GITHUB_TOKEN=your-github-token-here  # For GitHub features
-   ```
-
-   **📖 For detailed provider configuration instructions, see [Model Providers Documentation](MODELS.md)**
-
-## Running the CLI
-
-### Development mode:
+Configure API keys as environment variables. If running from source, copy `.env.example` to `.env`:
 
 ```bash
-bun start
-# or
-bun run index.ts
+cp .env.example .env
 ```
 
-### With verbose debug logging:
-
 ```bash
-bun start:verbose
-# or
-bun run index.ts --verbose
-# or (short flag)
-bun run index.ts -v
+# AI Providers (configure at least one)
+OPENAI_API_KEY=your-openai-api-key-here
+ANTHROPIC_API_KEY=your-anthropic-api-key-here
+GROQ_API_KEY=your-groq-api-key-here
+CEREBRAS_API_KEY=your-cerebras-api-key-here
+GOOGLE_VERTEX_PROJECT_ID=your-google-cloud-project-id
+GOOGLE_VERTEX_REGION=us-central1  # Optional, defaults to us-central1
+
+# Optional integrations
+GITHUB_TOKEN=your-github-token-here  # For GitHub features
 ```
 
-### Make it executable and run directly:
+**📖 For detailed provider configuration instructions, see [Model Providers Documentation](MODELS.md)**
+
+### Running from Source
 
 ```bash
-chmod +x index.ts
-./index.ts
-# With verbose mode
-./index.ts --verbose
-```
-
-### Install globally (optional):
-
-```bash
-bun link
-llpm
+bun run start              # Start the CLI
+bun run start:verbose      # Start with debug logging
 ```
 
 ## Usage
 
 ### Basic Usage
 
-1. Start the application with `bun start`
+1. Start the application with `llpm` (or `bun run start` if running from source)
 2. Type your message and press Enter to chat with the AI
 3. Use slash commands (e.g., `/help`) for specific functions
 4. Use Ctrl+C to exit
