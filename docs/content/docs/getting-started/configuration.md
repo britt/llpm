@@ -41,7 +41,7 @@ GOOGLE_VERTEX_REGION=us-central1
 GITHUB_TOKEN=your-github-token
 # GH_TOKEN=your-github-token
 
-# Web search (optional)
+# Arcade web search (optional)
 ARCADE_API_KEY=your-arcade-api-key
 ```
 
