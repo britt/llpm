@@ -7,7 +7,9 @@ LLPM integrates deeply with GitHub for repository management, issues, and pull r
 
 ## Prerequisites
 
-Set up GitHub authentication by adding your token to `.env`:
+Set up GitHub authentication by adding your token to `.env`.
+
+If you also configure `ARCADE_API_KEY` (for web search), keep it separate from GitHub authentication. GitHub integration uses `GITHUB_TOKEN`.
 
 ```bash
 GITHUB_TOKEN=your-github-token
