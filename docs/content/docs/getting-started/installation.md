@@ -10,6 +10,18 @@ weight: 1
 - [Git](https://git-scm.com) for cloning the repository
 - At least one AI provider API key
 
+## Install from NPM
+
+```bash
+npm install -g @britt/llpm
+```
+
+Verify the installation:
+
+```bash
+llpm
+```
+
 ## Install from Source
 
 1. **Clone the repository**
