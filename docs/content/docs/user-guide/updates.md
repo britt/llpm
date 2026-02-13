@@ -12,4 +12,4 @@ weight: 99
 
 ## Additional Changes
 
-- Added Bun installation documentation describing how to configure Bun's `trustedDependencies` before installing `@britt/llpm` to reduce install-time trust and policy failures.
+- Updated Bun installation documentation to describe configuring Bun's `trustedDependencies` before installing `@britt/llpm` to reduce install-time trust and policy failures.
