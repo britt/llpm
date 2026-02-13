@@ -5,10 +5,10 @@ weight: 99
 
 ## 1.6.0 - Bun installation documentation
 
-**Date:** 2026-02-13  \
-**Version:** 1.6.0
+- **Date:** 2026-02-13
+- **Version:** 1.6.0
 
-**Summary:** This update addresses the changes listed below.
+**Summary:** This update addresses Bun installation guidance for configuring `trustedDependencies` before installing `@britt/llpm`.
 
 ### Additional Changes
 
