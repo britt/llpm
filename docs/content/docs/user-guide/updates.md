@@ -12,7 +12,7 @@ This update addresses the changes listed below.
 ```json
 {
   "Security": [
-    "The package publishing workflow now produces more verifiable releases with updated runtime tooling. It updates the npm publish pipeline to use Node.js 24, installs the latest npm, and publishes with `npm publish --provenance` while avoiding the use of `NODE_AUTH_TOKEN`."
+    "Updated the package publishing workflow to use Node.js 24, install the latest npm, and publish with `npm publish --provenance` without `NODE_AUTH_TOKEN`."
   ]
 }
 
