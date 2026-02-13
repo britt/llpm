@@ -35,7 +35,7 @@ bun install -g @britt/llpm
 git clone https://github.com/britt/llpm.git
 cd llpm
 bun install
-bun run start
+bun run index.ts
 ```
 
 ### Requirements
@@ -126,8 +126,8 @@ GITHUB_TOKEN=your-github-token-here  # For GitHub features
 ### Running from Source
 
 ```bash
-bun run start              # Start the CLI
-bun run start:verbose      # Start with debug logging
+bun run index.ts              # Start the CLI
+bun run index.ts --verbose    # Start with debug logging
 ```
 
 ## Usage
