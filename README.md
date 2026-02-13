@@ -24,7 +24,7 @@ Full documentation available at: **https://britt.github.io/llpm/**
 
 ### Core Features
 
-- 🤖 Chat with AI assistant (GPT-4.1 Mini by default) with multi-provider support
+- 🤖 Chat with AI assistant (GPT-5.2 by default) with multi-provider support
 - 🔄 Dynamic model switching between OpenAI, Anthropic, Groq, Google Vertex AI, and Cerebras
 - 💬 Interactive terminal chat interface with real-time input handling
 - 🎨 Clean, styled terminal UI built with Ink
@@ -49,7 +49,7 @@ Full documentation available at: **https://britt.github.io/llpm/**
 ### Skills System
 
 - 🎓 **Dynamic skill loading** with automatic system prompt injection
-- 📚 **Core skills included**: Mermaid diagrams, stakeholder updates, user story templates
+- 📚 **20 core skills included**: Mermaid diagrams, stakeholder tracking, user story templates, and more
 - 🔧 **Custom skills support** - Create your own reusable instruction sets
 - 🤖 **AI-aware**: Skills are automatically listed in the system prompt with usage guidance
 - 🔄 **Hot reloading** - Changes take effect immediately with `/skills reload`
@@ -58,12 +58,18 @@ Full documentation available at: **https://britt.github.io/llpm/**
 
 - `/info` - Show application and current project information
 - `/help` - Display all available commands
-- `/quit` - Exit the application
+- `/quit` or `/exit` - Exit the application
 - `/clear` - Start a new chat session
 - `/project` - Manage projects (add, list, switch, remove)
+- `/project-scan` - Scan and analyze project structure
 - `/github` - Browse and search GitHub repositories
+- `/issue` - Manage GitHub issues
 - `/model` - Switch between AI models and view provider status
 - `/skills` - Manage skills (list, test, enable, disable, reload)
+- `/notes` - Manage project notes
+- `/stakeholder` - Manage stakeholders and goals
+- `/history` - View chat history
+- `/registry` - View model registry information
 - `/debug` - Show recent debug logs for troubleshooting
 
 ## Prerequisites
@@ -102,39 +108,6 @@ Full documentation available at: **https://britt.github.io/llpm/**
    ```
 
    **📖 For detailed provider configuration instructions, see [Model Providers Documentation](MODELS.md)**
-
-### Using a local LLM proxy (litellm)
-
-If you're running a local litellm or other OpenAI-compatible HTTP proxy, point LLPM at it by setting the OpenAI-compatible environment variables. Example (bash):
-
-```bash
-# Example litellm proxy URL (update to your proxy)
-export OPENAI_API_BASE="http://localhost:8080/v1"
-# If your proxy expects a token, set OPENAI_API_KEY (some local proxies accept any string)
-export OPENAI_API_KEY="local-test-key"
-
-# Start llpm in the same shell so it picks up these env vars
-llpm
-```
-
-**Quick curl test**
-
-Run a quick POST to verify the proxy responds using the OpenAI-compatible API:
-
-```bash
-curl -s -X POST "$OPENAI_API_BASE/chat/completions" \
-  -H "Authorization: Bearer $OPENAI_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{"model":"gpt-4o-mini","messages":[{"role":"user","content":"ping"}]}' | jq
-```
-
-**Notes and troubleshooting**
-
-- **API path**: include "/v1" in OPENAI_API_BASE if your proxy exposes the OpenAI-compatible path there (e.g. http://localhost:8080/v1). Adjust if your proxy uses a different route.
-- **Streaming**: if you need streaming completions, confirm your proxy supports the streaming semantics (SSE vs. chunked transfer) that LLPM expects.
-- **TLS / certs**: for HTTPS proxies with self-signed certs, either use a valid cert or configure Node to trust the CA (NODE_EXTRA_CA_CERTS) when running LLPM.
-- **Provider selection**: ensure LLPM is configured to use the OpenAI-compatible client path (some LLPM configs expose a provider setting). If needed, set provider=openai in LLPM config so it respects OPENAI_API_BASE.
-- **Persisting env vars**: to avoid re-exporting, add these to ~/.profile, your service unit, or a project .env file (.env.example can be added to the repo).
 
 ## Running the CLI
 
@@ -349,19 +322,29 @@ Skills are automatically injected into the system prompt, making the AI aware of
 
 ### Core Skills
 
-LLPM comes with 10 core skills installed by default in `~/.llpm/skills/`:
+LLPM comes with 20 core skills installed by default in `~/.llpm/skills/`:
 
 | Skill | Description |
 |-------|-------------|
+| **architecture-diagramming** | Create architecture diagrams for projects |
+| **at-risk-detection** | Detect at-risk items in projects and issues |
 | **build-faq-from-issues** | Generate FAQ documents from GitHub issues |
 | **consolidate-notes-summary** | Consolidate and summarize project notes |
+| **context-aware-questions** | Generate context-aware clarifying questions |
+| **dependency-mapping** | Map project dependencies and relationships |
+| **issue-decomposition** | Decompose large issues into smaller tasks |
 | **markdown-formatting** | Best practices for markdown document formatting |
 | **mermaid-diagrams** | Create syntactically correct Mermaid diagrams for GitHub |
 | **prepare-meeting-agenda** | Structure effective meeting agendas |
+| **project-planning** | Guide project planning and milestone creation |
+| **requirement-elicitation** | Elicit and refine project requirements |
 | **research-topic-summarize** | Summarize research on technical topics |
+| **stakeholder-tracking** | Track stakeholders and their goals |
 | **stakeholder-updates** | Craft clear stakeholder communications |
 | **summarize-conversation-thread** | Summarize long conversation threads |
+| **timeline-planning** | Plan project timelines and schedules |
 | **triage-new-issues** | Triage and categorize new GitHub issues |
+| **user** | General user interaction skill |
 | **user-story-template** | Write well-formed user stories with acceptance criteria |
 
 ### Using Skills
@@ -476,23 +459,41 @@ allowed_tools:
 
 ### Tool System
 
-The AI assistant has access to these tools:
+The AI assistant has access to 59 tools across these categories:
 
 **Project Management:**
-- `get_current_project` - Get active project information
-- `list_projects` - List all configured projects
-- `add_project` - Add new projects
-- `set_current_project` - Switch current project
-- `remove_project` - Remove projects
+- `get_current_project`, `list_projects`, `add_project`, `set_current_project`, `remove_project`, `update_project`
 
 **GitHub Integration:**
-- `list_github_repos` - Browse user's GitHub repositories
-- `search_github_repos` - Search GitHub repositories
-- `get_github_repo` - Get specific repository details
+- `list_github_repos`, `search_github_repos`, `get_github_repo`
+- `create_github_issue`, `list_github_issues`, `update_github_issue`, `comment_on_github_issue`, `search_github_issues`, `get_github_issue_with_comments`
+- `list_github_pull_requests`, `create_github_pull_request`
 
-**Skills Management:**
-- `load_skills` - Load one or more skills to augment context
-- `list_available_skills` - List all available skills with optional tag filtering
+**Notes:**
+- `add_note`, `update_note`, `search_notes`, `list_notes`, `get_note`, `delete_note`
+
+**Stakeholder Management:**
+- `add_stakeholder`, `list_stakeholders`, `get_stakeholder`, `update_stakeholder`, `remove_stakeholder`
+- `link_issue_to_goal`, `unlink_issue_from_goal`, `generate_coverage_report`, `resolve_conflict`
+
+**Project Analysis:**
+- `scan_project`, `get_project_scan`, `list_project_scans`, `analyze_project_full`
+- `get_project_architecture`, `get_project_key_files`, `get_project_dependencies`
+- `analyze_project_risks`, `analyze_issue_risks`, `get_at_risk_items`
+- `generate_project_questions`, `generate_issue_questions`, `suggest_clarifications`, `identify_information_gaps`
+
+**Filesystem:**
+- `read_project_file`, `list_project_directory`, `get_project_file_info`, `find_project_files`
+
+**Web & Screenshots:**
+- `web_search`, `read_web_page`, `summarize_web_page`
+- `take_screenshot`, `check_screenshot_setup`
+
+**Shell & System:**
+- `run_shell_command`, `get_system_prompt`, `ask_user`
+
+**Skills:**
+- `load_skills`, `list_available_skills`
 
 ## Contributing
 
