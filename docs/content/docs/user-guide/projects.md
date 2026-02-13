@@ -3,7 +3,7 @@ title: Project Management
 weight: 1
 ---
 
-LLPM helps you manage multiple projects with AI-powered assistance.
+LLPM helps manage multiple projects with AI-powered assistance.
 
 ## Adding Projects
 
@@ -21,13 +21,13 @@ Parameters:
 
 ### Using Natural Language
 
-You can also add projects conversationally:
+Projects can also be added conversationally:
 
 ```
 Add a project called "My API" linked to github.com/myorg/my-api at ~/projects/my-api
 ```
 
-The AI will understand your intent and create the project.
+The AI interprets the request and creates the project.
 
 ## Listing Projects
 
