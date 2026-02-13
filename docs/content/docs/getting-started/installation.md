@@ -25,6 +25,15 @@ weight: 1
    bun install
    ```
 
+   If Bun blocks `postinstall` scripts for untrusted packages, add `@britt/llpm` to `trustedDependencies` in your global `~/.bunfig.toml`.
+
+   Example:
+
+   ```toml
+   [install]
+   trustedDependencies = ["@britt/llpm"]
+   ```
+
 3. **Configure environment**
 
    Create a `.env` file with your API keys (see [Environment Variables](#environment-variables) below).
