@@ -38,7 +38,12 @@ GOOGLE_VERTEX_REGION=us-central1
 ```bash
 # GitHub integration
 GITHUB_TOKEN=your-github-token
+
+# Web search
+ARCADE_API_KEY=your-arcade-api-key
 ```
+
+`ARCADE_API_KEY` configures web search. GitHub integration uses `GITHUB_TOKEN`.
 
 ## Configuration Files
 
