@@ -5,10 +5,35 @@ weight: 1
 
 ## Prerequisites
 
-- [Bun](https://bun.sh) runtime (latest version recommended)
 - [Node.js](https://nodejs.org) v18 or later
+- Optional: [Bun](https://bun.sh) runtime (latest version recommended)
 - [Git](https://git-scm.com) for cloning the repository
 - At least one AI provider API key
+
+## Install globally
+
+From npm (recommended):
+
+```bash
+npm install -g @britt/llpm
+```
+
+With Bun:
+
+1. Add `@britt/llpm` to `trustedDependencies` in `~/.bunfig.toml`.
+
+   ```toml
+   [install]
+   trustedDependencies = ["@britt/llpm"]
+   ```
+
+2. Install:
+
+   ```bash
+   bun install -g @britt/llpm
+   ```
+
+After installation, run `llpm` to start the CLI.
 
 ## Install from Source
 
@@ -21,17 +46,25 @@ weight: 1
 
 2. **Install dependencies**
 
+   With Bun:
+
    ```bash
    bun install
    ```
 
-   If Bun blocks `postinstall` scripts for untrusted packages, add `@britt/llpm` to `trustedDependencies` in your global `~/.bunfig.toml`.
+   If Bun blocks `postinstall` scripts for untrusted packages, add `@britt/llpm` to `trustedDependencies` in `~/.bunfig.toml`.
 
    Example:
 
    ```toml
    [install]
    trustedDependencies = ["@britt/llpm"]
+   ```
+
+   With npm:
+
+   ```bash
+   npm install
    ```
 
 3. **Configure environment**
@@ -44,18 +77,13 @@ weight: 1
    chmod +x index.ts
    ```
 
-## Install Globally (optional)
-
-```bash
-bun link
-llpm
-```
-
 ## Verify Installation
 
 ```bash
 bun start
-# or if linked globally
+# or
+npm run start
+# or (if installed globally)
 llpm
 ```
 
