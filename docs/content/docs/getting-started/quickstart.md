@@ -8,6 +8,12 @@ weight: 2
 1. **Start LLPM**
 
    ```bash
+   llpm
+   ```
+
+   Start LLPM from source:
+
+   ```bash
    bun start
    ```
 
