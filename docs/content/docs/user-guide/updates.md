@@ -3,23 +3,28 @@ title: Updates
 weight: 5
 ---
 
-## Latest updates
+This page summarizes notable user-facing updates.
 
-```json
-{
-  "Additional Changes": [
-    "The documentation has been updated to reflect the current defaults and available capabilities for day-to-day usage.",
-    "Prepared the package for distribution with tighter publishing hygiene and automated release steps."
-  ],
-  "Breaking Changes": [
-    "The published package now requires a newer Node.js runtime, which may require updating your environment before upgrading."
-  ],
-  "Deprecations": [
-    "Removed documentation for an unimplemented proxy approach to prevent relying on unsupported behavior."
-  ],
-  "New Features": [
-    "Added clearer guidance for npm and source-based installation, including prerequisites and configuration."
-  ]
-}
+## v1.6.0
 
-```
+- Date: 2026-02-13
+- Version: 1.6.0
+
+This update covers documentation and packaging updates for `@britt/llpm`.
+
+### New Features
+
+- Added clearer guidance for `npm` and source-based installation, including prerequisites and configuration.
+
+### Breaking Changes
+
+- Updated the published package runtime requirement to `Node.js 18+`.
+
+### Deprecations
+
+- Removed documentation for an unimplemented proxy approach to prevent relying on unsupported behavior.
+
+### Additional Changes
+
+- Updated `README.md` to reflect the current defaults and available capabilities for day-to-day usage.
+- Updated packaging for `@britt/llpm` with restricted published files and an automated publish workflow.
