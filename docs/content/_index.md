@@ -14,7 +14,34 @@ Use LLPM to:
 - Run guided “skills” for common product-management workflows (planning, requirements, stakeholder updates, research, and more)
 - Use multiple LLM providers and switch models without changing your workflow
 
-## Install LLPM (from source)
+## Install
+
+### Install globally
+
+From npm (recommended):
+
+```bash
+npm install -g @britt/llpm
+```
+
+With Bun:
+
+1. Add `@britt/llpm` to `trustedDependencies` in `~/.bunfig.toml`.
+
+   ```toml
+   [install]
+   trustedDependencies = ["@britt/llpm"]
+   ```
+
+2. Install:
+
+   ```bash
+   bun install -g @britt/llpm
+   ```
+
+After installation, run `llpm` to start the CLI.
+
+### Install from source
 
 LLPM is a Node.js application. You install it from source and can choose either Bun or npm to manage dependencies.
 
@@ -31,6 +58,13 @@ If you use Bun as your JavaScript runtime:
 
 ```bash
 bun install
+```
+
+If Bun blocks `postinstall` scripts for untrusted packages, add `@britt/llpm` to `trustedDependencies` in your global `~/.bunfig.toml`.
+
+```toml
+[install]
+trustedDependencies = ["@britt/llpm"]
 ```
 
 ### 3. Or install dependencies with npm
