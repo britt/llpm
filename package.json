@@ -1,6 +1,6 @@
 {
   "name": "@britt/llpm",
-  "version": "1.6.0",
+  "version": "1.7.0",
   "description": "Large Language Model Product Manager - AI-powered CLI for software development",
   "keywords": [
     "llm",
@@ -31,8 +31,8 @@
   "private": false,
   "files": [
     "bin/llpm.cjs",
-    "scripts/postinstall.cjs",
-    "checksums.json",
+    "dist/llpm.js",
+    "skills/",
     "README.md",
     "LICENSE"
   ],
@@ -43,8 +43,8 @@
     "llpm": "./bin/llpm.cjs"
   },
   "scripts": {
-    "build": "bun build index.ts --compile --outfile bin/llpm",
-    "postinstall": "node scripts/postinstall.cjs",
+    "build": "bun build index.ts --target=node --outfile dist/llpm.js --banner 'var parcelRequire;'",
+    "prepublishOnly": "bun run build",
     "start": "bun run index.ts",
     "start:verbose": "bun run index.ts --verbose",
     "dev": "bun run index.ts",

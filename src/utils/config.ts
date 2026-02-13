@@ -6,10 +6,26 @@ import { fileURLToPath } from 'url';
 import { debug } from './logger';
 
 // Get the LLPM installation directory (where the package is installed)
-// This file is at src/utils/config.ts, so go up 2 levels to get to project root
+// Works in both dev mode (src/utils/config.ts) and bundled mode (dist/llpm.js)
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-const LLPM_ROOT = join(__dirname, '..', '..');
+
+function findPackageRoot(startDir: string): string {
+  let dir = startDir;
+  while (dir !== dirname(dir)) {
+    if (existsSync(join(dir, 'package.json'))) {
+      return dir;
+    }
+    dir = dirname(dir);
+  }
+  return startDir;
+}
+
+const LLPM_ROOT = findPackageRoot(__dirname);
+
+export function getLLPMRoot(): string {
+  return LLPM_ROOT;
+}
 
 // Allow override for testing
 function getBaseConfigDir(): string {

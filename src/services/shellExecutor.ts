@@ -1,4 +1,4 @@
-import { $ } from 'bun';
+import { exec } from 'child_process';
 import type { ShellConfig, ShellResult } from '../types/shell';
 import { validateShellExecution } from '../utils/shellPermissions';
 
@@ -41,50 +41,45 @@ export class ShellExecutor {
     }
 
     try {
-      // Use Promise.race for timeout handling
-      const executeCommand = async () => {
-        // Filter out undefined values from process.env
-        const envVars: Record<string, string> = {};
-        for (const [key, value] of Object.entries(process.env)) {
-          if (value !== undefined) {
-            envVars[key] = value;
-          }
+      // Filter out undefined values from process.env
+      const envVars: Record<string, string> = {};
+      for (const [key, value] of Object.entries(process.env)) {
+        if (value !== undefined) {
+          envVars[key] = value;
         }
+      }
 
-        const result = await $`${{ raw: command }}`
-          .cwd(cwd)
-          .env({ ...envVars, ...options.env })
-          .quiet()
-          .nothrow();
-
-        return {
-          success: result.exitCode === 0,
-          stdout: result.stdout.toString(),
-          stderr: result.stderr.toString(),
-          exitCode: result.exitCode,
-          command,
+      const result = await new Promise<ShellResult>((resolve) => {
+        exec(command, {
           cwd,
-          durationMs: Date.now() - startTime
-        };
-      };
+          env: { ...envVars, ...options.env },
+          timeout,
+          maxBuffer: 10 * 1024 * 1024 // 10MB
+        }, (error, stdout, stderr) => {
+          const durationMs = Date.now() - startTime;
+          const exitCode = error
+            ? ((error as NodeJS.ErrnoException).code !== undefined && typeof (error as NodeJS.ErrnoException).code === 'number'
+              ? (error as unknown as { code: number }).code
+              : 1)
+            : 0;
 
-      const timeoutPromise = new Promise<ShellResult>((resolve) => {
-        setTimeout(() => {
+          // Detect timeout via killed flag
+          const killed = error && (error as unknown as { killed?: boolean }).killed;
+
           resolve({
-            success: false,
-            stdout: '',
-            stderr: '',
-            exitCode: -1,
+            success: exitCode === 0,
+            stdout: stdout || '',
+            stderr: stderr || '',
+            exitCode,
             command,
             cwd,
-            durationMs: Date.now() - startTime,
-            timedOut: true,
-            error: `Command timed out after ${timeout}ms`
+            durationMs,
+            ...(killed ? { timedOut: true, error: `Command timed out after ${timeout}ms` } : {})
           });
-        }, timeout);
+        });
       });
 
-      return await Promise.race([executeCommand(), timeoutPromise]);
+      return result;
     } catch (error) {
       const durationMs = Date.now() - startTime;
       const errorMessage = error instanceof Error ? error.message : String(error);
