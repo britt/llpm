@@ -10,12 +10,20 @@ LLPM provides slash commands for quick access to features.
 | Command | Description |
 |---------|-------------|
 | `/help` | Display available commands |
-| `/exit` | Exit LLPM |
+| `/quit` or `/exit` | Exit LLPM |
 | `/clear` | Clear chat history |
+| `/history` | View chat history |
+| `/info` | Show application and current project information |
 | `/project` | Project management |
+| `/project-scan` | Scan and analyze project structure |
 | `/github` | GitHub operations |
+| `/issue` | Manage GitHub issues |
 | `/model` | AI model management |
+| `/notes` | Manage project notes |
+| `/stakeholder` | Manage stakeholders and goals |
 | `/skills` | Skills system |
+| `/registry` | View model registry information |
+| `/debug` | Show recent debug logs for troubleshooting |
 
 ## Project Commands
 
@@ -33,6 +41,33 @@ LLPM provides slash commands for quick access to features.
 |---------|-------------|
 | `/github list` | List your repositories |
 | `/github search <query>` | Search GitHub repositories |
+
+## Issue Commands
+
+| Command | Description |
+|---------|-------------|
+| `/issue` | Manage GitHub issues |
+
+## Notes Commands
+
+| Command | Description |
+|---------|-------------|
+| `/notes` | Manage project notes |
+
+## Stakeholder Commands
+
+| Command | Description |
+|---------|-------------|
+| `/stakeholder` | Manage stakeholders and goals |
+
+## Other Commands
+
+| Command | Description |
+|---------|-------------|
+| `/info` | Show application and current project information |
+| `/history` | View chat history |
+| `/registry` | View model registry information |
+| `/debug` | Show recent debug logs for troubleshooting |
 
 ## Model Commands
 
