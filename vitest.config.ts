@@ -5,11 +5,7 @@ export default defineConfig({
     'process.env.CI': JSON.stringify(process.env.CI),
     'process.env.NODE_ENV': JSON.stringify('test')
   },
-  resolve: {
-    alias: {
-      'bun': new URL('./test/mocks/bun.js', import.meta.url).pathname,
-    }
-  },
+  resolve: {},
   test: {
     globals: true,
     environment: 'jsdom',

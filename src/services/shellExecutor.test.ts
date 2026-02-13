@@ -1,31 +1,18 @@
+// @vitest-environment node
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { DEFAULT_SHELL_CONFIG, type ShellConfig } from '../types/shell';
 import { tmpdir } from 'os';
 import { mkdirSync, rmSync, existsSync } from 'fs';
 import { join } from 'path';
 
-// Mock the Bun $ shell function using vi.hoisted to avoid reference errors
-const { mockShell, mockShellResult } = vi.hoisted(() => {
-  const mockShellResult = {
-    exitCode: 0,
-    stdout: Buffer.from('hello world\n'),
-    stderr: Buffer.from('')
-  };
-
-  const mockShell = vi.fn().mockImplementation(() => {
-    return {
-      cwd: vi.fn().mockReturnThis(),
-      env: vi.fn().mockReturnThis(),
-      quiet: vi.fn().mockReturnThis(),
-      nothrow: vi.fn().mockResolvedValue(mockShellResult)
-    };
-  });
-
-  return { mockShell, mockShellResult };
+// Mock child_process.exec using vi.hoisted
+const { mockExec } = vi.hoisted(() => {
+  const mockExec = vi.fn();
+  return { mockExec };
 });
 
-vi.mock('bun', () => ({
-  $: mockShell
+vi.mock('child_process', () => ({
+  exec: mockExec
 }));
 
 import { ShellExecutor } from './shellExecutor';
@@ -50,18 +37,11 @@ describe('ShellExecutor', () => {
     // Reset mocks
     vi.clearAllMocks();
 
-    // Reset to default successful result
-    mockShellResult.exitCode = 0;
-    mockShellResult.stdout = Buffer.from('hello world\n');
-    mockShellResult.stderr = Buffer.from('');
-
-    // Re-apply default mock implementation
-    mockShell.mockImplementation(() => ({
-      cwd: vi.fn().mockReturnThis(),
-      env: vi.fn().mockReturnThis(),
-      quiet: vi.fn().mockReturnThis(),
-      nothrow: vi.fn().mockResolvedValue(mockShellResult)
-    }));
+    // Default: successful command execution
+    mockExec.mockImplementation((_cmd: string, _opts: unknown, cb: (err: null | Error, stdout: string, stderr: string) => void) => {
+      cb(null, 'hello world\n', '');
+      return {};
+    });
   });
 
   afterEach(() => {
@@ -82,10 +62,12 @@ describe('ShellExecutor', () => {
     });
 
     it('should capture stderr', async () => {
-      // Mock a failed command
-      mockShellResult.exitCode = 1;
-      mockShellResult.stdout = Buffer.from('');
-      mockShellResult.stderr = Buffer.from('ls: /nonexistent-path-12345: No such file or directory\n');
+      mockExec.mockImplementation((_cmd: string, _opts: unknown, cb: (err: Error | null, stdout: string, stderr: string) => void) => {
+        const error = new Error('command failed') as Error & { code: number };
+        error.code = 1;
+        cb(error, '', 'ls: /nonexistent-path-12345: No such file or directory\n');
+        return {};
+      });
 
       const result = await executor.execute('ls /nonexistent-path-12345');
 
@@ -98,19 +80,13 @@ describe('ShellExecutor', () => {
       const shortTimeoutConfig = { ...enabledConfig, defaultTimeout: 100 };
       const shortExecutor = new ShellExecutor(shortTimeoutConfig, testDir);
 
-      // Mock a long-running command by making nothrow() delay
-      mockShell.mockImplementationOnce(() => ({
-        cwd: vi.fn().mockReturnThis(),
-        env: vi.fn().mockReturnThis(),
-        quiet: vi.fn().mockReturnThis(),
-        nothrow: vi.fn().mockImplementation(() => new Promise(resolve => {
-          setTimeout(() => resolve({
-            exitCode: 0,
-            stdout: Buffer.from(''),
-            stderr: Buffer.from('')
-          }), 200); // Longer than 100ms timeout
-        }))
-      }));
+      mockExec.mockImplementation((_cmd: string, _opts: unknown, cb: (err: Error | null, stdout: string, stderr: string) => void) => {
+        const error = new Error('Command timed out') as Error & { killed: boolean; code: number };
+        error.killed = true;
+        error.code = 1;
+        setTimeout(() => cb(error, '', ''), 150);
+        return {};
+      });
 
       const result = await shortExecutor.execute('sleep 10');
 
@@ -136,10 +112,10 @@ describe('ShellExecutor', () => {
     });
 
     it('should use custom cwd when provided', async () => {
-      // Mock pwd output
-      mockShellResult.exitCode = 0;
-      mockShellResult.stdout = Buffer.from(testDir + '\n');
-      mockShellResult.stderr = Buffer.from('');
+      mockExec.mockImplementation((_cmd: string, _opts: unknown, cb: (err: null | Error, stdout: string, stderr: string) => void) => {
+        cb(null, testDir + '\n', '');
+        return {};
+      });
 
       const result = await executor.execute('pwd', { cwd: testDir });
 
@@ -148,12 +124,17 @@ describe('ShellExecutor', () => {
       expect(result.cwd).toBe(testDir);
     });
 
-    it('should track execution duration', async () => {
-      // Mock echo test output
-      mockShellResult.exitCode = 0;
-      mockShellResult.stdout = Buffer.from('test\n');
-      mockShellResult.stderr = Buffer.from('');
+    it('should pass cwd to exec options', async () => {
+      await executor.execute('pwd', { cwd: testDir });
 
+      expect(mockExec).toHaveBeenCalledWith(
+        'pwd',
+        expect.objectContaining({ cwd: testDir }),
+        expect.any(Function)
+      );
+    });
+
+    it('should track execution duration', async () => {
       const result = await executor.execute('echo test');
 
       expect(result.durationMs).toBeGreaterThanOrEqual(0);
@@ -161,13 +142,9 @@ describe('ShellExecutor', () => {
     });
 
     it('should handle shell execution errors gracefully', async () => {
-      // Mock the shell to throw an error
-      mockShell.mockImplementationOnce(() => ({
-        cwd: vi.fn().mockReturnThis(),
-        env: vi.fn().mockReturnThis(),
-        quiet: vi.fn().mockReturnThis(),
-        nothrow: vi.fn().mockRejectedValue(new Error('Shell execution failed'))
-      }));
+      mockExec.mockImplementation(() => {
+        throw new Error('Shell execution failed');
+      });
 
       const result = await executor.execute('some-command');
 
@@ -178,13 +155,9 @@ describe('ShellExecutor', () => {
     });
 
     it('should handle non-Error throws gracefully', async () => {
-      // Mock the shell to throw a string (non-Error)
-      mockShell.mockImplementationOnce(() => ({
-        cwd: vi.fn().mockReturnThis(),
-        env: vi.fn().mockReturnThis(),
-        quiet: vi.fn().mockReturnThis(),
-        nothrow: vi.fn().mockRejectedValue('string error')
-      }));
+      mockExec.mockImplementation(() => {
+        throw 'string error';
+      });
 
       const result = await executor.execute('some-command');
 
