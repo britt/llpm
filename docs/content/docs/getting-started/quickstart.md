@@ -11,6 +11,8 @@ weight: 2
    llpm
    ```
 
+   For installation details, see [Installation](../installation).
+
    Start LLPM from source:
 
    ```bash
