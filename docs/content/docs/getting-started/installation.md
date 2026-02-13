@@ -10,6 +10,29 @@ weight: 1
 - [Git](https://git-scm.com) for cloning the repository
 - At least one AI provider API key
 
+## Install from npm
+
+```bash
+npm install -g @britt/llpm
+llpm
+```
+
+## Install with Bun
+
+Bun blocks `postinstall` scripts from packages not in its trusted list. Add `@britt/llpm` to the global `~/.bunfig.toml` before installing:
+
+```toml
+[install]
+trustedDependencies = ["@britt/llpm"]
+```
+
+Then install:
+
+```bash
+bun install -g @britt/llpm
+llpm
+```
+
 ## Install from Source
 
 1. **Clone the repository**
@@ -23,15 +46,6 @@ weight: 1
 
    ```bash
    bun install
-   ```
-
-   If Bun blocks `postinstall` scripts for untrusted packages, add `@britt/llpm` to `trustedDependencies` in your global `~/.bunfig.toml`.
-
-   Example:
-
-   ```toml
-   [install]
-   trustedDependencies = ["@britt/llpm"]
    ```
 
 3. **Configure environment**
