@@ -53,16 +53,9 @@ describe('myFunction', () => {
 
 ## Coverage Requirements
 
-LLPM maintains strict coverage thresholds:
+Coverage thresholds are enforced via `vitest.config.ts`.
 
-| Metric | Minimum Coverage |
-|--------|-----------------|
-| Lines | 90%+ |
-| Functions | 90%+ |
-| Branches | 85%+ |
-| Statements | 90%+ |
-
-Run `bun run test:coverage` to verify coverage meets these thresholds.
+Run `bun run test:coverage` to verify coverage meets the configured thresholds.
 
 ## TDD Workflow
 
