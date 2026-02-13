@@ -54,7 +54,7 @@ Full documentation available at: **https://britt.github.io/llpm/**
 
 ### Summary
 
-`DEMO-1` details and current status are maintained in the Jira ticket. This repository does not duplicate Jira content.
+`DEMO-1` details and current status are maintained in the Jira ticket.
 
 ## Features
 
