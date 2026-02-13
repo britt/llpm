@@ -7,13 +7,6 @@ weight: 99
 
 This update addresses the changes listed below.
 
-### Source entries (generated)
+### Security
 
-```json
-{
-  "Security": [
-    "Updated the package publishing workflow to use Node.js 24, install the latest npm, and publish with `npm publish --provenance` without `NODE_AUTH_TOKEN`."
-  ]
-}
-
-```
+- Updated the package publishing workflow to use Node.js 24, install the latest npm, and publish with `npm publish --provenance` without `NODE_AUTH_TOKEN`.
