@@ -4,6 +4,18 @@ A modern, AI-powered project management CLI that brings intelligent assistance d
 
 Perfect for developers who want to organize multiple projects, interact with GitHub repositories, and leverage AI assistance without leaving the command line.
 
+## Installation
+
+```bash
+npm install -g @britt/llpm
+```
+
+### Requirements
+
+- Node.js 18 or later
+- API key for at least one AI provider (OpenAI, Anthropic, Groq, or Google Vertex AI)
+- GitHub token (optional, for GitHub integration features)
+
 ## Documentation
 
 Full documentation available at: **https://britt.github.io/llpm/**

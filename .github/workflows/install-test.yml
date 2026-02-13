@@ -141,7 +141,7 @@ jobs:
           const pkg = require('./package.json');
           
           // Verify required fields for npm publishing
-          if (!pkg.name || pkg.name !== 'llpm') throw new Error('Invalid name');
+          if (!pkg.name || pkg.name !== '@britt/llpm') throw new Error('Invalid name');
           if (!pkg.version) throw new Error('Missing version');
           if (!pkg.description) throw new Error('Missing description');
           if (!pkg.keywords || !Array.isArray(pkg.keywords)) throw new Error('Missing keywords');
