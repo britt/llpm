@@ -2,7 +2,7 @@
 
 A modern, AI-powered project management CLI that brings intelligent assistance directly to your terminal. Built with Ink for a polished terminal UI, LLPM combines natural language interaction with structured project management, offering seamless GitHub integration and persistent workspace configuration.
 
-Perfect for developers who want to organize multiple projects, interact with GitHub repositories, and leverage AI assistance without leaving the command line.
+Suitable for organizing multiple projects, interacting with GitHub repositories, and leveraging AI assistance without leaving the command line.
 
 ## Installation
 
