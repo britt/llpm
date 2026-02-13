@@ -1,10 +1,10 @@
 # Contributing to LLPM
 
-Thank you for your interest in contributing to LLPM! This guide covers everything you need to get started.
+This guide describes how to contribute to LLPM.
 
 ## Code of Conduct
 
-Be respectful, constructive, and collaborative. We welcome contributors of all experience levels.
+Be respectful, constructive, and collaborative. Contributors of all experience levels are welcome.
 
 ## Reporting Bugs
 
@@ -255,13 +255,13 @@ The GitHub Actions pipeline runs on every push and PR to `main`:
 - Coverage report posted as a PR comment
 - Dependency security audit
 
-Your PR must pass all CI checks before merging.
+Pull requests must pass all CI checks before merging.
 
 ## Getting Help
 
 - Search [existing issues](https://github.com/britt/llpm/issues) for similar questions
 - Read the [full documentation](https://britt.github.io/llpm/)
-- Open an issue if you're stuck -- we're happy to help
+- Open an issue when additional help is needed
 
 ## License
 
