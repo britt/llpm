@@ -36,8 +36,13 @@ GOOGLE_VERTEX_REGION=us-central1
 ### Optional Integrations
 
 ```bash
-# GitHub integration
+# GitHub integration (optional)
+# Either environment variable can be used.
 GITHUB_TOKEN=your-github-token
+# GH_TOKEN=your-github-token
+
+# Web search (optional)
+ARCADE_API_KEY=your-arcade-api-key
 ```
 
 ## Configuration Files
