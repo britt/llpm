@@ -80,3 +80,7 @@ See the [Skills Reference](/docs/skills-reference/) for:
 - Complete documentation of all 19 built-in skills
 - How to create custom skills
 - Skill file format and best practices
+
+## Documentation reference
+
+- [A doc to be read by doc](https://sandgarden-dev.atlassian.net/wiki/spaces/~71202059337e6ab0e0426dac5b484c6672f753/pages/26935297/A+doc+to+be+read+by+doc)
