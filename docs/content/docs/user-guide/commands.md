@@ -20,7 +20,6 @@ LLPM provides slash commands for quick access to features.
 | `/notes` | Notes management |
 | `/stakeholder` | Stakeholder management |
 | `/history` | Chat history |
-| `/registry` | Model registry information |
 | `/debug` | Debug logs |
 
 ## Project Commands
