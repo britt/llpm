@@ -75,9 +75,14 @@ If you prefer Node.js with npm:
 npm install
 ```
 
-### 4. Configure providers and GitHub
+### 4. Configure providers, GitHub, and web search
 
-Create a `.env` file in the LLPM directory with at least one model provider API key. Optionally add a GitHub token so LLPM can read and update issues and pull requests for your repositories.
+Create a `.env` file in the LLPM directory with at least one model provider API key.
+
+Optionally add:
+
+- `GITHUB_TOKEN` for GitHub integration (so LLPM can read and update issues and pull requests)
+- `ARCADE_API_KEY` for web search functionality
 
 ```bash
 # Required: at least one LLM provider
@@ -92,6 +97,9 @@ GOOGLE_VERTEX_REGION=us-central1
 
 # Optional: GitHub integration
 GITHUB_TOKEN=ghp_...
+
+# Optional: Web search
+ARCADE_API_KEY=your-arcade-api-key-here
 ```
 
 ### 5. Start LLPM

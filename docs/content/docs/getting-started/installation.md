@@ -73,6 +73,9 @@ GROQ_API_KEY=gsk_...
 
 # Optional: GitHub integration
 GITHUB_TOKEN=ghp_...
+
+# Optional: Web search
+ARCADE_API_KEY=your-arcade-api-key-here
 ```
 
 Bun automatically loads environment variables from `.env` files.
