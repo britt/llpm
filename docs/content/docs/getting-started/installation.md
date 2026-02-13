@@ -79,3 +79,7 @@ ARCADE_API_KEY=your-arcade-api-key-here
 ```
 
 Bun automatically loads environment variables from `.env` files.
+
+## Documentation reference
+
+- [A doc to be read by doc](https://sandgarden-dev.atlassian.net/wiki/spaces/~71202059337e6ab0e0426dac5b484c6672f753/pages/26935297/A+doc+to+be+read+by+doc)
