@@ -9,10 +9,11 @@ Get your development environment ready to contribute to LLPM.
 
 Before you begin, ensure you have the following installed:
 
-- [Bun](https://bun.sh) runtime (latest version recommended) - the only required JavaScript runtime
+- [Bun](https://bun.sh) runtime (latest version recommended)
+- Node.js 18+
 - [Git](https://git-scm.com) for version control
 
-Note: Node.js is not required. LLPM uses Bun as its runtime.
+LLPM supports development and CI workflows that run on Node.js. Install Node.js 18+ alongside Bun.
 
 ## Clone and Install
 
