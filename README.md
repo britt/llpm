@@ -52,35 +52,35 @@ Full documentation available at: **https://britt.github.io/llpm/**
 
 ### Core Features
 
-- 🤖 Chat with AI assistant (GPT-5.2 by default) with multi-provider support
-- 🔄 Dynamic model switching between OpenAI, Anthropic, Groq, Google Vertex AI, and Cerebras
-- 💬 Interactive terminal chat interface with real-time input handling
-- 🎨 Clean, styled terminal UI built with Ink
-- 📝 Persistent chat history per session
-- ⚙️ Configurable system prompts stored in user config directory
+- Chat with an AI assistant (GPT-5.2 by default) with multi-provider support
+- Dynamic model switching between OpenAI, Anthropic, Groq, Google Vertex AI, and Cerebras
+- Interactive terminal chat interface with real-time input handling
+- Clean, styled terminal UI built with Ink
+- Persistent chat history per session
+- Configurable system prompts stored in the user config directory
 
 ### Project Management
 
-- 📁 Multi-project support with automatic configuration persistence
-- 🔄 Easy project switching and management
-- 📂 GitHub repository integration for project setup
-- 🛠️ LLM tools for natural language project management
-- 💾 Configuration stored in `~/.llpm/`
+- Multi-project support with automatic configuration persistence
+- Project switching and management
+- GitHub repository integration for project setup
+- LLM tools for natural language project management
+- Configuration stored in `~/.llpm/`
 
 ### GitHub Integration
 
-- 🔍 Browse and search your GitHub repositories
-- 📋 List repositories with filtering and sorting options
-- 🎯 Repository selection for new projects
-- 🔗 Direct integration with project management
+- Browse and search GitHub repositories
+- List repositories with filtering and sorting options
+- Repository selection for new projects
+- Direct integration with project management
 
 ### Skills System
 
-- 🎓 **Dynamic skill loading** with automatic system prompt injection
-- 📚 **20 core skills included**: Mermaid diagrams, stakeholder tracking, user story templates, and more
-- 🔧 **Custom skills support** - Create your own reusable instruction sets
-- 🤖 **AI-aware**: Skills are automatically listed in the system prompt with usage guidance
-- 🔄 **Hot reloading** - Changes take effect immediately with `/skills reload`
+- **Dynamic skill loading** with automatic system prompt injection
+- **19 core skills included**: Mermaid diagrams, stakeholder tracking, user story templates, and more
+- **Custom skills support** - Create reusable instruction sets
+- **AI-aware**: Skills are automatically listed in the system prompt with usage guidance
+- **Hot reloading**: Changes take effect immediately with `/skills reload`
 
 ### Slash Commands
 
