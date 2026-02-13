@@ -54,9 +54,9 @@ Full documentation available at: **https://britt.github.io/llpm/**
 
 ### Summary
 
-`DEMO-1` tracks the work to establish and maintain the Jira ticket for this repository.
+`DEMO-1` is tracked in Jira at https://sandgarden-dev.atlassian.net/browse/DEMO-1.
 
-The Jira ticket remains the source of truth for scope, status, and any related discussion.
+Issue details and current status are maintained in the Jira ticket.
 
 ## Features
 
