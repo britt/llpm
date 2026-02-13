@@ -13,7 +13,7 @@ weight: 99
 ```json
 {
   "Additional Changes": [
-    "Documentation now includes a Bun-specific installation section that explains the prerequisite trust configuration needed before installing the package. The new docs describe configuring Bun’s trusted dependency settings prior to running the install for `@britt/llpm`, reducing install-time trust/policy failures."
+    "Added Bun installation documentation describing how to configure Bun's `trustedDependencies` before installing `@britt/llpm` to reduce install-time trust and policy failures."
   ]
 }
 
