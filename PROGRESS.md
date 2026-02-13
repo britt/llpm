@@ -39,3 +39,42 @@ All 12 new tests pass:
 - ui-notification vs system: 2 tests
   - behavior differs correctly
   - color is shared
+
+## Task 2: Issue #262 - Rework build to eliminate compiled binary dependency - COMPLETE
+- Started: 2026-02-13
+- Tests: 2094 passing, 13 skipped (all pre-existing skips)
+- Build: Successful (9.85 MB JS bundle, 2447 modules)
+- Linting: Clean in modified files (pre-existing warnings elsewhere unchanged)
+- Typecheck: Clean in modified files (pre-existing errors elsewhere unchanged)
+- npm pack: Verified - 25 files, 1.9 MB compressed
+- Version: 1.6.0 → 1.7.0 (MINOR bump - new distribution method)
+- Completed: 2026-02-13
+- Notes:
+  - Replaced `bun build --compile` (platform-specific binary) with `bun build --target=node` (universal JS bundle)
+  - Eliminated postinstall binary download, checksum verification, and platform detection
+  - Replaced Bun shell API (`import { $ } from 'bun'`) with Node's `child_process.exec` in shellExecutor
+  - Rewrote `bin/llpm.cjs` from 89-line binary spawner to 2-line ESM import wrapper
+  - Added `findPackageRoot()` for robust LLPM_ROOT detection in bundled mode
+  - Removed `import.meta.main` guard that blocked execution when loaded via `import()`
+  - Fixed `parcelRequire` compatibility with `--banner 'var parcelRequire;'` build flag
+  - Updated CI workflows for bundle-based testing (Node 18/20/22 compat)
+  - Updated npm-publish workflow to build before publish
+
+### Files Changed
+- `package.json` - Build script, version 1.7.0, files array, prepublishOnly script
+- `src/services/shellExecutor.ts` - Replaced Bun shell with child_process.exec
+- `src/services/shellExecutor.test.ts` - Mock child_process instead of bun
+- `src/tools/shellTools.test.ts` - Mock child_process instead of bun
+- `src/utils/config.ts` - findPackageRoot() for bundle-safe LLPM_ROOT
+- `src/utils/config.test.ts` - Added getLLPMRoot tests
+- `index.ts` - Removed import.meta.main guard, fixed telemetry version
+- `bin/llpm.cjs` - Rewrote as 2-line ESM import wrapper
+- `vitest.config.ts` - Removed bun mock alias
+- `.github/workflows/npm-publish.yml` - Added Bun setup and build steps
+- `.github/workflows/install-test.yml` - Complete rewrite for bundle testing
+
+### Files Deleted
+- `scripts/postinstall.cjs` - No longer needed (no binary download)
+- `checksums.json` - No longer needed (no binary verification)
+- `bin/llpm-macos-arm64.tar.gz` - No longer needed (no compiled binary)
+- `test/mocks/bun.js` - No longer needed (no bun import to mock)

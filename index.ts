@@ -145,7 +145,7 @@ function isRawModeSupported(): boolean {
   }
 }
 
-if (import.meta.main) {
+{
   (async () => {
     // Parse command line arguments
     const args = process.argv.slice(2);
@@ -172,7 +172,7 @@ if (import.meta.main) {
     debug('Initializing telemetry');
     initializeTelemetry({
       serviceName: 'llpm',
-      serviceVersion: '0.16.0',
+      serviceVersion: '1.7.0',
     });
     debug('Telemetry initialization completed');
 

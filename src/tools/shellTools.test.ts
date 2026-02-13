@@ -1,3 +1,4 @@
+// @vitest-environment node
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import * as projectConfig from '../utils/projectConfig';
 import type { Project } from '../types/project';
@@ -15,28 +16,14 @@ vi.mock('../utils/config', async () => {
   };
 });
 
-// Mock the Bun $ shell function
-const { mockShell, mockShellResult } = vi.hoisted(() => {
-  const mockShellResult = {
-    exitCode: 0,
-    stdout: Buffer.from('hello world\n'),
-    stderr: Buffer.from('')
-  };
-
-  const mockShell = vi.fn().mockImplementation(() => {
-    return {
-      cwd: vi.fn().mockReturnThis(),
-      env: vi.fn().mockReturnThis(),
-      quiet: vi.fn().mockReturnThis(),
-      nothrow: vi.fn().mockResolvedValue(mockShellResult)
-    };
-  });
-
-  return { mockShell, mockShellResult };
+// Mock child_process.exec using vi.hoisted
+const { mockExec } = vi.hoisted(() => {
+  const mockExec = vi.fn();
+  return { mockExec };
 });
 
-vi.mock('bun', () => ({
-  $: mockShell
+vi.mock('child_process', () => ({
+  exec: mockExec
 }));
 
 import { runShellCommandTool } from './shellTools';
@@ -78,18 +65,11 @@ describe('shellTools', () => {
     // Reset mocks
     vi.clearAllMocks();
 
-    // Reset to default successful result
-    mockShellResult.exitCode = 0;
-    mockShellResult.stdout = Buffer.from('hello world\n');
-    mockShellResult.stderr = Buffer.from('');
-
-    // Re-apply default mock implementation
-    mockShell.mockImplementation(() => ({
-      cwd: vi.fn().mockReturnThis(),
-      env: vi.fn().mockReturnThis(),
-      quiet: vi.fn().mockReturnThis(),
-      nothrow: vi.fn().mockResolvedValue(mockShellResult)
-    }));
+    // Default: successful command execution via child_process.exec
+    mockExec.mockImplementation((_cmd: string, _opts: unknown, cb: (err: null | Error, stdout: string, stderr: string) => void) => {
+      cb(null, 'hello world\n', '');
+      return {};
+    });
   });
 
   afterEach(() => {
@@ -109,7 +89,6 @@ describe('shellTools', () => {
 
     describe('confirmation flow', () => {
       it('should require confirmation when confirmed is not set', async () => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const execute = runShellCommandTool.execute as any;
         const result = await execute({
           command: 'echo "hello world"'
@@ -122,7 +101,6 @@ describe('shellTools', () => {
       });
 
       it('should show working directory in confirmation message', async () => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const execute = runShellCommandTool.execute as any;
         const result = await execute({
           command: 'ls -la',
@@ -134,7 +112,6 @@ describe('shellTools', () => {
       });
 
       it('should execute command when confirmed is true', async () => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const execute = runShellCommandTool.execute as any;
         const result = await execute({
           command: 'echo "hello world"',
@@ -148,7 +125,7 @@ describe('shellTools', () => {
       });
 
       it('should include execution notice showing command that was run', async () => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
         const execute = runShellCommandTool.execute as any;
         const result = await execute({
           command: 'echo "hello world"',
@@ -171,7 +148,7 @@ describe('shellTools', () => {
           })
         );
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
         const execute = runShellCommandTool.execute as any;
         const result = await execute({
           command: 'echo "hello world"'
@@ -193,7 +170,7 @@ describe('shellTools', () => {
           })
         );
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
         const execute = runShellCommandTool.execute as any;
         const result = await execute({
           command: 'git status'
@@ -208,7 +185,7 @@ describe('shellTools', () => {
     it('should reject when no project is set', async () => {
       vi.spyOn(projectConfig, 'getCurrentProject').mockResolvedValue(null);
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
       const execute = runShellCommandTool.execute as any;
       const result = await execute({
         command: 'echo test'
@@ -219,17 +196,16 @@ describe('shellTools', () => {
     });
 
     it('should respect timeout parameter', async () => {
-      // Mock a long-running command
-      mockShell.mockImplementation(() => ({
-        cwd: vi.fn().mockReturnThis(),
-        env: vi.fn().mockReturnThis(),
-        quiet: vi.fn().mockReturnThis(),
-        nothrow: vi.fn().mockImplementation(() => new Promise(resolve => {
-          setTimeout(() => resolve(mockShellResult), 1000);
-        }))
-      }));
+      // Mock a command that times out
+      mockExec.mockImplementation((_cmd: string, _opts: unknown, cb: (err: Error | null, stdout: string, stderr: string) => void) => {
+        const error = new Error('Command timed out') as Error & { killed: boolean; code: number };
+        error.killed = true;
+        error.code = 1;
+        setTimeout(() => cb(error, '', ''), 200);
+        return {};
+      });
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
       const execute = runShellCommandTool.execute as any;
       const result = await execute({
         command: 'sleep 10',
@@ -250,7 +226,7 @@ describe('shellTools', () => {
       }
 
       // Without config, shell should be disabled by default
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
       const execute = runShellCommandTool.execute as any;
       const result = await execute({
         command: 'echo test',
@@ -267,7 +243,7 @@ describe('shellTools', () => {
       writeFileSync(configPath, JSON.stringify({ model: {} }));
 
       // Should fall back to defaults (shell disabled)
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
       const execute = runShellCommandTool.execute as any;
       const result = await execute({
         command: 'echo test',
@@ -284,7 +260,7 @@ describe('shellTools', () => {
       writeFileSync(configPath, '{ invalid json }');
 
       // Should fall back to defaults (shell disabled)
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
       const execute = runShellCommandTool.execute as any;
       const result = await execute({
         command: 'echo test',
@@ -305,7 +281,7 @@ describe('shellTools', () => {
         })
       );
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
       const execute = runShellCommandTool.execute as any;
       const result = await execute({
         command: 'echo "hello"',
@@ -328,7 +304,7 @@ describe('shellTools', () => {
 
       // The audit logger will try to write, which may or may not succeed
       // depending on the environment, but the command should still succeed
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
       const execute = runShellCommandTool.execute as any;
       const result = await execute({
         command: 'echo "hello"',

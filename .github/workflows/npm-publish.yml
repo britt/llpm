@@ -13,6 +13,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - uses: oven-sh/setup-bun@v2
+
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
@@ -30,6 +32,15 @@ jobs:
             echo "::error::Version mismatch: package.json ($PACKAGE_VERSION) != release tag ($RELEASE_VERSION)"
             exit 1
           fi
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Build JS bundle
+        run: bun run build
+
+      - name: Verify dist/llpm.js exists
+        run: test -f dist/llpm.js
 
       - name: Verify package contents
         run: npm pack --dry-run
