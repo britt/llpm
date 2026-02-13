@@ -1,6 +1,6 @@
 {
-  "name": "llpm",
-  "version": "1.5.1",
+  "name": "@britt/llpm",
+  "version": "1.6.0",
   "description": "Large Language Model Product Manager - AI-powered CLI for software development",
   "keywords": [
     "llm",
@@ -8,7 +8,13 @@
     "cli",
     "product-manager",
     "development",
-    "tools"
+    "tools",
+    "project-management",
+    "github",
+    "terminal",
+    "chat",
+    "openai",
+    "anthropic"
   ],
   "author": "britt",
   "license": "MIT",
@@ -23,6 +29,16 @@
   "module": "index.ts",
   "type": "module",
   "private": false,
+  "files": [
+    "bin/llpm.cjs",
+    "scripts/postinstall.cjs",
+    "checksums.json",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
   "bin": {
     "llpm": "./bin/llpm.cjs"
   },
