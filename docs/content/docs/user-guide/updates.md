@@ -5,12 +5,12 @@ weight: 5
 
 This page summarizes notable user-facing updates.
 
-## v1.6.0
+## v1.6.0: documentation and packaging updates
 
 - Date: 2026-02-13
 - Version: 1.6.0
 
-This update covers documentation and packaging updates for `@britt/llpm`.
+This release covers documentation and packaging updates for `@britt/llpm`.
 
 ### New Features
 
@@ -18,7 +18,7 @@ This update covers documentation and packaging updates for `@britt/llpm`.
 
 ### Breaking Changes
 
-- Updated the published package runtime requirement to `Node.js 18+`.
+- Updated the published package runtime requirement to `Node.js 18+`; update CI images and local runtimes to `Node.js 18` or later.
 
 ### Deprecations
 
