@@ -40,6 +40,15 @@ LLPM provides slash commands for quick access to features.
 | `/github list` | List your repositories |
 | `/github search <query>` | Search GitHub repositories |
 
+## Issue Commands
+
+| Command | Description |
+|---------|-------------|
+| `/issue` | Analyze GitHub issues for the current project |
+| `/issue <number>` | Analyze a specific issue for risks |
+| `/issue risks <number>` | Analyze a specific issue for risks |
+| `/issue help` | Show issue command help |
+
 ## Model Commands
 
 | Command | Description |
@@ -59,3 +68,27 @@ LLPM provides slash commands for quick access to features.
 | `/skills disable <name>` | Disable a skill |
 | `/skills reload` | Rescan skill directories |
 | `/skills reinstall` | Reinstall from repository |
+
+## Notes Commands
+
+| Command | Description |
+|---------|-------------|
+| `/notes` | List notes for the current project |
+| `/notes add <title> [content]` | Add a note |
+| `/notes show <id>` | Show a note |
+| `/notes search <query>` | Search notes |
+| `/notes update <id> <title> [content]` | Update a note |
+| `/notes delete <id>` | Delete a note |
+| `/notes help` | Show notes command help |
+
+## Stakeholder Commands
+
+| Command | Description |
+|---------|-------------|
+| `/stakeholder` | List stakeholders |
+| `/stakeholder add <name> <role> <description>` | Add a stakeholder |
+| `/stakeholder show <name>` | Show stakeholder details |
+| `/stakeholder remove <name>` | Remove a stakeholder |
+| `/stakeholder link <issue#> <stakeholder> <goal>` | Link an issue to a stakeholder goal |
+| `/stakeholder coverage` | Generate a coverage report |
+| `/stakeholder help` | Show stakeholder command help |
