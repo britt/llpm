@@ -144,7 +144,7 @@ export const addProjectTool = tool({
           createdAt: newProject.createdAt,
           updatedAt: newProject.updatedAt
         },
-        message: `Successfully added project "${newProject.name}"`
+        message: `Successfully added project "${newProject.name}" and set it as the active project`
       };
     } catch (error) {
       return {

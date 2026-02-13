@@ -257,19 +257,19 @@ describe('addProject', () => {
     expect(newProject.github_repo).toBe('custom/repo');
   });
 
-  it('should not change current project when adding subsequent projects', async () => {
-    const firstProject = await addProject({
+  it('should set newly created project as current even when other projects exist', async () => {
+    await addProject({
       name: 'First',
       repository: 'https://github.com/test/first'
     });
 
-    await addProject({
+    const secondProject = await addProject({
       name: 'Second',
       repository: 'https://github.com/test/second'
     });
 
     const config = await loadProjectConfig();
-    expect(config.currentProject).toBe(firstProject.id);
+    expect(config.currentProject).toBe(secondProject.id);
   });
 });
 

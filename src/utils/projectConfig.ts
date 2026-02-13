@@ -229,11 +229,8 @@ export async function addProject(
 
   config.projects[projectId] = newProject;
 
-  // If this is the first project, make it current
-  if (Object.keys(config.projects).length === 1) {
-    config.currentProject = projectId;
-    debug('Set first project as current:', projectId);
-  }
+  config.currentProject = projectId;
+  debug('Set newly created project as current:', projectId);
 
   await saveProjectConfig(config);
   debug('Project added successfully:', projectId);
