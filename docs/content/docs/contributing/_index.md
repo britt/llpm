@@ -7,7 +7,7 @@ This section describes the contribution workflow for LLPM.
 
 ## Overview
 
-LLPM welcomes contributions from the community. Whether you are fixing bugs, adding features, or improving documentation, your help is appreciated.
+LLPM accepts community contributions, including bug fixes, features, and documentation improvements.
 
 ## Getting Started
 
