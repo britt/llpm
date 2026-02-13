@@ -53,3 +53,7 @@ LLPM provides slash commands for quick access to features.
 | `/skills disable <name>` | Disable a skill |
 | `/skills reload` | Rescan skill directories |
 | `/skills reinstall` | Reinstall from repository |
+
+## Documentation reference
+
+- [A doc to be read by doc](https://sandgarden-dev.atlassian.net/wiki/spaces/~71202059337e6ab0e0426dac5b484c6672f753/pages/26935297/A+doc+to+be+read+by+doc)
