@@ -68,3 +68,7 @@ Skills with the same name are loaded based on priority (higher priority wins).
 - [Documentation Skills](documentation-skills) - Formatting and templates
 - [Analysis Skills](analysis-skills) - Risk detection and triage
 - [Research Skills](research-skills) - Web research and summarization
+
+## Documentation writer reference
+
+- [Datasource Recording Rules Summary (DEMO-4) - internal reference](https://sandgarden-dev.atlassian.net/wiki/spaces/~71202059337e6ab0e0426dac5b484c6672f753/pages/26935297/A+doc+to+be+read+by+doc)
