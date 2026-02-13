@@ -37,10 +37,37 @@ weight: 1
 
 ## Install Globally (optional)
 
+### Install from this repository checkout
+
+Use this option when running LLPM from a local clone.
+
 ```bash
 bun link
 llpm
 ```
+
+### Install from the package registry (Bun)
+
+Bun blocks `postinstall` scripts from untrusted packages. If installing `@britt/llpm` fails for that reason, add `@britt/llpm` to Bun's `trustedDependencies` in your global `~/.bunfig.toml` before installing.
+
+1. Add `@britt/llpm` to `~/.bunfig.toml`:
+
+   ```toml
+   [install]
+   trustedDependencies = ["@britt/llpm"]
+   ```
+
+2. Install globally:
+
+   ```bash
+   bun install -g @britt/llpm
+   ```
+
+3. Run:
+
+   ```bash
+   llpm
+   ```
 
 ## Verify Installation
 
