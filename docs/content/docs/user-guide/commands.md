@@ -10,12 +10,18 @@ LLPM provides slash commands for quick access to features.
 | Command | Description |
 |---------|-------------|
 | `/help` | Display available commands |
-| `/exit` | Exit LLPM |
+| `/quit` or `/exit` | Exit LLPM |
 | `/clear` | Clear chat history |
 | `/project` | Project management |
 | `/github` | GitHub operations |
+| `/issue` | Issue management |
 | `/model` | AI model management |
 | `/skills` | Skills system |
+| `/notes` | Notes management |
+| `/stakeholder` | Stakeholder management |
+| `/history` | Chat history |
+| `/registry` | Model registry information |
+| `/debug` | Debug logs |
 
 ## Project Commands
 
