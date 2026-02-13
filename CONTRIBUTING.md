@@ -1,76 +1,123 @@
 # Contributing to LLPM
 
-Thank you for your interest in contributing to LLPM! This document provides guidelines and information for contributors.
+Thank you for your interest in contributing to LLPM! This guide covers everything you need to get started.
+
+## Code of Conduct
+
+Be respectful, constructive, and collaborative. We welcome contributors of all experience levels.
+
+## Reporting Bugs
+
+Open an issue at [github.com/britt/llpm/issues](https://github.com/britt/llpm/issues) with:
+
+- Steps to reproduce the problem
+- Expected vs. actual behavior
+- Your environment (OS, Bun version, AI provider)
+- Relevant error messages or logs (run with `--verbose` for details)
+
+## Suggesting Features
+
+Open an issue describing:
+
+- The problem the feature solves
+- How you envision it working
+- Any alternatives you considered
 
 ## Development Setup
 
 ### Prerequisites
 
-- [Bun](https://bun.com) runtime (latest version recommended)
+- [Bun](https://bun.sh) runtime (latest version)
 - Node.js 18+ (for compatibility)
 - Git
+- An API key for at least one AI provider (OpenAI, Anthropic, Groq, or Google Vertex AI)
+- A GitHub personal access token (optional, for GitHub integration features)
 
 ### Getting Started
 
-1. **Fork and clone the repository**
+1. Fork and clone the repository:
+
    ```bash
    git clone https://github.com/your-username/llpm.git
    cd llpm
    ```
 
-2. **Install dependencies**
+2. Install dependencies:
+
    ```bash
    bun install
    ```
 
-3. **Set up environment variables**
+3. Set up environment variables:
+
    ```bash
    cp .env.example .env
-   # Edit .env and add at least one AI provider API key
+   # Edit .env and add your API keys
    ```
 
-4. **Run tests to ensure everything works**
+4. Run the test suite:
+
    ```bash
-   bun test
+   bun run test
    ```
 
-5. **Start the application**
+5. Start the application:
+
    ```bash
-   bun start
+   bun run start
    ```
 
-## Testing Guidelines
+## Project Structure
 
-LLPM uses [Vitest](https://vitest.dev/) for testing with comprehensive coverage requirements.
+```
+src/
+  commands/       Slash command implementations (/help, /model, /github, etc.)
+  components/     Ink (React for CLI) UI components
+  hooks/          React hooks for state management
+  services/       Core services (LLM, GitHub, model registry)
+  tools/          AI tools for LLM function calling
+  utils/          Configuration, helpers, and shared utilities
+test/             Test setup and shared mocks
+```
+
+Test files live next to the source files they test:
+
+```
+src/commands/help.ts        # Source
+src/commands/help.test.ts   # Test
+```
+
+## Test-Driven Development
+
+This project follows strict TDD. Every change to production code must be driven by a failing test.
+
+### The Cycle
+
+1. **RED** -- Write a failing test first
+2. **GREEN** -- Write the minimum code to make it pass
+3. **REFACTOR** -- Clean up while keeping tests green
 
 ### Running Tests
 
+Use `bun run test` (not `bun test`, which invokes Bun's native test runner instead of Vitest).
+
 ```bash
-# Run all tests
-bun test
+bun run test              # Run all tests once
+bun run test --watch      # Watch mode (keep this running)
+bun run test --coverage   # Coverage report
+bun run test:ui           # Browser-based test UI
+```
 
-# Run tests in watch mode
-bun test:watch
+To run a single file or filter by name:
 
-# Run tests with coverage report
-bun test:coverage
-
-# Run tests with UI
-bun test:ui
+```bash
+bun run test src/commands/help.test.ts
+bun run test -t "should return success"
 ```
 
 ### Writing Tests
 
-#### Test File Conventions
-
-- **Location**: Place test files next to the source files they test
-- **Naming**: Use `.test.ts` or `.test.tsx` extensions
-- **Structure**: Follow the pattern `ModuleName.test.ts`
-
-#### Test Structure
-
 ```typescript
-import '../../test/setup';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { functionToTest } from './moduleToTest';
 
@@ -79,254 +126,143 @@ describe('ModuleName', () => {
     vi.clearAllMocks();
   });
 
-  describe('functionToTest', () => {
-    it('should behave correctly in normal case', () => {
-      const result = functionToTest('input');
-      expect(result).toBe('expected output');
-    });
+  it('should handle the normal case', () => {
+    const result = functionToTest('input');
+    expect(result).toBe('expected');
+  });
 
-    it('should handle edge cases', () => {
-      const result = functionToTest('');
-      expect(result).toBe('edge case output');
-    });
-
-    it('should throw error for invalid input', () => {
-      expect(() => functionToTest(null)).toThrow('Expected error message');
-    });
+  it('should handle edge cases', () => {
+    expect(() => functionToTest(null)).toThrow();
   });
 });
 ```
 
-#### Test Categories
+Key conventions:
 
-1. **Unit Tests**: Test individual functions and modules in isolation
-2. **Integration Tests**: Test multiple modules working together
-3. **Component Tests**: Test React components with proper setup
-4. **Performance Tests**: Test performance characteristics where relevant
+- Use descriptive test names that state the expected behavior
+- Structure tests as Arrange, Act, Assert
+- Mock external dependencies with `vi.mock()` -- never call real APIs in tests
+- Clear mocks in `beforeEach` to ensure test isolation
+- Test both success and error paths
 
-#### Best Practices
+### Coverage
 
-- **Meaningful Test Names**: Use descriptive test names that explain the expected behavior
-- **Arrange, Act, Assert**: Structure tests clearly with setup, execution, and verification phases  
-- **Test Edge Cases**: Include tests for empty inputs, null values, and boundary conditions
-- **Mock External Dependencies**: Use `vi.mock()` to isolate units under test
-- **Clean Up**: Use `beforeEach` and `afterEach` to ensure test isolation
-
-#### Example Test Patterns
-
-**Command Tests:**
-```typescript
-describe('helpCommand', () => {
-  it('should have correct name and description', () => {
-    expect(helpCommand.name).toBe('help');
-    expect(helpCommand.description).toBe('Show available commands');
-  });
-
-  it('should return success result with help content', () => {
-    const result = helpCommand.execute([]);
-    
-    expect(result.success).toBe(true);
-    expect(result.content).toContain('Available Commands:');
-  });
-});
-```
-
-**Async Function Tests:**
-```typescript
-describe('asyncFunction', () => {
-  it('should handle successful operation', async () => {
-    const result = await asyncFunction('valid input');
-    
-    expect(result).toEqual(expectedResult);
-  });
-
-  it('should handle errors gracefully', async () => {
-    await expect(asyncFunction('invalid')).rejects.toThrow('Expected error');
-  });
-});
-```
-
-### Coverage Requirements
-
-LLPM maintains high test coverage standards:
-
-- **Global Minimum**: 70% coverage (lines, functions, branches, statements)
-- **Command Modules**: 80% coverage (critical CLI functionality)
-- **Core Utilities**: 95% coverage (foundational code like system prompt handling)
-
-#### Coverage Reports
-
-Coverage reports are generated automatically:
-
-- **Terminal**: Summary displayed after running tests with coverage
-- **HTML**: Detailed report in `coverage/index.html`
-- **JSON/LCOV**: Machine-readable formats for CI integration
-
-#### Coverage Thresholds
-
-The build will fail if coverage falls below configured thresholds. To check current coverage:
+Coverage thresholds are enforced in `vitest.config.ts`. Critical modules have per-file thresholds. Check your coverage before opening a PR:
 
 ```bash
-bun test:coverage
+bun run test --coverage
 ```
 
-### Mocking Guidelines
+Reports are generated in `coverage/` as HTML, JSON, and LCOV.
 
-#### File System Operations
-```typescript
-vi.mock('fs/promises', () => ({
-  writeFile: vi.fn(),
-  readFile: vi.fn()
-}));
-```
+## Code Style
 
-#### External APIs
-```typescript
-vi.mock('../services/api', () => ({
-  fetchData: vi.fn().mockResolvedValue(mockData)
-}));
-```
+### Formatting and Linting
 
-#### Environment Variables
-```typescript
-beforeEach(() => {
-  process.env.TEST_VAR = 'test-value';
-});
-
-afterEach(() => {
-  delete process.env.TEST_VAR;
-});
-```
-
-## Code Quality
-
-### Linting and Formatting
+The project uses ESLint and Prettier. Run both before committing:
 
 ```bash
-# Check code style
-bun run lint
-
-# Fix code style issues
-bun run lint:fix
-
-# Check formatting
-bun run format:check
-
-# Format code
-bun run format
-
-# Type checking
-bun run typecheck
+bun run lint          # Check for lint errors
+bun run lint:fix      # Auto-fix lint errors
+bun run format        # Format with Prettier
+bun run format:check  # Check formatting without writing
+bun run typecheck     # TypeScript type checking
 ```
 
-### Pre-commit Checklist
+### Prettier Configuration
 
-Before submitting a pull request:
+- Single quotes, semicolons, no trailing commas
+- 100-character print width, 2-space indentation, LF line endings
 
-1. ✅ All tests pass: `bun test`
-2. ✅ Coverage thresholds met: `bun test:coverage`
-3. ✅ No linting errors: `bun run lint`
-4. ✅ Code is formatted: `bun run format`
-5. ✅ Type checking passes: `bun run typecheck`
-6. ✅ Manual testing completed
+### TypeScript Conventions
 
-## Continuous Integration
+- Use `import type` for type-only imports:
 
-### GitHub Actions
+  ```typescript
+  import type { Message } from '../types';
+  ```
 
-The CI pipeline runs automatically on push and pull requests:
+- Use library types instead of defining your own -- check the library's type definitions first.
+- Prefix unused parameters with an underscore (`_unused`).
 
-1. **Multi-platform testing**: Ubuntu, macOS, Windows
-2. **Multiple Node versions**: 18.x, 20.x, 22.x
-3. **Coverage reporting**: Uploaded to Codecov
-4. **Quality checks**: Linting, formatting, type checking
-5. **Security audit**: Dependency vulnerability scanning
+### AI Tool Definitions
 
-### Coverage Integration
-
-- Coverage reports are uploaded to [Codecov](https://codecov.io)
-- Pull requests show coverage diff
-- Build fails if coverage drops below thresholds
-
-## Module-Specific Testing
-
-### Commands (`src/commands/`)
-- Test command execution with various arguments
-- Test error handling and edge cases
-- Verify command metadata (name, description)
-- Mock external dependencies (file system, APIs)
-
-### Services (`src/services/`)
-- Mock external API calls
-- Test configuration handling
-- Test error scenarios and retries
-- Verify data transformation logic
-
-### Tools (`src/tools/`)
-- Test tool execution with sample inputs
-- Mock external integrations (GitHub, etc.)
-- Test validation logic
-- Verify error handling
-
-### Utilities (`src/utils/`)
-- Test pure functions thoroughly
-- Test file system operations with mocks
-- Test configuration parsing
-- Verify error handling and edge cases
-
-## Performance Testing
-
-For performance-critical components:
+Tools use `inputSchema` (not `parameters`):
 
 ```typescript
-it('should handle large datasets efficiently', () => {
-  const startTime = performance.now();
-  
-  processLargeDataset(largeTestData);
-  
-  const duration = performance.now() - startTime;
-  expect(duration).toBeLessThan(1000); // 1 second threshold
+export const myTool = tool({
+  description: 'What the tool does',
+  inputSchema: z.object({
+    param: z.string().describe('What this parameter is for')
+  }),
+  execute: async ({ param }) => {
+    // implementation
+  }
 });
 ```
 
-## Debugging Tests
+Do not modify existing tool schemas when adding new tools.
 
-### Common Issues
+## Commit Guidelines
 
-1. **Test Isolation**: Use `beforeEach`/`afterEach` to reset state
-2. **Async Testing**: Always await async operations
-3. **Mock Cleanup**: Clear mocks between tests
-4. **Environment**: Ensure test environment matches expectations
+### Commit Messages
 
-### Debugging Tools
+Follow the conventional commit format:
 
-```bash
-# Run specific test file
-bun test src/commands/help.test.ts
-
-# Run tests with debug output
-bun test --reporter=verbose
-
-# Run single test
-bun test -t "specific test name"
-
-# UI debugging
-bun test:ui
 ```
+type(scope): brief description
+
+- What tests were written
+- What code was added or changed
+```
+
+Types: `feat`, `fix`, `refactor`, `test`, `docs`, `ci`, `chore`
+
+### Version Bumps
+
+This project follows semantic versioning:
+
+- **PATCH** (0.0.x): Bug fixes, docs, small improvements
+- **MINOR** (0.x.0): New features, commands, or tools (backward-compatible)
+- **MAJOR** (x.0.0): Breaking changes
+
+## Pull Request Process
+
+1. Create a feature branch from `main`.
+
+2. Make your changes following the TDD workflow.
+
+3. Verify everything passes:
+
+   ```bash
+   bun run test
+   bun run lint
+   bun run typecheck
+   ```
+
+4. Push your branch and open a PR against `main`.
+
+5. Fill in the PR description:
+   - What the change does and why
+   - How to test it
+   - Any breaking changes
+
+### What CI Checks
+
+The GitHub Actions pipeline runs on every push and PR to `main`:
+
+- Tests with Vitest on Ubuntu (latest Bun)
+- Coverage report posted as a PR comment
+- Dependency security audit
+
+Your PR must pass all CI checks before merging.
 
 ## Getting Help
 
-- **Documentation**: Check existing tests for patterns and examples
-- **Issues**: Search existing issues for similar problems
-- **Discussions**: Use GitHub discussions for questions
-- **Code Review**: Request feedback on your approach
+- Search [existing issues](https://github.com/britt/llpm/issues) for similar questions
+- Read the [full documentation](https://britt.github.io/llpm/)
+- Open an issue if you're stuck -- we're happy to help
 
-## Pull Request Guidelines
+## License
 
-1. **Branch Naming**: Use descriptive branch names (e.g., `feature/add-tests-for-commands`)
-2. **Commit Messages**: Write clear, descriptive commit messages
-3. **Test Coverage**: Ensure new code is well-tested
-4. **Documentation**: Update relevant documentation
-5. **Code Review**: Respond to feedback constructively
-
-Thank you for contributing to LLPM! Your efforts help make the project better for everyone.
+By contributing, you agree that your contributions will be licensed under the [MIT License](LICENSE).
