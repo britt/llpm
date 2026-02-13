@@ -92,6 +92,7 @@ GOOGLE_VERTEX_REGION=us-central1
 
 # Optional: GitHub integration
 GITHUB_TOKEN=ghp_...
+# GH_TOKEN=ghp_...
 ```
 
 ### 5. Start LLPM
@@ -188,7 +189,7 @@ Run a guided skill to help with common product tasks, such as writing user stori
 > /skills show user-story-template
 ```
 
-If you configured `GITHUB_TOKEN` in your `.env` file and your `my-product` repository is connected to GitHub, LLPM will use that token when working with GitHub issues and pull requests associated with the active project.
+If `GITHUB_TOKEN` or `GH_TOKEN` is configured in `.env` and the `my-product` repository is connected to GitHub, LLPM will use that token when working with GitHub issues and pull requests associated with the active project.
 
 From here you can explore other commands such as:
 
