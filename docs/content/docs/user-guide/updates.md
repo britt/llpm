@@ -10,7 +10,7 @@ This page summarizes notable changes by date.
 ```json
 {
   "Additional Changes": [
-    "The contributing guidelines were rewritten to make it easier for new and existing contributors to follow the expected development workflow. The updated `CONTRIBUTING.md` now documents the contributor workflow with a TDD-first approach, clarifies project structure and code style expectations, and specifies commit/versioning rules along with refreshed command examples."
+    "Updated the contributing guidelines to clarify the expected development workflow."
   ]
 }
 
