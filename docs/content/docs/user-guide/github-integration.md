@@ -7,10 +7,28 @@ LLPM integrates deeply with GitHub for repository management, issues, and pull r
 
 ## Prerequisites
 
-Set up GitHub authentication by adding your token to `.env`:
+Set up GitHub authentication using one of the following options.
+
+### Option 1: Environment variable
+
+Add a token to `.env`:
 
 ```bash
 GITHUB_TOKEN=your-github-token
+```
+
+`GH_TOKEN` is also supported:
+
+```bash
+GH_TOKEN=your-github-token
+```
+
+### Option 2: GitHub CLI authentication
+
+Authenticate with GitHub CLI:
+
+```bash
+gh auth login
 ```
 
 Generate a token at [GitHub Settings > Developer settings > Personal access tokens](https://github.com/settings/tokens) with these scopes:
