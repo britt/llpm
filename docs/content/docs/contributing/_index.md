@@ -13,6 +13,7 @@ LLPM welcomes contributions from the community. Whether you are fixing bugs, add
 
 1. **[Development Setup]({{< relref "development-setup" >}})** - Set up your local development environment with Bun and configure API keys
 2. **[Testing]({{< relref "testing" >}})** - Learn about our TDD workflow and testing requirements
+3. **[npm Trusted Publishing (GitHub Actions)]({{< relref "npm-trusted-publishing" >}})** - Configure OIDC-based publishing to npm from GitHub Actions
 
 ## Pull Request Workflow
 
