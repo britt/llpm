@@ -82,3 +82,7 @@ What's the latest activity on facebook/react?
 ```
 
 The AI will fetch repository details including recent commits, issues, and pull requests.
+
+## Documentation reference
+
+- [A doc to be read by doc](https://sandgarden-dev.atlassian.net/wiki/spaces/~71202059337e6ab0e0426dac5b484c6672f753/pages/26935297/A+doc+to+be+read+by+doc)
