@@ -10,11 +10,6 @@ weight: 99
 
 **Summary:** This update addresses the changes listed below.
 
-```json
-{
-  "Additional Changes": [
-    "Added Bun installation documentation describing how to configure Bun's `trustedDependencies` before installing `@britt/llpm` to reduce install-time trust and policy failures."
-  ]
-}
+## Additional Changes
 
-```
+- Added Bun installation documentation describing how to configure Bun's `trustedDependencies` before installing `@britt/llpm` to reduce install-time trust and policy failures.
