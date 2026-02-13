@@ -4,125 +4,160 @@ title: LLPM
 
 # LLPM
 
-LLPM is an AI-powered product management CLI that runs in your terminal.
+LLPM is an AI-powered product management assistant that runs in your terminal. It helps keep software projects organized, work with Git repositories and GitHub, capture notes, and run guided workflows (“skills”) powered by large language models.
 
-Use it to manage projects, collaborate via GitHub, keep notes, run guided “skills”, and switch between LLM providers.
+## Core concepts
 
-## Install (from source)
+- **Projects** – tracked views of your local codebases (often Git repositories) that LLPM can scan, summarize, and help you manage.
+- **Skills** – guided, repeatable workflows for common product management tasks such as triaging issues, planning milestones, and preparing stakeholder updates.
+- **Notes** – Markdown notes you can quickly create, search, and refer back to while you work.
+- **Models** – connections to one or more LLM providers that LLPM can use for analysis, brainstorming, and content generation.
 
-1. Clone the repository:
+## Install
 
-   ```bash
-   git clone https://github.com/britt/llpm.git
-   cd llpm
-   ```
+You run LLPM from a local checkout of the repository. The steps are the same whether you prefer **bun** or **npm**.
 
-2. Install dependencies:
+### 1. Clone the repository
 
-   ```bash
-   bun install
-   ```
-
-3. Create a `.env` file with at least one provider API key:
-
-   ```bash
-   OPENAI_API_KEY=sk-...
-   ANTHROPIC_API_KEY=sk-ant-...
-   GROQ_API_KEY=gsk_...
-   CEREBRAS_API_KEY=your-cerebras-api-key
-
-   # Optional: Google Vertex AI
-   GOOGLE_VERTEX_PROJECT_ID=your-google-cloud-project-id
-   GOOGLE_VERTEX_REGION=us-central1
-
-   # Optional: GitHub integration
-   GITHUB_TOKEN=ghp_...
-   ```
-
-4. Start LLPM:
-
-   ```bash
-   bun start
-   ```
-
-## Start here
-
-- [Getting Started](./docs/getting-started/)
-- [Quickstart](./docs/getting-started/quickstart/)
-- [User Guide](./docs/user-guide/)
-- [Skills Reference](./docs/skills-reference/)
-
-## What LLPM does
-
-### Work in projects
-
-Track local projects and (optionally) associate a GitHub repo.
-
-Common commands:
-
-```text
-/project list
-/project switch
-/project scan
+```bash
+git clone git@github.com:britt/llpm.git
+cd llpm
 ```
 
-### Integrate with GitHub
+### 2. Install dependencies
 
-Work with GitHub issues and pull requests (requires `GITHUB_TOKEN` in `.env`).
+Using **bun**:
 
-### Keep notes
-
-Keep Markdown notes and search them.
-
-Common commands:
-
-```text
-/notes list
-/notes add
-/notes search
+```bash
+bun install
 ```
 
-### Run skills
+Using **npm**:
 
-Run guided workflows for common PM tasks.
-
-Common commands:
-
-```text
-/skills list
-/skills show <skill-name>
-/skills reinstall
+```bash
+npm install
 ```
 
-### Switch models
+### 3. Configure API keys and GitHub access
 
-Connect one or more providers and switch between models.
+Create a `.env` file in the `llpm` directory with at least one model provider API key and, optionally, a GitHub token:
 
-Common commands:
+```bash
+OPENAI_API_KEY=sk-...
+ANTHROPIC_API_KEY=sk-ant-...
+GROQ_API_KEY=gsk_...
+CEREBRAS_API_KEY=your-cerebras-api-key
 
-```text
-/model providers
-/model list
-/model update
-/model switch
+# Optional: Google Vertex AI
+GOOGLE_VERTEX_PROJECT_ID=your-google-cloud-project-id
+GOOGLE_VERTEX_REGION=us-central1
+
+# Optional: GitHub integration
+GITHUB_TOKEN=ghp_...
 ```
 
-## Model providers
+Only one model provider key is required to get started. Add more if you want to switch between providers and models.
 
-Provider IDs (from `src/types/models.ts`):
+### 4. Start LLPM
 
-- `openai`
-- `anthropic`
-- `groq`
-- `google-vertex`
-- `cerebras`
+Using **bun**:
 
-Example default model IDs (from `src/types/models.ts`):
+```bash
+bun start
+```
 
-- OpenAI: `gpt-5.2`, `gpt-4o-mini`
-- Anthropic: `claude-sonnet-4-5`, `claude-opus-4-1`
-- Groq: `meta-llama/llama-4-maverick-17b-128e-instruct`, `llama-3.3-70b-versatile`
-- Google Vertex AI: `gemini-2.5-pro`, `gemini-2.5-flash`
-- Cerebras: `qwen-3-235b-a22b-instruct-2507`, `llama-3.3-70b`
+Using **npm**:
+
+```bash
+npm run start
+```
+
+This starts the LLPM text user interface (TUI) in your terminal.
+
+## Example: set up LLPM for a Git project
+
+This example walks through pointing LLPM at an existing Git project and getting it ready for day-to-day product work.
+
+1. **Make sure your codebase is a Git repository.**
+
+   From your project directory:
+
+   ```bash
+   cd /path/to/your/git-project
+   git status
+   ```
+
+   If it is not already a Git repository, initialize one:
+
+   ```bash
+   git init
+   ```
+
+2. **Start LLPM from the `llpm` directory.**
+
+   In a separate shell tab or window:
+
+   ```bash
+   cd /path/to/llpm
+   bun start        # or: npm run start
+   ```
+
+   When LLPM starts, you will see its prompt in your terminal.
+
+3. **Scan for projects.**
+
+   From inside the LLPM prompt, run:
+
+   ```text
+   /project scan
+   ```
+
+   LLPM will look for local directories that contain Git repositories and offer to create tracked projects for them.
+
+4. **Select and switch to your project.**
+
+   After scanning, list available projects and switch to the one you want to work on:
+
+   ```text
+   /project list
+   /project switch <project-name>
+   ```
+
+   Once a project is selected, LLPM can keep context about that codebase while you run skills, take notes, and summarize work.
+
+5. **(Optional) Use GitHub features.**
+
+   If your local Git repository is connected to a GitHub remote and you provided `GITHUB_TOKEN` in `.env`, LLPM can work with issues and pull requests associated with that repository.
+
+## Typical next steps
+
+With a project selected, some useful commands to explore are:
+
+- Capture a quick note related to the project:
+
+  ```text
+  /notes add
+  ```
+
+- See existing notes:
+
+  ```text
+  /notes list
+  ```
+
+- Explore available skills and view details for a specific skill:
+
+  ```text
+  /skills list
+  /skills show <skill-name>
+  ```
+
+- Inspect and change model providers and models:
+
+  ```text
+  /model providers
+  /model list
+  /model switch
+  ```
 
 <!-- homepage: keep this page pure Markdown (no Hugo shortcodes) -->
