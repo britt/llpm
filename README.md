@@ -48,9 +48,11 @@ bun run start
 
 Full documentation available at: **https://britt.github.io/llpm/**
 
-## Issue summary: `DEMO-1`
+## Issue: `DEMO-1`
 
 `DEMO-1` is tracked in Jira: https://sandgarden-dev.atlassian.net/browse/DEMO-1.
+
+Issue details and current status are maintained in the Jira ticket.
 
 ## Features
 
