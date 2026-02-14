@@ -56,8 +56,8 @@ Bug reports and feature suggestions should be authored by LLPM so the issue cont
 
 ### Create an issue with LLPM
 
-1. Start LLPM.
-2. Provide a prompt that instructs LLPM to author the issue.
+1. Launch LLPM.
+2. Submit a prompt that instructs LLPM to author the issue.
 
 Bug report:
 
