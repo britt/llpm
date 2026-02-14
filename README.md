@@ -62,6 +62,7 @@ Full documentation available at: **https://britt.github.io/llpm/**
 ### Project Management
 
 - 📁 Multi-project support with automatic configuration persistence
+- 🔄 New projects become the active project on creation
 - 🔄 Easy project switching and management
 - 📂 GitHub repository integration for project setup
 - 🛠️ LLM tools for natural language project management
@@ -132,12 +133,30 @@ bun run start:verbose      # Start with debug logging
 
 ## Usage
 
+### Interactive setup
+
+Run the setup wizard to configure credentials and create an initial project.
+
+```bash
+llpm setup
+```
+
+To re-run setup from a clean state, pass `--force`.
+
+```bash
+llpm setup --force
+```
+
 ### Basic Usage
 
 1. Start the application with `llpm` (or `bun run start` if running from source)
 2. Type your message and press Enter to chat with the AI
 3. Use slash commands (e.g., `/help`) for specific functions
 4. Use Ctrl+C to exit
+
+### Markdown rendering
+
+Markdown rendering is enabled only when stdout is a TTY and neither `NO_COLOR` nor `CI=true` is set.
 
 ### Project Management Workflow
 
@@ -146,6 +165,8 @@ bun run start:verbose      # Start with debug logging
    ```
    /project add "My App" "https://github.com/user/my-app" "/path/to/project"
    ```
+
+   The newly created project becomes the active project.
 
 2. **Or browse GitHub repositories:**
 
