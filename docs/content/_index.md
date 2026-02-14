@@ -4,21 +4,49 @@ title: LLPM
 
 # LLPM
 
-LLPM is an AI-powered product management CLI that runs in your terminal. It helps product teams keep projects, Git history, GitHub issues, notes, and AI-assisted workflows in one place.
+LLPM is a terminal-native, AI-powered product management workspace for software teams, designed to keep planning, tracking, and communication close to the code in your Git repositories so product decisions stay attached to the repositories that implement them.
 
-Use LLPM to:
+LLPM connects your Git repositories, GitHub issues and pull requests, Markdown notes, and reusable AI workflows ("skills") into a single, searchable workspace so product discussions and decisions stay tied to the codebase instead of getting lost across tools.
 
-- Track and switch between multiple Git-based projects
-- Connect to GitHub to work with issues and pull requests
-- Keep Markdown notes alongside your repositories
-- Run guided “skills” for common product-management workflows (planning, requirements, stakeholder updates, research, and more)
-- Use multiple LLM providers and switch models without changing your workflow
+## What you can do with LLPM
 
-## Install
+LLPM helps product managers, tech leads, and engineers manage product work around codebases by enabling them to:
 
-### Install globally
+- Track multiple Git-based projects from a single terminal workspace.
+- Bring issue discussions, planning notes, and code history into one shared, project-scoped place.
+- Run structured AI "skills" for planning, requirements, research, stakeholder communication, and other product workflows using the context from the active project.
+- Experiment with and switch between multiple LLM providers and models without changing existing Git workflows.
+- Capture and revisit the context behind decisions—notes, timelines, and commands—as each project evolves.
 
-From npm (recommended):
+## Core concepts in LLPM
+
+The LLPM workspace is organized around a few core concepts:
+
+- **Projects** – A project in LLPM is a Git repository on disk (optionally connected to GitHub). LLPM can scan directories you choose for repositories and lets you switch between projects quickly from the terminal.
+- **Notes** – Lightweight Markdown notes stored per project so design ideas, meeting notes, and decisions stay tied to the codebase they affect.
+- **Skills** – Reusable, guided workflows that combine your project context with LLMs for specific product tasks (for example, writing user stories, triaging issues, or preparing stakeholder updates).
+- **Models & providers** – LLPM supports multiple LLM providers (OpenAI, Anthropic, Groq, Cerebras, and Google Vertex AI). You can list available models and switch between them at runtime without restarting LLPM.
+- **Integrations** – Optional integrations for GitHub (via `GITHUB_TOKEN`) and web search (via `ARCADE_API_KEY`) extend what the assistant can see and do from the terminal.
+- **History & context** – LLPM keeps the conversation and command history for each project so the assistant can build on prior work instead of starting from scratch.
+
+## How LLPM fits with your existing tools
+
+LLPM is **not** a replacement for Git, GitHub, or your issue tracker. It sits on top of them and focuses on product work around code: planning, coordination, and communication anchored to real repositories.
+
+- Compared to traditional Git CLIs, LLPM is organized around product workflows (planning, prioritization, requirements, communication) instead of only version-control commands.
+- Compared to issue trackers (such as GitHub- or board-based tools), LLPM lives in the terminal next to the repository, giving the assistant direct access to the code, notes, and Git history for richer context.
+- Compared to generic AI chat tools, LLPM keeps a long-lived, project-scoped workspace that remembers repositories, notes, and prior commands, and offers repeatable "skills" instead of one-off prompts.
+- Compared to standalone note-taking tools, LLPM stores notes by project and ties them directly to the code and workflows they support.
+
+---
+
+## Installation
+
+LLPM is distributed as a Node.js application. You can install it globally via npm or Bun, or run it from source.
+
+### Global install (recommended)
+
+From npm:
 
 ```bash
 npm install -g @britt/llpm
@@ -26,7 +54,7 @@ npm install -g @britt/llpm
 
 With Bun:
 
-1. Add `@britt/llpm` to `trustedDependencies` in `~/.bunfig.toml`.
+1. Add `@britt/llpm` to `trustedDependencies` in `~/.bunfig.toml`:
 
    ```toml
    [install]
@@ -39,20 +67,26 @@ With Bun:
    bun install -g @britt/llpm
    ```
 
-After installation, run `llpm` to start the CLI.
+After installation, start LLPM from any directory:
+
+```bash
+llpm
+```
 
 ### Install from source
 
-LLPM is a Node.js application. You install it from source and can choose either Bun or npm to manage dependencies.
+If you prefer to run LLPM from source, clone the repository and manage dependencies with either Bun or npm.
 
-### 1. Clone the repository
+#### 1. Clone the repository
+
+Clone the LLPM repository from its Git remote and change into the project directory:
 
 ```bash
-git clone https://github.com/britt/llpm.git
+git clone <llpm-repo-url>
 cd llpm
 ```
 
-### 2. Install dependencies with Bun
+#### 2. Install dependencies with Bun
 
 If you use Bun as your JavaScript runtime:
 
@@ -60,14 +94,14 @@ If you use Bun as your JavaScript runtime:
 bun install
 ```
 
-If Bun blocks `postinstall` scripts for untrusted packages, add `@britt/llpm` to `trustedDependencies` in your global `~/.bunfig.toml`.
+If Bun blocks `postinstall` scripts for untrusted packages, add `@britt/llpm` to `trustedDependencies` in your global `~/.bunfig.toml`:
 
 ```toml
 [install]
 trustedDependencies = ["@britt/llpm"]
 ```
 
-### 3. Or install dependencies with npm
+#### 3. Or install dependencies with npm
 
 If you prefer Node.js with npm:
 
@@ -75,14 +109,9 @@ If you prefer Node.js with npm:
 npm install
 ```
 
-### 4. Configure providers, GitHub, and web search
+#### 4. Configure providers, GitHub, and web search
 
-Create a `.env` file in the LLPM directory with at least one model provider API key.
-
-Optionally add:
-
-- `GITHUB_TOKEN` for GitHub integration (so LLPM can read and update issues and pull requests)
-- `ARCADE_API_KEY` for web search functionality
+Create a `.env` file in the LLPM directory with at least one model provider API key:
 
 ```bash
 # Required: at least one LLM provider
@@ -102,7 +131,9 @@ GITHUB_TOKEN=ghp_...
 ARCADE_API_KEY=your-arcade-api-key-here
 ```
 
-### 5. Start LLPM
+#### 5. Start LLPM from source
+
+From the project directory, start LLPM:
 
 Using Bun:
 
@@ -116,99 +147,93 @@ Using npm:
 npm run start
 ```
 
-This opens an interactive LLPM session in your terminal.
+This opens an interactive LLPM session in the terminal.
 
-## Example: set up LLPM for a new Git project
+---
 
-This example walks through creating a new Git repository, adding some basic files, and managing it from LLPM.
+## Examples: Using LLPM from the terminal
+This section shows short, concrete examples of how to use LLPM interactively from the terminal.
 
-### 1. Create a Git repository for your project
+The examples below assume:
 
-In the directory where you keep your code projects, create a new folder and initialize Git:
+- LLPM is installed (globally or from source).
+- At least one Git repository exists on your machine.
+- At least one LLM provider is configured in `.env`.
 
-```bash
-mkdir my-product
-cd my-product
+When LLPM starts, you see a prompt like:
 
-git init
-
-echo "# My Product" > README.md
-git add README.md
-git commit -m "Initial commit"
+```text
+>
 ```
 
-Optionally, connect the repository to GitHub:
+The `>` prompt is where LLPM commands and skills are entered. Commands start with `/`.
 
-```bash
-git remote add origin git@github.com:your-org/my-product.git
-```
+### Example 1: Scan for and switch between Git projects
 
-At this point you have a Git-backed project that LLPM can work with.
-
-### 2. Start LLPM
-
-In the LLPM directory you cloned earlier, start the CLI (use either Bun or npm):
-
-```bash
-cd /path/to/llpm
-bun start        # or: npm run start
-```
-
-You will see the LLPM prompt in your terminal.
-
-### 3. Let LLPM discover your project
-
-From the LLPM prompt, scan for projects under the directory where you keep your Git repositories. For example, if you keep projects in `~/code`, make sure `my-product` lives somewhere under that directory, then run:
+Scan for Git repositories and switch to one of them:
 
 ```text
 > /project scan
 > /project list
-```
-
-LLPM lists any Git repositories it finds. When you see `my-product` in the list, switch to it:
-
-```text
 > /project switch my-product
 ```
 
-`my-product` is now the active project for LLPM commands.
+- `/project scan` searches the directories you have configured for Git repositories.
+- `/project list` shows the projects LLPM knows about.
+- `/project switch my-product` makes `my-product` the active project for subsequent commands and skills.
 
-### 4. Use LLPM in your project
+### Example 2: Capture and review project notes
 
-With `my-product` selected as the current project, you can start using LLPM to manage product work around that repository.
-
-Capture notes about the project:
+With a project selected, capture notes that stay attached to that repository:
 
 ```text
 > /notes add
 ```
 
-List existing notes:
+LLPM opens an editor flow for adding a note scoped to the active project.
+
+Later, list notes for that project:
 
 ```text
 > /notes list
 ```
 
-Run a guided skill to help with common product tasks, such as writing user stories:
+This keeps meeting notes, decisions, and design ideas close to the code they affect.
+
+### Example 3: Use a skill for structured product work
+
+Skills are reusable workflows for common product tasks. To explore the user-story template skill:
 
 ```text
 > /skills list
 > /skills show user-story-template
 ```
 
-If you configured `GITHUB_TOKEN` in your `.env` file and your `my-product` repository is connected to GitHub, LLPM will use that token when working with GitHub issues and pull requests associated with the active project.
+LLPM displays details for the `user-story-template` skill and guides the assistant in using it to generate or refine user stories based on the active project’s context.
 
-From here you can explore other commands such as:
+### Example 4: Inspect and change the active model
+LLPM can work with multiple LLM providers and models. From the LLPM prompt:
+LLPM can work with multiple model providers and models. From the prompt:
 
 ```text
-/project list
-/project switch
-/model providers
-/model list
-/model switch
-/skills reinstall
+> /model providers
+> /model list
+> /model switch
 ```
 
-These let you organize projects, change which LLM models you use, and keep your skills up to date as your workflows evolve.
+- `/model providers` shows which LLM providers are available based on configured environment variables.
+- `/model list` lists the models LLPM can use.
+- `/model switch` changes the active model for subsequent AI-assisted commands and skills.
+From here, explore additional useful commands such as:
+From here, explore additional commands such as:
+
+```text
+> /project list
+> /project switch
+> /skills reinstall
+```
+
+Use these to organize projects, keep skills up to date, and refine how LLPM supports day-to-day product workflows.
 
 <!-- homepage: keep this page pure Markdown (no Hugo shortcodes) -->
+
