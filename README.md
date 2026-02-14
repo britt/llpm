@@ -56,37 +56,37 @@ Full documentation available at: **https://britt.github.io/llpm/**
 - Version: `1.8.0`
 - Summary: This update introduces the `llpm setup` interactive wizard for configuring AI providers and creating an initial project.
 
-```json
-{
-  "Additional Changes": [
-    "Repository contribution and governance documentation has been updated to improve signal quality and deter spam.",
-    "Vouch automation has been reorganized into multiple dedicated workflows for clearer ownership and behavior.",
-    "The vouched user list has been updated and reformatted to reflect current trust metadata.",
-    "The release includes routine versioning and packaging metadata updates to support the new CLI distribution and setup experience."
-  ],
-  "Breaking Changes": [
-    "The CLI distribution has been redesigned to ship as a Node-targeted JavaScript bundle rather than relying on a compiled Bun binary and a postinstall downloader."
-  ],
-  "Bug Fixes": [
-    "The setup wizard now exits cleanly and handles failure paths more predictably, reducing the chance of leaving partially configured state behind.",
-    "Project repository normalization and provider prompt text have been corrected to ensure consistent configuration and more accurate provider behavior.",
-    "ANSI-colored output is now displayed correctly without being incorrectly processed as markdown, improving readability and preventing formatting corruption.",
-    "Test isolation and temporary directory handling have been improved to reduce flaky tests and accidental pollution of developer workspaces."
-  ],
-  "Deprecations": [
-    "The Hugo-based documentation site has been removed in favor of consolidated workflow and in-repo documentation."
-  ],
-  "New Features": [
-    "New projects now automatically become the active project so you can start working in the right context immediately after creation.",
-    "A new interactive setup command guides you through configuring the tool end-to-end in one run.",
-    "The setup wizard now supports configuring API keys for multiple AI providers during onboarding.",
-    "A welcome banner is now displayed during setup to confirm the onboarding flow has started and explain what will happen next.",
-    "New prompt utilities make it easier to build consistent interactive CLI experiences.",
-    "Community trust automation has been added to support vouch-based enforcement in the repository workflow."
-  ]
-}
+#### New Features
 
-```
+- Added automatic project activation so newly created projects become the current project.
+- Added the `llpm setup` command with an interactive onboarding wizard.
+- Added multi-provider API key configuration to the setup wizard.
+- Added a setup welcome banner.
+- Added readline-based prompt utilities for interactive CLI flows.
+- Added vouch-based community trust automation for repository workflows.
+
+#### Breaking Changes
+
+- Updated the CLI distribution to ship as a Node-targeted JavaScript bundle instead of a compiled Bun binary.
+- Updated installation to migrate by upgrading with `npm install -g @britt/llpm` (or `bun install -g @britt/llpm`) and rerunning `llpm setup` if needed.
+
+#### Bug Fixes
+
+- Fixed setup wizard termination and failure-path handling to reduce partial configuration state.
+- Corrected repository normalization and updated the Google Vertex AI prompt text.
+- Fixed message rendering so ANSI-colored output bypasses markdown processing.
+- Improved test isolation by using unique temporary directories and updating `.gitignore` patterns.
+
+#### Deprecations
+
+- Removed the Hugo-based documentation site.
+
+#### Additional Changes
+
+- Updated contribution and governance documentation to require LLPM-authored issues and clarify anti-spam policy.
+- Updated vouch automation by splitting it into dedicated GitHub workflows.
+- Updated the vouched user list formatting and metadata.
+- Updated versioning and packaging metadata to support the new distribution and setup flow.
 
 ## Features
 
