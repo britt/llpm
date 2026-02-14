@@ -39,6 +39,8 @@ weight: 2
    /project add "My App" "owner/repo" "~/path/to/project"
    ```
 
+   Paths that start with `~` are expanded to your home directory.
+
 5. **Exit when done**
 
    Press `Ctrl+C` or type `/quit`
