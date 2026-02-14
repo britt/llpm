@@ -132,6 +132,20 @@ bun run start:verbose      # Start with debug logging
 
 ## Usage
 
+### Interactive setup
+
+Run the setup wizard to configure credentials and create an initial project.
+
+```bash
+llpm setup
+```
+
+To re-run setup from a clean state, pass `--force`.
+
+```bash
+llpm setup --force
+```
+
 ### Basic Usage
 
 1. Start the application with `llpm` (or `bun run start` if running from source)
@@ -146,6 +160,8 @@ bun run start:verbose      # Start with debug logging
    ```
    /project add "My App" "https://github.com/user/my-app" "/path/to/project"
    ```
+
+   The newly created project becomes the active project.
 
 2. **Or browse GitHub repositories:**
 
