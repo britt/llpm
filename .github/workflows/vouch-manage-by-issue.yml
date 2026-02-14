@@ -18,6 +18,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ssh-key: ${{ secrets.VOUCH_DEPLOY_KEY }}
 
       - uses: mitchellh/vouch/action/manage-by-issue@v1
         with:
