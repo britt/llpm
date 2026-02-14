@@ -100,7 +100,8 @@ async function configureProvider(
   console.log(`\n  Configuring ${option.name}...`);
 
   while (true) {
-    const key = await askSecret(rl, `  Enter ${option.name} API key: `);
+    const credentialLabel = option.credentialKey === 'projectId' ? 'Project ID' : 'API key';
+    const key = await askSecret(rl, `  Enter ${option.name} ${credentialLabel}: `);
 
     if (!key) {
       console.log('  No key provided.');
@@ -108,7 +109,7 @@ async function configureProvider(
     }
 
     // Validate the key by attempting to fetch models
-    console.log('  Validating API key...');
+    console.log(`  Validating ${credentialLabel}...`);
     const adapter = getProviderAdapter(option.provider);
     const credentials = option.provider === 'google-vertex'
       ? { projectId: key }

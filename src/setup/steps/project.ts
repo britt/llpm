@@ -71,10 +71,25 @@ export async function setupFirstProject(
   const descriptionInput = await askQuestion(rl, '  Description (optional): ');
   const description = descriptionInput || undefined;
 
+  // Normalize repository to full URL and extract owner/repo for github_repo
+  let normalizedRepo = repository;
+  let githubRepo = repository;
+  if (repository.startsWith('http://') || repository.startsWith('https://')) {
+    normalizedRepo = repository;
+    try {
+      githubRepo = new URL(repository).pathname.slice(1);
+    } catch {
+      githubRepo = repository;
+    }
+  } else if (repository.includes('/') && !repository.includes('.')) {
+    normalizedRepo = `https://github.com/${repository}`;
+    githubRepo = repository;
+  }
+
   const project = await addProject({
     name,
-    repository,
-    github_repo: '',
+    repository: normalizedRepo,
+    github_repo: githubRepo,
     path,
     description,
   });

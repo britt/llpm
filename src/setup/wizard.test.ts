@@ -130,4 +130,11 @@ describe('wizard', () => {
     const output = vi.mocked(console.log).mock.calls.map(c => c[0]).join('\n');
     expect(output).toContain('Setup Complete');
   });
+
+  it('should not tell user to run bun run start (process exits after setup)', async () => {
+    await runSetupWizard({ force: false });
+
+    const output = vi.mocked(console.log).mock.calls.map(c => c[0]).join('\n');
+    expect(output).not.toContain('bun run start');
+  });
 });

@@ -60,6 +60,4 @@ function printSummary(
     console.log(`  Default Model: ${selectedModel.displayName || selectedModel.modelId}`);
   }
   console.log('');
-  console.log('  You can now start LLPM with: bun run start');
-  console.log('');
 }

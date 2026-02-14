@@ -63,9 +63,21 @@ describe('project step', () => {
     expect(result.success).toBe(true);
     expect(addProject).toHaveBeenCalledWith(expect.objectContaining({
       name: 'My App',
-      repository: 'owner/my-app',
+      repository: 'https://github.com/owner/my-app',
+      github_repo: 'owner/my-app',
       path: '/tmp/my-app',
       description: 'A test project',
+    }));
+  });
+
+  it('should pass through full URL repository without normalizing', async () => {
+    const rl = createMockRl(['My App', 'https://github.com/owner/my-app', '/tmp/my-app', '']);
+    const result = await setupFirstProject(rl, false, createDeps(true));
+
+    expect(result.success).toBe(true);
+    expect(addProject).toHaveBeenCalledWith(expect.objectContaining({
+      repository: 'https://github.com/owner/my-app',
+      github_repo: 'owner/my-app',
     }));
   });
 
@@ -96,7 +108,8 @@ describe('project step', () => {
 
     expect(result.success).toBe(true);
     expect(addProject).toHaveBeenCalledWith(expect.objectContaining({
-      repository: 'owner/my-app',
+      repository: 'https://github.com/owner/my-app',
+      github_repo: 'owner/my-app',
     }));
   });
 

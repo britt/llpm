@@ -41,6 +41,29 @@ describe('apiKeys step', () => {
     expect(PROVIDER_OPTIONS).toContainEqual(expect.objectContaining({ name: 'Anthropic' }));
   });
 
+  it('should prompt for Project ID instead of API key for Google Vertex AI', async () => {
+    const mockAdapter = {
+      provider: 'google-vertex' as const,
+      getSourceUrl: () => 'https://vertex.googleapis.com',
+      fetchModels: vi.fn().mockResolvedValue({
+        success: true,
+        models: [{ id: 'gemini-pro', name: 'Gemini Pro', provider: 'google-vertex' }],
+        sourceUrl: 'https://vertex.googleapis.com',
+      }),
+    };
+    (getProviderAdapter as ReturnType<typeof vi.fn>).mockReturnValue(mockAdapter);
+
+    // Select provider 4 (Google Vertex AI), enter project ID, don't add more
+    const rl = createMockRl(['4', 'my-gcp-project-123', 'n']);
+    await setupApiKeys(rl, false);
+
+    // Verify the prompt asked for "Project ID" not "API key"
+    const promptCalls = vi.mocked(rl.question).mock.calls.map(c => c[0]);
+    const vertexPrompt = promptCalls.find(p => p.includes('Google Vertex AI'));
+    expect(vertexPrompt).toContain('Project ID');
+    expect(vertexPrompt).not.toContain('API key');
+  });
+
   it('should configure a single provider with valid key', async () => {
     const mockAdapter = {
       provider: 'openai' as const,

@@ -170,7 +170,7 @@ function isRawModeSupported(): boolean {
       const { runSetupWizard } = await import('./src/setup/wizard');
       const forceFlag = args.includes('--force');
       await runSetupWizard({ force: forceFlag });
-      // After setup, fall through to normal Ink UI launch
+      process.exit(0);
     }
 
     debug('Starting LLPM CLI');
