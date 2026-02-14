@@ -54,28 +54,28 @@ Full documentation available at: **https://britt.github.io/llpm/**
 
 - Date: 2026-02-14
 - Version: `1.8.0`
-- Summary: This update introduces the `llpm setup` interactive wizard for configuring AI providers and creating an initial project.
+- Summary: This release includes the `llpm setup` interactive wizard for configuring AI providers and creating an initial project.
 
 #### New Features
 
-- Added automatic project activation so newly created projects become the current project.
-- Added the `llpm setup` command with an interactive onboarding wizard.
+- Added automatic project activation so newly created projects become the current project (#263).
+- Added the `llpm setup` command with an interactive onboarding wizard (#265).
 - Added multi-provider API key configuration to the setup wizard.
 - Added a setup welcome banner.
-- Added readline-based prompt utilities for interactive CLI flows.
+- Added `readline`-based prompt utilities for interactive CLI flows.
 - Added vouch-based community trust automation for repository workflows.
 
 #### Breaking Changes
 
-- Updated the CLI distribution to ship as a Node-targeted JavaScript bundle instead of a compiled Bun binary.
+- Updated the CLI distribution to ship as a Node-targeted JavaScript bundle instead of a compiled Bun binary (#262).
 - Updated installation to migrate by upgrading with `npm install -g @britt/llpm` (or `bun install -g @britt/llpm`) and rerunning `llpm setup` if needed.
 
 #### Bug Fixes
 
 - Fixed setup wizard termination and failure-path handling to reduce partial configuration state.
-- Corrected repository normalization and updated the Google Vertex AI prompt text.
+- Fixed repository normalization and updated the Google Vertex AI prompt text.
 - Fixed message rendering so ANSI-colored output bypasses markdown processing.
-- Improved test isolation by using unique temporary directories and updating `.gitignore` patterns.
+- Fixed test isolation by using unique temporary directories and updating `.gitignore` patterns.
 
 #### Deprecations
 
