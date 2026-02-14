@@ -72,10 +72,32 @@ describe('commandRegistry', () => {
 
     it('should parse commands with multiple arguments', () => {
       const result = parseCommand('/project add "My Project" https://github.com/user/repo');
-      
+
       expect(result.isCommand).toBe(true);
       expect(result.command).toBe('project');
-      expect(result.args).toEqual(['add', '"My', 'Project"', 'https://github.com/user/repo']);
+      expect(result.args).toEqual(['add', 'My Project', 'https://github.com/user/repo']);
+    });
+
+    it('should handle double-quoted multi-word arguments', () => {
+      const result = parseCommand('/project add "My App" "user/repo" "/home/user/my app" "A cool description"');
+
+      expect(result.isCommand).toBe(true);
+      expect(result.command).toBe('project');
+      expect(result.args).toEqual(['add', 'My App', 'user/repo', '/home/user/my app', 'A cool description']);
+    });
+
+    it('should handle single-quoted arguments', () => {
+      const result = parseCommand("/project add 'My App' 'user/repo'");
+
+      expect(result.isCommand).toBe(true);
+      expect(result.args).toEqual(['add', 'My App', 'user/repo']);
+    });
+
+    it('should handle mixed quoted and unquoted arguments', () => {
+      const result = parseCommand('/notes add "Meeting Notes" some-tag');
+
+      expect(result.isCommand).toBe(true);
+      expect(result.args).toEqual(['add', 'Meeting Notes', 'some-tag']);
     });
 
     it('should handle commands with extra whitespace', () => {
