@@ -62,6 +62,7 @@ Full documentation available at: **https://britt.github.io/llpm/**
 ### Project Management
 
 - 📁 Multi-project support with automatic configuration persistence
+- 🔄 New projects become the active project on creation
 - 🔄 Easy project switching and management
 - 📂 GitHub repository integration for project setup
 - 🛠️ LLM tools for natural language project management
