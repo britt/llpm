@@ -1,5 +1,26 @@
 # PROGRESS.md
 
+## Task: Auto-switch to newly created project (#263) - COMPLETE
+- Started: 2026-02-13T15:55:00Z
+- Tests: 2099 passing, 0 failing (full suite)
+- Build: Successful
+- Linting: Clean (no new errors in modified files)
+- Completed: 2026-02-13T15:58:00Z
+- Notes:
+  - `addProject()` now always sets `currentProject` to the new project (not just the first one)
+  - CLI `/project add` response now confirms the switch
+  - AI `add_project` tool response updated to mention active project switch
+  - Updated existing test that asserted old behavior (subsequent adds don't switch)
+  - TDD: tests written first and verified failing before implementation
+
+### Files Changed
+- `src/utils/projectConfig.ts` - Always set currentProject on addProject
+- `src/commands/project.ts` - Add switch confirmation to response
+- `src/tools/projectTools.ts` - Update success message
+- `src/utils/projectConfig.test.ts` - Updated test for new behavior
+- `src/commands/project.test.ts` - Updated assertion for switch message
+- `src/tools/projectTools.test.ts` - Updated assertion for active project message
+
 ## Task 1: Update MessageItem to render markdown for ui-notification messages - COMPLETE
 - Started: 2026-01-30T16:45:00Z
 - Tests: 12 passing, 0 failing

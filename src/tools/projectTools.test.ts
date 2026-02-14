@@ -153,7 +153,7 @@ describe('Project Tools', () => {
       expect(result.success).toBe(true);
       expect(result.project.name).toBe('New Project');
       expect(result.message).toContain('Successfully added');
-      expect(result.message).toContain('active project');
+      expect(result.message).toContain('set it as the active project');
     });
 
     it('should normalize owner/repo format to full URL', async () => {

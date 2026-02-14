@@ -263,7 +263,7 @@ export const projectCommand: Command = {
           };
           const newProject = await addProject(projectData);
           return {
-            content: `✅ Added project "${newProject.name}" (ID: ${newProject.id})\n📂 Repository: ${normalizedRepository}\n📍 Path: ${path}${newProject.description ? `\n📝 Description: ${newProject.description}` : ''}\n\n👉 Switched to "${newProject.name}" as active project`,
+            content: `✅ Added project "${newProject.name}" (ID: ${newProject.id})\n📂 Repository: ${normalizedRepository}\n📍 Path: ${path}${newProject.description ? `\n📝 Description: ${newProject.description}` : ''}\n🔄 Switched active project to "${newProject.name}"`,
             success: true
           };
         } catch (error) {

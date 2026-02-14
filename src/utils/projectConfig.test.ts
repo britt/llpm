@@ -257,7 +257,7 @@ describe('addProject', () => {
     expect(newProject.github_repo).toBe('custom/repo');
   });
 
-  it('should set newly created project as current even when other projects exist', async () => {
+  it('should switch active project to newly created project', async () => {
     await addProject({
       name: 'First',
       repository: 'https://github.com/test/first'

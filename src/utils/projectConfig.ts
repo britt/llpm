@@ -229,8 +229,9 @@ export async function addProject(
 
   config.projects[projectId] = newProject;
 
+  // Always switch to the newly created project
   config.currentProject = projectId;
-  debug('Set newly created project as current:', projectId);
+  debug('Set new project as current:', projectId);
 
   await saveProjectConfig(config);
   debug('Project added successfully:', projectId);

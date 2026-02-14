@@ -148,28 +148,32 @@ Before running verification:
 
 ---
 
-### Scenario 7: Project Management
+### Scenario 7: Project Management (with auto-switch)
 
 **Context**: No projects configured (fresh state).
 
 **Steps**:
 1. Run `/project list` - should show no projects
 2. Run `/project add "Test Project" "owner/test-repo" "/tmp/test-project" "A test project"`
-3. Verify response contains "Switched to" confirmation
-4. Run `/project` - should show "Test Project" as the active project without needing `/project switch`
-5. Run `/project list` - should show the new project marked as current
-6. Run `/project switch <project-id>` using the ID from step 2 (explicit switch still works)
-7. Run `/project` - should show current project details
-8. Run `/project remove <project-id>` to clean up
+3. Verify response includes "Switched active project to" confirmation
+4. Run `/project` - should show "Test Project" as current (no manual switch needed)
+5. Run `/project add "Second Project" "owner/second-repo" "/tmp/second-project" "Another project"`
+6. Verify response includes "Switched active project to" for "Second Project"
+7. Run `/project` - should show "Second Project" as current (auto-switched)
+8. Run `/project switch <first-project-id>` - explicit switch still works
+9. Run `/project` - should show "Test Project" as current
+10. Run `/project remove <second-project-id>` to clean up
+11. Run `/project remove <first-project-id>` to clean up
 
 **Success Criteria**:
 - [ ] Empty project list handled gracefully
-- [ ] Project created with correct details
-- [ ] Response message confirms auto-switch to new project
-- [ ] `/project` shows the new project as active immediately after creation (no manual switch needed)
-- [ ] Project appears in list with all fields
-- [ ] Explicit project switch still works
-- [ ] Current project shows correct info
+- [ ] First project created with correct details
+- [ ] Response confirms auto-switch to first project
+- [ ] `/project` shows first project as current without explicit switch
+- [ ] Second project created with correct details
+- [ ] Response confirms auto-switch to second project
+- [ ] `/project` shows second project as current (auto-switched from first)
+- [ ] Explicit `/project switch` still works
 - [ ] Project removal succeeds
 
 **If Blocked**: Check project config file permissions
