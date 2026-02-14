@@ -22,6 +22,26 @@
 - `src/commands/stakeholder.ts` - Removed local parseQuotedArgs (now handled by registry)
 - `src/commands/stakeholder.test.ts` - Updated tests to use pre-parsed arg format
 
+## Task: Fix tilde expansion in /project add (#254) - COMPLETE
+- Started: 2026-02-14
+- Tests: 2172 passing, 13 skipped
+- Build: Successful (10.51 MB bundle)
+- Linting: Clean in modified files (pre-existing errors elsewhere unchanged)
+- Completed: 2026-02-14
+- Notes:
+  - Added `expandPath()` utility to expand `~` to home directory and resolve relative paths
+  - Applied in `addProject()` so all entry points (CLI, setup wizard, AI tool) get path expansion
+  - Setup wizard now expands path before `checkPathExists` validation
+  - CLI `/project add` response shows expanded path instead of raw input
+  - TDD: 7 new tests written first and verified failing before implementation
+
+### Files Changed
+- `src/utils/projectConfig.ts` - Added `expandPath()`, applied in `addProject()`
+- `src/utils/projectConfig.test.ts` - 7 new tests (4 for expandPath, 2 for addProject expansion, 1 cleanup)
+- `src/commands/project.ts` - Show `newProject.path` (expanded) in success message
+- `src/setup/steps/project.ts` - Expand path before validation
+- `src/setup/steps/project.test.ts` - New test for tilde expansion in setup step
+
 ## Task: Auto-switch to newly created project (#263) - COMPLETE
 - Started: 2026-02-13T15:55:00Z
 - Tests: 2099 passing, 0 failing (full suite)

@@ -1,10 +1,19 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { homedir } from 'os';
+import { resolve } from 'path';
 import type { ReadlineInterface } from '../prompts';
 import type { Project } from '../../types/project';
-vi.mock('../../utils/projectConfig', () => ({
-  addProject: vi.fn(),
-  listProjects: vi.fn().mockResolvedValue([]),
-}));
+
+// Use the real expandPath implementation
+const { expandPath: realExpandPath } = await import('../../utils/projectConfig');
+vi.mock('../../utils/projectConfig', async (importOriginal) => {
+  const original = await importOriginal<typeof import('../../utils/projectConfig')>();
+  return {
+    addProject: vi.fn(),
+    listProjects: vi.fn().mockResolvedValue([]),
+    expandPath: original.expandPath,
+  };
+});
 
 import { setupFirstProject, type ProjectStepDeps } from './project';
 import { addProject, listProjects } from '../../utils/projectConfig';
@@ -132,6 +141,20 @@ describe('project step', () => {
     expect(result.success).toBe(true);
     expect(result.skipped).toBe(true);
     expect(addProject).not.toHaveBeenCalled();
+  });
+
+  it('should expand tilde in path before validation and storage', async () => {
+    const rl = createMockRl(['My App', 'owner/my-app', '~/my-app', '']);
+    const deps = createDeps(true);
+    const result = await setupFirstProject(rl, false, deps);
+
+    expect(result.success).toBe(true);
+    // checkPathExists should receive the expanded path, not the raw ~
+    expect(deps.checkPathExists).toHaveBeenCalledWith(resolve(homedir(), 'my-app'));
+    // addProject should receive the expanded path
+    expect(addProject).toHaveBeenCalledWith(expect.objectContaining({
+      path: resolve(homedir(), 'my-app'),
+    }));
   });
 
   it('should create project when force is true even if projects exist', async () => {
