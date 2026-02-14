@@ -132,6 +132,16 @@ bun run start:verbose      # Start with debug logging
 
 ## Usage
 
+### First-time setup
+
+Run the interactive setup wizard to configure providers, select a default model, and create your first project:
+
+```bash
+llpm setup
+```
+
+For details, see [SETUP.md](SETUP.md).
+
 ### Basic Usage
 
 1. Start the application with `llpm` (or `bun run start` if running from source)
