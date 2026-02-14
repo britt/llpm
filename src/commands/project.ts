@@ -198,8 +198,6 @@ export const projectCommand: Command = {
 **Project Analysis:**
 • /project scan - Analyze the current project codebase and generate a summary
 
-**Project Health:**
-
 ⌨️ Quick Actions:
 • Shift+Tab - Interactive project selector
 
