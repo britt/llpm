@@ -16,7 +16,7 @@ export function parseQuotedArgs(args: string[]): string[] {
       if ((arg.startsWith('"') || arg.startsWith("'")) && arg.length > 1) {
         quoteChar = arg[0];
         // Check if it also ends with the same quote (single-word quoted arg)
-        if (arg.endsWith(quoteChar) && arg.length > 2) {
+        if (arg.endsWith(quoteChar) && arg.length >= 2) {
           result.push(arg.slice(1, -1));
         } else {
           inQuote = true;

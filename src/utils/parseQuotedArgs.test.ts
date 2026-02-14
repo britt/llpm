@@ -58,6 +58,14 @@ describe('parseQuotedArgs', () => {
     ]);
   });
 
+  it('should handle empty double-quoted string', () => {
+    expect(parseQuotedArgs(['add', '""', 'repo', 'path'])).toEqual(['add', '', 'repo', 'path']);
+  });
+
+  it('should handle empty single-quoted string', () => {
+    expect(parseQuotedArgs(['add', "''", 'repo'])).toEqual(['add', '', 'repo']);
+  });
+
   it('should handle a realistic /project add command', () => {
     // Simulating: /project add "My Project" "user/my-repo" "/tmp/my project" "A test project"
     // After split(/\s+/): ['add', '"My', 'Project"', '"user/my-repo"', '"/tmp/my', 'project"', '"A', 'test', 'project"']
