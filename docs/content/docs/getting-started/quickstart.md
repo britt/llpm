@@ -36,7 +36,7 @@ weight: 2
 4. **Set up a project**
 
    ```
-   /project add "My App" "owner/repo" "/path/to/project"
+   /project add "My App" "owner/repo" "~/path/to/project"
    ```
 
 5. **Exit when done**
