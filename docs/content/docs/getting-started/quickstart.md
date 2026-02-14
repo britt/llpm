@@ -29,19 +29,21 @@ weight: 2
    | `/skills` | Manage reusable AI instruction sets |
    | `/github` | GitHub integration commands |
    | `/project` | Manage projects |
-   | `/quit` | Exit LLPM |
+   | `/exit` | Exit LLPM |
 
    Try `/help` to see the full list.
 
 4. **Set up a project**
 
    ```
-   /project add "My App" "owner/repo" "/path/to/project"
+   /project add "My App" "owner/repo" "~/path/to/project" "Short description"
    ```
+
+   Paths that start with `~` are expanded to your home directory.
 
 5. **Exit when done**
 
-   Press `Ctrl+C` or type `/quit`
+   Press `Ctrl+C` or type `/exit`
 
 ## Next Steps
 

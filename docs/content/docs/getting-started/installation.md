@@ -10,6 +10,15 @@ weight: 1
 - [Git](https://git-scm.com) for cloning the repository
 - At least one AI provider API key
 
+## Install via npm
+
+You can install LLPM globally as a CLI using npm:
+
+```bash
+npm install -g @britt/llpm
+llpm
+```
+
 ## Install from Source
 
 1. **Clone the repository**
@@ -43,6 +52,12 @@ weight: 1
    ```bash
    chmod +x index.ts
    ```
+
+### Notes
+
+- Requires Node.js v18 or later (consistent with the prerequisites above).
+- Environment variables are still required; configure them as described in [Environment Variables](#environment-variables).
+- In environments that restrict `postinstall` scripts, ensure that scripts from `@britt/llpm` are allowed so that all tooling is set up correctly.
 
 ## Install Globally (optional)
 
