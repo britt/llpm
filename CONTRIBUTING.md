@@ -20,13 +20,6 @@ This project uses [Vouch](https://github.com/mitchellh/vouch) to verify contribu
 
 Only the project owner can vouch or denounce users via `/vouch @username` and `/denounce @username` comments.
 
-### Maintainer actions
-
-- Add someone to the trusted list: comment `/vouch @username`.
-- Add someone to the denounced list: comment `/denounce @username`.
-
-Store the lists in [VOUCHED.td](./VOUCHED.td).
-
 ## Code of Conduct
 
 Be respectful, constructive, and collaborative. We welcome contributors of all experience levels.
