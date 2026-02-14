@@ -178,6 +178,7 @@ describe('Project Command', () => {
       expect(result.success).toBe(true);
       expect(result.content).toContain('Added project');
       expect(result.content).toContain('New Project');
+      expect(result.content).toContain('Switched active project');
     });
 
     it('should add a project with description', async () => {
