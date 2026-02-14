@@ -1,0 +1,36 @@
+name: Vouch Check
+
+on:
+  issues:
+    types: [opened]
+  pull_request_target:
+    types: [opened]
+  issue_comment:
+    types: [created]
+
+permissions:
+  issues: write
+  pull-requests: write
+
+jobs:
+  vouch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: mitchellh/vouch@v1
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          vouch-file: VOUCHED.td
+          unvouched-action: close
+          unvouched-message: |
+            Thanks for your interest in LLPM!
+
+            This project uses [Vouch](https://github.com/mitchellh/vouch) for community trust management. Your issue/PR has been automatically closed because you are not yet vouched.
+
+            To get vouched, please:
+            1. Engage with the community in discussions
+            2. Demonstrate understanding of the project
+            3. Ask a maintainer to vouch for you
+
+            This helps us maintain quality and prevent spam. Thanks for understanding!
+          denounced-action: close-lock

@@ -21,6 +21,12 @@ export function getMessageDisplayContent(message: Message): string {
     return `> ${message.content}`;
   }
 
+  // Content with ANSI escape codes is already formatted for terminal display.
+  // Passing it through cli-markdown garbles the codes and collapses newlines.
+  if (message.content.includes('\x1b[')) {
+    return message.content;
+  }
+
   // For assistant AND ui-notification messages, render markdown if supported
   if ((isAssistantMessage || isUINotification) && isASCIICapableTerminal()) {
     try {

@@ -50,3 +50,6 @@ docker/docker-compose.override.yml
 
 # Git worktrees
 .worktrees/
+
+# Test temp directories
+.tmp-elicit-test-*
