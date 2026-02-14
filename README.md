@@ -59,30 +59,30 @@ Full documentation available at: **https://britt.github.io/llpm/**
 ```json
 {
   "Additional Changes": [
-    "Repository contribution and governance documentation has been updated to improve signal quality and deter spam. The contribution guidelines now require LLPM-authored bug/feature issues and define an anti-spam denouncement policy.",
-    "Vouch automation has been reorganized into multiple dedicated workflows for clearer ownership and behavior. The single workflow was split into four purpose-specific GitHub workflows (issues, PRs, discussion comments, and issue comments), and repository checkout now uses an SSH deploy key for these workflows.",
-    "The vouched user list has been updated and reformatted to reflect current trust metadata. The `VOUCHED.td` entries were reordered, a new name was added, and a prior denouncement/prefix detail was removed or adjusted to match the updated policy and formatting rules.",
-    "The release includes routine versioning and packaging metadata updates to support the new CLI distribution and setup experience. The project bumps versions (including 1.7.1 and 1.8.0), updates `bun.lock`, adds an npm setup script, and cleans up TypeScript imports to satisfy linting."
+    "Repository contribution and governance documentation has been updated to improve signal quality and deter spam.",
+    "Vouch automation has been reorganized into multiple dedicated workflows for clearer ownership and behavior.",
+    "The vouched user list has been updated and reformatted to reflect current trust metadata.",
+    "The release includes routine versioning and packaging metadata updates to support the new CLI distribution and setup experience."
   ],
   "Breaking Changes": [
-    "The CLI distribution has been redesigned to ship as a Node-targeted JavaScript bundle rather than relying on a compiled Bun binary and a postinstall downloader. Packaging now bundles the CLI, refactors shell execution to `child_process.exec`, adjusts CI/tests/metadata for the new distribution model, and enforces dependency and packaging constraints via updated tests and lockfile/version bumps."
+    "The CLI distribution has been redesigned to ship as a Node-targeted JavaScript bundle rather than relying on a compiled Bun binary and a postinstall downloader."
   ],
   "Bug Fixes": [
-    "The setup wizard now exits cleanly and handles failure paths more predictably, reducing the chance of leaving partially configured state behind. The setup orchestrator includes cleanup logic and tests for step failure handling and orderly termination.",
-    "Project repository normalization and provider prompt text have been corrected to ensure consistent configuration and more accurate provider behavior. The changes fix repository normalization logic and adjust Google Vertex AI prompt wording, with tests added to prevent regressions.",
-    "ANSI-colored output is now displayed correctly without being incorrectly processed as markdown, improving readability and preventing formatting corruption. Message rendering detects ANSI formatting and bypasses markdown rendering where appropriate, with tests verifying the expected display behavior.",
-    "Test isolation and temporary directory handling have been improved to reduce flaky tests and accidental pollution of developer workspaces. Verification and requirements tests now use unique temporary directories with safe cleanup, and the repository ignores test temp directory patterns in `.gitignore`."
+    "The setup wizard now exits cleanly and handles failure paths more predictably, reducing the chance of leaving partially configured state behind.",
+    "Project repository normalization and provider prompt text have been corrected to ensure consistent configuration and more accurate provider behavior.",
+    "ANSI-colored output is now displayed correctly without being incorrectly processed as markdown, improving readability and preventing formatting corruption.",
+    "Test isolation and temporary directory handling have been improved to reduce flaky tests and accidental pollution of developer workspaces."
   ],
   "Deprecations": [
-    "The Hugo-based documentation site has been removed in favor of consolidated workflow and in-repo documentation. The release deletes the Hugo site content and updates related docs and progress notes to reflect the new documentation approach."
+    "The Hugo-based documentation site has been removed in favor of consolidated workflow and in-repo documentation."
   ],
   "New Features": [
-    "New projects now automatically become the active project so you can start working in the right context immediately after creation. The CLI project creation flow now auto-switches the current project and updates related CLI/AI tool messaging, documentation, and verification scenarios to reflect the new default behavior.",
-    "A new interactive setup command guides you through configuring the tool end-to-end in one run. The `llpm setup` wizard orchestrates multiple readline-based steps (including first-project creation, default model selection via `modelRegistry`, and provider credential configuration) with validation and comprehensive step-flow tests.",
-    "The setup wizard now supports configuring API keys for multiple AI providers during onboarding. The interactive API key steps validate input, support existing keys, allow skipping or forced reconfiguration where applicable (for example for Arcade), and include unit tests for each branch.",
-    "A welcome banner is now displayed during setup to confirm the onboarding flow has started and explain what will happen next. The wizard prints a dedicated LLPM setup banner message and includes tests that assert the expected console output.",
-    "New prompt utilities make it easier to build consistent interactive CLI experiences. The project adds readline-based helpers for free-text questions, yes/no prompts, multi-choice selection, secret input, and reliable interface teardown, with dedicated tests covering each utility.",
-    "Community trust automation has been added to support vouch-based enforcement in the repository workflow. The project introduces GitHub Actions automation based on the `mitchellh/vouch` sub-actions, documents usage, and establishes initial vouched/denounced user lists."
+    "New projects now automatically become the active project so you can start working in the right context immediately after creation.",
+    "A new interactive setup command guides you through configuring the tool end-to-end in one run.",
+    "The setup wizard now supports configuring API keys for multiple AI providers during onboarding.",
+    "A welcome banner is now displayed during setup to confirm the onboarding flow has started and explain what will happen next.",
+    "New prompt utilities make it easier to build consistent interactive CLI experiences.",
+    "Community trust automation has been added to support vouch-based enforcement in the repository workflow."
   ]
 }
 
