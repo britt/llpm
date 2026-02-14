@@ -1,7 +1,7 @@
 ---
 name: architecture-diagramming
 description: "Generate Mermaid architecture diagrams showing system components, layers, and data flows"
-allowed-tools: "read_project_file get_project_architecture add_note list_project_directory"
+allowed-tools: "read_project_file get_project_scan add_note list_project_directory"
 ---
 
 # Architecture Diagramming Skill
@@ -21,7 +21,7 @@ Activate this skill when:
 | Tool | Purpose |
 |------|---------|
 | `read_project_file` | Read existing code to understand structure |
-| `get_project_architecture` | Get analyzed architecture summary |
+| `get_project_scan` | Get cached project scan with structure and language data |
 | `add_note` | Save diagram to project notes |
 | `list_project_directory` | Explore project structure |
 

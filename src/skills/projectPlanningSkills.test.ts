@@ -81,9 +81,9 @@ describe('Project Planning Skills', () => {
       const result = await parseSkillFile(skillPath, 'user');
 
       expect(result.skill?.allowedTools).toBeDefined();
-      // Should include tools for reading project architecture
+      // Should include tools for reading project structure
       expect(result.skill?.allowedTools?.some(t =>
-        t.includes('read_project_file') || t.includes('get_project_architecture')
+        t.includes('read_project_file') || t.includes('get_project_scan')
       )).toBe(true);
     });
 

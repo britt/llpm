@@ -8,6 +8,7 @@ tags:
   - blocked
   - deadline
   - project-management
+allowed-tools: "list_github_issues get_github_issue_with_comments"
 ---
 
 # At-Risk Detection Skill
@@ -26,37 +27,46 @@ Activate when:
 
 ## Available Tools
 
-This skill uses the following AI tools:
-
 | Tool | Purpose |
 |------|---------|
-| `analyze_project_risks` | Scan entire project for at-risk items |
-| `analyze_issue_risks` | Analyze a specific issue for risk signals |
-| `get_at_risk_items` | Get filtered list of at-risk items |
+| `list_github_issues` | Fetch open issues and PRs for analysis |
+| `get_github_issue_with_comments` | Deep-dive into specific issues for detailed risk signals |
 
-## Available Commands
+## Analysis Approach
 
-| Command | Description |
-|---------|-------------|
-| `/project health [--all]` | Show project health summary |
-| `/project risks [--type TYPE] [--all]` | List at-risk items |
-| `/issue NUMBER` | Analyze specific issue for risks |
+### Quick Mode (Default)
 
-## Risk Types Detected
+Fetch the 30 most recent open issues using `list_github_issues`:
+- Fast (seconds)
+- Good for daily checks
+- May miss older stale items
+
+### Comprehensive Mode
+
+Fetch ALL open issues by paginating through `list_github_issues`:
+- Thorough analysis
+- Slower for large repositories
+- Best for milestone reviews
+
+## Risk Types and Detection Heuristics
 
 ### Stale Items
 **Signal**: No activity for extended period
 **Default Threshold**: 14 days for issues, 3 days for PRs awaiting review
 **Severity Escalation**:
-- Warning: > threshold days
-- Critical: > 2x threshold days
+- Warning: > threshold days since last activity
+- Critical: > 2x threshold days since last activity
+
+**How to detect**: Check `updated_at` field on each issue/PR. Calculate days since last update.
 
 ### Blocked Work
 **Signals**:
-- Has `blocked`, `waiting`, `on-hold`, or `waiting-for-response` labels
-- Body contains "blocked by #", "waiting on", "depends on", "blocked until"
+- Has labels matching: `blocked`, `waiting`, `on-hold`, `waiting-for-response`
+- Body contains: "blocked by #", "waiting on", "depends on", "blocked until"
 - PR is in draft status
-- PR has merge conflicts
+- PR has merge conflicts (if detectable from comments)
+
+**How to detect**: Check `labels` array for blocking keywords. Search `body` text for blocking phrases.
 
 ### Deadline Risks
 **Signal**: Milestone deadline approaching or overdue
@@ -64,16 +74,22 @@ This skill uses the following AI tools:
 - Critical: Overdue or due within 2 days
 - Warning: Due within 7 days
 
+**How to detect**: Check if issue has a `milestone` with a `due_on` date. Compare to current date.
+
 ### Scope Creep
 **Signals**:
 - Issues with high comment count (>30 comments)
 - PRs with many lines changed (>500 warning, >1000 critical)
 
+**How to detect**: Check `comments` count on issues. For PRs, check `additions + deletions` if available.
+
 ### Assignment Issues
 **Signal**: High-priority issue without assignee
 **Priority Labels**: `priority:high`, `urgent`, `P1`, `P0`, `critical`, `blocker`
 
-## Output Structure
+**How to detect**: Check if `assignee` is null AND `labels` contain any priority keywords.
+
+## Output Formats
 
 ### Project Health Summary
 
@@ -97,7 +113,7 @@ This skill uses the following AI tools:
 ### At-Risk Item Report
 
 ```markdown
-## At-Risk: #[number] — [title]
+## At-Risk: #[number] - [title]
 
 **Severity**: [Critical | Warning | Info]
 **Type**: [Issue | PR]
@@ -111,62 +127,63 @@ This skill uses the following AI tools:
 - [actionable recommendation]
 ```
 
-## Usage Modes
+## Generating Suggestions
 
-### Quick Mode (Default)
-Analyzes the 30 most recent open issues and PRs.
-- Fast (seconds)
-- Good for daily checks
-- May miss older stale items
+For each risk signal detected, provide actionable suggestions:
 
-### Comprehensive Mode (`--all`)
-Fetches ALL open issues and PRs via pagination.
-- Thorough analysis
-- Slower for large repositories
-- Best for milestone reviews
+| Risk Type | Suggestion |
+|-----------|-----------|
+| Stale issue | "Comment with status update or close if no longer relevant" |
+| Stale PR | "Request review or close if superseded" |
+| Blocked | "Resolve blocking dependency or re-prioritize" |
+| Deadline approaching | "Break into smaller milestones or adjust deadline" |
+| Scope creep | "Split into smaller issues or create a tracking epic" |
+| Unassigned high-priority | "Assign an owner immediately" |
+| Overloaded assignee | "Redistribute work or adjust priorities" |
 
-## Best Practices
+## Overloaded Assignee Detection
 
-1. **Daily Standups**: Run `/project health` to identify blockers
-2. **Sprint Planning**: Use comprehensive mode (`--all`) to review full backlog
-3. **Before Releases**: Check all deadline risks with `/project risks --type deadline`
-4. **Assign Owners**: Address unassigned high-priority items immediately
-5. **Break Down Scope**: Split large PRs (>500 lines) into smaller changes
+Track issue counts per assignee:
+- Warning: > 7 assigned issues
+- Critical: > 10 assigned issues
+
+## Configuration Defaults
+
+| Setting | Default | Description |
+|---------|---------|-------------|
+| staleDays | 14 | Days before issue is stale |
+| prStaleReviewDays | 3 | Days before PR awaiting review is stale |
+| deadlineWarningDays | 7 | Days before deadline to warn |
+| maxCommentsBeforeScopeWarning | 30 | Comment threshold for scope creep |
+| maxAssignedIssuesPerPerson | 10 | Max issues before overload warning |
 
 ## Example Workflows
 
 ### Morning Health Check
-```
-/project health
-```
-Review the summary, address any critical items immediately.
 
-### Finding Stale Items
-```
-/project risks --type stale
-```
-Comment on stale issues to update status or close if no longer relevant.
-
-### Pre-Sprint Cleanup
-```
-/project risks --all
-```
-Review all at-risk items before sprint planning.
+1. Use `list_github_issues` to fetch recent open issues
+2. Apply all heuristics to each issue
+3. Present health summary with risk breakdown
+4. Highlight any critical items requiring immediate attention
 
 ### Individual Issue Assessment
-```
-/issue 123
-```
-Get detailed risk analysis for a specific issue.
 
-## Configuration
+1. Use `get_github_issue_with_comments` for the specific issue
+2. Apply all heuristic checks
+3. Present detailed risk analysis with signals and suggestions
 
-Default thresholds can be customized in the RiskDetectionService:
+### Pre-Sprint Cleanup
 
-| Setting | Default | Description |
-|---------|---------|-------------|
-| `staleDays` | 14 | Days before issue is stale |
-| `prStaleReviewDays` | 3 | Days before PR awaiting review is stale |
-| `deadlineWarningDays` | 7 | Days before deadline to warn |
-| `maxCommentsBeforeScopeWarning` | 30 | Comment threshold for scope creep |
-| `maxAssignedIssuesPerPerson` | 10 | Max issues before overload warning |
+1. Fetch ALL open issues (comprehensive mode)
+2. Apply all heuristics
+3. Sort by severity (critical first)
+4. Present full at-risk report
+5. Suggest actions for each at-risk item
+
+## Best Practices
+
+1. **Daily Standups**: Run a quick health check to identify blockers
+2. **Sprint Planning**: Use comprehensive mode to review full backlog
+3. **Before Releases**: Check all deadline risks
+4. **Assign Owners**: Address unassigned high-priority items immediately
+5. **Break Down Scope**: Split large PRs (>500 lines) into smaller changes

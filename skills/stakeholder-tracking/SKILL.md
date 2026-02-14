@@ -1,25 +1,12 @@
 ---
 name: stakeholder-tracking
-description: Define stakeholder personas and track their goals to ensure all perspectives are addressed
+description: "Define stakeholder personas and track their goals to ensure all perspectives are addressed"
 tags:
   - stakeholders
   - goals
   - planning
   - requirements
-allowed_tools:
-  - add_stakeholder
-  - list_stakeholders
-  - get_stakeholder
-  - update_stakeholder
-  - remove_stakeholder
-  - link_issue_to_goal
-  - unlink_issue_from_goal
-  - generate_coverage_report
-  - resolve_stakeholder_conflict
-  - list_github_issues
-  - get_github_issue_with_comments
-  - search_notes
-  - add_note
+allowed-tools: "add_note update_note search_notes list_notes delete_note get_note list_github_issues"
 ---
 
 # Stakeholder Tracking
@@ -36,16 +23,41 @@ Help users define stakeholder personas and track their goals, ensuring all persp
 - Resolving conflicts between different stakeholder needs
 - Linking GitHub issues to stakeholder goals
 
-## Stakeholder Profile Structure
+## Available Tools
 
-Each stakeholder includes:
+| Tool | Purpose |
+|------|---------|
+| `add_note` | Create new stakeholder profiles as notes |
+| `update_note` | Modify existing stakeholder profiles |
+| `search_notes` | Find stakeholders by name, role, or goal |
+| `list_notes` | List all stakeholder profiles |
+| `get_note` | Retrieve a specific stakeholder profile |
+| `delete_note` | Remove a stakeholder profile |
+| `list_github_issues` | Fetch issues to check goal-issue linkage |
 
-- **Name**: Unique identifier (e.g., "End User", "Product Owner")
-- **Role**: Their position or function
-- **Description**: Brief explanation of who they are
-- **Goals**: What they want to achieve (can be linked to GitHub issues)
-- **Pain Points**: Current frustrations or problems
-- **Priorities**: Ranked list of what matters most to them
+## Stakeholder Note Format
+
+Each stakeholder is stored as a note with YAML content. Use the title format "Stakeholder: [Name]" for easy searching.
+
+```yaml
+type: stakeholder
+name: End User
+role: Product manager
+description: Uses LLPM for specs and planning
+goals:
+  - Quickly create well-formed issues
+  - AI assistance for gap analysis
+painPoints:
+  - Writing specs is time-consuming
+  - Context switching between tools
+priorities:
+  - Context
+  - Quality
+  - Integration
+linkedIssues:
+  - goal: "Quickly create well-formed issues"
+    issues: [42, 56]
+```
 
 ## Workflow
 
@@ -58,45 +70,84 @@ When a user wants to add a stakeholder, engage conversationally:
 3. Ask about their goals (what do they want to achieve?)
 4. Ask about pain points (what frustrates them currently?)
 5. Ask about priorities (what matters most, in order?)
-6. Confirm the profile and save using `add_stakeholder`
+6. Confirm the profile and save using `add_note` with the YAML format above
 
-Example:
-```
-User: "Add a stakeholder"
-AI: "I'll help you create a stakeholder profile. What's the name or title for this stakeholder? (e.g., 'End User', 'Product Owner', 'Developer')"
-User: "End User"
-AI: "What role do they play? For example, 'Daily user of the application' or 'Customer purchasing products'"
-...continue gathering information...
-```
+### Listing Stakeholders
 
-### Checking Coverage
+When asked to list stakeholders:
 
-When asked about stakeholder coverage:
+1. Use `search_notes` with query "type: stakeholder" to find all stakeholder notes
+2. Present a summary table with name, role, and top goals
 
-1. Use `generate_coverage_report` to get current status
-2. Present goals that are covered (linked to issues) vs gaps (no links)
-3. Calculate and show coverage percentages
-4. Suggest actions for gaps
+### Viewing Stakeholder Details
 
-### Resolving Conflicts
+When asked about a specific stakeholder:
 
-When stakeholder priorities might conflict:
+1. Use `search_notes` with the stakeholder name
+2. Present the full profile with goals, pain points, and linked issues
 
-1. Identify the conflicting priorities
-2. Present the conflict clearly to the user
-3. Offer resolution options:
-   - Prioritize one stakeholder's needs
-   - Find a compromise
-   - Document as a known tradeoff
-4. Record the resolution using `resolve_stakeholder_conflict`
+### Updating Stakeholders
+
+When asked to update a stakeholder:
+
+1. Use `search_notes` to find the stakeholder note
+2. Use `get_note` to retrieve the full content
+3. Make the requested changes
+4. Use `update_note` to save the updated profile
+
+### Removing Stakeholders
+
+When asked to remove a stakeholder:
+
+1. Use `search_notes` to find the stakeholder note
+2. Confirm deletion with the user
+3. Use `delete_note` to remove the profile
 
 ### Linking Issues to Goals
 
 When an issue addresses a stakeholder goal:
 
-1. Use `link_issue_to_goal` to create the connection
-2. This helps track how work addresses stakeholder needs
-3. Coverage reports will show which goals are addressed
+1. Use `search_notes` to find the stakeholder
+2. Add the issue number to the `linkedIssues` section under the matching goal
+3. Use `update_note` to save the updated profile
+
+### Checking Coverage
+
+When asked about stakeholder coverage:
+
+1. Use `search_notes` to find all stakeholder notes
+2. Use `list_github_issues` to fetch open issues
+3. For each stakeholder, check which goals have linked issues and which don't
+4. Calculate coverage percentages
+5. Present a coverage report highlighting gaps
+
+Coverage report format:
+```markdown
+## Stakeholder Coverage Report
+
+### End User (2/3 goals covered - 67%)
+- [x] Quickly create well-formed issues (linked: #42, #56)
+- [x] AI assistance for gap analysis (linked: #78)
+- [ ] **GAP**: Fast context switching - no issues address this
+
+### Product Owner (1/2 goals covered - 50%)
+- [x] Track project progress (linked: #12)
+- [ ] **GAP**: Stakeholder visibility - no issues address this
+
+### Overall Coverage: 60% (3/5 goals linked to issues)
+```
+
+### Resolving Conflicts
+
+When stakeholder priorities might conflict:
+
+1. Identify the conflicting priorities by comparing stakeholder profiles
+2. Present the conflict clearly to the user
+3. Offer resolution options:
+   - Prioritize one stakeholder's needs
+   - Find a compromise
+   - Document as a known tradeoff
+4. Record the resolution by updating the relevant stakeholder notes
 
 ## Natural Language Triggers
 
@@ -104,25 +155,13 @@ Respond to these types of questions:
 
 | Question Type | Action |
 |--------------|--------|
-| "Who are the stakeholders?" | List all stakeholder profiles |
+| "Who are the stakeholders?" | Search notes and list all stakeholder profiles |
 | "Add a stakeholder" | Start conversational profile creation |
-| "What are [Name]'s goals?" | Show specific stakeholder's goals |
+| "What are [Name]'s goals?" | Find and show specific stakeholder's goals |
 | "Does this address stakeholder concerns?" | Generate coverage report |
 | "Show me stakeholder coverage" | Generate coverage report |
-| "Link issue #X to [goal]" | Create goal-issue link |
-| "Are there any conflicts?" | Check for conflicting priorities |
-
-## Commands
-
-Users can also use slash commands:
-
-- `/stakeholder` - List stakeholders or show help
-- `/stakeholder list` - List all stakeholders
-- `/stakeholder add <name> <role> <description>` - Add stakeholder
-- `/stakeholder show <name>` - Show stakeholder details
-- `/stakeholder remove <name>` - Remove stakeholder
-- `/stakeholder link <issue#> <name> <goal>` - Link issue to goal
-- `/stakeholder coverage` - Generate coverage report
+| "Link issue #X to [goal]" | Update stakeholder note with issue link |
+| "Are there any conflicts?" | Compare stakeholder priorities for conflicts |
 
 ## Best Practices
 
@@ -131,10 +170,3 @@ Users can also use slash commands:
 3. **Link issues early**: When creating issues, immediately link them to relevant goals
 4. **Review coverage regularly**: Check coverage when planning sprints or releases
 5. **Document conflicts**: When priorities conflict, record the decision and rationale
-
-## Storage
-
-All stakeholder data is stored in:
-`~/.llpm/projects/{projectId}/notes/stakeholders.md`
-
-This is a human-readable markdown file that can be viewed and edited directly.

@@ -1,5 +1,47 @@
 # PROGRESS.md
 
+## Task: Migrate 26 Tools to 5 Skills (#221) - COMPLETE
+- Started: 2026-02-14
+- Tests: 1908 passing, 0 failing
+- Build: Successful
+- Linting: Clean in modified files (1 pre-existing error in dependencyAnalyzer.ts, 188 pre-existing warnings)
+- Typecheck: Clean in modified files (pre-existing errors in other test files unchanged)
+- Completed: 2026-02-14
+- Notes:
+  - Replaced 26 specialized AI tools with 5 skills that use primitive tools
+  - Updated 4 existing skills: requirement-elicitation, context-aware-questions, stakeholder-tracking, at-risk-detection
+  - Created 1 new skill: project-analysis
+  - Fixed architecture-diagramming skill to use get_project_scan instead of removed get_project_architecture
+  - Deleted 29 files (tool implementations, services, commands, types)
+  - Updated registries to remove old tool/command entries
+  - Removed health/risks subcommands from /project command
+  - 32 new skill migration tests verify no old tool references remain
+
+### Skills Updated/Created
+- `skills/requirement-elicitation/SKILL.md` - Fixed frontmatter format, rewrote to use primitive tools
+- `skills/context-aware-questions/SKILL.md` - Added allowed-tools, rewrote content
+- `skills/stakeholder-tracking/SKILL.md` - Fixed frontmatter, uses notes system for CRUD
+- `skills/at-risk-detection/SKILL.md` - Added allowed-tools, kept heuristics
+- `skills/project-analysis/SKILL.md` - NEW: scan/filesystem-based analysis
+- `skills/architecture-diagramming/SKILL.md` - Updated tool reference
+
+### Test Files
+- `src/skills/migratedSkills.test.ts` - NEW: 32 tests for all 5 migrated skills
+- `src/skills/projectPlanningSkills.test.ts` - Updated architecture-diagramming test
+
+### Registry Files Modified
+- `src/tools/registry.ts` - Removed 26+ tool imports and entries
+- `src/tools/projectScanTools.ts` - Removed 4 analysis tools, kept 3 primitives
+- `src/commands/registry.ts` - Removed stakeholder and issue commands
+- `src/commands/project.ts` - Removed health/risks subcommands
+- `src/commands/project.test.ts` - Removed health/risks test blocks
+
+### Files Deleted (29 total)
+- Tool files: elicitationTools, questionTools, stakeholderTools, riskDetectionTools (.ts + .test.ts)
+- Service files: elicitationBackend, elicitationQuestions, gapAnalyzer, stakeholderBackend, riskDetectionService (.ts + .test.ts + integration tests)
+- Command files: stakeholder, issue (.ts + .test.ts)
+- Type files: elicitation, questions, stakeholder (.ts + .test.ts)
+
 ## Task: Fix quoted string handling in slash commands (#255) - COMPLETE
 - Started: 2026-02-14T08:47:00Z
 - Tests: 2183 passing, 0 failing (full suite)
