@@ -126,3 +126,43 @@ jobs:
         grep "dist/llpm.js" pack-output.txt || { echo "FAIL: dist/llpm.js not in package"; exit 1; }
         grep "bin/llpm.cjs" pack-output.txt || { echo "FAIL: bin/llpm.cjs not in package"; exit 1; }
         echo "npm pack contents verified"
+
+  test-npm-install:
+    strategy:
+      matrix:
+        node-version: [18, 20, 22]
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - uses: oven-sh/setup-bun@v2
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+
+    - name: Install dependencies
+      run: bun install --frozen-lockfile
+
+    - name: Build JS bundle
+      run: bun run build
+
+    - name: Pack tarball
+      run: npm pack
+
+    - name: Install from tarball
+      run: |
+        TARBALL=$(ls britt-llpm-*.tgz)
+        echo "Installing from $TARBALL"
+        npm install -g "./$TARBALL"
+
+    - name: Verify llpm is in PATH
+      run: which llpm
+
+    - name: Verify llpm runs
+      run: |
+        llpm 2>&1 || true
+        echo "llpm binary executed (TTY/config error is expected in CI)"

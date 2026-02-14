@@ -3,8 +3,18 @@ name: Tests
 on:
   pull_request:
     branches: [ main ]
+    paths-ignore:
+      - '**/*.md'
+      - 'docs/**'
+      - 'LICENSE'
+      - '.github/workflows/docs.yml'
   push:
     branches: [ main ]
+    paths-ignore:
+      - '**/*.md'
+      - 'docs/**'
+      - 'LICENSE'
+      - '.github/workflows/docs.yml'
 
 jobs:
   test:
