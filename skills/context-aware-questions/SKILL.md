@@ -7,6 +7,7 @@ tags:
   - requirements
   - analysis
   - documentation
+allowed-tools: "list_github_issues get_github_issue_with_comments read_project_file get_project_scan"
 ---
 
 # Context-Aware Question Generator Skill
@@ -24,27 +25,70 @@ Activate when:
 
 ## Available Tools
 
-This skill leverages the following tools:
+| Tool | Purpose |
+|------|---------|
+| `list_github_issues` | Fetch open issues for project-wide gap analysis |
+| `get_github_issue_with_comments` | Deep-dive into specific issues for detailed analysis |
+| `read_project_file` | Read README, docs, and config files for documentation gaps |
+| `get_project_scan` | Get project structure and language data for architecture analysis |
 
-### generate_project_questions
-Scans the entire project context (issues, notes, project scan) for information gaps.
+## Analysis Modes
 
-**Best for**: Holistic project review, "what's missing overall?"
+### 1. Project-Wide Review
 
-### generate_issue_questions
-Analyzes a specific GitHub issue for missing requirements or unclear specifications.
+When asked "what am I missing?" or "what questions should I be asking?":
 
-**Best for**: Pre-work review, issue clarification
+1. Use `list_github_issues` to fetch all open issues
+2. Use `get_project_scan` to understand project structure
+3. Use `read_project_file` to check README and documentation
+4. Analyze all gathered data for information gaps
+5. Generate prioritized questions
 
-### suggest_clarifications
-Reviews a draft (issue, PR, note) before submission and suggests improvements.
+### 2. Issue Review
 
-**Best for**: Quality check before posting
+When asked to review a specific issue:
 
-### identify_information_gaps
-Scans a specific target (README, documentation, codebase) for gaps.
+1. Use `get_github_issue_with_comments` to fetch the issue and all comments
+2. Analyze for missing requirements, unclear specs, and gaps
+3. Generate targeted questions for that issue
 
-**Best for**: Targeted documentation review
+### 3. Draft Review
+
+When reviewing a draft (issue, PR, note) before submission:
+
+1. Analyze the provided text for completeness
+2. Check against standard templates and best practices
+3. Suggest specific improvements
+
+### 4. Documentation Gap Analysis
+
+When asked about documentation completeness:
+
+1. Use `read_project_file` to read README.md and files in docs/
+2. Use `get_project_scan` to understand what the project contains
+3. Identify missing documentation by comparing project content to docs
+
+## Gap Detection Heuristics
+
+### Issue Analysis
+- **Missing acceptance criteria**: No checkboxes, no "done when" statement
+- **Vague descriptions**: Less than 100 characters, contains "unclear", "might", "maybe"
+- **Missing labels or assignees**: Issue has no labels or no assignee
+- **Stale issues**: Open more than 30 days with no activity
+- **Bug reports without reproduction steps**: No "steps to reproduce" section
+
+### Documentation Analysis
+- **Missing README sections**: No install, usage, or examples sections
+- **No dedicated docs/ directory**: For projects with more than 10 files
+- **Short README**: Less than 500 characters
+- **Missing license information**: No LICENSE file or license section
+- **No inline documentation**: Missing JSDoc/docstrings in key files
+
+### Project-Wide Analysis
+- **Inconsistencies between issues and notes**: Conflicting descriptions
+- **Missing architecture documentation**: No system overview for complex projects
+- **Undocumented key files**: Entry points without explaining comments
+- **No project scan available**: Suggest running a scan first
 
 ## Output Structure
 
@@ -56,23 +100,16 @@ Questions are categorized and prioritized:
 - **documentation**: Missing docs, unclear README sections
 - **process**: Workflow gaps, missing labels/assignees
 - **consistency**: Conflicting information across sources
-- **architecture**: High-level design questions (requires project scan)
+- **architecture**: High-level design questions
 
 ### Priorities
 - **high**: Blocking or critical gaps that need immediate attention
 - **medium**: Important gaps that should be addressed soon
 - **low**: Nice-to-have clarifications
 
-## Example Workflows
+## Example Output
 
-### 1. Project-Wide Review
-
-```
-User: "What questions should I be asking about this project?"
-
-Assistant uses: generate_project_questions
-
-Output:
+```markdown
 ## Information Gaps Found
 
 ### High Priority (3)
@@ -91,111 +128,6 @@ Output:
 ### Medium Priority (5)
 ...
 ```
-
-### 2. Issue Review Before Starting Work
-
-```
-User: "Are there any gaps in issue #42?"
-
-Assistant uses: generate_issue_questions with issue_number: 42
-
-Output:
-## Issue #42 Analysis
-
-### Questions to Clarify
-
-1. [requirements] What are the acceptance criteria?
-   - Issue lacks checkboxes or "done when" statement
-
-2. [technical] What authentication method should be used?
-   - No mention of OAuth, JWT, or session-based auth
-
-3. [process] Who should be assigned to this issue?
-   - Issue has no assignee
-```
-
-### 3. Draft Review Before Submission
-
-```
-User: "Help me improve this issue before I submit it:
-Title: Bug in login
-Body: Login doesn't work"
-
-Assistant uses: suggest_clarifications with draft_type: 'issue'
-
-Output:
-## Suggested Clarifications
-
-1. [requirements] What are the acceptance criteria?
-   - Add an "Acceptance Criteria" section with checkboxes
-
-2. [requirements] Can you provide more detail?
-   - The description is very brief (18 chars)
-   - Add: problem description, expected behavior, context
-
-3. [requirements] How can this bug be reproduced?
-   - Add "Steps to Reproduce" section
-
-Improved draft:
----
-## Problem
-[Describe what's happening]
-
-## Expected Behavior
-[What should happen instead]
-
-## Steps to Reproduce
-1. Go to /login
-2. Enter credentials
-3. Click submit
-4. Observe error
-
-## Acceptance Criteria
-- [ ] Login works with valid credentials
-- [ ] Appropriate error shown for invalid credentials
-```
-
-### 4. Documentation Gap Analysis
-
-```
-User: "What's missing from our documentation?"
-
-Assistant uses: identify_information_gaps with target: 'documentation'
-
-Output:
-## Documentation Gaps
-
-1. [documentation] No docs/ directory found
-   - Suggested Action: Create docs/ with API reference, guides
-
-2. [documentation] README lacks usage examples
-   - No code blocks or example snippets found
-
-3. [documentation] No contribution guidelines
-   - No CONTRIBUTING.md or contributing section in README
-```
-
-## Gap Detection Rules
-
-### Issue Analysis
-- Missing acceptance criteria (no checkboxes, no "done when")
-- Vague descriptions (< 100 chars, contains "unclear", "might", "maybe")
-- Missing labels or assignees
-- Stale issues (open > 30 days with no activity)
-- Bug reports without reproduction steps
-
-### Documentation Analysis
-- Missing README sections (install, usage, examples)
-- No dedicated docs/ directory
-- Short README (< 500 chars)
-- Missing license information
-- No inline documentation (JSDoc/docstrings)
-
-### Project-Wide Analysis
-- Inconsistencies between issues and notes
-- Missing architecture documentation
-- Undocumented key files
-- No project scan available
 
 ## Best Practices
 

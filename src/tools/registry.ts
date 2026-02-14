@@ -17,12 +17,6 @@ import {
   getGitHubIssueWithCommentsTool
 } from './githubIssueTools';
 import {
-  generateProjectQuestionsTool,
-  generateIssueQuestionsTool,
-  suggestClarificationsTool,
-  identifyInformationGapsTool
-} from './questionTools';
-import {
   listGitHubPullRequestsTool,
   createGitHubPullRequestTool
 } from './githubPullRequestTools';
@@ -47,10 +41,6 @@ import {
   scanProjectTool,
   getProjectScanTool,
   listProjectScansTool,
-  analyzeProjectFullTool,
-  getProjectArchitectureTool,
-  getProjectKeyFilesTool,
-  getProjectDependenciesTool
 } from './projectScanTools';
 import { takeScreenshotTool, checkScreenshotSetupTool } from './screenshotTools';
 import {
@@ -61,31 +51,6 @@ import {
 import { askUserTool } from './askUserTool';
 import { loadSkillsTool, listAvailableSkillsTool } from './skillTools';
 import { runShellCommandTool } from './shellTools';
-import {
-  startRequirementElicitation,
-  recordRequirementAnswer,
-  getElicitationState,
-  advanceElicitationSection,
-  skipElicitationSection,
-  refineRequirementSection,
-  generateRequirementsDocument
-} from './elicitationTools';
-import {
-  addStakeholderTool,
-  listStakeholdersTool,
-  getStakeholderTool,
-  updateStakeholderTool,
-  removeStakeholderTool,
-  linkIssueToGoalTool,
-  unlinkIssueFromGoalTool,
-  generateCoverageReportTool,
-  resolveConflictTool
-} from './stakeholderTools';
-import {
-  analyzeProjectRisksTool,
-  analyzeIssueRisksTool,
-  getAtRiskItemsTool
-} from './riskDetectionTools';
 
 const toolRegistry: ToolRegistry = {
   get_current_project: getCurrentProjectTool,
@@ -119,15 +84,10 @@ const toolRegistry: ToolRegistry = {
   list_project_directory: listProjectDirectory,
   get_project_file_info: getProjectFileInfo,
   find_project_files: findProjectFiles,
-  // Project Analysis (basic)
+  // Project Scanning
   scan_project: scanProjectTool,
   get_project_scan: getProjectScanTool,
   list_project_scans: listProjectScansTool,
-  // Project Analysis (full orchestrated)
-  analyze_project_full: analyzeProjectFullTool,
-  get_project_architecture: getProjectArchitectureTool,
-  get_project_key_files: getProjectKeyFilesTool,
-  get_project_dependencies: getProjectDependenciesTool,
   // Screenshots
   take_screenshot: takeScreenshotTool,
   check_screenshot_setup: checkScreenshotSetupTool,
@@ -142,33 +102,6 @@ const toolRegistry: ToolRegistry = {
   list_available_skills: listAvailableSkillsTool,
   // Shell execution
   run_shell_command: runShellCommandTool,
-  // Requirement Elicitation
-  start_requirement_elicitation: startRequirementElicitation,
-  record_requirement_answer: recordRequirementAnswer,
-  get_elicitation_state: getElicitationState,
-  advance_elicitation_section: advanceElicitationSection,
-  skip_elicitation_section: skipElicitationSection,
-  refine_requirement_section: refineRequirementSection,
-  generate_requirements_document: generateRequirementsDocument,
-  // Context-Aware Question Generation
-  generate_project_questions: generateProjectQuestionsTool,
-  generate_issue_questions: generateIssueQuestionsTool,
-  suggest_clarifications: suggestClarificationsTool,
-  identify_information_gaps: identifyInformationGapsTool,
-  // Stakeholder Management
-  add_stakeholder: addStakeholderTool,
-  list_stakeholders: listStakeholdersTool,
-  get_stakeholder: getStakeholderTool,
-  update_stakeholder: updateStakeholderTool,
-  remove_stakeholder: removeStakeholderTool,
-  link_issue_to_goal: linkIssueToGoalTool,
-  unlink_issue_from_goal: unlinkIssueFromGoalTool,
-  generate_coverage_report: generateCoverageReportTool,
-  resolve_stakeholder_conflict: resolveConflictTool,
-  // Risk Detection
-  analyze_project_risks: analyzeProjectRisksTool,
-  analyze_issue_risks: analyzeIssueRisksTool,
-  get_at_risk_items: getAtRiskItemsTool
 };
 
 export async function getToolRegistry(): Promise<ToolRegistry> {
