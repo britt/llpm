@@ -153,6 +153,10 @@ llpm setup --force
 3. Use slash commands (e.g., `/help`) for specific functions
 4. Use Ctrl+C to exit
 
+### Markdown rendering
+
+Markdown rendering is enabled only when stdout is a TTY and neither `NO_COLOR` nor `CI=true` is set.
+
 ### Project Management Workflow
 
 1. **Set up your first project:**
