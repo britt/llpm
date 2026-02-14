@@ -1,5 +1,4 @@
-import type { ReadlineInterface } from '../prompts';
-import { askQuestion } from '../prompts';
+import { askQuestion, type ReadlineInterface } from '../prompts';
 import { modelRegistry } from '../../services/modelRegistry';
 import type { ModelConfig } from '../../types/models';
 

@@ -165,6 +165,14 @@ function isRawModeSupported(): boolean {
       debug(`Profile set to: ${profileName}`);
     }
 
+    // Handle setup command before launching Ink UI
+    if (args.includes('setup')) {
+      const { runSetupWizard } = await import('./src/setup/wizard');
+      const forceFlag = args.includes('--force');
+      await runSetupWizard({ force: forceFlag });
+      // After setup, fall through to normal Ink UI launch
+    }
+
     debug('Starting LLPM CLI');
     await validateEnvironment();
 
@@ -172,7 +180,7 @@ function isRawModeSupported(): boolean {
     debug('Initializing telemetry');
     initializeTelemetry({
       serviceName: 'llpm',
-      serviceVersion: '1.7.0',
+      serviceVersion: '1.8.0',
     });
     debug('Telemetry initialization completed');
 

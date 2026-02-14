@@ -1,6 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import type { ReadlineInterface } from '../prompts';
-import type { ProviderCredentials, FetchModelsResult } from '../../services/modelProviders';
 
 // Mock credentialManager
 vi.mock('../../utils/credentialManager', () => ({
@@ -17,7 +16,7 @@ vi.mock('../../services/modelProviders', () => ({
 
 import { setupApiKeys, PROVIDER_OPTIONS } from './apiKeys';
 import { credentialManager } from '../../utils/credentialManager';
-import { getProviderAdapter } from '../../services/modelProviders';
+import { getProviderAdapter, type FetchModelsResult } from '../../services/modelProviders';
 
 function createMockRl(answers: string[]): ReadlineInterface {
   let callIndex = 0;

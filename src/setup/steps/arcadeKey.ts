@@ -1,5 +1,4 @@
-import type { ReadlineInterface } from '../prompts';
-import { askYesNo, askSecret } from '../prompts';
+import { askYesNo, askSecret, type ReadlineInterface } from '../prompts';
 import { credentialManager } from '../../utils/credentialManager';
 
 export interface ArcadeKeyResult {

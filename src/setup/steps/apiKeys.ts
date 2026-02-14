@@ -1,7 +1,5 @@
-import type { ReadlineInterface } from '../prompts';
-import { askQuestion, askYesNo, askSecret } from '../prompts';
-import { credentialManager } from '../../utils/credentialManager';
-import type { CredentialConfig } from '../../utils/credentialManager';
+import { askQuestion, askYesNo, askSecret, type ReadlineInterface } from '../prompts';
+import { credentialManager, type CredentialConfig } from '../../utils/credentialManager';
 import { getProviderAdapter } from '../../services/modelProviders';
 import type { ModelProvider } from '../../types/models';
 

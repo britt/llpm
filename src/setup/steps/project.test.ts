@@ -1,14 +1,12 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import type { ReadlineInterface } from '../prompts';
 import type { Project } from '../../types/project';
-import type { ProjectStepDeps } from './project';
-
 vi.mock('../../utils/projectConfig', () => ({
   addProject: vi.fn(),
   listProjects: vi.fn().mockResolvedValue([]),
 }));
 
-import { setupFirstProject } from './project';
+import { setupFirstProject, type ProjectStepDeps } from './project';
 import { addProject, listProjects } from '../../utils/projectConfig';
 
 function createMockRl(answers: string[]): ReadlineInterface {

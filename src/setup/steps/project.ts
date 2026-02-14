@@ -1,6 +1,5 @@
 import { existsSync as fsExistsSync } from 'fs';
-import type { ReadlineInterface } from '../prompts';
-import { askQuestion, askYesNo } from '../prompts';
+import { askQuestion, askYesNo, type ReadlineInterface } from '../prompts';
 import { addProject, listProjects } from '../../utils/projectConfig';
 import type { Project } from '../../types/project';
 
