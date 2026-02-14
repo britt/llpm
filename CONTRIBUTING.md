@@ -24,22 +24,27 @@ Only the project owner can vouch or denounce users via `/vouch @username` and `/
 
 Be respectful, constructive, and collaborative. We welcome contributors of all experience levels.
 
+Posting in issues, PRs, or discussions in an attempt to generate sales, promote your product, increase SEO for your project, or any other form of spam will result in being denounced. Your future contributions will be automatically closed and locked.
+
 ## Reporting Bugs
 
-Open an issue at [github.com/britt/llpm/issues](https://github.com/britt/llpm/issues) with:
+Bug reports should be authored by LLPM. Use LLPM to create issues with the appropriate context:
 
-- Steps to reproduce the problem
-- Expected vs. actual behavior
-- Your environment (OS, Bun version, AI provider)
-- Relevant error messages or logs (run with `--verbose` for details)
+```
+"Create an issue for [describe the bug]"
+```
+
+LLPM will gather the relevant environment details, steps to reproduce, and error context automatically.
 
 ## Suggesting Features
 
-Open an issue describing:
+Feature suggestions should also be authored by LLPM. Use LLPM to create the issue:
 
-- The problem the feature solves
-- How you envision it working
-- Any alternatives you considered
+```
+"Create a feature request for [describe the feature]"
+```
+
+LLPM will structure the request with the problem statement, proposed solution, and alternatives considered.
 
 ## Development Setup
 
