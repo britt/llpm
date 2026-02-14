@@ -48,8 +48,6 @@ bun run start
 
 Full documentation available at: **https://britt.github.io/llpm/**
 
-- First-time setup wizard: [SETUP.md](SETUP.md)
-
 ## Features
 
 ### Core Features
@@ -64,6 +62,7 @@ Full documentation available at: **https://britt.github.io/llpm/**
 ### Project Management
 
 - 📁 Multi-project support with automatic configuration persistence
+- 🔄 New projects become the active project on creation
 - 🔄 Easy project switching and management
 - 📂 GitHub repository integration for project setup
 - 🛠️ LLM tools for natural language project management
@@ -134,15 +133,19 @@ bun run start:verbose      # Start with debug logging
 
 ## Usage
 
-### First-time setup
+### Interactive setup
 
-Run the interactive setup wizard to configure providers, select a default model, and create your first project:
+Run the setup wizard to configure credentials and create an initial project.
 
 ```bash
 llpm setup
 ```
 
-For details, see [SETUP.md](SETUP.md).
+To re-run setup from a clean state, pass `--force`.
+
+```bash
+llpm setup --force
+```
 
 ### Basic Usage
 
@@ -151,6 +154,10 @@ For details, see [SETUP.md](SETUP.md).
 3. Use slash commands (e.g., `/help`) for specific functions
 4. Use Ctrl+C to exit
 
+### Markdown rendering
+
+Markdown rendering is enabled only when stdout is a TTY and neither `NO_COLOR` nor `CI=true` is set.
+
 ### Project Management Workflow
 
 1. **Set up your first project:**
@@ -158,6 +165,8 @@ For details, see [SETUP.md](SETUP.md).
    ```
    /project add "My App" "https://github.com/user/my-app" "/path/to/project"
    ```
+
+   The newly created project becomes the active project.
 
 2. **Or browse GitHub repositories:**
 
