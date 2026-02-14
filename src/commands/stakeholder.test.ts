@@ -418,14 +418,14 @@ describe('Stakeholder Command', () => {
     });
   });
 
-  describe('Quoted argument parsing', () => {
-    it('should parse quoted arguments for add command', async () => {
+  describe('Quoted argument parsing (pre-parsed by registry)', () => {
+    it('should handle multi-word args pre-parsed by parseCommand', async () => {
       vi.mocked(getCurrentProject).mockResolvedValue({ id: 'test-project', name: 'Test', path: '/test' });
       vi.mocked(getStakeholderBackend).mockResolvedValue(mockBackend as any);
       mockBackend.addStakeholder.mockResolvedValue(undefined);
 
-      // Simulating: /stakeholder add "End User" "Daily user" "Non-technical users"
-      const result = await stakeholderCommand.execute(['add', '"End', 'User"', '"Daily', 'user"', '"Non-technical', 'users"']);
+      // Args arrive pre-parsed from parseCommand (quotes already stripped)
+      const result = await stakeholderCommand.execute(['add', 'End User', 'Daily user', 'Non-technical users']);
 
       expect(result.success).toBe(true);
       expect(mockBackend.addStakeholder).toHaveBeenCalledWith(
@@ -437,13 +437,13 @@ describe('Stakeholder Command', () => {
       );
     });
 
-    it('should handle single-word quoted arguments', async () => {
+    it('should handle single-word args pre-parsed by parseCommand', async () => {
       vi.mocked(getCurrentProject).mockResolvedValue({ id: 'test-project', name: 'Test', path: '/test' });
       vi.mocked(getStakeholderBackend).mockResolvedValue(mockBackend as any);
       mockBackend.addStakeholder.mockResolvedValue(undefined);
 
-      // Simulating: /stakeholder add "Developer" "Engineer" "Builds the product"
-      const result = await stakeholderCommand.execute(['add', '"Developer"', '"Engineer"', '"Builds', 'the', 'product"']);
+      // Args arrive pre-parsed from parseCommand (quotes already stripped)
+      const result = await stakeholderCommand.execute(['add', 'Developer', 'Engineer', 'Builds the product']);
 
       expect(result.success).toBe(true);
       expect(mockBackend.addStakeholder).toHaveBeenCalledWith(
@@ -455,13 +455,13 @@ describe('Stakeholder Command', () => {
       );
     });
 
-    it('should handle mixed quoted and unquoted arguments', async () => {
+    it('should handle mixed args pre-parsed by parseCommand', async () => {
       vi.mocked(getCurrentProject).mockResolvedValue({ id: 'test-project', name: 'Test', path: '/test' });
       vi.mocked(getStakeholderBackend).mockResolvedValue(mockBackend as any);
       mockBackend.addStakeholder.mockResolvedValue(undefined);
 
-      // Simulating: /stakeholder add "End User" Developer "The developers"
-      const result = await stakeholderCommand.execute(['add', '"End', 'User"', 'Developer', '"The', 'developers"']);
+      // Args arrive pre-parsed from parseCommand (quotes already stripped)
+      const result = await stakeholderCommand.execute(['add', 'End User', 'Developer', 'The developers']);
 
       expect(result.success).toBe(true);
       expect(mockBackend.addStakeholder).toHaveBeenCalledWith(

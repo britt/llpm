@@ -13,6 +13,7 @@ import { historyCommand } from './history';
 import { skillsCommand } from './skills';
 import { stakeholderCommand } from './stakeholder';
 import { issueCommand } from './issue';
+import { parseQuotedArgs } from '../utils/parseQuotedArgs';
 import { debug } from '../utils/logger';
 
 const commandRegistry: CommandRegistry = {
@@ -52,7 +53,7 @@ export function parseCommand(input: string): {
 
   const parts = trimmed.split(/\s+/);
   const command = parts[0]?.toLowerCase();
-  const args = parts.slice(1);
+  const args = parseQuotedArgs(parts.slice(1));
 
   return {
     isCommand: true,
