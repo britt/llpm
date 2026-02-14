@@ -125,3 +125,42 @@ All 12 new tests pass:
 - `CLAUDE.md` - Updated scenario count reference
 - `src/tools/elicitationTools.test.ts` - Fixed docs/ deletion bug (used temp dir instead)
 - `.gitignore` - Added test temp directory pattern
+
+## Task 4: Issue #265 - Setup Wizard Command - COMPLETE
+- Started: 2026-02-14
+- Tests: 2156 passing, 13 skipped (all pre-existing skips)
+- Coverage: Setup module: 100% statements, 100% functions, 96.66% branches
+- Build: Successful (10.51 MB JS bundle, 2831 modules)
+- Linting: Clean in modified files (pre-existing errors elsewhere unchanged)
+- Version: 1.7.1 → 1.8.0 (MINOR bump - new setup command feature)
+- Completed: 2026-02-14
+- Notes:
+  - Added `llpm setup` command with 6-step interactive wizard
+  - Steps: welcome banner, API key configuration, model selection, GitHub token, Arcade key, first project creation
+  - Readline-based prompts with validation and retry logic
+  - Process exits after setup completes (does not fall through to Ink UI)
+  - Repository input normalized to full URL; github_repo field correctly populated
+  - Google Vertex AI prompt correctly asks for "Project ID" instead of "API key"
+  - Deleted Hugo documentation site (29 files)
+
+### Files Added
+- `src/setup/wizard.ts` - Setup orchestrator
+- `src/setup/wizard.test.ts` - 10 tests
+- `src/setup/prompts.ts` - Readline prompt helpers
+- `src/setup/prompts.test.ts` - 13 tests
+- `src/setup/steps/welcome.ts` - Welcome banner step
+- `src/setup/steps/welcome.test.ts` - 3 tests
+- `src/setup/steps/apiKeys.ts` - AI provider API key configuration
+- `src/setup/steps/apiKeys.test.ts` - 7 tests
+- `src/setup/steps/modelSelection.ts` - Default model selection
+- `src/setup/steps/modelSelection.test.ts` - 5 tests
+- `src/setup/steps/githubToken.ts` - GitHub token setup with gh CLI detection
+- `src/setup/steps/githubToken.test.ts` - 6 tests
+- `src/setup/steps/arcadeKey.ts` - Arcade API key configuration
+- `src/setup/steps/arcadeKey.test.ts` - 4 tests
+- `src/setup/steps/project.ts` - First project creation
+- `src/setup/steps/project.test.ts` - 9 tests
+
+### Files Modified
+- `index.ts` - Added setup command handler with process.exit(0)
+- `package.json` - Version bump to 1.8.0

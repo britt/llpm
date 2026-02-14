@@ -1,6 +1,6 @@
 {
   "name": "@britt/llpm",
-  "version": "1.7.1",
+  "version": "1.8.0",
   "description": "Large Language Model Product Manager - AI-powered CLI for software development",
   "keywords": [
     "llm",
@@ -62,7 +62,8 @@
     "typecheck": "tsc --noEmit",
     "typecheck:strict": "tsc --noEmit --project tsconfig.strict.json",
     "find:unused": "ts-prune --error --ignore 'index.ts|.test.ts|.test.tsx'",
-    "find:unused:verbose": "ts-prune"
+    "find:unused:verbose": "ts-prune",
+    "setup": "bun run index.ts setup"
   },
   "devDependencies": {
     "@ai-sdk/anthropic": "^2.0.5",
