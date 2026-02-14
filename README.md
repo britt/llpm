@@ -48,6 +48,8 @@ bun run start
 
 Full documentation available at: **https://britt.github.io/llpm/**
 
+- First-time setup wizard: [SETUP.md](SETUP.md)
+
 ## Features
 
 ### Core Features
