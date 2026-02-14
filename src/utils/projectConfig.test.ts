@@ -1,5 +1,7 @@
 import '../../test/setup';
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
+import { homedir } from 'os';
+import { resolve } from 'path';
 import type { ProjectConfig, Project } from '../types/project';
 
 // Import functions - use real implementations with temp files
@@ -17,8 +19,31 @@ import {
   saveProjectAgentConfig,
   removeProjectAgentConfig,
   findProjectByPath,
-  autoDetectProject
+  autoDetectProject,
+  expandPath
 } from './projectConfig';
+
+describe('expandPath', () => {
+  it('should expand ~/subdir to homedir/subdir', () => {
+    const result = expandPath('~/projects/my-app');
+    expect(result).toBe(resolve(homedir(), 'projects/my-app'));
+  });
+
+  it('should expand bare ~ to homedir', () => {
+    const result = expandPath('~');
+    expect(result).toBe(homedir());
+  });
+
+  it('should leave absolute paths unchanged', () => {
+    const result = expandPath('/usr/local/bin');
+    expect(result).toBe('/usr/local/bin');
+  });
+
+  it('should resolve relative paths to absolute', () => {
+    const result = expandPath('relative/path');
+    expect(result).toBe(resolve('relative/path'));
+  });
+});
 
 describe('Project Config Caching', () => {
   it('should cache project config after first load', async () => {
@@ -255,6 +280,38 @@ describe('addProject', () => {
     const newProject = await addProject(projectData);
 
     expect(newProject.github_repo).toBe('custom/repo');
+  });
+
+  it('should expand tilde in project path', async () => {
+    const projectData = {
+      name: 'Tilde Project',
+      repository: 'https://github.com/test/tilde-project',
+      path: '~/workspace/tilde-project'
+    };
+
+    const newProject = await addProject(projectData);
+
+    expect(newProject.path).toBe(resolve(homedir(), 'workspace/tilde-project'));
+    expect(newProject.path).not.toContain('~');
+
+    // Cleanup
+    await removeProject(newProject.id);
+  });
+
+  it('should resolve relative paths in project path', async () => {
+    const projectData = {
+      name: 'Relative Project',
+      repository: 'https://github.com/test/relative-project',
+      path: 'relative/project/path'
+    };
+
+    const newProject = await addProject(projectData);
+
+    expect(newProject.path).toBe(resolve('relative/project/path'));
+    expect(newProject.path.startsWith('/')).toBe(true);
+
+    // Cleanup
+    await removeProject(newProject.id);
   });
 
   it('should switch active project to newly created project', async () => {

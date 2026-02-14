@@ -1,6 +1,7 @@
 import { readFile, writeFile } from 'fs/promises';
 import { existsSync, statSync, realpathSync } from 'fs';
 import { resolve } from 'path';
+import { homedir } from 'os';
 import type { Project, ProjectConfig, AgentConfig } from '../types/project';
 import { getConfigFilePath, ensureConfigDir, getProjectAgentsYamlPath, ensureProjectDir } from './config';
 import { debug } from './logger';
@@ -8,6 +9,19 @@ import { URL } from 'url';
 import * as yaml from 'js-yaml';
 import { traced } from './tracing';
 import { SpanKind } from '@opentelemetry/api';
+
+/**
+ * Expand ~ to user's home directory and resolve to absolute path.
+ */
+export function expandPath(inputPath: string): string {
+  if (inputPath.startsWith('~/')) {
+    return resolve(homedir(), inputPath.slice(2));
+  }
+  if (inputPath === '~') {
+    return homedir();
+  }
+  return resolve(inputPath);
+}
 
 // Cache for project config to avoid repeated filesystem reads
 let projectConfigCache: ProjectConfig | null = null;
@@ -221,6 +235,7 @@ export async function addProject(
 
   const newProject: Project = {
     ...project,
+    ...(project.path && { path: expandPath(project.path) }),
     github_repo: gh_repo,
     id: projectId,
     createdAt: now,

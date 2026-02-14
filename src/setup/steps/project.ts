@@ -1,6 +1,6 @@
 import { existsSync as fsExistsSync } from 'fs';
 import { askQuestion, askYesNo, type ReadlineInterface } from '../prompts';
-import { addProject, listProjects } from '../../utils/projectConfig';
+import { addProject, listProjects, expandPath } from '../../utils/projectConfig';
 import type { Project } from '../../types/project';
 
 export interface ProjectResult {
@@ -61,11 +61,12 @@ export async function setupFirstProject(
       console.log('  Path is required.');
       continue;
     }
-    if (!deps.checkPathExists(input)) {
+    const expanded = expandPath(input);
+    if (!deps.checkPathExists(expanded)) {
       console.log(`  Path "${input}" does not exist. Please enter a valid path.`);
       continue;
     }
-    path = input;
+    path = expanded;
   }
 
   const descriptionInput = await askQuestion(rl, '  Description (optional): ');
