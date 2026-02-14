@@ -155,16 +155,20 @@ Before running verification:
 **Steps**:
 1. Run `/project list` - should show no projects
 2. Run `/project add "Test Project" "owner/test-repo" "/tmp/test-project" "A test project"`
-3. Run `/project list` - should show the new project
-4. Run `/project switch <project-id>` using the ID from step 3
-5. Run `/project` - should show current project details
-6. Run `/project remove <project-id>` to clean up
+3. Verify response contains "Switched to" confirmation
+4. Run `/project` - should show "Test Project" as the active project without needing `/project switch`
+5. Run `/project list` - should show the new project marked as current
+6. Run `/project switch <project-id>` using the ID from step 2 (explicit switch still works)
+7. Run `/project` - should show current project details
+8. Run `/project remove <project-id>` to clean up
 
 **Success Criteria**:
 - [ ] Empty project list handled gracefully
 - [ ] Project created with correct details
+- [ ] Response message confirms auto-switch to new project
+- [ ] `/project` shows the new project as active immediately after creation (no manual switch needed)
 - [ ] Project appears in list with all fields
-- [ ] Project switch succeeds
+- [ ] Explicit project switch still works
 - [ ] Current project shows correct info
 - [ ] Project removal succeeds
 
@@ -172,7 +176,33 @@ Before running verification:
 
 ---
 
-### Scenario 8: Streaming Response
+### Scenario 8: Auto-Switch on Project Creation
+
+**Context**: At least one project already exists and is set as the active project.
+
+**Steps**:
+1. Run `/project add "First Project" "owner/first-repo" "/tmp/first" "First project"` to ensure a project exists
+2. Run `/project` - verify "First Project" is active
+3. Run `/project add "Second Project" "owner/second-repo" "/tmp/second" "Second project"`
+4. Verify response contains "Switched to" and "Second Project"
+5. Run `/project` - should show "Second Project" as the active project
+6. Run `/project list` - "Second Project" should be marked as current
+7. Ask the AI: "What is the current project?" - AI should report "Second Project" via the `get_current_project` tool
+8. Clean up: `/project remove <second-project-id>` then `/project remove <first-project-id>`
+
+**Success Criteria**:
+- [ ] Creating a second project automatically switches active project away from the first
+- [ ] `/project add` response explicitly confirms the switch
+- [ ] `/project` shows the newly created project as active without manual `/project switch`
+- [ ] `/project list` marks the new project as current
+- [ ] AI tool `get_current_project` returns the newly created project
+- [ ] Explicit `/project switch` still works to switch back to the first project
+
+**If Blocked**: Check `~/.llpm/config.json` to verify `currentProject` field is being updated
+
+---
+
+### Scenario 9: Streaming Response
 
 **Context**: LLPM is running with AI configured.
 
