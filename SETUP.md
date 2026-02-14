@@ -69,3 +69,10 @@ ARCADE_API_KEY=...
 - The wizard validates provider credentials by fetching available models.
 - The “Create First Project” step links a project name, a GitHub repository (for example `owner/repo`), and an existing local directory; it does not clone repositories.
 - `llpm setup` exits when setup completes; run `llpm` to start the interactive chat UI.
+
+### Configuring tokens later
+
+If you skip the GitHub token or Arcade API key during setup, configure them later by either:
+
+- Setting environment variables (for example `GITHUB_TOKEN` and `ARCADE_API_KEY`), or
+- Editing `~/.llpm/credentials.json` for the active profile.
