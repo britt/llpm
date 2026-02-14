@@ -213,6 +213,61 @@ describe('Project Command', () => {
       expect(result.success).toBe(false);
       expect(result.content).toContain('Failed to add project');
     });
+
+    it('should handle quoted args through parseCommand pipeline', async () => {
+      const { parseCommand } = await import('./registry');
+
+      vi.mocked(projectConfig.addProject).mockResolvedValue({
+        id: 'quoted-project-123',
+        name: 'My App',
+        repository: 'https://github.com/user/my-repo',
+        github_repo: 'user/my-repo',
+        path: '/home/user/my app',
+        description: 'A task manager',
+        createdAt: '2024-01-01',
+        updatedAt: '2024-01-01',
+      });
+
+      const parsed = parseCommand('/project add "My App" "user/my-repo" "/home/user/my app" "A task manager"');
+      expect(parsed.isCommand).toBe(true);
+      expect(parsed.command).toBe('project');
+
+      // Args should already be quote-stripped by parseCommand
+      const result = await projectCommand.execute(parsed.args!);
+
+      expect(result.success).toBe(true);
+      expect(projectConfig.addProject).toHaveBeenCalledWith({
+        name: 'My App',
+        repository: 'https://github.com/user/my-repo',
+        path: '/home/user/my app',
+        description: 'A task manager',
+      });
+    });
+
+    it('should handle single-quoted args through parseCommand pipeline', async () => {
+      const { parseCommand } = await import('./registry');
+
+      vi.mocked(projectConfig.addProject).mockResolvedValue({
+        id: 'quoted-project-456',
+        name: 'My Project',
+        repository: 'https://github.com/user/repo',
+        github_repo: 'user/repo',
+        path: '/tmp/my project',
+        createdAt: '2024-01-01',
+        updatedAt: '2024-01-01',
+      });
+
+      const parsed = parseCommand("/project add 'My Project' 'user/repo' '/tmp/my project'");
+      const result = await projectCommand.execute(parsed.args!);
+
+      expect(result.success).toBe(true);
+      expect(projectConfig.addProject).toHaveBeenCalledWith(
+        expect.objectContaining({
+          name: 'My Project',
+          path: '/tmp/my project',
+        })
+      );
+    });
   });
 
   describe('List subcommand', () => {
