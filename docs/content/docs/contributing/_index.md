@@ -9,13 +9,13 @@ This section describes the contribution workflow for LLPM, including development
 
 ## Getting Started
 
-1. **[Development Setup]({{< relref "development-setup" >}})** - Set up your local development environment with Bun and configure API keys
-2. **[Testing]({{< relref "testing" >}})** - Learn about our TDD workflow and testing requirements
+1. **[Development Setup]({{< relref "development-setup" >}})** - Configure a local development environment (Bun) and required API keys
+2. **[Testing]({{< relref "testing" >}})** - Follow the TDD workflow and testing requirements
 
 ## Pull Request Workflow
 
 1. Fork the repository and create a feature branch
-2. Follow Test-Driven Development (TDD) practices - write tests first
+2. Follow Test-Driven Development (TDD) practices; write tests first
 3. Ensure all tests pass with `bun run test`
 4. Verify coverage meets thresholds (90%+ lines/functions/statements, 85%+ branches)
 5. Run `bun run lint` and `bun run typecheck` to check for errors
