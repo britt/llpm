@@ -44,6 +44,59 @@ weight: 1
    chmod +x index.ts
    ```
 
+## Install via npm
+
+You can install LLPM from npm either as a local project dependency or as a global CLI.
+
+1. **Install as a project dependency**
+
+   ```bash
+   npm install @britt/llpm
+   ```
+
+   After installing locally, you can run the CLI with `npx`:
+
+   ```bash
+   npx llpm
+   ```
+
+   Or from an npm script in your project:
+
+   ```json
+   {
+     "scripts": {
+       "llpm": "llpm"
+     }
+   }
+   ```
+
+2. **Install globally (optional)**
+
+   ```bash
+   npm install -g @britt/llpm
+   llpm
+   ```
+
+3. **Use from Node.js code (optional)**
+
+   If you want to access LLPM programmatically from Node.js or TypeScript, install it as a project dependency and import it:
+
+   ```ts
+   // ESM / TypeScript
+   import * as llpm from '@britt/llpm';
+
+   // CommonJS
+   const llpm = require('@britt/llpm');
+
+   // Use exported helpers or entrypoints as needed
+   ```
+
+### Notes
+
+- Requires Node.js v18 or later (consistent with the prerequisites above).
+- Environment variables are still required; configure them as described in [Environment Variables](#environment-variables).
+- In environments that restrict `postinstall` scripts, ensure that scripts from `@britt/llpm` are allowed so that all tooling is set up correctly.
+
 ## Install Globally (optional)
 
 ```bash
