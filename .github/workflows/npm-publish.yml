@@ -3,10 +3,11 @@ name: Publish to NPM
 on:
   workflow_dispatch:
     inputs:
-      RELEASE_TAG: 
+      tag: 
         required: true
   release:
     types: [published]
+    
 
 jobs:
   publish:
@@ -30,7 +31,7 @@ jobs:
       - name: Verify version matches release tag
         run: |
           PACKAGE_VERSION=$(node -p "require('./package.json').version")
-          RELEASE_TAG="${{ github.event.release.tag_name }}"
+          RELEASE_TAG="${{ github.event.release.tag_name || inputs.tag}}"
           RELEASE_VERSION="${RELEASE_TAG#v}"
           if [ "$PACKAGE_VERSION" != "$RELEASE_VERSION" ]; then
             echo "::error::Version mismatch: package.json ($PACKAGE_VERSION) != release tag ($RELEASE_VERSION)"
