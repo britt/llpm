@@ -3,11 +3,9 @@ title: Contributing
 weight: 4
 ---
 
-Thank you for your interest in contributing to LLPM!
-
 ## Overview
 
-LLPM welcomes contributions from the community. Whether you are fixing bugs, adding features, or improving documentation, your help is appreciated.
+This section describes the contribution workflow for LLPM, including development setup, testing expectations, pull requests, and issue reporting.
 
 ## Getting Started
 
@@ -22,5 +20,42 @@ LLPM welcomes contributions from the community. Whether you are fixing bugs, add
 4. Verify coverage meets thresholds (90%+ lines/functions/statements, 85%+ branches)
 5. Run `bun run lint` and `bun run typecheck` to check for errors
 6. Submit your pull request with a clear description of changes
+
+## Issues
+
+Issue reporting uses the `issue` slash command to analyze an existing GitHub issue for risks.
+
+### Prerequisites
+
+- An active LLPM project configured with a GitHub repository
+- A GitHub issue number
+
+### Analyze an issue
+
+Execute one of the following commands:
+
+```text
+/issue <number>
+```
+
+```text
+/issue risks <number>
+```
+
+### Show issue command help
+
+```text
+/issue help
+```
+
+### Risk types
+
+Risk analysis reports the following risk types:
+
+- `stale`
+- `blocked`
+- `deadline`
+- `scope`
+- `assignment`
 
 See the subsections for detailed guidance on development setup and testing practices.
