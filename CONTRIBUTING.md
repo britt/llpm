@@ -2,6 +2,24 @@
 
 Thank you for your interest in contributing to LLPM! This guide covers everything you need to get started.
 
+## Community Trust (Vouch)
+
+This project uses [Vouch](https://github.com/mitchellh/vouch) to verify contributions come from trusted community members. This prevents AI slop, spam, and low-quality drive-by contributions.
+
+**How it works:**
+
+- **Vouched users** can open issues and pull requests normally.
+- **Unvouched users** will have their issues/PRs automatically closed with a message explaining how to get vouched.
+- **Denounced users** will have their issues/PRs automatically closed and locked.
+
+**How to get vouched:**
+
+1. Engage with the project in discussions or existing issues.
+2. Demonstrate familiarity with the codebase and project goals.
+3. Ask a maintainer to vouch for you.
+
+Only the project owner can vouch or denounce users via `/vouch @username` and `/denounce @username` comments.
+
 ## Code of Conduct
 
 Be respectful, constructive, and collaborative. We welcome contributors of all experience levels.
