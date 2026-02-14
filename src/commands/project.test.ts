@@ -233,7 +233,8 @@ describe('Project Command', () => {
       expect(parsed.command).toBe('project');
 
       // Args should already be quote-stripped by parseCommand
-      const result = await projectCommand.execute(parsed.args!);
+      const args = parsed.args ?? [];
+      const result = await projectCommand.execute(args);
 
       expect(result.success).toBe(true);
       expect(projectConfig.addProject).toHaveBeenCalledWith({
@@ -258,7 +259,8 @@ describe('Project Command', () => {
       });
 
       const parsed = parseCommand("/project add 'My Project' 'user/repo' '/tmp/my project'");
-      const result = await projectCommand.execute(parsed.args!);
+      const args = parsed.args ?? [];
+      const result = await projectCommand.execute(args);
 
       expect(result.success).toBe(true);
       expect(projectConfig.addProject).toHaveBeenCalledWith(

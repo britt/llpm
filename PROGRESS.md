@@ -1,5 +1,27 @@
 # PROGRESS.md
 
+## Task: Fix quoted string handling in slash commands (#255) - COMPLETE
+- Started: 2026-02-14T08:47:00Z
+- Tests: 2183 passing, 0 failing (full suite)
+- Build: Successful
+- Linting: Clean (no new errors in modified files)
+- Completed: 2026-02-14T11:02:00Z
+- Notes:
+  - Extracted `parseQuotedArgs` from stakeholder.ts to shared utility `src/utils/parseQuotedArgs.ts`
+  - Integrated into `parseCommand()` in registry.ts so ALL commands benefit automatically
+  - Removed duplicate local implementation from stakeholder.ts
+  - Added 13 unit tests for the utility, 4 new registry tests, 2 project integration tests
+  - TDD: tests written first and verified failing before implementation
+
+### Files Changed
+- `src/utils/parseQuotedArgs.ts` - New shared utility for quote-aware argument parsing
+- `src/utils/parseQuotedArgs.test.ts` - 13 unit tests for the utility
+- `src/commands/registry.ts` - Integrated parseQuotedArgs into parseCommand()
+- `src/commands/registry.test.ts` - Fixed broken assertion, added 3 new quoted-arg tests
+- `src/commands/project.test.ts` - Added 2 end-to-end integration tests
+- `src/commands/stakeholder.ts` - Removed local parseQuotedArgs (now handled by registry)
+- `src/commands/stakeholder.test.ts` - Updated tests to use pre-parsed arg format
+
 ## Task: Auto-switch to newly created project (#263) - COMPLETE
 - Started: 2026-02-13T15:55:00Z
 - Tests: 2099 passing, 0 failing (full suite)
