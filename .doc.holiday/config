@@ -1,0 +1,13 @@
+Include = [
+    "!**/.git/**",
+    "!**/.claude/**",
+    "!**/.conductor/**",
+    "!**/.cursor/**",
+    "!**/.vscode/**",
+	"!**/.github/**",
+	"!**/.gitlab/**",
+	"!**/build/**",
+	"!**/dist/**",
+	"!**/node_modules/**",
+	"!_site/**"
+]
