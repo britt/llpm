@@ -99,3 +99,29 @@ All 12 new tests pass:
 - `checksums.json` - No longer needed (no binary verification)
 - `bin/llpm-macos-arm64.tar.gz` - No longer needed (no compiled binary)
 - `test/mocks/bun.js` - No longer needed (no bun import to mock)
+
+## Task 3: Issue #263 - Auto-switch to newly created project - COMPLETE
+- Started: 2026-02-13
+- Tests: 2099 passing, 13 skipped
+- Coverage: Lines/Functions/Branches/Statements all meet thresholds
+- Build: Successful (10.49 MB bundle)
+- Linting: Clean in modified files (pre-existing warnings unchanged)
+- Completed: 2026-02-13
+- Notes:
+  - `addProject()` now always sets newly created project as active (was first-project-only)
+  - `/project add` response includes switch confirmation message
+  - `add_project` AI tool response updated to mention active project
+  - Updated VERIFICATION_PLAN.md with auto-switch scenarios (Scenarios 7-8)
+  - Found and fixed root cause of docs/ deletion bug (elicitationTools.test.ts)
+
+### Files Changed
+- `src/utils/projectConfig.ts` - Always set `config.currentProject` in `addProject()`
+- `src/utils/projectConfig.test.ts` - Updated test expectations for new behavior
+- `src/commands/project.ts` - Added switch confirmation to `/project add` response
+- `src/commands/project.test.ts` - Updated test for active project message
+- `src/tools/projectTools.ts` - Updated tool response message
+- `src/tools/projectTools.test.ts` - Updated test for active project message
+- `VERIFICATION_PLAN.md` - Added Scenario 8 (auto-switch), updated Scenario 7
+- `CLAUDE.md` - Updated scenario count reference
+- `src/tools/elicitationTools.test.ts` - Fixed docs/ deletion bug (used temp dir instead)
+- `.gitignore` - Added test temp directory pattern

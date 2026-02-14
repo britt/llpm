@@ -445,19 +445,23 @@ describe('generateRequirementsDocument', () => {
       answer: 'My CLI Tool',
     });
 
-    // Use relative path (security: absolute paths are rejected)
-    const result = await generateRequirementsDocument.execute({
-      sessionId: startResult.sessionId,
-      outputPath: 'docs/requirements.md',
-    });
+    // Use a unique relative path that won't collide with real project directories
+    const tempDir = `.tmp-elicit-test-${Date.now()}`;
+    const outputPath = `${tempDir}/requirements.md`;
 
-    expect(result.success).toBe(true);
-    expect(result.savedTo).toBe('docs/requirements.md');
+    try {
+      const result = await generateRequirementsDocument.execute({
+        sessionId: startResult.sessionId,
+        outputPath,
+      });
 
-    const fileContent = await fs.readFile('docs/requirements.md', 'utf-8');
-    expect(fileContent).toContain('My CLI Tool');
+      expect(result.success).toBe(true);
+      expect(result.savedTo).toBe(outputPath);
 
-    // Cleanup
-    await fs.rm('docs', { recursive: true });
+      const fileContent = await fs.readFile(outputPath, 'utf-8');
+      expect(fileContent).toContain('My CLI Tool');
+    } finally {
+      await fs.rm(tempDir, { recursive: true });
+    }
   });
 });

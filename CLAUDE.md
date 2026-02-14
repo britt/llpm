@@ -646,7 +646,7 @@ The specific verification plan is detailed in @VERIFICATION_PLAN.md
 | Verification Type | When to Run | What It Covers |
 |-------------------|-------------|----------------|
 | **Quick** | After completing a set of related changes | Smoke test: `/help`, `/model`, AI responds |
-| **Extensive** | Before completing a major feature or PR | All 8 scenarios in VERIFICATION_PLAN.md |
+| **Extensive** | Before completing a major feature or PR | All 9 scenarios in VERIFICATION_PLAN.md |
 
 **Verification is NOT required after every commit.** TDD handles code correctness at the unit level. Verification validates real-world behavior at the feature level.
 
