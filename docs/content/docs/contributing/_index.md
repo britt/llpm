@@ -73,41 +73,4 @@ Feature request:
 
 LLPM gathers the environment details, steps to reproduce, and relevant error context for bug reports. LLPM structures feature requests with a problem statement, proposed solution, and alternatives considered.
 
-### Analyze an existing issue
-
-Issue analysis uses the `/issue` slash command.
-
-#### Prerequisites
-
-- An active LLPM project configured with a GitHub repository
-- A GitHub issue number
-
-#### Execute an analysis
-
-Execute one of the following commands:
-
-```text
-/issue <number>
-```
-
-```text
-/issue risks <number>
-```
-
-### Show issue command help
-
-```text
-/issue help
-```
-
-#### Risk types
-
-Risk analysis reports the following risk types:
-
-- `stale`
-- `blocked`
-- `deadline`
-- `scope`
-- `assignment`
-
 See the subsections for detailed guidance on development setup and testing practices.
