@@ -1173,4 +1173,116 @@ describe('useChat - Message State', () => {
       }, { timeout: 2000 });
     });
   });
+
+  describe('projectSwitchTrigger exposure and project mutation detection', () => {
+    it('should expose projectSwitchTrigger in return value', async () => {
+      vi.mocked(loadChatHistory).mockResolvedValue([]);
+
+      const { result } = renderHook(() => useChat());
+
+      await waitFor(() => {
+        expect(result.current.messages.length).toBeGreaterThan(0);
+      }, { timeout: 2000 });
+
+      expect(result.current.projectSwitchTrigger).toBeDefined();
+      expect(typeof result.current.projectSwitchTrigger).toBe('number');
+    });
+
+    it('should increment projectSwitchTrigger on /project add success', async () => {
+      vi.mocked(loadChatHistory).mockResolvedValue([]);
+      vi.mocked(parseCommand).mockReturnValue({
+        isCommand: true,
+        command: 'project',
+        args: ['add', 'Test', 'owner/repo', '/tmp/test']
+      });
+      vi.mocked(executeCommand).mockResolvedValue({
+        content: 'Added project "Test"',
+        shouldAddToHistory: true,
+        success: true
+      });
+
+      const { result } = renderHook(() => useChat());
+
+      await waitFor(() => {
+        expect(result.current.messages.length).toBeGreaterThan(0);
+      }, { timeout: 2000 });
+
+      const initialTrigger = result.current.projectSwitchTrigger;
+
+      await act(async () => {
+        await result.current.sendMessage('/project add Test owner/repo /tmp/test');
+      });
+
+      // Wait for project switch delay
+      await new Promise(resolve => setTimeout(resolve, 300));
+
+      await waitFor(() => {
+        expect(result.current.projectSwitchTrigger).toBe(initialTrigger + 1);
+      }, { timeout: 2000 });
+    });
+
+    it('should increment projectSwitchTrigger on /project remove success', async () => {
+      vi.mocked(loadChatHistory).mockResolvedValue([]);
+      vi.mocked(parseCommand).mockReturnValue({
+        isCommand: true,
+        command: 'project',
+        args: ['remove', 'test-id']
+      });
+      vi.mocked(executeCommand).mockResolvedValue({
+        content: 'Removed project: test-id',
+        shouldAddToHistory: true,
+        success: true
+      });
+
+      const { result } = renderHook(() => useChat());
+
+      await waitFor(() => {
+        expect(result.current.messages.length).toBeGreaterThan(0);
+      }, { timeout: 2000 });
+
+      const initialTrigger = result.current.projectSwitchTrigger;
+
+      await act(async () => {
+        await result.current.sendMessage('/project remove test-id');
+      });
+
+      // Wait for project switch delay
+      await new Promise(resolve => setTimeout(resolve, 300));
+
+      await waitFor(() => {
+        expect(result.current.projectSwitchTrigger).toBe(initialTrigger + 1);
+      }, { timeout: 2000 });
+    });
+
+    it('should not increment projectSwitchTrigger on failed project command', async () => {
+      vi.mocked(loadChatHistory).mockResolvedValue([]);
+      vi.mocked(parseCommand).mockReturnValue({
+        isCommand: true,
+        command: 'project',
+        args: ['remove', 'nonexistent']
+      });
+      vi.mocked(executeCommand).mockResolvedValue({
+        content: 'Failed to remove project',
+        shouldAddToHistory: true,
+        success: false
+      });
+
+      const { result } = renderHook(() => useChat());
+
+      await waitFor(() => {
+        expect(result.current.messages.length).toBeGreaterThan(0);
+      }, { timeout: 2000 });
+
+      const initialTrigger = result.current.projectSwitchTrigger;
+
+      await act(async () => {
+        await result.current.sendMessage('/project remove nonexistent');
+      });
+
+      await new Promise(resolve => setTimeout(resolve, 300));
+
+      // Trigger should NOT have incremented
+      expect(result.current.projectSwitchTrigger).toBe(initialTrigger);
+    });
+  });
 });

@@ -173,11 +173,12 @@ export function useChat() {
             return;
           }
 
-          // Special handling for project switch command
-          if (parsed.command === 'project' && 
-              (parsed.args?.[0] === 'switch' || parsed.args?.[0] === 'set') && 
+          // Special handling for project mutation commands (switch, set, add, remove)
+          if (parsed.command === 'project' &&
+              (parsed.args?.[0] === 'switch' || parsed.args?.[0] === 'set' ||
+               parsed.args?.[0] === 'add' || parsed.args?.[0] === 'remove') &&
               result.success) {
-            debug('Project switch command executed, triggering context refresh');
+            debug('Project mutation command executed, triggering context refresh');
             setIsProjectSwitching(true);
             setProjectSwitchTrigger(prev => prev + 1);
             // Wait for the project context to be updated
@@ -525,6 +526,7 @@ export function useChat() {
     cancelModelSelection,
     triggerModelSelector,
     notifyProjectSwitch,
+    projectSwitchTrigger,
     // Queue status for UI indicators
     queueLength: messageQueue.length,
     isProcessing,

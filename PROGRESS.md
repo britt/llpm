@@ -1,5 +1,27 @@
 # PROGRESS.md
 
+## Task: Fix stale status line after project mutations (#294) - COMPLETE
+- Started: 2026-02-15
+- Tests: 1912 passing, 0 failing (4 new tests added)
+- Build: Successful (10.36 MB bundle)
+- Linting: Clean in modified files
+- Version: 1.8.2 -> 1.8.3 (PATCH - bug fix)
+- Completed: 2026-02-15
+- Notes:
+  - Status line now refreshes when /project add, /project remove, /project switch, or /project set executes
+  - Root cause: ChatInterface loaded currentProject once on mount and never re-read it
+  - Fix: Exposed projectSwitchTrigger from useChat, passed through index.ts to ChatInterface as prop
+  - Added it as dependency on project-loading useEffect so status line re-reads after any project mutation
+  - Expanded trigger condition in useChat to fire for add/remove (was only switch/set)
+  - TDD: 4 tests written first and verified failing before implementation
+
+### Files Changed
+- `src/hooks/useChat.ts` - Expanded trigger condition for add/remove, exposed projectSwitchTrigger
+- `src/hooks/useChat.test.ts` - 4 new tests for trigger exposure and mutation detection
+- `src/components/ChatInterface.tsx` - Accept projectSwitchTrigger prop, use as useEffect dependency
+- `index.ts` - Pass projectSwitchTrigger from useChat to ChatInterface
+- `package.json` - Version bump to 1.8.3
+
 ## Task: Migrate 26 Tools to 5 Skills (#221) - COMPLETE
 - Started: 2026-02-14
 - Tests: 1908 passing, 0 failing
