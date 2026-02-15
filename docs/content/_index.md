@@ -1,5 +1,6 @@
 ---
 title: LLPM
+type: docs
 ---
 
 LLPM is a terminal-native, AI-powered product management workspace for software teams, designed to keep planning, tracking, and communication close to the code in your Git repositories so product decisions stay attached to the repositories that implement them.
