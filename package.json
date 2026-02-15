@@ -1,6 +1,6 @@
 {
   "name": "@britt/llpm",
-  "version": "1.8.2",
+  "version": "1.8.3",
   "description": "Large Language Model Product Manager - AI-powered CLI for software development",
   "keywords": [
     "llm",

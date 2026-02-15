@@ -28,6 +28,7 @@ export function App() {
     cancelModelSelection,
     triggerModelSelector,
     notifyProjectSwitch,
+    projectSwitchTrigger,
     isProcessing,
     queuedMessages,
     selectedSkills
@@ -129,6 +130,7 @@ export function App() {
     onCancelModelSelection: cancelModelSelection,
     onTriggerModelSelector: triggerModelSelector,
     onProjectSwitch: notifyProjectSwitch,
+    projectSwitchTrigger,
     isProcessing,
     queuedMessages,
     selectedSkills

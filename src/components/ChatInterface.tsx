@@ -32,6 +32,7 @@ interface ChatInterfaceProps {
   onCancelModelSelection?: () => void;
   onTriggerModelSelector?: () => void;
   onProjectSwitch?: () => Promise<void>;
+  projectSwitchTrigger?: number;
   isProcessing?: boolean;
   queuedMessages?: Array<QueuedMessage>;
   selectedSkills?: string[];
@@ -293,6 +294,7 @@ export const ChatInterface = memo(function ChatInterface({
   onCancelModelSelection,
   onTriggerModelSelector,
   onProjectSwitch,
+  projectSwitchTrigger,
   isProcessing = false,
   queuedMessages = [],
   selectedSkills = []
@@ -301,7 +303,7 @@ export const ChatInterface = memo(function ChatInterface({
   const [currentModel, setCurrentModel] = useState<ModelConfig | null>(null);
   const [activeInput, setActiveInput] = useState<'main' | 'project' | 'model' | 'notes'>('main');
 
-  // Load current project on mount
+  // Load current project on mount and when project mutations occur
   useEffect(() => {
     const loadCurrentProject = async () => {
       try {
@@ -313,7 +315,7 @@ export const ChatInterface = memo(function ChatInterface({
     };
 
     loadCurrentProject();
-  }, []);
+  }, [projectSwitchTrigger]);
 
   // Load current model on mount - uses modelRegistry to ensure model is from a configured provider
   // This fixes Issue #176: prevents showing unconfigured provider models in the footer
