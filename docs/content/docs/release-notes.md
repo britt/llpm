@@ -10,6 +10,12 @@ weight: 99
 
 **Summary:** This release introduces the `/delete` command, transitions the command system to a skill-based approach, and updates documentation and CI.
 
+<!-- new-release-notes: start -->
+
+%NEW_RELEASE_NOTES%
+
+<!-- new-release-notes: end -->
+
 ### New Features
 
 - Added a unified `/delete` command to remove notes or projects, including an optional `--force` flag to bypass confirmation.
