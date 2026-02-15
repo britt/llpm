@@ -109,3 +109,17 @@ Examples:
 /delete project my-app-123
 /delete project my-app-123 -f
 ```
+
+## Argument Quoting
+
+Slash command arguments are parsed with quote awareness, so quoted values are treated as a single argument.
+
+- Use quotes for values that contain spaces (for example, project names).
+- Use `""` (or `''`) to pass an empty string when a command supports an optional argument.
+
+Examples:
+
+```bash
+/project add "My App" "owner/repo" "~/code/my-app" ""
+/notes add "Meeting Notes" "Discussed architecture and milestones"
+```
