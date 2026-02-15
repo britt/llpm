@@ -13,6 +13,7 @@ LLPM provides slash commands for quick access to features.
 | `/exit` | Exit LLPM |
 | `/clear` | Clear chat history |
 | `/project` | Project management |
+| `/delete` | Delete notes or projects |
 | `/github` | GitHub operations |
 | `/model` | AI model management |
 | `/skills` | Skills system |
@@ -53,3 +54,14 @@ LLPM provides slash commands for quick access to features.
 | `/skills disable <name>` | Disable a skill |
 | `/skills reload` | Rescan skill directories |
 | `/skills reinstall` | Reinstall from repository |
+
+## Delete Commands
+
+| Command | Description |
+|---------|-------------|
+| `/delete note <id>` | Delete a note |
+| `/delete project <id>` | Delete a project |
+| `/delete note <id> --force` | Delete a note without confirmation |
+| `/delete project <id> --force` | Delete a project without confirmation |
+
+`--force` (or `-f`) bypasses the confirmation step.
