@@ -51,6 +51,24 @@ If the exact parameters are known and a command-style workflow is preferred, the
 
 Both approaches are equivalent. Anything that can be done with a slash command can also be requested directly in chat; commands simply provide a concise shortcut when the syntax is already familiar.
 
+## Deleting notes and projects
+
+Use `/delete` to remove a note or a project.
+
+To remove a project:
+
+```text
+> /delete project <project-id>
+```
+
+To remove a note:
+
+```text
+> /delete note <note-id>
+```
+
+If a command requires confirmation, add `--force` (or `-f`) to bypass confirmation.
+
 ### 4. Explore how LLPM can help on the project
 
 Once a project is set up, LLPM can act as a project assistant. Common goals include:
