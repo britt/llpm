@@ -10,12 +10,32 @@ LLPM provides slash commands for quick access to features.
 | Command | Description |
 |---------|-------------|
 | `/help` | Display available commands |
+| `/info` | Show application and project details |
 | `/exit` | Exit LLPM |
-| `/clear` | Clear chat history |
+| `/quit` | Exit LLPM |
+| `/clear` | Clear the current chat session |
 | `/project` | Project management |
 | `/github` | GitHub operations |
 | `/model` | AI model management |
 | `/skills` | Skills system |
+| `/notes` | Notes management |
+| `/history` | Chat history actions |
+| `/debug` | Debug logging information |
+| `/delete` | Delete resources (notes, projects) |
+
+Most commands support a `help` subcommand (for example, `/project help`).
+
+## Core Commands
+
+| Command | Description |
+|---------|-------------|
+| `/help` | List available commands |
+| `/info` | Show version and current project information |
+| `/clear` | Start a new chat session |
+| `/history` | Show history help and export options |
+| `/debug` | Show recent debug logs |
+| `/exit` | Exit LLPM |
+| `/quit` | Exit LLPM |
 
 ## Project Commands
 
@@ -25,7 +45,18 @@ LLPM provides slash commands for quick access to features.
 | `/project list` | List all projects |
 | `/project add <name> <repo> <path> <desc>` | Add a new project |
 | `/project switch <id>` | Switch active project |
-| `/project remove <id>` | Remove a project |
+| `/project remove <id>` | Remove a project (no confirmation) |
+
+## Notes Commands
+
+| Command | Description |
+|---------|-------------|
+| `/notes` | List notes for the current project |
+| `/notes add <title> [content]` | Add a note |
+| `/notes show <id>` | Show a note |
+| `/notes search <query>` | Search notes |
+| `/notes update <id> <title> [content]` | Update a note |
+| `/notes delete <id>` | Delete a note (no confirmation) |
 
 ## GitHub Commands
 
@@ -53,3 +84,28 @@ LLPM provides slash commands for quick access to features.
 | `/skills disable <name>` | Disable a skill |
 | `/skills reload` | Rescan skill directories |
 | `/skills reinstall` | Reinstall from repository |
+
+## Delete Command
+
+The `/delete` command provides a unified interface for deleting supported resources.
+
+```bash
+/delete <type> <id> [--force]
+```
+
+Supported types:
+
+- `note` (current project)
+- `project` (LLPM configuration)
+
+By default, `/delete` prints a confirmation preview; pass `--force` (or `-f`) to delete immediately.
+
+Examples:
+
+```bash
+/delete note note-123
+/delete note note-123 --force
+
+/delete project my-app-123
+/delete project my-app-123 -f
+```
