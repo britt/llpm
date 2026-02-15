@@ -1,5 +1,30 @@
 # PROGRESS.md
 
+## Task: Add /delete command (#231) - COMPLETE
+- Started: 2026-02-15
+- Tests: 1929 passing, 13 skipped (17 new tests added)
+- Coverage: delete.ts — Lines: 96.45%, Functions: 100%, Branches: 95%, Statements: 96.45%
+- Build: Successful (10.36 MB bundle)
+- Linting: Clean in modified files (1 pre-existing error, 188 pre-existing warnings)
+- Typecheck: Clean in modified files (pre-existing errors in other test files)
+- Version: 1.8.3 -> 1.9.0 (MINOR - new /delete command)
+- Completed: 2026-02-15
+- Notes:
+  - Added unified `/delete` command for notes and projects
+  - Confirmation via `--force`/`-f` flag (preview-then-force pattern)
+  - Prevents deletion of active project with clear error message
+  - Stakeholder deletion excluded (no stakeholder backend exists in codebase)
+  - TDD: 17 tests written first covering argument parsing, note deletion, project deletion, help
+
+### Files Added
+- `src/commands/delete.ts` - Delete command implementation
+- `src/commands/delete.test.ts` - 17 tests for all code paths
+
+### Files Modified
+- `src/commands/registry.ts` - Registered deleteCommand
+- `package.json` - Version bump to 1.9.0
+- `PROGRESS.md` - Task documentation
+
 ## Task: Fix stale status line after project mutations (#294) - COMPLETE
 - Started: 2026-02-15
 - Tests: 1912 passing, 0 failing (4 new tests added)
