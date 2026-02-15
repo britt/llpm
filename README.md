@@ -85,21 +85,18 @@ Full documentation available at: **https://britt.github.io/llpm/**
 
 ### Slash Commands
 
-- `/info` - Show application and current project information
 - `/help` - Display all available commands
+- `/info` - Show application and current project information
 - `/quit` or `/exit` - Exit the application
 - `/clear` - Start a new chat session
 - `/project` - Manage projects (add, list, switch, remove)
-- `/project-scan` - Scan and analyze project structure
 - `/github` - Browse and search GitHub repositories
-- `/issue` - Manage GitHub issues
 - `/model` - Switch between AI models and view provider status
 - `/skills` - Manage skills (list, test, enable, disable, reload)
 - `/notes` - Manage project notes
-- `/stakeholder` - Manage stakeholders and goals
 - `/history` - View chat history
-- `/registry` - View model registry information
 - `/debug` - Show recent debug logs for troubleshooting
+- `/delete` - Delete resources (notes, projects)
 
 ## Configuration
 
