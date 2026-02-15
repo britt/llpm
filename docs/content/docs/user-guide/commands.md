@@ -68,6 +68,15 @@ Most commands support a `help` subcommand (for example, `/project help`).
 | `/github list` | List your repositories |
 | `/github search <query>` | Search GitHub repositories |
 
+## Additional Commands
+
+| Command | Description |
+|---------|-------------|
+| `/skills` | Skills management (use `/skills help` for subcommands) |
+| `/notes` | Notes management (use `/notes help` for subcommands) |
+| `/history` | Chat history display and export options |
+| `/debug` | Debug logs and troubleshooting output |
+
 ## Model Commands
 
 | Command | Description |
