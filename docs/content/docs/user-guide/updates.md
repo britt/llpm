@@ -15,7 +15,7 @@ weight: 99
 - Updated project path handling to normalize home-relative (`~`) and relative paths.
 - Updated documentation into a full static site and rewrote getting-started content to be clearer and more task-focused.
 - Updated CI and release automation to better validate installations and support manual publishing flows.
-- Updated repository and documentation hygiene to reduce noise and clarify help output.
+- Refined repository and documentation hygiene to reduce noise and clarify help output.
 - Updated vouch and trust metadata to reflect current maintainer decisions.
 - Updated package versions to reflect the set of changes shipped in this cycle.
 
@@ -25,7 +25,7 @@ weight: 99
 
 ### Bug Fixes
 
-- Fixed the chat interface so it reflects project changes immediately after project mutations.
+- Resolved an issue where the chat interface did not reflect project changes immediately after project mutations.
 - Fixed slash command parsing to handle quoted and empty quoted arguments more consistently.
 
 ### Breaking Changes
