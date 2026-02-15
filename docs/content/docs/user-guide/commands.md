@@ -43,8 +43,11 @@ Most commands support a `help` subcommand (for example, `/project help`).
 |---------|-------------|
 | `/project` | Show current project |
 | `/project list` | List all projects |
-| `/project add <name> <repo> <path> <desc>` | Add a new project |
+| `/project add <name> <repo> <path> [description]` | Add a new project |
 | `/project switch <id>` | Switch active project |
+| `/project set <id>` | Alias for switching projects |
+| `/project update <id> description "<description>"` | Update a project description |
+| `/project scan` | Analyze the current project |
 | `/project remove <id>` | Remove a project (no confirmation) |
 
 ## Notes Commands
