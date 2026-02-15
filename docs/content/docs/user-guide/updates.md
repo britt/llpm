@@ -12,26 +12,25 @@ weight: 99
 
 ### Additional Changes
 
-{
-  "Additional Changes": [
-    "Project paths are now normalized so users can provide home-relative or relative paths without manual cleanup.",
-    "Documentation has been rebuilt into a full static site and the getting-started content has been rewritten to be clearer and more task-focused.",
-    "CI and release automation were updated to better validate installations and support manual publishing flows.",
-    "Repository and docs hygiene were improved to reduce noise and clarify help output.",
-    "The project’s vouch/trust metadata was updated to reflect current maintainer decisions.",
-    "The package version was advanced to reflect the set of changes shipped in this cycle."
-  ],
-  "Breaking Changes": [
-    "The command system has been reorganized so older specialized tools and commands are no longer available, and the new skill-based approach is the supported path forward."
-  ],
-  "Bug Fixes": [
-    "The chat interface now reliably reflects project changes immediately after project mutations occur.",
-    "Slash command parsing now handles quoted and empty quoted arguments more consistently across commands."
-  ],
-  "New Features": [
-    "You can now delete notes and projects using a single command, with an option to bypass confirmation when you are sure. The CLI adds a unified `/delete` command that targets both entities and supports `--force`, and it is registered in the command system with tests/docs updated as part of the 1.9.0 release."
-  ]
-}
+- Updated project path handling to normalize home-relative (`~`) and relative paths.
+- Updated documentation into a full static site and rewrote getting-started content to be clearer and more task-focused.
+- Updated CI and release automation to better validate installations and support manual publishing flows.
+- Updated repository and documentation hygiene to reduce noise and clarify help output.
+- Updated vouch and trust metadata to reflect current maintainer decisions.
+- Updated package versions to reflect the set of changes shipped in this cycle.
+
+### New Features
+
+- Added a unified `/delete` command for notes and projects with optional `--force` confirmation bypass.
+
+### Bug Fixes
+
+- Fixed the chat interface so it reflects project changes immediately after project mutations.
+- Fixed slash command parsing to handle quoted and empty quoted arguments more consistently.
+
+### Breaking Changes
+
+- Updated the command system to remove older specialized tools and commands in favor of the skill-based approach.
 
 
 ## 1.6.0 - Bun installation documentation
