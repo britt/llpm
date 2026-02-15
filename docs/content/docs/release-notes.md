@@ -10,12 +10,6 @@ weight: 99
 
 **Summary:** This release introduces the `/delete` command, transitions the command system to a skill-based approach, and updates documentation and CI.
 
-<!-- new-release-notes: start -->
-
-%NEW_RELEASE_NOTES%
-
-<!-- new-release-notes: end -->
-
 ### New Features
 
 - Added a unified `/delete` command to remove notes or projects, including an optional `--force` flag to bypass confirmation.
@@ -32,7 +26,7 @@ weight: 99
 ### Additional Changes
 
 - Updated project path handling by normalizing `~` expansion and converting relative paths to absolute paths.
-- Updated documentation by publishing a Hugo/Hextra static site under `docs/` and rewriting getting-started content with clearer CLI examples and prompt formatting.
+- Updated documentation by publishing a Hugo/Hextra static site under `docs/`, rewriting getting-started content with clearer CLI examples and prompt formatting, and updating the commands reference to align with the current CLI.
 - Updated GitHub Actions to validate `npm pack` and global installation on Node.js 18, 20, and 22, and to skip tests for docs-only changes.
 - Refined repository hygiene by removing unused editor/config files, adding `.doc.holiday` exclusions for dot-directories and build artifacts, and cleaning redundant docs and CLI help headings.
 - Updated `VOUCHED.td` to reflect current maintainer decisions.
