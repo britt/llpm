@@ -66,6 +66,8 @@ Remove a project from LLPM (does not delete files):
 /project remove <project-id>
 ```
 
+To delete a project via the unified delete command, see the [Commands Reference](./commands.md).
+
 ## Current Project
 
 View details of the active project:
