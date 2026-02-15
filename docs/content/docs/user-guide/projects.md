@@ -16,7 +16,7 @@ LLPM helps you manage multiple projects with AI-powered assistance.
 Parameters:
 - **Name**: Display name for your project
 - **GitHub Repository**: Format `owner/repo`
-- **Local Path**: Absolute path to project directory
+- **Local Path**: Project directory path (expanded to an absolute path; `~` is supported)
 - **Description**: Brief project description
 
 ### Using Natural Language
@@ -65,6 +65,19 @@ Remove a project from LLPM (does not delete files):
 ```bash
 /project remove <project-id>
 ```
+
+`/project remove` deletes the project entry immediately.
+
+If you want a confirmation step, use the unified delete command instead:
+
+```bash
+/delete project <project-id> [--force]
+```
+
+Notes:
+
+- `/delete project <id>` prints a confirmation preview by default; pass `--force` (or `-f`) to remove the project.
+- `/delete project <id>` does not allow deleting the active project; switch to another project first with `/project switch <id>`.
 
 ## Current Project
 
