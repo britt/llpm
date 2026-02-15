@@ -3,34 +3,33 @@ title: Updates
 weight: 99
 ---
 
-## 1.6.1 - Additional updates
+## 1.9.0 - `/delete` command and docs site overhaul
 
 - **Date:** 2026-02-15
-- **Version:** 1.6.1
+- **Version:** 1.9.0
 
-**Summary:** This release includes the changes listed below.
-
-### Additional Changes
-
-- Updated project path handling to normalize home-relative (`~`) and relative paths.
-- Updated documentation into a full static site and rewrote getting-started content to be clearer and more task-focused.
-- Updated CI and release automation to better validate installations and support manual publishing flows.
-- Refined repository and documentation hygiene to reduce noise and clarify help output.
-- Updated vouch and trust metadata to reflect current maintainer decisions.
-- Updated package versions to reflect the set of changes shipped in this cycle.
+**Summary:** This release introduces the `/delete` command, transitions the command system to a skill-based approach, and updates documentation and CI.
 
 ### New Features
 
-- Added a unified `/delete` command for notes and projects with optional `--force` confirmation bypass.
-
-### Bug Fixes
-
-- Resolved an issue where the chat interface did not reflect project changes immediately after project mutations.
-- Fixed slash command parsing to handle quoted and empty quoted arguments more consistently.
+- Added a unified `/delete` command to remove notes or projects, including an optional `--force` flag to bypass confirmation.
 
 ### Breaking Changes
 
-- Updated the command system to remove older specialized tools and commands in favor of the skill-based approach.
+- Removed older specialized tools and commands and updated the command system to use the skill-based approach instead.
+
+### Bug Fixes
+
+- Resolved an issue where `ChatInterface` did not reload the current project after project switch, set, add, or remove operations.
+- Fixed slash command parsing by using a shared quote-aware parser so quoted and empty-quoted arguments are handled consistently.
+
+### Additional Changes
+
+- Updated project path handling by normalizing `~` expansion and converting relative paths to absolute paths.
+- Updated documentation by publishing a Hugo/Hextra static site under `docs/` and rewriting getting-started content with clearer CLI examples and prompt formatting.
+- Updated GitHub Actions to validate `npm pack` and global installation on Node.js 18, 20, and 22, and to skip tests for docs-only changes.
+- Refined repository hygiene by removing unused editor/config files, adding `.doc.holiday` exclusions for dot-directories and build artifacts, and cleaning redundant docs and CLI help headings.
+- Updated `VOUCHED.td` to reflect current maintainer decisions.
 
 
 ## 1.6.0 - Bun installation documentation
