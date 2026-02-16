@@ -7,6 +7,49 @@ LLPM is a terminal-native, AI-powered product management workspace for software 
 
 LLPM connects your Git repositories, GitHub issues and pull requests, Markdown notes, and reusable AI workflows ("skills") into a single, searchable workspace so product discussions and decisions stay tied to the codebase instead of getting lost across tools.
 
+## Documentation navigation
+
+The links below mirror the navigation used in the rest of the LLPM documentation.
+
+### Core docs
+
+- [Project overview](/README.md)
+- [Models](/MODELS.md)
+- [Verification plan](/VERIFICATION_PLAN.md)
+- [Telemetry](/TELEMETRY.md)
+- [Progress log](/PROGRESS.md)
+- [Contributing](/CONTRIBUTING.md)
+- [Claude integration notes](/CLAUDE.md)
+
+### Agent prompts
+
+- [Prompt optimizer](/.claude/agents/prompt-optimizer.md)
+- [Code reviewer](/.claude/agents/code-reviewer.md)
+- [DevOps engineer](/.claude/agents/devops-engineer.md)
+
+### Skills
+
+- [User workspace](/skills/user/README.md)
+- [User story template](/skills/user-story-template/SKILL.md)
+- [Triage new issues](/skills/triage-new-issues/SKILL.md)
+- [Summarize conversation threads](/skills/summarize-conversation-thread/SKILL.md)
+- [Timeline planning](/skills/timeline-planning/SKILL.md)
+- [Stakeholder updates](/skills/stakeholder-updates/SKILL.md)
+- [Stakeholder tracking](/skills/stakeholder-tracking/SKILL.md)
+- [Research topic summarization](/skills/research-topic-summarize/SKILL.md)
+- [Requirements elicitation](/skills/requirement-elicitation/SKILL.md)
+- [Project planning](/skills/project-planning/SKILL.md)
+- [Prepare meeting agenda](/skills/prepare-meeting-agenda/SKILL.md)
+- [Mermaid diagrams](/skills/mermaid-diagrams/SKILL.md)
+- [Architecture diagramming](/skills/architecture-diagramming/SKILL.md)
+- [Markdown formatting](/skills/markdown-formatting/SKILL.md)
+- [Issue decomposition](/skills/issue-decomposition/SKILL.md)
+- [Dependency mapping](/skills/dependency-mapping/SKILL.md)
+- [Context-aware questions](/skills/context-aware-questions/SKILL.md)
+- [Consolidate notes and summaries](/skills/consolidate-notes-summary/SKILL.md)
+- [At-risk detection](/skills/at-risk-detection/SKILL.md)
+- [Build FAQ from issues](/skills/build-faq-from-issues/SKILL.md)
+
 ## What you can do with LLPM
 
 LLPM helps product managers, tech leads, and engineers manage product work around codebases by enabling them to:
