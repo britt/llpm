@@ -17,6 +17,7 @@ import {
   updateProject
 } from '../utils/projectConfig';
 import { debug } from '../utils/logger';
+import { getProjectEventBus } from '../events/projectEventBus';
 
 // Helper function to normalize repository format
 function normalizeRepository(repository: string): string {
@@ -133,6 +134,12 @@ export const addProjectTool = tool({
       const projectData = { name, repository: normalizedRepository, path, ...(description && { description }) };
       const newProject = await addProject(projectData);
 
+      // Notify UI layer of project switch (addProject auto-switches)
+      getProjectEventBus().emit('project:switched', {
+        projectId: newProject.id,
+        projectName: newProject.name
+      });
+
       return {
         success: true,
         project: {
@@ -169,6 +176,13 @@ export const setCurrentProjectTool = tool({
 
     try {
       await setCurrentProject(projectId);
+
+      // Notify UI layer of project switch
+      const project = await getCurrentProject();
+      getProjectEventBus().emit('project:switched', {
+        projectId,
+        projectName: project?.name || projectId
+      });
 
       return {
         success: true,

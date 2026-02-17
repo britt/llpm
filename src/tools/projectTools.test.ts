@@ -5,6 +5,18 @@ vi.mock('../utils/projectConfig');
 vi.mock('../utils/logger', () => ({
   debug: vi.fn()
 }));
+vi.mock('../events/projectEventBus', () => {
+  const mockBus = {
+    emit: vi.fn(),
+    on: vi.fn(),
+    removeListener: vi.fn(),
+    removeAllListeners: vi.fn()
+  };
+  return {
+    getProjectEventBus: vi.fn(() => mockBus),
+    resetProjectEventBusForTesting: vi.fn()
+  };
+});
 
 import {
   getCurrentProjectTool,
@@ -16,6 +28,7 @@ import {
 } from './projectTools';
 
 import * as projectConfig from '../utils/projectConfig';
+import { getProjectEventBus } from '../events/projectEventBus';
 
 describe('Project Tools', () => {
   beforeEach(() => {
@@ -215,6 +228,43 @@ describe('Project Tools', () => {
       expect(result.success).toBe(false);
       expect(result.error).toBe('Invalid project');
     });
+
+    it('should emit project:switched event on successful add', async () => {
+      vi.mocked(projectConfig.addProject).mockResolvedValue({
+        id: 'new-project-123',
+        name: 'New Project',
+        repository: 'https://github.com/test/new-project',
+        github_repo: 'test/new-project',
+        path: '/path/to/project',
+        createdAt: '2024-01-01',
+        updatedAt: '2024-01-01'
+      });
+
+      await addProjectTool.execute({
+        name: 'New Project',
+        repository: 'https://github.com/test/new-project',
+        path: '/path/to/project'
+      });
+
+      const mockBus = getProjectEventBus();
+      expect(mockBus.emit).toHaveBeenCalledWith('project:switched', {
+        projectId: 'new-project-123',
+        projectName: 'New Project'
+      });
+    });
+
+    it('should not emit project:switched event on add failure', async () => {
+      vi.mocked(projectConfig.addProject).mockRejectedValue(new Error('Invalid project'));
+
+      await addProjectTool.execute({
+        name: 'Bad Project',
+        repository: 'https://github.com/test/repo',
+        path: '/path'
+      });
+
+      const mockBus = getProjectEventBus();
+      expect(mockBus.emit).not.toHaveBeenCalled();
+    });
   });
 
   describe('setCurrentProjectTool', () => {
@@ -241,6 +291,38 @@ describe('Project Tools', () => {
 
       expect(result.success).toBe(false);
       expect(result.error).toBe('Project not-found not found');
+    });
+
+    it('should emit project:switched event on successful switch', async () => {
+      vi.mocked(projectConfig.setCurrentProject).mockResolvedValue(undefined);
+      vi.mocked(projectConfig.getCurrentProject).mockResolvedValue({
+        id: 'test-project-id',
+        name: 'Test Project',
+        repository: 'https://github.com/test/repo',
+        github_repo: 'test/repo',
+        path: '/path',
+        createdAt: '2024-01-01',
+        updatedAt: '2024-01-02'
+      });
+
+      await setCurrentProjectTool.execute({ projectId: 'test-project-id' });
+
+      const mockBus = getProjectEventBus();
+      expect(mockBus.emit).toHaveBeenCalledWith('project:switched', {
+        projectId: 'test-project-id',
+        projectName: 'Test Project'
+      });
+    });
+
+    it('should not emit project:switched event on failure', async () => {
+      vi.mocked(projectConfig.setCurrentProject).mockRejectedValue(
+        new Error('Project not-found not found')
+      );
+
+      await setCurrentProjectTool.execute({ projectId: 'not-found' });
+
+      const mockBus = getProjectEventBus();
+      expect(mockBus.emit).not.toHaveBeenCalled();
     });
   });
 

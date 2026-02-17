@@ -1,5 +1,20 @@
 # PROGRESS.md
 
+## Task: Fix stale project context after switch (#304) - COMPLETE
+- Started: 2026-02-17
+- Tests: 1943 passing, 13 skipped (14 new tests added across 3 files)
+- Build: Successful (10.36 MB bundle)
+- Linting: Clean in modified files (1 pre-existing error, 190 pre-existing warnings)
+- Typecheck: Clean in modified files (pre-existing errors in other test files)
+- Completed: 2026-02-17
+- Notes:
+  - Created ProjectEventBus singleton (src/events/projectEventBus.ts)
+  - Wired set_current_project and add_project tools to emit project:switched events
+  - Added useChat event listener for AI tool-based project switches
+  - Clear stale messages when project ID changes in initializeChatHistory
+  - Pending notification ref ensures notification survives history reload
+  - System prompt staleness during multi-step requests accepted (pragmatic decision)
+
 ## Task: Add /delete command (#231) - COMPLETE
 - Started: 2026-02-15
 - Tests: 1929 passing, 13 skipped (17 new tests added)
