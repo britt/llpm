@@ -11,6 +11,7 @@ import { RequestContext } from '../utils/requestContext';
 import { loggerRegistry } from '../components/RequestLogDisplay';
 import { traced } from '../utils/tracing';
 import { getSkillRegistry } from '../services/SkillRegistry';
+import { getProjectEventBus } from '../events/projectEventBus';
 
 export interface QueuedMessage {
   content: string;
@@ -39,6 +40,7 @@ export function useChat() {
   const processingRef = useRef(false);
   const shouldSaveRef = useRef(false);
   const selectedSkillsRef = useRef<string[]>([]);
+  const pendingProjectNotificationRef = useRef<string | null>(null);
 
   // Keep refs in sync with state
   useEffect(() => {
@@ -59,6 +61,9 @@ export function useChat() {
         const newProjectId = currentProject?.id || null;
 
         if (currentProjectId !== newProjectId) {
+          // Clear stale messages immediately to prevent old project context
+          // from being sent to the LLM before new history loads
+          setMessages([]);
           setCurrentProjectId(newProjectId);
           setHistoryLoaded(false);
         }
@@ -90,6 +95,18 @@ export function useChat() {
         shouldSaveRef.current = true; // Mark that we need to save the fallback message
       } finally {
         setHistoryLoaded(true);
+
+        // Add pending project switch notification after history loads
+        if (pendingProjectNotificationRef.current) {
+          const notificationContent = pendingProjectNotificationRef.current;
+          pendingProjectNotificationRef.current = null;
+          const notification: Message = {
+            role: 'ui-notification',
+            content: notificationContent,
+          };
+          setMessages(prev => trimMessages([...prev, notification]));
+          shouldSaveRef.current = true;
+        }
       }
     };
 
@@ -130,6 +147,30 @@ export function useChat() {
     return () => {
       debug('Removing skill.selected event listener');
       skillRegistry.removeListener('skill.selected', handleSkillSelected);
+    };
+  }, []);
+
+  // Listen for project switch events from AI tools (e.g., set_current_project)
+  useEffect(() => {
+    const projectEventBus = getProjectEventBus();
+
+    const handleProjectSwitched = async (event: { projectId: string; projectName: string }) => {
+      debug('Project switched event received from AI tool:', event.projectName);
+
+      // Store notification to be added after history reloads
+      pendingProjectNotificationRef.current = `Switched to ${event.projectName} — context refreshed`;
+
+      // Trigger project context refresh (same as notifyProjectSwitch)
+      setIsProjectSwitching(true);
+      setProjectSwitchTrigger(prev => prev + 1);
+      await new Promise(resolve => setTimeout(resolve, 200));
+      setIsProjectSwitching(false);
+    };
+
+    projectEventBus.on('project:switched', handleProjectSwitched);
+
+    return () => {
+      projectEventBus.removeListener('project:switched', handleProjectSwitched);
     };
   }, []);
 

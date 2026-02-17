@@ -29,6 +29,35 @@ vi.mock('../components/RequestLogDisplay', () => ({
   }
 }));
 
+// Mock projectEventBus with a functional event emitter
+const projectEventHandlers: Map<string, ((...args: any[]) => void)[]> = new Map();
+vi.mock('../events/projectEventBus', () => ({
+  getProjectEventBus: vi.fn(() => ({
+    on: vi.fn((event: string, handler: (...args: any[]) => void) => {
+      if (!projectEventHandlers.has(event)) projectEventHandlers.set(event, []);
+      projectEventHandlers.get(event)!.push(handler);
+    }),
+    removeListener: vi.fn((event: string, handler: (...args: any[]) => void) => {
+      const handlers = projectEventHandlers.get(event);
+      if (handlers) {
+        const idx = handlers.indexOf(handler);
+        if (idx >= 0) handlers.splice(idx, 1);
+      }
+    }),
+    emit: vi.fn((event: string, ...args: any[]) => {
+      const handlers = projectEventHandlers.get(event);
+      if (handlers) handlers.forEach(h => h(...args));
+    }),
+    removeAllListeners: vi.fn(() => projectEventHandlers.clear())
+  })),
+  resetProjectEventBusForTesting: vi.fn()
+}));
+
+function simulateProjectSwitch(projectId: string, projectName: string) {
+  const handlers = projectEventHandlers.get('project:switched');
+  if (handlers) handlers.forEach(h => h({ projectId, projectName }));
+}
+
 import { loadChatHistory, saveChatHistory } from '../utils/chatHistory';
 import { getCurrentProject } from '../utils/projectConfig';
 import { parseCommand, executeCommand } from '../commands/registry';
@@ -37,6 +66,7 @@ import { generateResponse } from '../services/llm';
 describe('useChat - Message State', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    projectEventHandlers.clear();
 
     // Default mocks
     vi.mocked(getCurrentProject).mockResolvedValue(null);
@@ -1171,6 +1201,147 @@ describe('useChat - Message State', () => {
         );
         expect(fallback).toBeDefined();
       }, { timeout: 2000 });
+    });
+  });
+
+  describe('AI tool-based project switch via event bus', () => {
+    it('should register project:switched event listener on mount', async () => {
+      vi.mocked(loadChatHistory).mockResolvedValue([]);
+
+      const { result } = renderHook(() => useChat());
+
+      await waitFor(() => {
+        expect(result.current.messages.length).toBeGreaterThan(0);
+      }, { timeout: 2000 });
+
+      // Should have registered a listener for project:switched
+      expect(projectEventHandlers.has('project:switched')).toBe(true);
+      expect(projectEventHandlers.get('project:switched')!.length).toBeGreaterThan(0);
+    });
+
+    it('should clean up event listener on unmount', async () => {
+      vi.mocked(loadChatHistory).mockResolvedValue([]);
+
+      const { result, unmount } = renderHook(() => useChat());
+
+      await waitFor(() => {
+        expect(result.current.messages.length).toBeGreaterThan(0);
+      }, { timeout: 2000 });
+
+      const handlerCount = projectEventHandlers.get('project:switched')?.length || 0;
+      expect(handlerCount).toBeGreaterThan(0);
+
+      // Unmount should clean up
+      unmount();
+
+      // Handler should be removed
+      const remainingHandlers = projectEventHandlers.get('project:switched')?.length || 0;
+      expect(remainingHandlers).toBe(handlerCount - 1);
+    });
+
+    it('should add notification message when project:switched event fires', async () => {
+      vi.mocked(loadChatHistory).mockResolvedValue([]);
+
+      const { result } = renderHook(() => useChat());
+
+      await waitFor(() => {
+        expect(result.current.messages.length).toBeGreaterThan(0);
+      }, { timeout: 2000 });
+
+      const initialCount = result.current.messages.length;
+
+      // Simulate an AI tool switching projects
+      await act(async () => {
+        simulateProjectSwitch('new-project-id', 'New Project');
+        // Allow state updates to propagate
+        await new Promise(resolve => setTimeout(resolve, 300));
+      });
+
+      // Should have a notification about the switch
+      await waitFor(() => {
+        const notification = result.current.messages.find(
+          m => m.role === 'ui-notification' && m.content.includes('New Project')
+        );
+        expect(notification).toBeDefined();
+      }, { timeout: 2000 });
+    });
+
+    it('should increment projectSwitchTrigger when project:switched event fires', async () => {
+      vi.mocked(loadChatHistory).mockResolvedValue([]);
+
+      const { result } = renderHook(() => useChat());
+
+      await waitFor(() => {
+        expect(result.current.messages.length).toBeGreaterThan(0);
+      }, { timeout: 2000 });
+
+      const initialTrigger = result.current.projectSwitchTrigger;
+
+      await act(async () => {
+        simulateProjectSwitch('new-project-id', 'New Project');
+        await new Promise(resolve => setTimeout(resolve, 300));
+      });
+
+      await waitFor(() => {
+        expect(result.current.projectSwitchTrigger).toBe(initialTrigger + 1);
+      }, { timeout: 2000 });
+    });
+  });
+
+  describe('Message clearing on project change', () => {
+    it('should clear messages when project ID changes during history init', async () => {
+      // Start with project A's history
+      vi.mocked(getCurrentProject).mockResolvedValue({
+        id: 'project-a',
+        name: 'Project A',
+        repository: 'https://github.com/test/a',
+        github_repo: 'test/a',
+        path: '/path/a',
+        createdAt: '2024-01-01',
+        updatedAt: '2024-01-01'
+      });
+      vi.mocked(loadChatHistory).mockResolvedValue([
+        { role: 'user' as const, content: 'Question about Project A' },
+        { role: 'assistant' as const, content: 'Answer about Project A' }
+      ]);
+
+      const { result } = renderHook(() => useChat());
+
+      // Wait for project A's history to load
+      await waitFor(() => {
+        expect(result.current.messages.length).toBe(2);
+      }, { timeout: 2000 });
+
+      // Now switch to project B
+      vi.mocked(getCurrentProject).mockResolvedValue({
+        id: 'project-b',
+        name: 'Project B',
+        repository: 'https://github.com/test/b',
+        github_repo: 'test/b',
+        path: '/path/b',
+        createdAt: '2024-01-01',
+        updatedAt: '2024-01-01'
+      });
+      vi.mocked(loadChatHistory).mockResolvedValue([
+        { role: 'user' as const, content: 'Question about Project B' },
+        { role: 'assistant' as const, content: 'Answer about Project B' }
+      ]);
+
+      // Trigger project switch via event bus
+      await act(async () => {
+        simulateProjectSwitch('project-b', 'Project B');
+        await new Promise(resolve => setTimeout(resolve, 500));
+      });
+
+      // Should have loaded Project B's history (not A's)
+      await waitFor(() => {
+        const hasProjectAContent = result.current.messages.some(
+          m => m.content.includes('Project A')
+        );
+        // Project A messages should be gone (cleared or replaced)
+        // Either messages are empty, have Project B content, or have welcome + notification
+        expect(hasProjectAContent).toBe(false);
+      }, { timeout: 3000 });
     });
   });
 
