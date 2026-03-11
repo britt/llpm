@@ -110,12 +110,7 @@ Here is a complete skill for generating release notes:
 ---
 name: release-notes
 description: "Generate release notes from merged PRs and closed issues"
-instructions: "When preparing a release, generating changelog, or summarizing changes"
-tags:
-  - release
-  - changelog
-  - documentation
-allowed-tools: "list_github_issues search_github_issues add_note"
+allowed-tools: "Read"
 ---
 
 # Release Notes Skill
