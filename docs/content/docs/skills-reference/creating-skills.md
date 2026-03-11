@@ -128,9 +128,7 @@ Activate when:
 
 | Tool | Purpose |
 |------|---------|
-| `list_github_issues` | Get closed issues |
-| `search_github_issues` | Find PRs by label |
-| `add_note` | Save release notes |
+| `tool_name` | Description of what the tool does |
 
 ## Workflow
 
@@ -234,8 +232,7 @@ If the skill uses tools, document what each tool does and when to use it:
 
 | Tool | Purpose | When to Use |
 |------|---------|-------------|
-| `list_github_issues` | Get issues | Finding closed issues for changelog |
-| `add_note` | Save content | Storing generated release notes |
+| `tool_name` | What it does | When it is needed |
 ```
 
 ## Testing Skills
