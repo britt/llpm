@@ -18,7 +18,7 @@ instructions: "When asked to [action], [what to do]"  # REQUIRED!
 tags:
   - tag1
   - tag2
-allowed_tools:
+allowed-tools: "tool1 tool2"
   - tool1
   - tool2
 ---
@@ -64,12 +64,12 @@ More guidance...
     - rest
   ```
 
-- **`allowed_tools`**: Restrict tool usage when this skill is active (optional)
+- **`allowed-tools`**: Space-delimited list of tools allowed while this skill is active
+  
+  Example:
+  
   ```yaml
-  allowed_tools:
-    - github
-    - notes
-    - search_notes
+  allowed-tools: "read_project_file get_project_scan add_note"
   ```
 
 - **`vars`**: Variables for content substitution using `{{varName}}` syntax
