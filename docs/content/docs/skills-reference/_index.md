@@ -5,7 +5,7 @@ weight: 3
 
 LLPM implements the [Agent Skills](https://agentskills.io/home) standard for reusable AI instruction sets. This means skills you create for LLPM can be used with other compatible systems like Claude Code.
 
-LLPM includes **19 core skills** organized into 6 categories:
+LLPM includes **20 core skills** organized into 6 categories:
 
 | Category | Skills | Purpose |
 |----------|--------|---------|
