@@ -32,6 +32,15 @@ The `SKILL.md` file has two parts:
 | `vars` | No | Variables that can be customized per-project |
 | `resources` | No | External files or URLs the skill references |
 
+## How LLPM uses `instructions` and `tags`
+
+LLPM injects a list of enabled skills into the system prompt.
+
+- `instructions` is used as the user-visible trigger text in that injected list.
+- `tags` can be used for skill discovery and filtering (for example, when listing available skills).
+
+When `instructions` is omitted, the skill can still be loaded manually, but it is not included in the injected “Available Skills” trigger list.
+
 ### Example Frontmatter
 
 ```yaml
