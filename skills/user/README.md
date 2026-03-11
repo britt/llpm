@@ -19,8 +19,6 @@ tags:
   - tag1
   - tag2
 allowed-tools: "tool1 tool2"
-  - tool1
-  - tool2
 ---
 
 # My Skill Name
@@ -129,9 +127,7 @@ tags:
   - documentation
   - rest
   - openapi
-allowed_tools:
-  - github
-  - notes
+allowed-tools: "github notes"
 ---
 
 # API Documentation Skill
