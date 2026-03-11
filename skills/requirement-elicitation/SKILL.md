@@ -1,6 +1,7 @@
 ---
 name: requirement-elicitation
 description: "Adaptive conversational wizard for eliciting project requirements. Guides users through functional, nonfunctional, and edge-case requirements with domain-specific questions for web apps, APIs, CLIs, mobile, data pipelines, and more."
+instructions: "When gathering project requirements, eliciting functional and nonfunctional needs, or guiding a user through a requirements conversation"
 tags:
   - requirements
   - planning

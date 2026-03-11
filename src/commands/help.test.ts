@@ -15,13 +15,13 @@ describe('helpCommand', () => {
     } as any);
   });
 
-  it('should have correct name and description', () => {
+  it('should have correct name and description', async () => {
     expect(helpCommand.name).toBe('help');
     expect(helpCommand.description).toBe('Show available commands');
   });
 
-  it('should list available commands', () => {
-    const result = helpCommand.execute([]);
+  it('should list available commands', async () => {
+    const result = await helpCommand.execute([]);
 
     expect(result.success).toBe(true);
     expect(result.content).toContain('Available Commands');
@@ -30,8 +30,8 @@ describe('helpCommand', () => {
     expect(result.content).toContain('/model');
   });
 
-  it('should show keyboard shortcuts', () => {
-    const result = helpCommand.execute([]);
+  it('should show keyboard shortcuts', async () => {
+    const result = await helpCommand.execute([]);
 
     expect(result.success).toBe(true);
     expect(result.content).toContain('Keyboard Shortcuts');
@@ -39,8 +39,8 @@ describe('helpCommand', () => {
     expect(result.content).toContain('Ctrl+C');
   });
 
-  it('should show help when help argument is passed', () => {
-    const result = helpCommand.execute(['help']);
+  it('should show help when help argument is passed', async () => {
+    const result = await helpCommand.execute(['help']);
 
     expect(result.success).toBe(true);
     expect(result.content).toContain('Help Command');
@@ -48,15 +48,15 @@ describe('helpCommand', () => {
     expect(result.content).toContain('available commands');
   });
 
-  it('should be case insensitive for help argument', () => {
-    const result = helpCommand.execute(['HELP']);
+  it('should be case insensitive for help argument', async () => {
+    const result = await helpCommand.execute(['HELP']);
 
     expect(result.success).toBe(true);
     expect(result.content).toContain('Help Command');
   });
 
-  it('should mention sub-commands', () => {
-    const result = helpCommand.execute([]);
+  it('should mention sub-commands', async () => {
+    const result = await helpCommand.execute([]);
 
     expect(result.success).toBe(true);
     expect(result.content).toContain('/project help');

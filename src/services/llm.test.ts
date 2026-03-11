@@ -98,7 +98,7 @@ describe('llm service', () => {
 
       await generateResponse(messages);
 
-      const callArgs = mockGenerateText.mock.calls[0][0] as any;
+      const callArgs = mockGenerateText!.mock.calls[0]![0] as any;
       // Should have system message + 2 conversation messages (ui-notification filtered)
       expect(callArgs.messages).toHaveLength(3);
     });
@@ -259,7 +259,7 @@ describe('llm service', () => {
 
       await generateResponse(messages);
 
-      const callArgs = mockGenerateText.mock.calls[0][0] as any;
+      const callArgs = mockGenerateText!.mock.calls[0]![0] as any;
       expect(callArgs.tools).toHaveProperty('testTool');
       expect(callArgs.toolChoice).toBe('auto');
     });

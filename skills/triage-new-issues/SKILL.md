@@ -1,6 +1,7 @@
 ---
 name: triage-new-issues
 description: "Review new GitHub issues, assess priority and urgency, suggest labels, and recommend assignees"
+instructions: "When triaging new GitHub issues, assessing priority and urgency, suggesting labels, or recommending assignees"
 tags:
   - triage
   - issues

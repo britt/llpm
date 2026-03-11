@@ -32,7 +32,7 @@ describe('Model Command', () => {
         displayName: 'GPT-4o',
         description: 'OpenAI GPT-4o model'
       },
-      availableModels: []
+      availableModels: [], providerConfigs: {} as any
     });
 
     vi.mocked(modelRegistry.getConfiguredProviders).mockReturnValue(['openai', 'anthropic']);
@@ -286,9 +286,9 @@ describe('Model Command', () => {
       vi.mocked(readModelCache).mockReturnValue(null);
       vi.mocked(writeModelCache).mockImplementation(() => {});
       vi.mocked(modelRegistry.reloadModelsFromCache).mockResolvedValue(undefined);
-      vi.mocked(modelRegistry.getProviderCredentials).mockReturnValue({
-        openai: { apiKey: 'test-key' },
-        anthropic: { apiKey: 'test-key' }
+      (vi.mocked(modelRegistry.getProviderCredentials) as any).mockReturnValue({
+        openai: { apiKey: 'test-key', provider: 'openai' as const },
+        anthropic: { apiKey: 'test-key', provider: 'anthropic' as const }
       });
     });
 
@@ -438,7 +438,7 @@ describe('Model Command', () => {
           displayName: 'GPT-4o',
           description: 'OpenAI flagship model'
         },
-        availableModels: []
+        availableModels: [], providerConfigs: {} as any
       });
       vi.mocked(modelRegistry.getCurrentModel).mockReturnValue({
         provider: 'openai',
@@ -507,7 +507,7 @@ describe('Model Command', () => {
       expect(result.success).toBe(true);
       expect(result.interactive?.models).toBeDefined();
       // Models should be sorted by recommendedRank
-      expect(result.interactive?.models[0].id).toContain('gpt-4o');
+      expect(result!.interactive!.models![0]!.id).toContain('gpt-4o');
     });
   });
 });

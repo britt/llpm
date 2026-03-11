@@ -42,7 +42,7 @@ describe('Skill Tools', () => {
         name: 'test-skill',
         description: 'A test skill',
         content: 'Test skill content',
-        source: 'personal',
+        source: 'user',
         path: '/test/path',
         enabled: true
       };
@@ -70,7 +70,7 @@ describe('Skill Tools', () => {
         name: 'skill-1',
         description: 'First skill',
         content: 'Content 1',
-        source: 'personal',
+        source: 'user',
         path: '/test/path1',
         enabled: true
       };
@@ -79,7 +79,7 @@ describe('Skill Tools', () => {
         name: 'skill-2',
         description: 'Second skill',
         content: 'Content 2',
-        source: 'personal',
+        source: 'user',
         path: '/test/path2',
         enabled: true
       };
@@ -118,7 +118,7 @@ describe('Skill Tools', () => {
         name: 'disabled-skill',
         description: 'A disabled skill',
         content: 'Content',
-        source: 'personal',
+        source: 'user',
         path: '/test/path',
         enabled: false
       };
@@ -142,7 +142,7 @@ describe('Skill Tools', () => {
         name: 'test-skill',
         description: 'A test skill',
         content: 'Test content',
-        source: 'personal',
+        source: 'user',
         path: '/test/path',
         enabled: true
       };
@@ -164,7 +164,7 @@ describe('Skill Tools', () => {
         name: 'test-skill',
         description: 'A test skill',
         content: 'Content',
-        source: 'personal',
+        source: 'user',
         path: '/test/path',
         enabled: true
       };
@@ -192,7 +192,7 @@ describe('Skill Tools', () => {
         name: 'good-skill',
         description: 'A good skill',
         content: 'Content',
-        source: 'personal',
+        source: 'user',
         path: '/test/path',
         enabled: true
       };
@@ -216,7 +216,7 @@ describe('Skill Tools', () => {
         name: 'skill-with-instructions',
         description: 'A skill with instructions',
         content: 'Skill content here',
-        source: 'personal',
+        source: 'user',
         path: '/test/path',
         enabled: true,
         instructions: 'Use when creating diagrams'
@@ -241,7 +241,7 @@ describe('Skill Tools', () => {
         name: 'skill-1',
         description: 'First skill',
         content: 'Content 1',
-        source: 'personal',
+        source: 'user',
         path: '/test/path1',
         enabled: true,
         tags: ['tag1', 'tag2']
@@ -278,7 +278,7 @@ describe('Skill Tools', () => {
         name: 'diagram-skill',
         description: 'Diagram skill',
         content: 'Content',
-        source: 'personal',
+        source: 'user',
         path: '/test/path1',
         enabled: true,
         tags: ['diagram', 'visualization']
@@ -288,7 +288,7 @@ describe('Skill Tools', () => {
         name: 'docs-skill',
         description: 'Documentation skill',
         content: 'Content',
-        source: 'personal',
+        source: 'user',
         path: '/test/path2',
         enabled: true,
         tags: ['documentation']
@@ -314,7 +314,7 @@ describe('Skill Tools', () => {
         name: 'enabled-skill',
         description: 'Enabled',
         content: 'Content',
-        source: 'personal',
+        source: 'user',
         path: '/test/path1',
         enabled: true
       };
@@ -323,7 +323,7 @@ describe('Skill Tools', () => {
         name: 'disabled-skill',
         description: 'Disabled',
         content: 'Content',
-        source: 'personal',
+        source: 'user',
         path: '/test/path2',
         enabled: false
       };
@@ -355,7 +355,7 @@ describe('Skill Tools', () => {
         name: 'skill-with-instructions',
         description: 'A skill with usage instructions',
         content: 'Content',
-        source: 'personal',
+        source: 'user',
         path: '/test/path',
         enabled: true,
         instructions: 'Use when generating documentation'

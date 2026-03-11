@@ -202,7 +202,7 @@ describe('NotesBackend', () => {
       const summaries = await backend.listNotes();
 
       expect(summaries.length).toBe(2);
-      expect(summaries[0].title).toBeDefined();
+      expect(summaries![0]!.title).toBeDefined();
       expect((summaries[0] as any).content).toBeUndefined(); // Summary has no content
     });
 

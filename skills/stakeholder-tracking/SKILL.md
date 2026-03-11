@@ -1,6 +1,7 @@
 ---
 name: stakeholder-tracking
 description: "Define stakeholder personas and track their goals to ensure all perspectives are addressed"
+instructions: "When defining stakeholder personas, tracking stakeholder goals, or ensuring all perspectives are represented in planning"
 tags:
   - stakeholders
   - goals

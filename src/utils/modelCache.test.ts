@@ -149,9 +149,9 @@ describe('modelCache', () => {
       };
 
       const models = getCachedModelsForProvider(cache, 'openai');
-      expect(models[0].recommendedRank).toBe(1);
-      expect(models[1].recommendedRank).toBe(2);
-      expect(models[2].recommendedRank).toBe(3);
+      expect(models![0]!.recommendedRank).toBe(1);
+      expect(models![1]!.recommendedRank).toBe(2);
+      expect(models![2]!.recommendedRank).toBe(3);
     });
 
     it('should return empty array for provider with no models', () => {
@@ -193,8 +193,8 @@ describe('modelCache', () => {
 
       expect(openaiModels).toHaveLength(1);
       expect(anthropicModels).toHaveLength(1);
-      expect(openaiModels[0].id).toBe('gpt-4');
-      expect(anthropicModels[0].id).toBe('claude-3');
+      expect(openaiModels![0]!.id).toBe('gpt-4');
+      expect(anthropicModels![0]!.id).toBe('claude-3');
     });
 
     it('should return multiple models per provider when maxPerProvider > 1', () => {

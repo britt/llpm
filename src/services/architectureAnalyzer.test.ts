@@ -132,7 +132,7 @@ describe('architectureAnalyzer', () => {
 
       expect(result.description).toBe('A modern web application with React frontend and Express backend.');
       expect(result.components).toHaveLength(2);
-      expect(result.components[0].name).toBe('Frontend');
+      expect(result!.components[0]!.name).toBe('Frontend');
       expect(result.mermaidDiagram).toContain('flowchart TD');
     });
 
@@ -178,7 +178,7 @@ This is additional text.`;
 
       // Should only include valid component
       expect(result.components).toHaveLength(1);
-      expect(result.components[0].name).toBe('Valid');
+      expect(result!.components[0]!.name).toBe('Valid');
     });
   });
 
@@ -295,7 +295,7 @@ This is additional text.`;
 
       expect(result.description).toBe('A web application with microservices architecture.');
       expect(result.components).toHaveLength(1);
-      expect(result.components[0].name).toBe('Gateway');
+      expect(result!.components[0]!.name).toBe('Gateway');
       expect(generateText).toHaveBeenCalledTimes(1);
     });
 

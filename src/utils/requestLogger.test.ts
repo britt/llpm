@@ -120,8 +120,8 @@ describe('RequestLogger', () => {
       });
       
       const log = capturedLogs[0];
-      expect(log.metadata?.user).toBe('[EMAIL_REDACTED]');
-      expect(log.metadata?.data).toContain('[EMAIL_REDACTED]');
+      expect(log!.metadata?.user).toBe('[EMAIL_REDACTED]');
+      expect(log!.metadata?.data).toContain('[EMAIL_REDACTED]');
     });
 
     it('should redact API keys and tokens', () => {
@@ -135,9 +135,9 @@ describe('RequestLogger', () => {
       });
       
       const log = capturedLogs[0];
-      expect(log.metadata?.apiKey).toBe('[REDACTED]');
-      expect(log.metadata?.token).toBe('[REDACTED]');
-      expect(log.metadata?.authHeader).toBe('Bearer [TOKEN_REDACTED]');
+      expect(log!.metadata?.apiKey).toBe('[REDACTED]');
+      expect(log!.metadata?.token).toBe('[REDACTED]');
+      expect(log!.metadata?.authHeader).toBe('Bearer [TOKEN_REDACTED]');
     });
 
     it('should not redact when disabled', () => {
@@ -148,7 +148,7 @@ describe('RequestLogger', () => {
       logger.logStep('test', 'start', 'info', { user: email });
       
       const log = capturedLogs[0];
-      expect(log.metadata?.user).toBe(email);
+      expect(log!.metadata?.user).toBe(email);
     });
   });
 
@@ -197,16 +197,16 @@ describe('RequestLogger', () => {
       const startLog = capturedLogs[0];
       const endLog = capturedLogs[1];
       
-      expect(startLog.step).toBe('llm_call');
-      expect(startLog.metadata?.model).toBe('gpt-4');
-      expect(startLog.phase).toBe('start');
+      expect(startLog!.step).toBe('llm_call');
+      expect(startLog!.metadata?.model).toBe('gpt-4');
+      expect(startLog!.phase).toBe('start');
       
-      expect(endLog.step).toBe('llm_call');
-      expect(endLog.metadata?.model).toBe('gpt-4');
-      expect(endLog.phase).toBe('end');
-      expect(endLog.metadata?.tokensIn).toBe(100);
-      expect(endLog.metadata?.tokensOut).toBe(50);
-      expect(endLog.metadata?.status).toBe(200);
+      expect(endLog!.step).toBe('llm_call');
+      expect(endLog!.metadata?.model).toBe('gpt-4');
+      expect(endLog!.phase).toBe('end');
+      expect(endLog!.metadata?.tokensIn).toBe(100);
+      expect(endLog!.metadata?.tokensOut).toBe(50);
+      expect(endLog!.metadata?.status).toBe(200);
     });
   });
 
@@ -221,14 +221,14 @@ describe('RequestLogger', () => {
       const startLog = capturedLogs[0];
       const endLog = capturedLogs[1];
       
-      expect(startLog.step).toBe('tool_call');
-      expect(startLog.metadata?.name).toBe('test_tool');
-      expect(startLog.phase).toBe('start');
+      expect(startLog!.step).toBe('tool_call');
+      expect(startLog!.metadata?.name).toBe('test_tool');
+      expect(startLog!.phase).toBe('start');
       
-      expect(endLog.step).toBe('tool_call');
-      expect(endLog.metadata?.name).toBe('test_tool');
-      expect(endLog.phase).toBe('end');
-      expect(endLog.metadata?.status).toBe('success');
+      expect(endLog!.step).toBe('tool_call');
+      expect(endLog!.metadata?.name).toBe('test_tool');
+      expect(endLog!.phase).toBe('end');
+      expect(endLog!.metadata?.status).toBe('success');
     });
 
     it('should log tool errors', () => {
@@ -238,8 +238,8 @@ describe('RequestLogger', () => {
       logger.logToolCall('test_tool', 'end', {}, undefined, 'Tool execution failed');
 
       const log = capturedLogs[0];
-      expect(log.metadata?.error).toBe('Tool execution failed');
-      expect(log.metadata?.status).toBe('failed');
+      expect(log!.metadata?.error).toBe('Tool execution failed');
+      expect(log!.metadata?.status).toBe('failed');
     });
 
     it('should log resultSize when result has length property', () => {
@@ -250,8 +250,8 @@ describe('RequestLogger', () => {
       logger.logToolCall('test_tool', 'end', { param: 'value' }, ['item1', 'item2', 'item3']);
 
       const log = capturedLogs[0];
-      expect(log.metadata?.status).toBe('success');
-      expect(log.metadata?.resultSize).toBe(3);
+      expect(log!.metadata?.status).toBe('success');
+      expect(log!.metadata?.resultSize).toBe(3);
     });
 
     it('should log result without resultSize for primitive types', () => {
@@ -262,9 +262,9 @@ describe('RequestLogger', () => {
       logger.logToolCall('test_tool', 'end', { param: 'value' }, 'Hello World');
 
       const log = capturedLogs[0];
-      expect(log.metadata?.status).toBe('success');
+      expect(log!.metadata?.status).toBe('success');
       // Strings don't have resultSize because typeof 'string' !== 'object'
-      expect(log.metadata?.resultSize).toBeUndefined();
+      expect(log!.metadata?.resultSize).toBeUndefined();
     });
   });
 
@@ -279,11 +279,11 @@ describe('RequestLogger', () => {
       const startLog = capturedLogs[0];
       const endLog = capturedLogs[1];
       
-      expect(startLog.step).toBe('db_insert');
-      expect(startLog.metadata?.table).toBe('notes');
+      expect(startLog!.step).toBe('db_insert');
+      expect(startLog!.metadata?.table).toBe('notes');
       
-      expect(endLog.step).toBe('db_insert');
-      expect(endLog.metadata?.rowCount).toBe(1);
+      expect(endLog!.step).toBe('db_insert');
+      expect(endLog!.metadata?.rowCount).toBe(1);
     });
   });
 
@@ -305,11 +305,11 @@ describe('RequestLogger', () => {
       const startLog = capturedLogs[0];
       const endLog = capturedLogs[1];
       
-      expect(startLog.step).toBe('api_github');
-      expect(startLog.metadata?.method).toBe('GET');
-      expect(startLog.metadata?.path).toBe('/user/repos');
+      expect(startLog!.step).toBe('api_github');
+      expect(startLog!.metadata?.method).toBe('GET');
+      expect(startLog!.metadata?.path).toBe('/user/repos');
       
-      expect(endLog.metadata?.status).toBe(200);
+      expect(endLog!.metadata?.status).toBe(200);
     });
   });
 
@@ -353,20 +353,20 @@ describe('RequestLogger', () => {
       const log = capturedLogs[0];
 
       // Check for timestamp
-      expect(log.timestamp).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/);
+      expect(log!.timestamp).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/);
 
       // Check for request ID
-      expect(log.requestId).toBe(requestId);
+      expect(log!.requestId).toBe(requestId);
 
       // Check for step name
-      expect(log.step).toBe('test_step');
+      expect(log!.step).toBe('test_step');
 
       // Check for phase
-      expect(log.phase).toBe('start');
+      expect(log!.phase).toBe('start');
 
       // Check for metadata
-      expect(log.metadata?.key1).toBe('value1');
-      expect(log.metadata?.key2).toBe(123);
+      expect(log!.metadata?.key1).toBe('value1');
+      expect(log!.metadata?.key2).toBe(123);
     });
   });
 
@@ -393,10 +393,10 @@ describe('RequestLogger', () => {
       logger.logError('error_step', new Error('Something went wrong'));
 
       const log = capturedLogs[0];
-      expect(log.step).toBe('error_step');
-      expect(log.phase).toBe('end');
-      expect(log.metadata?.error).toBe('Something went wrong');
-      expect(log.metadata?.status).toBe('failed');
+      expect(log!.step).toBe('error_step');
+      expect(log!.phase).toBe('end');
+      expect(log!.metadata?.error).toBe('Something went wrong');
+      expect(log!.metadata?.status).toBe('failed');
     });
 
     it('should log errors from string messages', () => {
@@ -406,8 +406,8 @@ describe('RequestLogger', () => {
       logger.logError('error_step', 'String error message');
 
       const log = capturedLogs[0];
-      expect(log.metadata?.error).toBe('String error message');
-      expect(log.metadata?.status).toBe('failed');
+      expect(log!.metadata?.error).toBe('String error message');
+      expect(log!.metadata?.status).toBe('failed');
     });
   });
 });

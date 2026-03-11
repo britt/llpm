@@ -1,6 +1,7 @@
 ---
 name: consolidate-notes-summary
 description: "Search project notes by topic, synthesize findings into a consolidated summary with cross-references"
+instructions: "When consolidating notes on a topic, synthesizing findings across multiple notes, or creating a summary from scattered project notes"
 tags:
   - notes
   - consolidate

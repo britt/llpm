@@ -46,7 +46,7 @@ export function parseNoteFrontmatter(markdown: string): Note {
   }
 
   const [, frontmatterYaml, content] = match;
-  const frontmatter = yaml.load(frontmatterYaml) as NoteFrontmatter;
+  const frontmatter = yaml.load(frontmatterYaml!) as NoteFrontmatter;
 
   // Validate required fields
   if (!frontmatter.id) throw new Error('Missing required field: id');
@@ -57,7 +57,7 @@ export function parseNoteFrontmatter(markdown: string): Note {
   return {
     id: frontmatter.id,
     title: frontmatter.title,
-    content: content.trim(),
+    content: content!.trim(),
     tags: frontmatter.tags || [],
     createdAt: frontmatter.created_at,
     updatedAt: frontmatter.updated_at,

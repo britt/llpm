@@ -4,11 +4,21 @@ import { debug } from '../utils/logger';
 import { traced } from '../utils/tracing';
 
 /**
+ * Return type for instrumented tools — guarantees execute and inputSchema are present.
+ */
+export interface InstrumentedTool {
+  description?: string;
+  inputSchema: any;
+  execute: (...args: any[]) => Promise<any>;
+  [key: string]: any;
+}
+
+/**
  * Instrumented version of the AI SDK's tool function that adds request logging and OpenTelemetry tracing
  */
 export function tool<T extends { name?: string; description: string; inputSchema?: any; parameters?: any; execute: (...args: any[]) => any }>(
   config: T
-): ReturnType<typeof baseTool> {
+): InstrumentedTool {
   // Use the explicit tool name from config, or auto-generate from description if not provided
   const toolName = config.name || config.description.split(' ').slice(0, 3).join('_').toLowerCase().replace(/[^a-z0-9_]/g, '_');
 
@@ -63,5 +73,6 @@ export function tool<T extends { name?: string; description: string; inputSchema
   };
   
   // Create and return the instrumented tool
-  return baseTool(instrumentedConfig);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return baseTool(instrumentedConfig as any) as any;
 }

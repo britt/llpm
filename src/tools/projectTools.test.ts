@@ -94,6 +94,7 @@ describe('Project Tools', () => {
           name: 'Project 1',
           repository: 'https://github.com/test/p1',
           github_repo: 'test/p1',
+          path: '/tmp/test',
           createdAt: '2024-01-01',
           updatedAt: '2024-01-02'
         },
@@ -102,6 +103,7 @@ describe('Project Tools', () => {
           name: 'Project 2',
           repository: 'https://github.com/test/p2',
           github_repo: 'test/p2',
+          path: '/tmp/test',
           createdAt: '2024-01-01',
           updatedAt: '2024-01-02'
         }
@@ -111,6 +113,7 @@ describe('Project Tools', () => {
         name: 'Project 1',
         repository: 'https://github.com/test/p1',
         github_repo: 'test/p1',
+        path: '/tmp/test',
         createdAt: '2024-01-01',
         updatedAt: '2024-01-02'
       });

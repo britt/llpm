@@ -1,6 +1,7 @@
 ---
 name: at-risk-detection
 description: "Proactively identify at-risk issues and PRs: stale items, blocked work, deadline risks, scope creep, and unassigned high-priority items"
+instructions: "When checking project health, finding stale or blocked issues, identifying deadline risks, or detecting scope creep"
 tags:
   - risk
   - health

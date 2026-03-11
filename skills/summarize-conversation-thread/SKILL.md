@@ -1,6 +1,7 @@
 ---
 name: summarize-conversation-thread
 description: "Summarize GitHub issue/PR threads into key decisions, action items, and next steps"
+instructions: "When summarizing a GitHub issue or PR discussion thread, extracting key decisions, or listing action items from a conversation"
 tags:
   - summary
   - issues

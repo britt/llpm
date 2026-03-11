@@ -1,6 +1,7 @@
 ---
 name: timeline-planning
 description: "Generate Mermaid Gantt charts for project timelines with phases, dependencies, and milestones"
+instructions: "When creating a project timeline, generating a Gantt chart, or planning phases and milestones for scheduled work"
 allowed-tools: "list_github_issues add_note search_github_issues"
 ---
 

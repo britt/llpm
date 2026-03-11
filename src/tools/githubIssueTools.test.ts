@@ -571,7 +571,7 @@ describe('GitHub Issue Tools', () => {
       });
 
       vi.mocked(githubAssets.uploadFilesToGitHub).mockResolvedValue([
-        { filename: 'test.png', markdown: '![test](https://example.com/test.png)', gistUrl: 'https://gist.github.com/1' }
+        { url: 'https://gist.github.com/test', filename: 'test.png', markdown: '![test](https://example.com/test.png)' }
       ]);
 
       vi.mocked(github.createIssue).mockResolvedValue({
@@ -654,7 +654,7 @@ describe('GitHub Issue Tools', () => {
       });
 
       vi.mocked(githubAssets.uploadFilesToGitHub).mockResolvedValue([
-        { filename: 'log.txt', markdown: '[log.txt](https://example.com/log.txt)', gistUrl: 'https://gist.github.com/1' }
+        { url: 'https://gist.github.com/test', filename: 'log.txt', markdown: '[log.txt](https://example.com/log.txt)' }
       ]);
 
       vi.mocked(github.commentOnIssue).mockResolvedValue({

@@ -8,7 +8,7 @@ vi.mock('../../utils/logger', () => ({
 
 describe('GroqAdapter', () => {
   let adapter: GroqAdapter;
-  let originalFetch: typeof global.fetch;
+  let originalFetch: any;
 
   beforeEach(() => {
     adapter = new GroqAdapter();
@@ -55,7 +55,7 @@ describe('GroqAdapter', () => {
       global.fetch = vi.fn().mockResolvedValue({
         ok: true,
         json: () => Promise.resolve(mockModels)
-      });
+      }) as any;
 
       const result = await adapter.fetchModels({ apiKey: 'test-key' });
 
@@ -85,7 +85,7 @@ describe('GroqAdapter', () => {
         status: 401,
         statusText: 'Unauthorized',
         text: () => Promise.resolve('Invalid API key')
-      });
+      }) as any;
 
       const result = await adapter.fetchModels({ apiKey: 'invalid-key' });
 
@@ -99,7 +99,7 @@ describe('GroqAdapter', () => {
         status: 429,
         statusText: 'Too Many Requests',
         text: () => Promise.resolve('Rate limited')
-      });
+      }) as any;
 
       const result = await adapter.fetchModels({ apiKey: 'test-key' });
 
@@ -113,7 +113,7 @@ describe('GroqAdapter', () => {
         status: 500,
         statusText: 'Internal Server Error',
         text: () => Promise.resolve('Server error')
-      });
+      }) as any;
 
       const result = await adapter.fetchModels({ apiKey: 'test-key' });
 
@@ -122,13 +122,13 @@ describe('GroqAdapter', () => {
     });
 
     it('should handle network errors', async () => {
-      global.fetch = vi.fn().mockRejectedValue(new Error('Network error'));
+      global.fetch = vi.fn().mockRejectedValue(new Error('Network error')) as any;
 
       const result = await adapter.fetchModels({ apiKey: 'test-key' });
 
       expect(result.success).toBe(false);
       expect(result.error).toContain('Network error');
-    });
+    }) as any;
 
     it('should filter out inactive models', async () => {
       const mockModels = {
@@ -142,13 +142,13 @@ describe('GroqAdapter', () => {
       global.fetch = vi.fn().mockResolvedValue({
         ok: true,
         json: () => Promise.resolve(mockModels)
-      });
+      }) as any;
 
       const result = await adapter.fetchModels({ apiKey: 'test-key' });
 
       expect(result.success).toBe(true);
       expect(result.models.length).toBe(1);
-      expect(result.models[0].id).toBe('llama-3.3-70b-versatile');
+      expect(result!.models[0]!.id).toBe('llama-3.3-70b-versatile');
     });
 
     it('should sort models by family ranking', async () => {
@@ -164,7 +164,7 @@ describe('GroqAdapter', () => {
       global.fetch = vi.fn().mockResolvedValue({
         ok: true,
         json: () => Promise.resolve(mockModels)
-      });
+      }) as any;
 
       const result = await adapter.fetchModels({ apiKey: 'test-key' });
 
@@ -191,7 +191,7 @@ describe('GroqAdapter', () => {
       global.fetch = vi.fn().mockResolvedValue({
         ok: true,
         json: () => Promise.resolve(mockModels)
-      });
+      }) as any;
 
       const result = await adapter.fetchModels({ apiKey: 'test-key' });
 
@@ -219,12 +219,12 @@ describe('GroqAdapter', () => {
       global.fetch = vi.fn().mockResolvedValue({
         ok: true,
         json: () => Promise.resolve(mockModels)
-      });
+      }) as any;
 
       const result = await adapter.fetchModels({ apiKey: 'test-key' });
 
       expect(result.success).toBe(true);
-      expect(result.models[0].metadata?.context_window).toBe(131072);
+      expect(result!.models[0]!.metadata?.context_window).toBe(131072);
     });
   });
 });

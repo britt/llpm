@@ -539,6 +539,7 @@ export async function listIssues(
 
     const issues: GitHubIssue[] = data.map(issue => ({
       id: issue.id,
+      node_id: issue.node_id,
       number: issue.number,
       title: issue.title,
       body: issue.body || null,
@@ -618,6 +619,7 @@ export async function updateIssue(
 
     const issue: GitHubIssue = {
       id: data.id,
+      node_id: data.node_id,
       number: data.number,
       title: data.title,
       body: data.body || null,
@@ -786,7 +788,7 @@ export async function getIssueWithComments(
       node_id: issueData.node_id,
       number: issueData.number,
       title: issueData.title,
-      body: issueData.body,
+      body: issueData.body ?? null,
       state: issueData.state as 'open' | 'closed',
       html_url: issueData.html_url,
       user: {

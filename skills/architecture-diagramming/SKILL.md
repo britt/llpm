@@ -1,6 +1,7 @@
 ---
 name: architecture-diagramming
 description: "Generate Mermaid architecture diagrams showing system components, layers, and data flows"
+instructions: "When visualizing system architecture, component relationships, layers, or data flows as diagrams"
 allowed-tools: "read_project_file get_project_scan add_note list_project_directory"
 ---
 

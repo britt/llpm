@@ -398,7 +398,7 @@ describe('/skills command', () => {
 
       // Setup mock to capture event handlers
       let discoveryHandler: any = null;
-      vi.mocked(registry.on).mockImplementation((event: string, handler: any) => {
+      (vi.mocked(registry.on) as any).mockImplementation((event: string, handler: any) => {
         if (event === 'skill.discovered') {
           discoveryHandler = handler;
         }
@@ -425,7 +425,7 @@ describe('/skills command', () => {
 
       // Setup mock to capture event handlers
       let errorHandler: any = null;
-      vi.mocked(registry.on).mockImplementation((event: string, handler: any) => {
+      (vi.mocked(registry.on) as any).mockImplementation((event: string, handler: any) => {
         if (event === 'skill.validation_error') {
           errorHandler = handler;
         }

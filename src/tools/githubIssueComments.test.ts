@@ -13,9 +13,8 @@ describe('getGitHubIssueWithCommentsTool', () => {
     // Mock project config
     vi.mocked(projectConfig.getCurrentProject).mockResolvedValue({
       name: 'test-project',
-      github_repo: 'test-owner/test-repo',
-      metadata: {}
-    });
+      github_repo: 'test-owner/test-repo'
+    } as any);
   });
 
   it('should have correct schema properties', () => {

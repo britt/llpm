@@ -337,7 +337,7 @@ describe('projectAnalyzer', () => {
         { name: 'node_modules', isDirectory: () => true, isFile: () => false },
       ];
 
-      vi.mocked(fsPromises.readdir).mockResolvedValue(mockDirContents as Dirent[]);
+      vi.mocked(fsPromises.readdir).mockResolvedValue(mockDirContents as any);
 
       vi.mocked(fsPromises.stat).mockResolvedValue({
         size: 1000,
@@ -359,7 +359,7 @@ describe('projectAnalyzer', () => {
 
       vi.mocked(fsPromises.readdir).mockResolvedValue([
         { name: 'app.ts', isDirectory: () => false, isFile: () => true },
-      ] as Dirent[]);
+      ] as any);
 
       vi.mocked(fsPromises.stat).mockResolvedValue({
         size: 100,
@@ -372,7 +372,7 @@ describe('projectAnalyzer', () => {
 
       const files = await scanFiles('/project', () => false);
 
-      expect(files[0].lines).toBe(5);
+      expect(files![0]!.lines).toBe(5);
     });
 
     it('should handle empty directories', async () => {

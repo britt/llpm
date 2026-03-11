@@ -1,6 +1,7 @@
 ---
 name: issue-decomposition
 description: "Decompose project descriptions into well-structured GitHub issues with user stories, acceptance criteria, dependencies, and estimates"
+instructions: "When breaking down a project or feature into GitHub issues, decomposing work into tasks, or creating structured issues from a description"
 allowed-tools: "create_github_issue list_github_issues search_github_issues add_note"
 ---
 

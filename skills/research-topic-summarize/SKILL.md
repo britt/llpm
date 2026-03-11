@@ -1,6 +1,7 @@
 ---
 name: research-topic-summarize
 description: "Research topics via web search, synthesize detailed summaries with sources and screenshots"
+instructions: "When researching a topic via web search, synthesizing findings into a summary with sources, or capturing screenshots of references"
 tags:
   - research
   - web-search

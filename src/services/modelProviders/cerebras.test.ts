@@ -8,7 +8,7 @@ vi.mock('../../utils/logger', () => ({
 
 describe('CerebrasAdapter', () => {
   let adapter: CerebrasAdapter;
-  let originalFetch: typeof global.fetch;
+  let originalFetch: any;
 
   beforeEach(() => {
     adapter = new CerebrasAdapter();
@@ -55,7 +55,7 @@ describe('CerebrasAdapter', () => {
       global.fetch = vi.fn().mockResolvedValue({
         ok: true,
         json: () => Promise.resolve(mockModels)
-      });
+      }) as any;
 
       const result = await adapter.fetchModels({ apiKey: 'test-key' });
 
@@ -85,7 +85,7 @@ describe('CerebrasAdapter', () => {
         status: 401,
         statusText: 'Unauthorized',
         text: () => Promise.resolve('Invalid API key')
-      });
+      }) as any;
 
       const result = await adapter.fetchModels({ apiKey: 'invalid-key' });
 
@@ -99,7 +99,7 @@ describe('CerebrasAdapter', () => {
         status: 429,
         statusText: 'Too Many Requests',
         text: () => Promise.resolve('Rate limited')
-      });
+      }) as any;
 
       const result = await adapter.fetchModels({ apiKey: 'test-key' });
 
@@ -113,7 +113,7 @@ describe('CerebrasAdapter', () => {
         status: 500,
         statusText: 'Internal Server Error',
         text: () => Promise.resolve('Server error')
-      });
+      }) as any;
 
       const result = await adapter.fetchModels({ apiKey: 'test-key' });
 
@@ -122,13 +122,13 @@ describe('CerebrasAdapter', () => {
     });
 
     it('should handle network errors', async () => {
-      global.fetch = vi.fn().mockRejectedValue(new Error('Network error'));
+      global.fetch = vi.fn().mockRejectedValue(new Error('Network error')) as any;
 
       const result = await adapter.fetchModels({ apiKey: 'test-key' });
 
       expect(result.success).toBe(false);
       expect(result.error).toContain('Network error');
-    });
+    }) as any;
 
     it('should sort models by family ranking with qwen-3 first', async () => {
       const mockModels = {
@@ -143,13 +143,13 @@ describe('CerebrasAdapter', () => {
       global.fetch = vi.fn().mockResolvedValue({
         ok: true,
         json: () => Promise.resolve(mockModels)
-      });
+      }) as any;
 
       const result = await adapter.fetchModels({ apiKey: 'test-key' });
 
       expect(result.success).toBe(true);
       // Qwen should come first (target model for issue #179)
-      expect(result.models[0].id).toContain('qwen');
+      expect(result!.models[0]!.id).toContain('qwen');
     });
 
     it('should format display names correctly', async () => {
@@ -164,7 +164,7 @@ describe('CerebrasAdapter', () => {
       global.fetch = vi.fn().mockResolvedValue({
         ok: true,
         json: () => Promise.resolve(mockModels)
-      });
+      }) as any;
 
       const result = await adapter.fetchModels({ apiKey: 'test-key' });
 
@@ -188,12 +188,12 @@ describe('CerebrasAdapter', () => {
       global.fetch = vi.fn().mockResolvedValue({
         ok: true,
         json: () => Promise.resolve(mockModels)
-      });
+      }) as any;
 
       const result = await adapter.fetchModels({ apiKey: 'test-key' });
 
       expect(result.success).toBe(true);
-      expect(result.models[0].metadata?.owned_by).toBe('alibaba');
+      expect(result!.models[0]!.metadata?.owned_by).toBe('alibaba');
     });
   });
 });

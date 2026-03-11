@@ -92,7 +92,7 @@ export function parseArchitectureResponse(response: string): ArchitectureAnalysi
   try {
     // Try to extract JSON from code block
     const jsonMatch = response.match(/```(?:json)?\s*([\s\S]*?)```/);
-    const jsonStr = jsonMatch ? jsonMatch[1].trim() : response.trim();
+    const jsonStr = jsonMatch ? jsonMatch[1]!.trim() : response.trim();
 
     const parsed = JSON.parse(jsonStr);
 

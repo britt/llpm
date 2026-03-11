@@ -151,13 +151,13 @@ export function parseReadmeContent(content: string): ReadmeContent {
   // Extract title from first H1
   const titleMatch = content.match(/^#\s+(.+)$/m);
   if (titleMatch) {
-    result.title = titleMatch[1].trim();
+    result.title = titleMatch[1]!.trim();
   }
 
   // Extract sections (H2 headers)
   const sectionMatches = content.matchAll(/^##\s+(.+)$/gm);
   for (const match of sectionMatches) {
-    result.sections.push(match[1].trim());
+    result.sections.push(match[1]!.trim());
   }
 
   // Check for specific sections

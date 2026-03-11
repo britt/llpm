@@ -38,6 +38,12 @@ export interface SkillFrontmatter {
   compatibility?: string;
 
   /**
+   * Optional: Instructions for when to use this skill
+   * Helps agents identify when to load the skill
+   */
+  instructions?: string;
+
+  /**
    * Optional: Arbitrary key-value string mapping for additional properties
    * Recommended to use unique key names to avoid conflicts
    */
@@ -75,11 +81,17 @@ export interface Skill {
   /** Compatibility requirements (if specified) */
   compatibility?: string;
 
+  /** Instructions for when to use this skill */
+  instructions?: string;
+
   /** Additional metadata */
   metadata?: Record<string, string>;
 
   /** Allowed tools list (parsed from space-delimited string) */
   allowedTools?: string[];
+
+  /** Tags for categorizing skills */
+  tags?: string[];
 
   /** Whether this skill is currently enabled */
   enabled: boolean;
@@ -123,34 +135,6 @@ export interface SkillMetadata {
 
   /** Path to skill directory */
   path: string;
-}
-
-/**
- * Skill activation context
- */
-export interface SkillActivationContext {
-  /** User's current message/intent */
-  userMessage: string;
-
-  /** Recent conversation messages */
-  conversationHistory?: Array<{ role: string; content: string }>;
-
-  /** Current project context */
-  projectContext?: string;
-
-  /** Available tools in current session */
-  availableTools?: string[];
-}
-
-/**
- * Result of skill selection
- */
-export interface SkillActivationResult {
-  /** Selected skill */
-  skill: Skill;
-
-  /** Brief rationale for why this skill was selected */
-  rationale: string;
 }
 
 /**

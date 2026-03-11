@@ -138,7 +138,7 @@ describe('Project Agent Config Tools', () => {
 
       tools.forEach(({ tool, name }) => {
         expect(tool.description).toBeDefined();
-        expect(tool.description.length).toBeGreaterThan(20);
+        expect(tool!.description!.length).toBeGreaterThan(20);
         expect(typeof tool.description).toBe('string');
       });
     });
@@ -175,7 +175,7 @@ describe('Project Agent Config Tools', () => {
   describe('setProjectAgentConfigTool execution', () => {
     it('should fail when no current project is set', async () => {
       vi.mocked(projectConfig.loadProjectConfig).mockResolvedValue({
-        currentProject: null,
+        currentProject: undefined,
         projects: {}
       });
 
@@ -204,6 +204,7 @@ describe('Project Agent Config Tools', () => {
             name: 'Test Project',
             repository: 'https://github.com/test/repo',
             github_repo: 'test/repo',
+            path: '/tmp/test',
             createdAt: '2024-01-01',
             updatedAt: '2024-01-01'
           }
@@ -232,6 +233,7 @@ describe('Project Agent Config Tools', () => {
             name: 'Test Project',
             repository: 'https://github.com/test/repo',
             github_repo: 'test/repo',
+            path: '/tmp/test',
             createdAt: '2024-01-01',
             updatedAt: '2024-01-01'
           }
@@ -260,6 +262,7 @@ describe('Project Agent Config Tools', () => {
             name: 'Test Project',
             repository: 'https://github.com/test/repo',
             github_repo: 'test/repo',
+            path: '/tmp/test',
             createdAt: '2024-01-01',
             updatedAt: '2024-01-01'
           }
@@ -283,6 +286,7 @@ describe('Project Agent Config Tools', () => {
             name: 'Test Project',
             repository: 'https://github.com/test/repo',
             github_repo: 'test/repo',
+            path: '/tmp/test',
             createdAt: '2024-01-01',
             updatedAt: '2024-01-01'
           }
@@ -325,7 +329,7 @@ describe('Project Agent Config Tools', () => {
   describe('getProjectAgentConfigTool execution', () => {
     it('should fail when no current project is set', async () => {
       vi.mocked(projectConfig.loadProjectConfig).mockResolvedValue({
-        currentProject: null,
+        currentProject: undefined,
         projects: {}
       });
 
@@ -354,6 +358,7 @@ describe('Project Agent Config Tools', () => {
             name: 'Test Project',
             repository: 'https://github.com/test/repo',
             github_repo: 'test/repo',
+            path: '/tmp/test',
             createdAt: '2024-01-01',
             updatedAt: '2024-01-01'
           }
@@ -376,6 +381,7 @@ describe('Project Agent Config Tools', () => {
             name: 'Test Project',
             repository: 'https://github.com/test/repo',
             github_repo: 'test/repo',
+            path: '/tmp/test',
             createdAt: '2024-01-01',
             updatedAt: '2024-01-01'
           }
@@ -415,7 +421,7 @@ describe('Project Agent Config Tools', () => {
   describe('removeProjectAgentConfigTool execution', () => {
     it('should fail when no current project is set', async () => {
       vi.mocked(projectConfig.loadProjectConfig).mockResolvedValue({
-        currentProject: null,
+        currentProject: undefined,
         projects: {}
       });
 
@@ -444,6 +450,7 @@ describe('Project Agent Config Tools', () => {
             name: 'Test Project',
             repository: 'https://github.com/test/repo',
             github_repo: 'test/repo',
+            path: '/tmp/test',
             createdAt: '2024-01-01',
             updatedAt: '2024-01-01'
           }
@@ -465,6 +472,7 @@ describe('Project Agent Config Tools', () => {
             name: 'Test Project',
             repository: 'https://github.com/test/repo',
             github_repo: 'test/repo',
+            path: '/tmp/test',
             createdAt: '2024-01-01',
             updatedAt: '2024-01-01'
           }

@@ -112,7 +112,7 @@ describe('GitHub Projects v2 Service', () => {
       const result = await listProjectsV2('test-org');
 
       expect(result).toHaveLength(1);
-      expect(result[0].title).toBe('Project 1');
+      expect(result![0]!.title).toBe('Project 1');
     });
 
     it('should list projects for user when not an organization', async () => {
@@ -143,7 +143,7 @@ describe('GitHub Projects v2 Service', () => {
       const result = await listProjectsV2('test-user');
 
       expect(result).toHaveLength(1);
-      expect(result[0].title).toBe('User Project');
+      expect(result![0]!.title).toBe('User Project');
     });
 
     it('should throw error when owner not found', async () => {
@@ -183,7 +183,7 @@ describe('GitHub Projects v2 Service', () => {
       });
 
       const { createProjectV2 } = await import('./githubProjects');
-      const result = await createProjectV2('test-org', 'New Project');
+      const result = await createProjectV2('test-org', { title: 'New Project' } as any);
 
       expect(result.title).toBe('New Project');
       expect(result.id).toBe('PVT_NEW');
@@ -211,9 +211,7 @@ describe('GitHub Projects v2 Service', () => {
       const { createProjectV2 } = await import('./githubProjects');
       const result = await createProjectV2(
         'test-org',
-        'Public Project',
-        'A description',
-        'PUBLIC'
+        { title: 'Public Project' }
       );
 
       expect(result.title).toBe('Public Project');
@@ -332,7 +330,7 @@ describe('GitHub Projects v2 Service', () => {
       });
 
       const { updateProjectV2 } = await import('./githubProjects');
-      const result = await updateProjectV2('PVT_1', { visibility: 'PRIVATE' });
+      const result = await updateProjectV2('PVT_1', { public: false });
 
       expect(result.public).toBe(false);
     });
@@ -387,8 +385,8 @@ describe('GitHub Projects v2 Service', () => {
       const result = await listProjectV2Items('PVT_1');
 
       expect(result).toHaveLength(1);
-      expect(result[0].type).toBe('ISSUE');
-      expect(result[0].content?.title).toBe('Issue 1');
+      expect(result![0]!.type).toBe('ISSUE');
+      expect(result![0]!.content?.title).toBe('Issue 1');
     });
 
     it('should handle pagination for items', async () => {
@@ -491,9 +489,9 @@ describe('GitHub Projects v2 Service', () => {
       const result = await listProjectV2Fields('PVT_1');
 
       expect(result).toHaveLength(2);
-      expect(result[0].name).toBe('Status');
-      expect(result[0].dataType).toBe('SINGLE_SELECT');
-      expect(result[0].options).toHaveLength(3);
+      expect(result![0]!.name).toBe('Status');
+      expect(result![0]!.dataType).toBe('SINGLE_SELECT');
+      expect(result![0]!.options).toHaveLength(3);
     });
 
     it('should log verbose output for listProjectV2Fields', async () => {
@@ -543,7 +541,7 @@ describe('GitHub Projects v2 Service', () => {
       const { updateProjectV2ItemFieldValue } = await import('./githubProjects');
 
       await expect(
-        updateProjectV2ItemFieldValue('PVT_1', 'PVTI_1', 'PVTF_1', 'text', 'New Value')
+        updateProjectV2ItemFieldValue('PVT_1', 'PVTI_1', 'PVTF_1', { text: 'New Value' })
       ).resolves.not.toThrow();
     });
 
@@ -557,7 +555,7 @@ describe('GitHub Projects v2 Service', () => {
       const { updateProjectV2ItemFieldValue } = await import('./githubProjects');
 
       await expect(
-        updateProjectV2ItemFieldValue('PVT_1', 'PVTI_1', 'PVTF_1', 'singleSelectOptionId', 'OPT_1')
+        updateProjectV2ItemFieldValue('PVT_1', 'PVTI_1', 'PVTF_1', { singleSelectOptionId: 'OPT_1' })
       ).resolves.not.toThrow();
     });
   });
