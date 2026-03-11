@@ -13,16 +13,16 @@ weight: 99
 ```json
 {
   "Additional Changes": [
-    "Updated the documentation structure to improve navigation and standardize page metadata across the docs site. The change added `type: docs` front matter and structured navigation links to the root docs and LLPM index pages, including links to core docs, agent prompts, skills, and architecture diagramming.",
-    "Updated the command documentation to describe a unified ` /delete` command across notes and projects and to reduce duplicated guidance. The change added ` /delete` and its subcommands to the Commands Reference, added cross-references from project removal docs, and revised the quickstart content to point to the unified command documentation.",
-    "Updated release-notes documentation to reflect newer releases and to use a more consistent Markdown format. The change added a `release-notes.md` page, moved and expanded update documentation into a dedicated release-notes page (including a `1.9.0` section), added a `1.6.1` section, and converted “Additional changes” content from JSON to Markdown bullets with explicit `New Features`, `Bug Fixes`, and `Breaking Changes` subsections.",
-    "Updated the package version to reflect the latest patch release. The change bumped the version from `1.9.0` to `1.9.1`."
+    "Updated the documentation structure to improve navigation and standardize page metadata across the docs site.",
+    "Updated the command documentation to describe a unified ` /delete` command across notes and projects and to reduce duplicated guidance.",
+    "Updated release-notes documentation to reflect newer releases and to use a more consistent Markdown format.",
+    "Updated the package version to reflect the latest patch release."
   ],
   "Breaking Changes": [
-    "Updated the internal data contracts to match the latest model, project, skill, tool, and LLM response schemas. The change aligned types and tests with the new shapes, removed `SkillRegistry` keyword matching, and added `instructions` metadata to skills."
+    "Updated the internal data contracts to match the latest model, project, skill, tool, and LLM response schemas."
   ],
   "New Features": [
-    "Added an event-driven mechanism so switching projects clears outdated chat content and reloads the correct history automatically. The implementation introduced a `ProjectEventBus` and emits a `project:switched` event from project add/switch tools, with `useChat` subscribing to clear messages, reload history, and surface a switch notification (with test coverage)."
+    "Added an event-driven mechanism so switching projects clears outdated chat content and reloads the correct history automatically."
   ]
 }
 
