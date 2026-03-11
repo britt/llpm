@@ -26,20 +26,10 @@ The `SKILL.md` file has two parts:
 |-------|----------|-------------|
 | `name` | Yes | Unique identifier for the skill (kebab-case) |
 | `description` | Yes | Brief summary of what the skill does |
-| `instructions` | No | When to activate this skill (trigger phrases) |
-| `tags` | No | Array of tags for categorization and discovery |
-| `allowed-tools` | No | Space-delimited list of AI tools this skill can use |
-| `vars` | No | Variables that can be customized per-project |
-| `resources` | No | External files or URLs the skill references |
-
-## How LLPM uses `instructions` and `tags`
-
-LLPM injects a list of enabled skills into the system prompt.
-
-- `instructions` is used as the user-visible trigger text in that injected list.
-- `tags` can be used for skill discovery and filtering (for example, when listing available skills).
-
-When `instructions` is omitted, the skill can still be loaded manually, but it is not included in the injected “Available Skills” trigger list.
+| `license` | No | License identifier for the skill |
+| `compatibility` | No | Environment requirements (products, packages, network access) |
+| `metadata` | No | Arbitrary string-to-string mapping for additional properties |
+| `allowed-tools` | No | Space-delimited list of pre-approved tools (experimental) |
 
 ### Example Frontmatter
 
@@ -47,18 +37,11 @@ When `instructions` is omitted, the skill can still be loaded manually, but it i
 ---
 name: code-review
 description: "Review code changes for quality, security, and best practices"
-instructions: "When reviewing PRs, diffs, or code changes"
-tags:
-  - review
-  - code-quality
-  - security
-allowed-tools: "list_github_issues get_github_issue_with_comments add_note"
-vars:
-  severity_threshold: "medium"
-  focus_areas: ["security", "performance"]
-resources:
-  - style-guide.md
-  - security-checklist.md
+license: "Apache-2.0"
+compatibility: "Requires network access"
+metadata:
+  category: "review"
+allowed-tools: "Read"
 ---
 ```
 
