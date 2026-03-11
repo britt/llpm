@@ -3,6 +3,31 @@ title: Updates
 weight: 99
 ---
 
+## 1.9.1 - bug fixes and refinements
+
+- **Date:** 2026-03-11
+- **Version:** 1.9.1
+
+**Summary:** This release covers targeted bug fixes and incremental refinements.
+
+```json
+{
+  "Additional Changes": [
+    "Updated the documentation structure to improve navigation and standardize page metadata across the docs site. The change added `type: docs` front matter and structured navigation links to the root docs and LLPM index pages, including links to core docs, agent prompts, skills, and architecture diagramming.",
+    "Updated the command documentation to describe a unified ` /delete` command across notes and projects and to reduce duplicated guidance. The change added ` /delete` and its subcommands to the Commands Reference, added cross-references from project removal docs, and revised the quickstart content to point to the unified command documentation.",
+    "Updated release-notes documentation to reflect newer releases and to use a more consistent Markdown format. The change added a `release-notes.md` page, moved and expanded update documentation into a dedicated release-notes page (including a `1.9.0` section), added a `1.6.1` section, and converted “Additional changes” content from JSON to Markdown bullets with explicit `New Features`, `Bug Fixes`, and `Breaking Changes` subsections.",
+    "Updated the package version to reflect the latest patch release. The change bumped the version from `1.9.0` to `1.9.1`."
+  ],
+  "Breaking Changes": [
+    "Updated the internal data contracts to match the latest model, project, skill, tool, and LLM response schemas. The change aligned types and tests with the new shapes, removed `SkillRegistry` keyword matching, and added `instructions` metadata to skills."
+  ],
+  "New Features": [
+    "Added an event-driven mechanism so switching projects clears outdated chat content and reloads the correct history automatically. The implementation introduced a `ProjectEventBus` and emits a `project:switched` event from project add/switch tools, with `useChat` subscribing to clear messages, reload history, and surface a switch notification (with test coverage)."
+  ]
+}
+
+```
+
 ## 1.9.0 - `/delete` command and docs site overhaul
 
 - **Date:** 2026-02-15
