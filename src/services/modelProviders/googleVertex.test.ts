@@ -28,7 +28,7 @@ vi.mock('util', () => ({
 
 describe('GoogleVertexAdapter', () => {
   let adapter: GoogleVertexAdapter;
-  let originalFetch: typeof global.fetch;
+  let originalFetch: any;
 
   beforeEach(() => {
     adapter = new GoogleVertexAdapter();
@@ -71,7 +71,7 @@ describe('GoogleVertexAdapter', () => {
       global.fetch = vi.fn().mockResolvedValue({
         ok: true,
         json: () => Promise.resolve({ models: [] })
-      });
+      }) as any;
 
       await adapter.fetchModels({ projectId: 'test-project' });
 
@@ -85,7 +85,7 @@ describe('GoogleVertexAdapter', () => {
       global.fetch = vi.fn().mockResolvedValue({
         ok: true,
         json: () => Promise.resolve({ models: [] })
-      });
+      }) as any;
 
       await adapter.fetchModels({ projectId: 'test-project', location: 'europe-west1' });
 
@@ -107,7 +107,7 @@ describe('GoogleVertexAdapter', () => {
       global.fetch = vi.fn().mockResolvedValue({
         ok: true,
         json: () => Promise.resolve(mockModels)
-      });
+      }) as any;
 
       const result = await adapter.fetchModels({ projectId: 'test-project' });
 
@@ -137,7 +137,7 @@ describe('GoogleVertexAdapter', () => {
         status: 401,
         statusText: 'Unauthorized',
         text: () => Promise.resolve('Unauthorized')
-      });
+      }) as any;
 
       const result = await adapter.fetchModels({ projectId: 'test-project' });
 
@@ -151,7 +151,7 @@ describe('GoogleVertexAdapter', () => {
         status: 403,
         statusText: 'Forbidden',
         text: () => Promise.resolve('Permission denied')
-      });
+      }) as any;
 
       const result = await adapter.fetchModels({ projectId: 'test-project' });
 
@@ -165,7 +165,7 @@ describe('GoogleVertexAdapter', () => {
         status: 404,
         statusText: 'Not Found',
         text: () => Promise.resolve('Project not found')
-      });
+      }) as any;
 
       const result = await adapter.fetchModels({ projectId: 'missing-project' });
 
@@ -180,7 +180,7 @@ describe('GoogleVertexAdapter', () => {
         status: 500,
         statusText: 'Internal Server Error',
         text: () => Promise.resolve('Server error')
-      });
+      }) as any;
 
       const result = await adapter.fetchModels({ projectId: 'test-project' });
 
@@ -189,13 +189,13 @@ describe('GoogleVertexAdapter', () => {
     });
 
     it('should handle network errors', async () => {
-      global.fetch = vi.fn().mockRejectedValue(new Error('Network error'));
+      global.fetch = vi.fn().mockRejectedValue(new Error('Network error')) as any;
 
       const result = await adapter.fetchModels({ projectId: 'test-project' });
 
       expect(result.success).toBe(false);
       expect(result.error).toContain('Network error');
-    });
+    }) as any;
 
     it('should handle failed access token retrieval', async () => {
       // Mock gcloud auth to fail
@@ -221,7 +221,7 @@ describe('GoogleVertexAdapter', () => {
       global.fetch = vi.fn().mockResolvedValue({
         ok: true,
         json: () => Promise.resolve(mockModels)
-      });
+      }) as any;
 
       const result = await adapter.fetchModels({ projectId: 'test-project' });
 
@@ -242,14 +242,14 @@ describe('GoogleVertexAdapter', () => {
       global.fetch = vi.fn().mockResolvedValue({
         ok: true,
         json: () => Promise.resolve(mockModels)
-      });
+      }) as any;
 
       const result = await adapter.fetchModels({ projectId: 'test-project' });
 
       expect(result.success).toBe(true);
       // Should only include the gemini model based on name fallback
       expect(result.models.length).toBe(1);
-      expect(result.models[0].id).toContain('gemini');
+      expect(result!.models[0]!.id).toContain('gemini');
     });
 
     it('should deduplicate models by family', async () => {
@@ -264,14 +264,14 @@ describe('GoogleVertexAdapter', () => {
       global.fetch = vi.fn().mockResolvedValue({
         ok: true,
         json: () => Promise.resolve(mockModels)
-      });
+      }) as any;
 
       const result = await adapter.fetchModels({ projectId: 'test-project' });
 
       expect(result.success).toBe(true);
       // Should deduplicate to one gemini-1.5-pro entry
       expect(result.models.length).toBe(1);
-      expect(result.models[0].family).toBe('gemini-1.5-pro');
+      expect(result!.models[0]!.family).toBe('gemini-1.5-pro');
     });
 
     it('should sort models by family ranking', async () => {
@@ -286,15 +286,15 @@ describe('GoogleVertexAdapter', () => {
       global.fetch = vi.fn().mockResolvedValue({
         ok: true,
         json: () => Promise.resolve(mockModels)
-      });
+      }) as any;
 
       const result = await adapter.fetchModels({ projectId: 'test-project' });
 
       expect(result.success).toBe(true);
       // Gemini 2.5 Pro should come first (rank 1), then 1.5 Flash (rank 6), then 1.0 Pro (rank 7)
-      expect(result.models[0].id).toContain('gemini-2.5-pro');
-      expect(result.models[1].id).toContain('gemini-1.5-flash');
-      expect(result.models[2].id).toContain('gemini-1.0-pro');
+      expect(result!.models[0]!.id).toContain('gemini-2.5-pro');
+      expect(result!.models[1]!.id).toContain('gemini-1.5-flash');
+      expect(result!.models[2]!.id).toContain('gemini-1.0-pro');
     });
 
     it('should format display names correctly', async () => {
@@ -309,7 +309,7 @@ describe('GoogleVertexAdapter', () => {
       global.fetch = vi.fn().mockResolvedValue({
         ok: true,
         json: () => Promise.resolve(mockModels)
-      });
+      }) as any;
 
       const result = await adapter.fetchModels({ projectId: 'test-project' });
 
@@ -332,13 +332,13 @@ describe('GoogleVertexAdapter', () => {
       global.fetch = vi.fn().mockResolvedValue({
         ok: true,
         json: () => Promise.resolve(mockModels)
-      });
+      }) as any;
 
       const result = await adapter.fetchModels({ projectId: 'test-project' });
 
       expect(result.success).toBe(true);
       expect(result.models.length).toBe(1);
-      expect(result.models[0].id).toContain('gemini-2.0');
+      expect(result!.models[0]!.id).toContain('gemini-2.0');
     });
 
     it('should include metadata in normalized models', async () => {
@@ -356,20 +356,20 @@ describe('GoogleVertexAdapter', () => {
       global.fetch = vi.fn().mockResolvedValue({
         ok: true,
         json: () => Promise.resolve(mockModels)
-      });
+      }) as any;
 
       const result = await adapter.fetchModels({ projectId: 'test-project' });
 
       expect(result.success).toBe(true);
-      expect(result.models[0].metadata?.fullName).toBe('projects/123/locations/us/publishers/google/models/gemini-1.5-pro');
-      expect(result.models[0].metadata?.description).toBe('Advanced multimodal model');
+      expect(result!.models[0]!.metadata?.fullName).toBe('projects/123/locations/us/publishers/google/models/gemini-1.5-pro');
+      expect(result!.models[0]!.metadata?.description).toBe('Advanced multimodal model');
     });
 
     it('should handle empty model list', async () => {
       global.fetch = vi.fn().mockResolvedValue({
         ok: true,
         json: () => Promise.resolve({ models: [] })
-      });
+      }) as any;
 
       const result = await adapter.fetchModels({ projectId: 'test-project' });
 

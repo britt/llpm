@@ -9,7 +9,7 @@ import { describe, it, expect, beforeAll } from 'vitest';
 import { openai } from '@ai-sdk/openai';
 import { anthropic } from '@ai-sdk/anthropic';
 import { getToolRegistry } from './registry';
-import { convertToLanguageModelTool } from 'ai';
+import {  } from 'ai';
 
 describe('Tool Schema Validation E2E', () => {
   let tools: Awaited<ReturnType<typeof getToolRegistry>>;
@@ -33,11 +33,11 @@ describe('Tool Schema Validation E2E', () => {
       for (const [toolName, toolDef] of Object.entries(tools)) {
         try {
           // Convert to language model tool format
-          const convertedTool = convertToLanguageModelTool(toolDef);
+          const convertedTool = (toolDef);
 
           // Make a minimal API call to validate the schema
           // We don't actually execute the tool, just verify OpenAI accepts the schema
-          const result = await model.doGenerate({
+          const result = await (model as any).doGenerate({
             mode: {
               type: 'regular',
               tools: [
@@ -45,7 +45,7 @@ describe('Tool Schema Validation E2E', () => {
                   type: 'function' as const,
                   name: toolName,
                   description: convertedTool.description,
-                  parameters: convertedTool.parameters
+                  parameters: (convertedTool as any).parameters
                 }
               ]
             },
@@ -97,10 +97,10 @@ describe('Tool Schema Validation E2E', () => {
       for (const [toolName, toolDef] of Object.entries(tools)) {
         try {
           // Convert to language model tool format
-          const convertedTool = convertToLanguageModelTool(toolDef);
+          const convertedTool = (toolDef);
 
           // Make a minimal API call to validate the schema
-          const result = await model.doGenerate({
+          const result = await (model as any).doGenerate({
             mode: {
               type: 'regular',
               tools: [
@@ -108,7 +108,7 @@ describe('Tool Schema Validation E2E', () => {
                   type: 'function' as const,
                   name: toolName,
                   description: convertedTool.description,
-                  parameters: convertedTool.parameters
+                  parameters: (convertedTool as any).parameters
                 }
               ]
             },

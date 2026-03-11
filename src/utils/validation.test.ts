@@ -35,9 +35,9 @@ describe('validation', () => {
   describe('validateEnvironment', () => {
     it('should pass when OpenAI key is available', async () => {
       vi.mocked(credentialManager.getOpenAIAPIKey).mockResolvedValue('test-openai-key');
-      vi.mocked(credentialManager.getAnthropicAPIKey).mockResolvedValue(null);
-      vi.mocked(credentialManager.getGroqAPIKey).mockResolvedValue(null);
-      vi.mocked(credentialManager.getGoogleVertexProjectId).mockResolvedValue(null);
+      vi.mocked(credentialManager.getAnthropicAPIKey).mockResolvedValue(undefined as any);
+      vi.mocked(credentialManager.getGroqAPIKey).mockResolvedValue(undefined as any);
+      vi.mocked(credentialManager.getGoogleVertexProjectId).mockResolvedValue(undefined as any);
 
       await validateEnvironment();
 

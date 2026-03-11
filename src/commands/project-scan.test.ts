@@ -62,7 +62,7 @@ describe('Project Scan Command', () => {
         createdAt: '2024-01-01',
         updatedAt: '2024-01-01'
         // No path
-      });
+      } as any);
 
       const result = await projectScanCommand.execute([]);
 

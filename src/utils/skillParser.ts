@@ -64,6 +64,7 @@ export async function parseSkillFile(
       content: content.trim(),
       source,
       path: skillPath,
+      instructions: frontmatter.instructions,
       license: frontmatter.license,
       compatibility: frontmatter.compatibility,
       metadata: frontmatter.metadata,
@@ -322,6 +323,7 @@ export async function validateSkillDirectory(
       content: content.trim(),
       source: 'user', // Default for validation
       path: skillPath,
+      instructions: frontmatter.instructions,
       license: frontmatter.license,
       compatibility: frontmatter.compatibility,
       metadata: frontmatter.metadata,

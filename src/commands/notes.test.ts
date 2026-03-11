@@ -50,7 +50,7 @@ describe('Notes Command', () => {
 
   describe('Help subcommand', () => {
     it('should show help when help argument is passed', async () => {
-      vi.mocked(getCurrentProject).mockResolvedValue({ id: 'test-project', name: 'Test', path: '/test' });
+      vi.mocked(getCurrentProject).mockResolvedValue({ id: 'test-project', name: 'Test', path: '/test', repository: '', github_repo: '', createdAt: '2024-01-01', updatedAt: '2024-01-01' });
       vi.mocked(getNotesBackend).mockResolvedValue(mockBackend as any);
 
       const result = await notesCommand.execute(['help']);
@@ -64,7 +64,7 @@ describe('Notes Command', () => {
 
   describe('List subcommand', () => {
     it('should list notes when no arguments (default)', async () => {
-      vi.mocked(getCurrentProject).mockResolvedValue({ id: 'test-project', name: 'Test', path: '/test' });
+      vi.mocked(getCurrentProject).mockResolvedValue({ id: 'test-project', name: 'Test', path: '/test', repository: '', github_repo: '', createdAt: '2024-01-01', updatedAt: '2024-01-01' });
       vi.mocked(getNotesBackend).mockResolvedValue(mockBackend as any);
       mockBackend.listNotes.mockResolvedValue([
         { id: 'note-1', title: 'Note 1', tags: ['tag1'], createdAt: '2024-01-01', updatedAt: '2024-01-01' },
@@ -79,7 +79,7 @@ describe('Notes Command', () => {
     });
 
     it('should show message when no notes exist', async () => {
-      vi.mocked(getCurrentProject).mockResolvedValue({ id: 'test-project', name: 'Test', path: '/test' });
+      vi.mocked(getCurrentProject).mockResolvedValue({ id: 'test-project', name: 'Test', path: '/test', repository: '', github_repo: '', createdAt: '2024-01-01', updatedAt: '2024-01-01' });
       vi.mocked(getNotesBackend).mockResolvedValue(mockBackend as any);
       mockBackend.listNotes.mockResolvedValue([]);
 
@@ -92,7 +92,7 @@ describe('Notes Command', () => {
 
   describe('Add subcommand', () => {
     it('should add a note successfully', async () => {
-      vi.mocked(getCurrentProject).mockResolvedValue({ id: 'test-project', name: 'Test', path: '/test' });
+      vi.mocked(getCurrentProject).mockResolvedValue({ id: 'test-project', name: 'Test', path: '/test', repository: '', github_repo: '', createdAt: '2024-01-01', updatedAt: '2024-01-01' });
       vi.mocked(getNotesBackend).mockResolvedValue(mockBackend as any);
       mockBackend.addNote.mockResolvedValue({
         id: 'note-1',
@@ -112,7 +112,7 @@ describe('Notes Command', () => {
     });
 
     it('should fail when no title provided', async () => {
-      vi.mocked(getCurrentProject).mockResolvedValue({ id: 'test-project', name: 'Test', path: '/test' });
+      vi.mocked(getCurrentProject).mockResolvedValue({ id: 'test-project', name: 'Test', path: '/test', repository: '', github_repo: '', createdAt: '2024-01-01', updatedAt: '2024-01-01' });
       vi.mocked(getNotesBackend).mockResolvedValue(mockBackend as any);
 
       const result = await notesCommand.execute(['add']);
@@ -122,7 +122,7 @@ describe('Notes Command', () => {
     });
 
     it('should fail when title is empty string', async () => {
-      vi.mocked(getCurrentProject).mockResolvedValue({ id: 'test-project', name: 'Test', path: '/test' });
+      vi.mocked(getCurrentProject).mockResolvedValue({ id: 'test-project', name: 'Test', path: '/test', repository: '', github_repo: '', createdAt: '2024-01-01', updatedAt: '2024-01-01' });
       vi.mocked(getNotesBackend).mockResolvedValue(mockBackend as any);
 
       const result = await notesCommand.execute(['add', '']);
@@ -132,7 +132,7 @@ describe('Notes Command', () => {
     });
 
     it('should add a note with only title (no content)', async () => {
-      vi.mocked(getCurrentProject).mockResolvedValue({ id: 'test-project', name: 'Test', path: '/test' });
+      vi.mocked(getCurrentProject).mockResolvedValue({ id: 'test-project', name: 'Test', path: '/test', repository: '', github_repo: '', createdAt: '2024-01-01', updatedAt: '2024-01-01' });
       vi.mocked(getNotesBackend).mockResolvedValue(mockBackend as any);
       mockBackend.addNote.mockResolvedValue({
         id: 'note-2',
@@ -154,7 +154,7 @@ describe('Notes Command', () => {
 
   describe('Show subcommand', () => {
     it('should show a note by ID', async () => {
-      vi.mocked(getCurrentProject).mockResolvedValue({ id: 'test-project', name: 'Test', path: '/test' });
+      vi.mocked(getCurrentProject).mockResolvedValue({ id: 'test-project', name: 'Test', path: '/test', repository: '', github_repo: '', createdAt: '2024-01-01', updatedAt: '2024-01-01' });
       vi.mocked(getNotesBackend).mockResolvedValue(mockBackend as any);
       mockBackend.getNote.mockResolvedValue({
         id: 'note-1',
@@ -175,7 +175,7 @@ describe('Notes Command', () => {
     });
 
     it('should fail when no ID provided', async () => {
-      vi.mocked(getCurrentProject).mockResolvedValue({ id: 'test-project', name: 'Test', path: '/test' });
+      vi.mocked(getCurrentProject).mockResolvedValue({ id: 'test-project', name: 'Test', path: '/test', repository: '', github_repo: '', createdAt: '2024-01-01', updatedAt: '2024-01-01' });
       vi.mocked(getNotesBackend).mockResolvedValue(mockBackend as any);
 
       const result = await notesCommand.execute(['show']);
@@ -185,7 +185,7 @@ describe('Notes Command', () => {
     });
 
     it('should fail when note not found', async () => {
-      vi.mocked(getCurrentProject).mockResolvedValue({ id: 'test-project', name: 'Test', path: '/test' });
+      vi.mocked(getCurrentProject).mockResolvedValue({ id: 'test-project', name: 'Test', path: '/test', repository: '', github_repo: '', createdAt: '2024-01-01', updatedAt: '2024-01-01' });
       vi.mocked(getNotesBackend).mockResolvedValue(mockBackend as any);
       mockBackend.getNote.mockResolvedValue(null);
 
@@ -198,7 +198,7 @@ describe('Notes Command', () => {
 
   describe('Search subcommand', () => {
     it('should search notes successfully', async () => {
-      vi.mocked(getCurrentProject).mockResolvedValue({ id: 'test-project', name: 'Test', path: '/test' });
+      vi.mocked(getCurrentProject).mockResolvedValue({ id: 'test-project', name: 'Test', path: '/test', repository: '', github_repo: '', createdAt: '2024-01-01', updatedAt: '2024-01-01' });
       vi.mocked(getNotesBackend).mockResolvedValue(mockBackend as any);
       mockBackend.searchNotes.mockResolvedValue([
         { id: 'note-1', title: 'Meeting Notes', matches: ['Architecture discussion'], matchCount: 1 }
@@ -212,7 +212,7 @@ describe('Notes Command', () => {
     });
 
     it('should show message when no results found', async () => {
-      vi.mocked(getCurrentProject).mockResolvedValue({ id: 'test-project', name: 'Test', path: '/test' });
+      vi.mocked(getCurrentProject).mockResolvedValue({ id: 'test-project', name: 'Test', path: '/test', repository: '', github_repo: '', createdAt: '2024-01-01', updatedAt: '2024-01-01' });
       vi.mocked(getNotesBackend).mockResolvedValue(mockBackend as any);
       mockBackend.searchNotes.mockResolvedValue([]);
 
@@ -223,7 +223,7 @@ describe('Notes Command', () => {
     });
 
     it('should fail when no query provided', async () => {
-      vi.mocked(getCurrentProject).mockResolvedValue({ id: 'test-project', name: 'Test', path: '/test' });
+      vi.mocked(getCurrentProject).mockResolvedValue({ id: 'test-project', name: 'Test', path: '/test', repository: '', github_repo: '', createdAt: '2024-01-01', updatedAt: '2024-01-01' });
       vi.mocked(getNotesBackend).mockResolvedValue(mockBackend as any);
 
       const result = await notesCommand.execute(['search']);
@@ -233,7 +233,7 @@ describe('Notes Command', () => {
     });
 
     it('should show match preview in search results', async () => {
-      vi.mocked(getCurrentProject).mockResolvedValue({ id: 'test-project', name: 'Test', path: '/test' });
+      vi.mocked(getCurrentProject).mockResolvedValue({ id: 'test-project', name: 'Test', path: '/test', repository: '', github_repo: '', createdAt: '2024-01-01', updatedAt: '2024-01-01' });
       vi.mocked(getNotesBackend).mockResolvedValue(mockBackend as any);
       mockBackend.searchNotes.mockResolvedValue([
         {
@@ -254,7 +254,7 @@ describe('Notes Command', () => {
 
   describe('Update subcommand', () => {
     it('should update a note successfully', async () => {
-      vi.mocked(getCurrentProject).mockResolvedValue({ id: 'test-project', name: 'Test', path: '/test' });
+      vi.mocked(getCurrentProject).mockResolvedValue({ id: 'test-project', name: 'Test', path: '/test', repository: '', github_repo: '', createdAt: '2024-01-01', updatedAt: '2024-01-01' });
       vi.mocked(getNotesBackend).mockResolvedValue(mockBackend as any);
       mockBackend.updateNote.mockResolvedValue({
         id: 'note-1',
@@ -273,7 +273,7 @@ describe('Notes Command', () => {
     });
 
     it('should fail when not enough arguments', async () => {
-      vi.mocked(getCurrentProject).mockResolvedValue({ id: 'test-project', name: 'Test', path: '/test' });
+      vi.mocked(getCurrentProject).mockResolvedValue({ id: 'test-project', name: 'Test', path: '/test', repository: '', github_repo: '', createdAt: '2024-01-01', updatedAt: '2024-01-01' });
       vi.mocked(getNotesBackend).mockResolvedValue(mockBackend as any);
 
       const result = await notesCommand.execute(['update', 'note-1']);
@@ -283,7 +283,7 @@ describe('Notes Command', () => {
     });
 
     it('should fail when title is empty string', async () => {
-      vi.mocked(getCurrentProject).mockResolvedValue({ id: 'test-project', name: 'Test', path: '/test' });
+      vi.mocked(getCurrentProject).mockResolvedValue({ id: 'test-project', name: 'Test', path: '/test', repository: '', github_repo: '', createdAt: '2024-01-01', updatedAt: '2024-01-01' });
       vi.mocked(getNotesBackend).mockResolvedValue(mockBackend as any);
 
       const result = await notesCommand.execute(['update', 'note-1', '']);
@@ -293,7 +293,7 @@ describe('Notes Command', () => {
     });
 
     it('should update note without content', async () => {
-      vi.mocked(getCurrentProject).mockResolvedValue({ id: 'test-project', name: 'Test', path: '/test' });
+      vi.mocked(getCurrentProject).mockResolvedValue({ id: 'test-project', name: 'Test', path: '/test', repository: '', github_repo: '', createdAt: '2024-01-01', updatedAt: '2024-01-01' });
       vi.mocked(getNotesBackend).mockResolvedValue(mockBackend as any);
       mockBackend.updateNote.mockResolvedValue({
         id: 'note-1',
@@ -312,7 +312,7 @@ describe('Notes Command', () => {
     });
 
     it('should fail when note not found', async () => {
-      vi.mocked(getCurrentProject).mockResolvedValue({ id: 'test-project', name: 'Test', path: '/test' });
+      vi.mocked(getCurrentProject).mockResolvedValue({ id: 'test-project', name: 'Test', path: '/test', repository: '', github_repo: '', createdAt: '2024-01-01', updatedAt: '2024-01-01' });
       vi.mocked(getNotesBackend).mockResolvedValue(mockBackend as any);
       mockBackend.updateNote.mockResolvedValue(null);
 
@@ -325,7 +325,7 @@ describe('Notes Command', () => {
 
   describe('Delete subcommand', () => {
     it('should delete a note successfully', async () => {
-      vi.mocked(getCurrentProject).mockResolvedValue({ id: 'test-project', name: 'Test', path: '/test' });
+      vi.mocked(getCurrentProject).mockResolvedValue({ id: 'test-project', name: 'Test', path: '/test', repository: '', github_repo: '', createdAt: '2024-01-01', updatedAt: '2024-01-01' });
       vi.mocked(getNotesBackend).mockResolvedValue(mockBackend as any);
       mockBackend.deleteNote.mockResolvedValue(true);
 
@@ -336,7 +336,7 @@ describe('Notes Command', () => {
     });
 
     it('should fail when no ID provided', async () => {
-      vi.mocked(getCurrentProject).mockResolvedValue({ id: 'test-project', name: 'Test', path: '/test' });
+      vi.mocked(getCurrentProject).mockResolvedValue({ id: 'test-project', name: 'Test', path: '/test', repository: '', github_repo: '', createdAt: '2024-01-01', updatedAt: '2024-01-01' });
       vi.mocked(getNotesBackend).mockResolvedValue(mockBackend as any);
 
       const result = await notesCommand.execute(['delete']);
@@ -346,7 +346,7 @@ describe('Notes Command', () => {
     });
 
     it('should fail when note not found', async () => {
-      vi.mocked(getCurrentProject).mockResolvedValue({ id: 'test-project', name: 'Test', path: '/test' });
+      vi.mocked(getCurrentProject).mockResolvedValue({ id: 'test-project', name: 'Test', path: '/test', repository: '', github_repo: '', createdAt: '2024-01-01', updatedAt: '2024-01-01' });
       vi.mocked(getNotesBackend).mockResolvedValue(mockBackend as any);
       mockBackend.deleteNote.mockResolvedValue(false);
 
@@ -359,7 +359,7 @@ describe('Notes Command', () => {
 
   describe('Unknown subcommand', () => {
     it('should fail for unknown subcommand', async () => {
-      vi.mocked(getCurrentProject).mockResolvedValue({ id: 'test-project', name: 'Test', path: '/test' });
+      vi.mocked(getCurrentProject).mockResolvedValue({ id: 'test-project', name: 'Test', path: '/test', repository: '', github_repo: '', createdAt: '2024-01-01', updatedAt: '2024-01-01' });
       vi.mocked(getNotesBackend).mockResolvedValue(mockBackend as any);
 
       const result = await notesCommand.execute(['unknown']);

@@ -1,6 +1,7 @@
 ---
 name: markdown-formatting
 description: "Format AI outputs into consistent, readable Markdown for PRs, issues, docs, and notes"
+instructions: "When formatting output as polished Markdown for pull requests, issues, documentation, or notes"
 tags:
   - formatting
   - markdown

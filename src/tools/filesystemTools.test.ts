@@ -277,7 +277,7 @@ describe('filesystemTools', () => {
         maxResults: 2
       });
 
-      const lines = result.split('\n').filter(line => line.includes('📄'));
+      const lines = result.split('\n').filter((line: string) => line.includes('📄'));
       expect(lines.length).toBeLessThanOrEqual(2);
     });
 

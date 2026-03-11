@@ -77,8 +77,8 @@ describe('instrumentedTool', () => {
       });
 
       // Execute the wrapped function
-      const wrappedConfig = vi.mocked(baseTool).mock.calls[0][0];
-      await wrappedConfig.execute({ input: 'test' });
+      const wrappedConfig = (vi.mocked(baseTool) as any).mock.calls[0][0];
+      await (wrappedConfig as any).execute({ input: 'test' });
 
       expect(RequestContext.logToolCall).toHaveBeenCalledWith(
         'logging_tool',
@@ -103,8 +103,8 @@ describe('instrumentedTool', () => {
         execute: mockExecute
       });
 
-      const wrappedConfig = vi.mocked(baseTool).mock.calls[0][0];
-      await wrappedConfig.execute({});
+      const wrappedConfig = (vi.mocked(baseTool) as any).mock.calls[0][0];
+      await (wrappedConfig as any).execute({});
 
       expect(traced).toHaveBeenCalledWith(
         'tool.span_tool',
@@ -126,9 +126,9 @@ describe('instrumentedTool', () => {
         execute: mockExecute
       });
 
-      const wrappedConfig = vi.mocked(baseTool).mock.calls[0][0];
+      const wrappedConfig = (vi.mocked(baseTool) as any).mock.calls[0][0];
 
-      await expect(wrappedConfig.execute({})).rejects.toThrow('Tool execution failed');
+      await expect((wrappedConfig as any).execute({})).rejects.toThrow('Tool execution failed');
 
       expect(RequestContext.logToolCall).toHaveBeenCalledWith(
         'error_tool',
@@ -149,9 +149,9 @@ describe('instrumentedTool', () => {
         execute: mockExecute
       });
 
-      const wrappedConfig = vi.mocked(baseTool).mock.calls[0][0];
+      const wrappedConfig = (vi.mocked(baseTool) as any).mock.calls[0][0];
 
-      await expect(wrappedConfig.execute({})).rejects.toBe('string error');
+      await expect((wrappedConfig as any).execute({})).rejects.toBe('string error');
 
       expect(RequestContext.logToolCall).toHaveBeenCalledWith(
         'string_error_tool',
@@ -175,8 +175,8 @@ describe('instrumentedTool', () => {
         execute: mockExecute
       });
 
-      const wrappedConfig = vi.mocked(baseTool).mock.calls[0][0];
-      await wrappedConfig.execute({});
+      const wrappedConfig = (vi.mocked(baseTool) as any).mock.calls[0][0];
+      await (wrappedConfig as any).execute({});
 
       expect(mockSpan.setAttribute).toHaveBeenCalledWith('tool.success', false);
       expect(mockSpan.setAttribute).toHaveBeenCalledWith('tool.error', 'Something went wrong');

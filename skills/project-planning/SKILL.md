@@ -1,6 +1,7 @@
 ---
 name: project-planning
 description: "Orchestrate comprehensive project planning - decompose projects into issues, generate architecture diagrams, map dependencies, and create timelines"
+instructions: "When planning a new project end-to-end, orchestrating issue creation with architecture diagrams, dependency maps, and timelines"
 allowed-tools: "create_github_issue list_github_issues add_note search_notes read_project_file list_project_directory get_project_scan load_skills"
 ---
 

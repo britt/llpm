@@ -80,8 +80,7 @@ describe('Project Command', () => {
         path: '/test/path',
         description: 'Test description',
         createdAt: '2024-01-01',
-        updatedAt: '2024-01-01'
-      });
+        updatedAt: '2024-01-01' });
 
       const result = await projectCommand.execute([]);
 
@@ -164,8 +163,7 @@ describe('Project Command', () => {
         path: '/new/path',
         description: 'My description',
         createdAt: '2024-01-01',
-        updatedAt: '2024-01-01'
-      });
+        updatedAt: '2024-01-01' });
 
       const result = await projectCommand.execute(['add', 'New Project', 'user/repo', '/new/path', 'My description']);
 
@@ -254,6 +252,7 @@ describe('Project Command', () => {
           name: 'Project One',
           repository: 'https://github.com/user/one',
           github_repo: 'user/one',
+          path: '/tmp/test',
           createdAt: '2024-01-01',
           updatedAt: '2024-01-01'
         },
@@ -262,6 +261,7 @@ describe('Project Command', () => {
           name: 'Project Two',
           repository: 'https://github.com/user/two',
           github_repo: 'user/two',
+          path: '/tmp/test',
           createdAt: '2024-01-02',
           updatedAt: '2024-01-02'
         }
@@ -291,6 +291,7 @@ describe('Project Command', () => {
           name: 'Project One',
           repository: 'https://github.com/user/one',
           github_repo: 'user/one',
+          path: '/tmp/test',
           createdAt: '2024-01-01',
           updatedAt: '2024-01-01'
         }
@@ -300,6 +301,7 @@ describe('Project Command', () => {
         name: 'Project One',
         repository: 'https://github.com/user/one',
         github_repo: 'user/one',
+        path: '/tmp/test',
         createdAt: '2024-01-01',
         updatedAt: '2024-01-01'
       });
@@ -320,6 +322,7 @@ describe('Project Command', () => {
           name: 'Project One',
           repository: 'https://github.com/user/one',
           github_repo: 'user/one',
+          path: '/tmp/test',
           createdAt: '2024-01-01',
           updatedAt: '2024-01-01'
         }
@@ -339,6 +342,7 @@ describe('Project Command', () => {
           name: 'Target Project',
           repository: 'https://github.com/user/target',
           github_repo: 'user/target',
+          path: '/tmp/test',
           createdAt: '2024-01-01',
           updatedAt: '2024-01-01'
         }
@@ -358,6 +362,7 @@ describe('Project Command', () => {
           name: 'Existing Project',
           repository: 'https://github.com/user/existing',
           github_repo: 'user/existing',
+          path: '/tmp/test',
           createdAt: '2024-01-01',
           updatedAt: '2024-01-01'
         }
@@ -379,6 +384,7 @@ describe('Project Command', () => {
           name: 'Target Project',
           repository: 'https://github.com/user/target',
           github_repo: 'user/target',
+          path: '/tmp/test',
           createdAt: '2024-01-01',
           updatedAt: '2024-01-01'
         }
@@ -407,7 +413,7 @@ describe('Project Command', () => {
     });
 
     it('should remove project successfully', async () => {
-      vi.mocked(projectConfig.removeProject).mockResolvedValue(true);
+      vi.mocked(projectConfig.removeProject).mockResolvedValue(true as any);
 
       const result = await projectCommand.execute(['remove', 'proj-123']);
 
@@ -441,8 +447,8 @@ describe('Project Command', () => {
         github_repo: 'user/repo',
         description: 'New description',
         createdAt: '2024-01-01',
-        updatedAt: '2024-01-02'
-      });
+        updatedAt: '2024-01-02',
+        path: '/tmp/test' });
 
       const result = await projectCommand.execute(['update', 'proj-123', 'description', 'New description']);
 
@@ -502,6 +508,7 @@ describe('Project Command', () => {
           name: 'Project',
           repository: 'https://github.com/user/repo',
           github_repo: 'user/repo',
+          path: '/tmp/test',
           createdAt: '2024-01-01',
           updatedAt: '2024-01-01'
         }
@@ -575,6 +582,7 @@ describe('Project Command', () => {
         name: 'Project',
         repository: 'https://github.com/user/repo',
         github_repo: 'user/repo',
+        path: '/tmp/test',
         createdAt: '2024-01-01',
         updatedAt: '2024-01-01'
         // no path - should fall back to CWD

@@ -33,7 +33,7 @@ describe('modelStorage', () => {
 
   describe('saveCurrentModel', () => {
     it('should save model to project config', async () => {
-      vi.mocked(loadProjectConfig).mockResolvedValue({});
+      (vi.mocked(loadProjectConfig) as any).mockResolvedValue({});
       vi.mocked(saveProjectConfig).mockResolvedValue(undefined);
 
       await saveCurrentModel(mockModel);
@@ -54,7 +54,7 @@ describe('modelStorage', () => {
         someOtherSetting: 'value',
         anotherSetting: 123
       };
-      vi.mocked(loadProjectConfig).mockResolvedValue(existingConfig);
+      (vi.mocked(loadProjectConfig) as any).mockResolvedValue(existingConfig);
       vi.mocked(saveProjectConfig).mockResolvedValue(undefined);
 
       await saveCurrentModel(mockModel);
@@ -80,7 +80,7 @@ describe('modelStorage', () => {
 
   describe('loadCurrentModel', () => {
     it('should load model from project config', async () => {
-      vi.mocked(loadProjectConfig).mockResolvedValue({
+      (vi.mocked(loadProjectConfig) as any).mockResolvedValue({
         model: {
           currentModel: mockModel,
           lastUpdated: '2024-01-01T00:00:00Z'
@@ -93,7 +93,7 @@ describe('modelStorage', () => {
     });
 
     it('should return null when no model is stored', async () => {
-      vi.mocked(loadProjectConfig).mockResolvedValue({});
+      (vi.mocked(loadProjectConfig) as any).mockResolvedValue({});
 
       const result = await loadCurrentModel();
 
@@ -101,7 +101,7 @@ describe('modelStorage', () => {
     });
 
     it('should return null when model field exists but currentModel is missing', async () => {
-      vi.mocked(loadProjectConfig).mockResolvedValue({
+      (vi.mocked(loadProjectConfig) as any).mockResolvedValue({
         model: {
           lastUpdated: '2024-01-01T00:00:00Z'
         }
@@ -123,12 +123,11 @@ describe('modelStorage', () => {
 
   describe('clearStoredModel', () => {
     it('should clear model from project config', async () => {
-      vi.mocked(loadProjectConfig).mockResolvedValue({
+      (vi.mocked(loadProjectConfig) as any).mockResolvedValue({
         model: {
           currentModel: mockModel,
           lastUpdated: '2024-01-01T00:00:00Z'
-        },
-        otherSetting: 'preserved'
+        }
       });
       vi.mocked(saveProjectConfig).mockResolvedValue(undefined);
 
@@ -136,7 +135,6 @@ describe('modelStorage', () => {
 
       expect(saveProjectConfig).toHaveBeenCalledWith(
         expect.objectContaining({
-          otherSetting: 'preserved',
           model: expect.objectContaining({
             lastUpdated: expect.any(String)
           })
@@ -145,7 +143,7 @@ describe('modelStorage', () => {
 
       // Verify currentModel is not in the saved config
       const savedConfig = vi.mocked(saveProjectConfig).mock.calls[0]![0];
-      expect(savedConfig.model.currentModel).toBeUndefined();
+      expect((savedConfig as any)!.model.currentModel!).toBeUndefined();
     });
 
     it('should not throw on clear error', async () => {

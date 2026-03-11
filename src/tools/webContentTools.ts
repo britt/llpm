@@ -30,11 +30,11 @@ function extractTextFromHTML(html: string): { title?: string; content: string; d
   
   // Extract title
   const titleMatch = cleanHtml.match(/<title[^>]*>([\s\S]*?)<\/title>/i);
-  const title = titleMatch ? titleMatch[1].trim() : undefined;
+  const title = titleMatch ? titleMatch[1]!.trim() : undefined;
   
   // Extract meta description
   const descMatch = cleanHtml.match(/<meta[^>]*name=['"]description['"][^>]*content=['"]([^'"]*)['"]/i);
-  const description = descMatch ? descMatch[1].trim() : undefined;
+  const description = descMatch ? descMatch[1]!.trim() : undefined;
   
   // Remove HTML tags and decode entities
   let textContent = cleanHtml.replace(/<[^>]*>/g, ' ');
@@ -266,10 +266,10 @@ export const summarizeWebPageTool = tool({
     
     try {
       // First, read the web page content
-      const contentResult = await readWebPageTool.execute({ 
-        url, 
+      const contentResult = await (readWebPageTool as any).execute({
+        url,
         maxLength: maxContentLength,
-        timeout: 15000 
+        timeout: 15000
       });
       
       if (!contentResult.success) {
@@ -295,10 +295,10 @@ export const summarizeWebPageTool = tool({
       
       // Basic key point extraction (simple approach)
       const content = contentResult.content;
-      const sentences = content.split(/[.!?]+/).filter(s => s.trim().length > 50);
-      
+      const sentences = content.split(/[.!?]+/).filter((s: string) => s.trim().length > 50);
+
       // Take first few sentences as key points
-      summary.keyPoints = sentences.slice(0, 5).map(s => s.trim());
+      summary.keyPoints = sentences.slice(0, 5).map((s: string) => s.trim());
       
       // Look for focus areas if specified
       if (focusAreas && focusAreas.length > 0) {

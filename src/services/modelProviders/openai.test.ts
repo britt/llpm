@@ -8,7 +8,7 @@ vi.mock('../../utils/logger', () => ({
 
 describe('OpenAIAdapter', () => {
   let adapter: OpenAIAdapter;
-  let originalFetch: typeof global.fetch;
+  let originalFetch: any;
 
   beforeEach(() => {
     adapter = new OpenAIAdapter();
@@ -56,7 +56,7 @@ describe('OpenAIAdapter', () => {
       global.fetch = vi.fn().mockResolvedValue({
         ok: true,
         json: () => Promise.resolve(mockModels)
-      });
+      }) as any;
 
       const result = await adapter.fetchModels({ apiKey: 'test-key' });
 
@@ -90,7 +90,7 @@ describe('OpenAIAdapter', () => {
         status: 401,
         statusText: 'Unauthorized',
         text: () => Promise.resolve('Invalid API key')
-      });
+      }) as any;
 
       const result = await adapter.fetchModels({ apiKey: 'invalid-key' });
 
@@ -104,7 +104,7 @@ describe('OpenAIAdapter', () => {
         status: 429,
         statusText: 'Too Many Requests',
         text: () => Promise.resolve('Rate limited')
-      });
+      }) as any;
 
       const result = await adapter.fetchModels({ apiKey: 'test-key' });
 
@@ -118,7 +118,7 @@ describe('OpenAIAdapter', () => {
         status: 500,
         statusText: 'Internal Server Error',
         text: () => Promise.resolve('Server error')
-      });
+      }) as any;
 
       const result = await adapter.fetchModels({ apiKey: 'test-key' });
 
@@ -127,13 +127,13 @@ describe('OpenAIAdapter', () => {
     });
 
     it('should handle network errors', async () => {
-      global.fetch = vi.fn().mockRejectedValue(new Error('Network error'));
+      global.fetch = vi.fn().mockRejectedValue(new Error('Network error')) as any;
 
       const result = await adapter.fetchModels({ apiKey: 'test-key' });
 
       expect(result.success).toBe(false);
       expect(result.error).toContain('Network error');
-    });
+    }) as any;
 
     it('should deduplicate models by base ID keeping latest version', async () => {
       const mockModels = {
@@ -148,7 +148,7 @@ describe('OpenAIAdapter', () => {
       global.fetch = vi.fn().mockResolvedValue({
         ok: true,
         json: () => Promise.resolve(mockModels)
-      });
+      }) as any;
 
       const result = await adapter.fetchModels({ apiKey: 'test-key' });
 
@@ -156,7 +156,7 @@ describe('OpenAIAdapter', () => {
       // Should only have one gpt-4o entry (the latest version)
       const gpt4oModels = result.models.filter(m => m.id.includes('gpt-4o'));
       expect(gpt4oModels.length).toBe(1);
-      expect(gpt4oModels[0].id).toBe('gpt-4o-2024-08-06');
+      expect(gpt4oModels![0]!.id).toBe('gpt-4o-2024-08-06');
     });
 
     it('should sort models by family ranking', async () => {
@@ -172,7 +172,7 @@ describe('OpenAIAdapter', () => {
       global.fetch = vi.fn().mockResolvedValue({
         ok: true,
         json: () => Promise.resolve(mockModels)
-      });
+      }) as any;
 
       const result = await adapter.fetchModels({ apiKey: 'test-key' });
 
@@ -198,7 +198,7 @@ describe('OpenAIAdapter', () => {
       global.fetch = vi.fn().mockResolvedValue({
         ok: true,
         json: () => Promise.resolve(mockModels)
-      });
+      }) as any;
 
       const result = await adapter.fetchModels({ apiKey: 'test-key' });
 
@@ -224,17 +224,17 @@ describe('OpenAIAdapter', () => {
       global.fetch = vi.fn().mockResolvedValue({
         ok: true,
         json: () => Promise.resolve(mockModels)
-      });
+      }) as any;
 
       const result = await adapter.fetchModels({ apiKey: 'test-key' });
 
       expect(result.success).toBe(true);
       expect(result.models.length).toBe(1);
-      expect(result.models[0].id).toBe('gpt-next-turbo-2024');
+      expect(result!.models[0]!.id).toBe('gpt-next-turbo-2024');
       // Should have a family extracted via fallback regex (non-greedy match)
-      expect(result.models[0].family).toBeDefined();
+      expect(result!.models[0]!.family).toBeDefined();
       // Unknown family should get default rank of 100
-      expect(result.models[0].recommendedRank).toBe(100);
+      expect(result!.models[0]!.recommendedRank).toBe(100);
     });
   });
 });

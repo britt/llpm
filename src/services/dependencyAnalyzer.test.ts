@@ -135,7 +135,7 @@ describe('dependencyAnalyzer', () => {
 
       const deps = parsePackageJson(packageJson);
       expect(deps.peer).toHaveLength(1);
-      expect(deps.peer[0].name).toBe('react');
+      expect(deps!.peer[0]!.name).toBe('react');
     });
 
     it('should infer purposes for known dependencies', () => {
@@ -198,7 +198,7 @@ flask==2.0.0
 `;
       const deps = parseRequirementsTxt(content);
       expect(deps).toHaveLength(1);
-      expect(deps[0].name).toBe('flask');
+      expect(deps![0]!.name).toBe('flask');
     });
 
     it('should handle version specifiers with extras', () => {
@@ -208,8 +208,8 @@ celery[redis]==5.0.0
 `;
       const deps = parseRequirementsTxt(content);
       expect(deps).toHaveLength(2);
-      expect(deps[0].name).toBe('requests');
-      expect(deps[1].name).toBe('celery');
+      expect(deps![0]!.name).toBe('requests');
+      expect(deps![1]!.name).toBe('celery');
     });
   });
 
@@ -284,7 +284,7 @@ require github.com/gin-gonic/gin v1.9.1
 `;
       const deps = parseGoMod(content);
       expect(deps).toHaveLength(1);
-      expect(deps[0].name).toBe('github.com/gin-gonic/gin');
+      expect(deps![0]!.name).toBe('github.com/gin-gonic/gin');
     });
 
     it('should ignore indirect dependencies', () => {
@@ -329,7 +329,7 @@ my-lib = { git = "https://github.com/user/my-lib" }
 `;
       const deps = parseCargoToml(content);
       expect(deps.runtime).toHaveLength(1);
-      expect(deps.runtime[0].name).toBe('my-lib');
+      expect(deps!.runtime[0]!.name).toBe('my-lib');
     });
   });
 

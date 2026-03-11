@@ -127,7 +127,7 @@ describe('systemPrompt', () => {
         description: 'Test description',
         repository: 'owner/repo',
         path: '/test/path',
-        github_repo: 'owner/repo'
+        github_repo: 'owner/repo', createdAt: '2024-01-01', updatedAt: '2024-01-01'
       };
 
       vi.mocked(fs.existsSync).mockReturnValue(true);
@@ -149,10 +149,12 @@ describe('systemPrompt', () => {
         id: 'test-project',
         name: 'Test Project',
         description: 'Test description',
-        repository: 'owner/repo',
+        repository: 'owner/repo', path: '/tmp/test',
         github_repo: 'owner/repo',
         projectBoardId: 'PB_123',
-        projectBoardNumber: 5
+        projectBoardNumber: 5,
+        createdAt: '2024-01-01',
+        updatedAt: '2024-01-01'
       };
 
       vi.mocked(fs.existsSync).mockReturnValue(true);
@@ -173,7 +175,7 @@ describe('systemPrompt', () => {
         name: 'Test Project',
         description: 'Test description',
         repository: 'https://github.com/owner/repo',
-        github_repo: 'https://github.com/owner/repo'
+        github_repo: 'https://github.com/owner/repo', path: '/tmp/test', createdAt: '2024-01-01', updatedAt: '2024-01-01'
       };
 
       vi.mocked(fs.existsSync).mockReturnValue(true);
@@ -211,7 +213,7 @@ describe('systemPrompt', () => {
         name: 'Test',
         description: 'Desc',
         repository: 'owner/repo',
-        github_repo: 'owner/repo'
+        github_repo: 'owner/repo', path: '/tmp/test', createdAt: '2024-01-01', updatedAt: '2024-01-01'
       };
 
       vi.mocked(fs.existsSync).mockReturnValue(false);
@@ -231,7 +233,7 @@ describe('systemPrompt', () => {
         name: 'Test',
         description: 'Desc',
         repository: 'owner/repo',
-        github_repo: 'owner/repo'
+        github_repo: 'owner/repo', path: '/tmp/test', createdAt: '2024-01-01', updatedAt: '2024-01-01'
       };
 
       vi.mocked(fs.existsSync).mockReturnValue(false);
@@ -249,7 +251,7 @@ describe('systemPrompt', () => {
         name: 'Test',
         description: 'Desc',
         repository: 'owner/repo',
-        github_repo: 'owner/repo'
+        github_repo: 'owner/repo', path: '/tmp/test', createdAt: '2024-01-01', updatedAt: '2024-01-01'
       };
 
       vi.mocked(fs.existsSync).mockReturnValue(false);
@@ -267,7 +269,7 @@ describe('systemPrompt', () => {
         name: 'Test',
         description: 'Desc',
         repository: 'owner/repo',
-        github_repo: 'owner/repo'
+        github_repo: 'owner/repo', path: '/tmp/test', createdAt: '2024-01-01', updatedAt: '2024-01-01'
       };
 
       vi.mocked(fs.existsSync).mockReturnValue(true);
@@ -287,7 +289,7 @@ describe('systemPrompt', () => {
         name: 'Test',
         description: 'Desc',
         repository: 'owner/repo',
-        github_repo: 'owner/repo'
+        github_repo: 'owner/repo', path: '/tmp/test', createdAt: '2024-01-01', updatedAt: '2024-01-01'
       };
 
       vi.mocked(fs.existsSync).mockReturnValue(true);
@@ -306,7 +308,7 @@ describe('systemPrompt', () => {
         name: 'Test',
         description: 'Desc',
         repository: 'owner/repo',
-        github_repo: 'owner/repo'
+        github_repo: 'owner/repo', path: '/tmp/test', createdAt: '2024-01-01', updatedAt: '2024-01-01'
       };
 
       vi.mocked(fs.existsSync).mockReturnValue(true);
@@ -332,7 +334,7 @@ describe('systemPrompt', () => {
         name: 'Test',
         description: 'Desc',
         repository: 'owner/repo',
-        github_repo: 'owner/repo'
+        github_repo: 'owner/repo', path: '/tmp/test', createdAt: '2024-01-01', updatedAt: '2024-01-01'
       };
 
       vi.mocked(fs.existsSync).mockReturnValue(true);
@@ -352,7 +354,7 @@ describe('systemPrompt', () => {
         name: 'Test',
         description: 'Desc',
         repository: 'owner/repo',
-        github_repo: 'owner/repo'
+        github_repo: 'owner/repo', path: '/tmp/test', createdAt: '2024-01-01', updatedAt: '2024-01-01'
       } as Project;
 
       // Make path property throw when accessed
@@ -377,7 +379,7 @@ describe('systemPrompt', () => {
         name: 'Test',
         description: 'Desc',
         repository: 'owner/repo',
-        github_repo: 'owner/repo'
+        github_repo: 'owner/repo', path: '/tmp/test', createdAt: '2024-01-01', updatedAt: '2024-01-01'
       } as Project;
 
       // Make projectBoardId property throw when accessed
@@ -443,7 +445,7 @@ describe('systemPrompt', () => {
         name: 'Test',
         description: 'Desc',
         repository: 'owner/repo',
-        github_repo: 'owner/repo'
+        github_repo: 'owner/repo', path: '/tmp/test', createdAt: '2024-01-01', updatedAt: '2024-01-01'
       };
 
       vi.mocked(fs.existsSync).mockReturnValue(false);
@@ -614,7 +616,7 @@ describe('systemPrompt', () => {
           description: 'Brainstorm ideas',
           instructions: 'When asked to brainstorm, or to help design anything',
           content: 'Skill content',
-          source: 'personal',
+          source: 'user',
           path: '/path/to/skill',
           enabled: true
         },
@@ -623,7 +625,7 @@ describe('systemPrompt', () => {
           description: 'Write clear prose',
           instructions: 'When asked to write a longer text or document, or when asked to review or edit text',
           content: 'Skill content',
-          source: 'personal',
+          source: 'user',
           path: '/path/to/skill',
           enabled: true
         }
@@ -827,7 +829,7 @@ describe('systemPrompt', () => {
         if (splitCallCount > 1 && this.includes('</Tools>')) {
           throw new Error('Split error in skills injection');
         }
-        return originalSplit.call(this, separator);
+        return (originalSplit as any).call(this, separator);
       };
 
       vi.mocked(fsPromises.readFile).mockResolvedValue(badPrompt);

@@ -24,7 +24,7 @@ import {
   loadProjectScan,
   projectScanExists,
 } from './projectScanBackend';
-import type { ProjectScan } from '../types/projectScan';
+import type { ProjectScan, PackageManager } from '../types/projectScan';
 
 /**
  * Options for performing a project scan
@@ -204,6 +204,7 @@ export class ProjectScanOrchestrator {
         projectType,
         totalFiles: files.length,
         totalLines,
+        totalSize: files.reduce((sum, f) => sum + f.size, 0),
       },
       keyFiles: keyFiles.map(kf => ({
         path: kf.path,
@@ -213,14 +214,15 @@ export class ProjectScanOrchestrator {
       })),
       directoryStructure: directories,
       documentation: {
-        readmeSummary: documentation.readmeSummary ?? null,
+        readmeSummary: documentation.readmeSummary ?? undefined,
         hasDocumentation: documentation.hasDocumentation,
         docFiles: documentation.docFiles,
+        inlineDocsCoverage: 'none',
       },
       dependencies: {
-        packageManager: dependencies.packageManager,
-        runtime: dependencies.runtime,
-        development: dependencies.development,
+        packageManager: dependencies.packageManager as PackageManager | null,
+        runtime: dependencies.runtime.map(d => ({ name: d.name, version: d.version || '*', purpose: d.purpose })),
+        development: dependencies.development.map(d => ({ name: d.name, version: d.version || '*', purpose: d.purpose })),
       },
       architecture: {
         description: architecture.description,

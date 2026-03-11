@@ -162,14 +162,15 @@ describe('ProjectScanOrchestrator', () => {
           frameworks: [],
           projectType: 'web-app',
           totalFiles: 10,
-          totalLines: 1000,
+          totalLines: 1000, totalSize: 0,
         },
         keyFiles: [],
         directoryStructure: [],
         documentation: {
-          readmeSummary: null,
+          readmeSummary: undefined,
           hasDocumentation: false,
           docFiles: [],
+          inlineDocsCoverage: 'none',
         },
         dependencies: {
           packageManager: null,
@@ -283,8 +284,8 @@ describe('ProjectScanOrchestrator', () => {
       });
 
       // Progress should increase
-      expect(progressValues[progressValues.length - 1]).toBeGreaterThanOrEqual(
-        progressValues[0]
+      expect(progressValues[progressValues.length - 1]!).toBeGreaterThanOrEqual(
+        progressValues[0]!
       );
       // Should reach 100%
       expect(progressValues).toContain(100);

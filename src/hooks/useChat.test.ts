@@ -72,9 +72,9 @@ describe('useChat - Message State', () => {
     vi.mocked(getCurrentProject).mockResolvedValue(null);
     vi.mocked(loadChatHistory).mockResolvedValue([]);
     vi.mocked(saveChatHistory).mockResolvedValue();
-    vi.mocked(parseCommand).mockReturnValue({
+    (vi.mocked(parseCommand) as any).mockReturnValue({
       isCommand: false,
-      command: null,
+      command: undefined,
       args: []
     });
   });
@@ -92,8 +92,8 @@ describe('useChat - Message State', () => {
 
       // Should have welcome message
       expect(result.current.messages).toHaveLength(1);
-      expect(result.current.messages[0].role).toBe('assistant');
-      expect(result.current.messages[0].content).toContain('LLPM');
+      expect(result!.current.messages[0]!.role).toBe('assistant');
+      expect(result!.current.messages[0]!.content).toContain('LLPM');
     });
 
     it('should load existing chat history', async () => {
@@ -125,8 +125,8 @@ describe('useChat - Message State', () => {
       }, { timeout: 2000 });
 
       // Should have welcome message
-      expect(result.current.messages[0].role).toBe('assistant');
-      expect(result.current.messages[0].content).toContain('LLPM');
+      expect(result!.current.messages[0]!.role).toBe('assistant');
+      expect(result!.current.messages[0]!.content).toContain('LLPM');
     });
   });
 
@@ -186,7 +186,7 @@ describe('useChat - Message State', () => {
       let capturedContent = '';
       vi.mocked(parseCommand).mockImplementation((content) => {
         capturedContent = content;
-        return { isCommand: false, command: null, args: [] };
+        return { isCommand: false, command: undefined, args: [] };
       });
 
       const { result } = renderHook(() => useChat());
@@ -212,15 +212,12 @@ describe('useChat - Message State', () => {
   describe('Command handling', () => {
     it('should detect and execute commands', async () => {
       vi.mocked(loadChatHistory).mockResolvedValue([]);
-      vi.mocked(parseCommand).mockReturnValue({
+      (vi.mocked(parseCommand) as any).mockReturnValue({
         isCommand: true,
         command: 'help',
         args: []
       });
-      vi.mocked(executeCommand).mockResolvedValue({
-        content: 'Help information',
-        shouldAddToHistory: true
-      });
+      vi.mocked(executeCommand).mockResolvedValue({ content: 'Help information', success: true } as any);
 
       const { result } = renderHook(() => useChat());
 
@@ -248,14 +245,14 @@ describe('useChat - Message State', () => {
 
     it('should set loading state during command execution', async () => {
       vi.mocked(loadChatHistory).mockResolvedValue([]);
-      vi.mocked(parseCommand).mockReturnValue({
+      (vi.mocked(parseCommand) as any).mockReturnValue({
         isCommand: true,
         command: 'help',
         args: []
       });
 
       // Make executeCommand take some time
-      vi.mocked(executeCommand).mockImplementation(async () => {
+      (vi.mocked(executeCommand) as any).mockImplementation(async () => {
         await new Promise(resolve => setTimeout(resolve, 100));
         return { content: 'Help', shouldAddToHistory: true };
       });
@@ -285,14 +282,13 @@ describe('useChat - Message State', () => {
 
     it('should add command result to messages', async () => {
       vi.mocked(loadChatHistory).mockResolvedValue([]);
-      vi.mocked(parseCommand).mockReturnValue({
+      (vi.mocked(parseCommand) as any).mockReturnValue({
         isCommand: true,
         command: 'info',
         args: []
       });
       vi.mocked(executeCommand).mockResolvedValue({
         content: 'System information',
-        shouldAddToHistory: true,
         success: true
       });
 
@@ -324,14 +320,13 @@ describe('useChat - Message State', () => {
 
     it('should handle clear command and reset to welcome message', async () => {
       vi.mocked(loadChatHistory).mockResolvedValue([]);
-      vi.mocked(parseCommand).mockReturnValue({
+      (vi.mocked(parseCommand) as any).mockReturnValue({
         isCommand: true,
         command: 'clear',
         args: []
       });
       vi.mocked(executeCommand).mockResolvedValue({
         content: 'Chat history cleared',
-        shouldAddToHistory: false,
         success: true
       });
 
@@ -363,20 +358,19 @@ describe('useChat - Message State', () => {
       }, { timeout: 2000 });
 
       // Should be the welcome message
-      expect(result.current.messages[0].role).toBe('assistant');
-      expect(result.current.messages[0].content).toContain('LLPM');
+      expect(result!.current.messages[0]!.role).toBe('assistant');
+      expect(result!.current.messages[0]!.content).toContain('LLPM');
     });
 
     it.skip('should handle project switch command with context refresh', async () => {
       vi.mocked(loadChatHistory).mockResolvedValue([]);
-      vi.mocked(parseCommand).mockReturnValue({
+      (vi.mocked(parseCommand) as any).mockReturnValue({
         isCommand: true,
         command: 'project',
         args: ['switch', 'test-project']
       });
       vi.mocked(executeCommand).mockResolvedValue({
         content: 'Switched to project: test-project',
-        shouldAddToHistory: true,
         success: true
       });
 
@@ -408,12 +402,12 @@ describe('useChat - Message State', () => {
   describe('LLM integration', () => {
     it.skip('should call generateResponse for non-command messages', async () => {
       vi.mocked(loadChatHistory).mockResolvedValue([]);
-      vi.mocked(parseCommand).mockReturnValue({
+      (vi.mocked(parseCommand) as any).mockReturnValue({
         isCommand: false,
-        command: null,
+        command: undefined,
         args: []
       });
-      vi.mocked(generateResponse).mockResolvedValue('LLM response');
+      vi.mocked(generateResponse).mockResolvedValue({ response: 'LLM response', selectedSkills: [] });
 
       const { result } = renderHook(() => useChat());
 
@@ -435,12 +429,12 @@ describe('useChat - Message State', () => {
 
     it('should add user message before processing', async () => {
       vi.mocked(loadChatHistory).mockResolvedValue([]);
-      vi.mocked(parseCommand).mockReturnValue({
+      (vi.mocked(parseCommand) as any).mockReturnValue({
         isCommand: false,
-        command: null,
+        command: undefined,
         args: []
       });
-      vi.mocked(generateResponse).mockResolvedValue('Response');
+      vi.mocked(generateResponse).mockResolvedValue({ response: 'Response', selectedSkills: [] });
 
       const { result } = renderHook(() => useChat());
 
@@ -468,12 +462,12 @@ describe('useChat - Message State', () => {
 
     it.skip('should add assistant response after LLM completion', async () => {
       vi.mocked(loadChatHistory).mockResolvedValue([]);
-      vi.mocked(parseCommand).mockReturnValue({
+      (vi.mocked(parseCommand) as any).mockReturnValue({
         isCommand: false,
-        command: null,
+        command: undefined,
         args: []
       });
-      vi.mocked(generateResponse).mockResolvedValue('AI response text');
+      vi.mocked(generateResponse).mockResolvedValue({ response: 'AI response text', selectedSkills: [] });
 
       const { result } = renderHook(() => useChat());
 
@@ -498,9 +492,9 @@ describe('useChat - Message State', () => {
 
     it('should handle LLM errors gracefully', async () => {
       vi.mocked(loadChatHistory).mockResolvedValue([]);
-      vi.mocked(parseCommand).mockReturnValue({
+      (vi.mocked(parseCommand) as any).mockReturnValue({
         isCommand: false,
-        command: null,
+        command: undefined,
         args: []
       });
       vi.mocked(generateResponse).mockRejectedValue(new Error('LLM API error'));
@@ -528,13 +522,13 @@ describe('useChat - Message State', () => {
 
     it.skip('should handle empty LLM response', async () => {
       vi.mocked(loadChatHistory).mockResolvedValue([]);
-      vi.mocked(parseCommand).mockReturnValue({
+      (vi.mocked(parseCommand) as any).mockReturnValue({
         isCommand: false,
-        command: null,
+        command: undefined,
         args: []
       });
       // Return empty or whitespace-only response
-      vi.mocked(generateResponse).mockResolvedValue('   ');
+      vi.mocked(generateResponse).mockResolvedValue({ response: '   ', selectedSkills: [] });
 
       const { result } = renderHook(() => useChat());
 
@@ -559,7 +553,7 @@ describe('useChat - Message State', () => {
 
     it('should handle command execution errors', async () => {
       vi.mocked(loadChatHistory).mockResolvedValue([]);
-      vi.mocked(parseCommand).mockReturnValue({
+      (vi.mocked(parseCommand) as any).mockReturnValue({
         isCommand: true,
         command: 'test',
         args: []
@@ -599,12 +593,12 @@ describe('useChat - Message State', () => {
 
     it('should set isProcessing during message processing', async () => {
       vi.mocked(loadChatHistory).mockResolvedValue([]);
-      vi.mocked(parseCommand).mockReturnValue({
+      (vi.mocked(parseCommand) as any).mockReturnValue({
         isCommand: false,
-        command: null,
+        command: undefined,
         args: []
       });
-      vi.mocked(generateResponse).mockImplementation(async () => {
+      (vi.mocked(generateResponse) as any).mockImplementation(async () => {
         await new Promise(resolve => setTimeout(resolve, 200));
         return { content: 'Response', toolResults: [] };
       });
@@ -638,7 +632,6 @@ describe('useChat - Message State', () => {
       vi.mocked(loadChatHistory).mockResolvedValue([]);
       vi.mocked(executeCommand).mockResolvedValue({
         content: 'Switched to gpt-4',
-        shouldAddToHistory: true,
         success: true
       });
 
@@ -719,12 +712,11 @@ describe('useChat - Message State', () => {
       vi.mocked(loadChatHistory).mockResolvedValue([]);
       vi.mocked(executeCommand).mockResolvedValue({
         content: 'Select a model',
-        shouldAddToHistory: true,
         success: true,
         interactive: {
           type: 'model-select',
           models: [
-            { id: 'gpt-4', name: 'GPT-4', provider: 'openai' }
+            { id: 'gpt-4', label: 'GPT-4', value: 'gpt-4', provider: 'openai' } as any
           ]
         }
       });
@@ -777,7 +769,6 @@ describe('useChat - Message State', () => {
       vi.mocked(loadChatHistory).mockResolvedValue([]);
       vi.mocked(executeCommand).mockResolvedValue({
         content: 'Current model: gpt-4',
-        shouldAddToHistory: true,
         success: true
         // No interactive property - should be treated as non-interactive
       });
@@ -866,9 +857,9 @@ describe('useChat - Message State', () => {
   describe('Error handling in message processing', () => {
     it('should handle errors in immediate message processing', async () => {
       vi.mocked(loadChatHistory).mockResolvedValue([]);
-      vi.mocked(parseCommand).mockReturnValue({
+      (vi.mocked(parseCommand) as any).mockReturnValue({
         isCommand: false,
-        command: null,
+        command: undefined,
         args: []
       });
       // Make generateResponse throw an error to trigger error path
@@ -900,12 +891,12 @@ describe('useChat - Message State', () => {
 
     it.skip('should wait for project switch before processing message', async () => {
       vi.mocked(loadChatHistory).mockResolvedValue([]);
-      vi.mocked(parseCommand).mockReturnValue({
+      (vi.mocked(parseCommand) as any).mockReturnValue({
         isCommand: false,
-        command: null,
+        command: undefined,
         args: []
       });
-      vi.mocked(generateResponse).mockResolvedValue('Response after project switch');
+      vi.mocked(generateResponse).mockResolvedValue({ response: 'Response after project switch', selectedSkills: [] });
 
       const { result } = renderHook(() => useChat());
 
@@ -935,7 +926,7 @@ describe('useChat - Message State', () => {
 
     it('should handle command result without interactive flag', async () => {
       vi.mocked(loadChatHistory).mockResolvedValue([]);
-      vi.mocked(parseCommand).mockReturnValue({
+      (vi.mocked(parseCommand) as any).mockReturnValue({
         isCommand: true,
         command: 'test',
         args: []
@@ -943,7 +934,6 @@ describe('useChat - Message State', () => {
       // Command result with no interactive property at all
       vi.mocked(executeCommand).mockResolvedValue({
         content: 'Command executed',
-        shouldAddToHistory: true,
         success: true
         // Note: no 'interactive' property
       });
@@ -989,14 +979,14 @@ describe('useChat - Message State', () => {
 
     it.skip('should process queued messages sequentially', async () => {
       vi.mocked(loadChatHistory).mockResolvedValue([]);
-      vi.mocked(parseCommand).mockReturnValue({
+      (vi.mocked(parseCommand) as any).mockReturnValue({
         isCommand: false,
-        command: null,
+        command: undefined,
         args: []
       });
 
       let callCount = 0;
-      vi.mocked(generateResponse).mockImplementation(async () => {
+      (vi.mocked(generateResponse) as any).mockImplementation(async () => {
         callCount++;
         // First call takes longer to allow second message to queue
         if (callCount === 1) {
@@ -1037,20 +1027,19 @@ describe('useChat - Message State', () => {
   describe('Additional edge cases', () => {
     it('should handle interactive model select in processMessageImmediate', async () => {
       vi.mocked(loadChatHistory).mockResolvedValue([]);
-      vi.mocked(parseCommand).mockReturnValue({
+      (vi.mocked(parseCommand) as any).mockReturnValue({
         isCommand: true,
         command: 'model',
         args: ['switch']
       });
       vi.mocked(executeCommand).mockResolvedValue({
         content: 'Select a model',
-        shouldAddToHistory: true,
         success: true,
         interactive: {
           type: 'model-select',
           models: [
-            { id: 'gpt-4', name: 'GPT-4', provider: 'openai' },
-            { id: 'claude-3', name: 'Claude 3', provider: 'anthropic' }
+            { id: 'gpt-4', label: 'GPT-4', value: 'gpt-4', provider: 'openai' } as any,
+            { id: 'claude-3', label: 'Claude 3', value: 'claude-3', provider: 'anthropic' } as any
           ]
         }
       });
@@ -1076,14 +1065,13 @@ describe('useChat - Message State', () => {
 
     it('should handle non-successful command result', async () => {
       vi.mocked(loadChatHistory).mockResolvedValue([]);
-      vi.mocked(parseCommand).mockReturnValue({
+      (vi.mocked(parseCommand) as any).mockReturnValue({
         isCommand: true,
         command: 'test',
         args: []
       });
       vi.mocked(executeCommand).mockResolvedValue({
         content: 'Command failed',
-        shouldAddToHistory: true,
         success: false  // Not successful
       });
 
@@ -1109,14 +1097,13 @@ describe('useChat - Message State', () => {
 
     it.skip('should handle project set command with success', async () => {
       vi.mocked(loadChatHistory).mockResolvedValue([]);
-      vi.mocked(parseCommand).mockReturnValue({
+      (vi.mocked(parseCommand) as any).mockReturnValue({
         isCommand: true,
         command: 'project',
         args: ['set', 'my-project']
       });
       vi.mocked(executeCommand).mockResolvedValue({
         content: 'Project set to: my-project',
-        shouldAddToHistory: true,
         success: true
       });
 
@@ -1145,13 +1132,13 @@ describe('useChat - Message State', () => {
 
     it.skip('should handle empty response from LLM', async () => {
       vi.mocked(loadChatHistory).mockResolvedValue([]);
-      vi.mocked(parseCommand).mockReturnValue({
+      (vi.mocked(parseCommand) as any).mockReturnValue({
         isCommand: false,
-        command: null,
+        command: undefined,
         args: []
       });
       // Return empty string
-      vi.mocked(generateResponse).mockResolvedValue('');
+      vi.mocked(generateResponse).mockResolvedValue({ response: '', selectedSkills: [] });
 
       const { result } = renderHook(() => useChat());
 
@@ -1175,9 +1162,9 @@ describe('useChat - Message State', () => {
 
     it.skip('should handle null response from LLM', async () => {
       vi.mocked(loadChatHistory).mockResolvedValue([]);
-      vi.mocked(parseCommand).mockReturnValue({
+      (vi.mocked(parseCommand) as any).mockReturnValue({
         isCommand: false,
-        command: null,
+        command: undefined,
         args: []
       });
       // Return null (which gets coerced to empty)
@@ -1361,14 +1348,13 @@ describe('useChat - Message State', () => {
 
     it('should increment projectSwitchTrigger on /project add success', async () => {
       vi.mocked(loadChatHistory).mockResolvedValue([]);
-      vi.mocked(parseCommand).mockReturnValue({
+      (vi.mocked(parseCommand) as any).mockReturnValue({
         isCommand: true,
         command: 'project',
         args: ['add', 'Test', 'owner/repo', '/tmp/test']
       });
       vi.mocked(executeCommand).mockResolvedValue({
         content: 'Added project "Test"',
-        shouldAddToHistory: true,
         success: true
       });
 
@@ -1394,14 +1380,13 @@ describe('useChat - Message State', () => {
 
     it('should increment projectSwitchTrigger on /project remove success', async () => {
       vi.mocked(loadChatHistory).mockResolvedValue([]);
-      vi.mocked(parseCommand).mockReturnValue({
+      (vi.mocked(parseCommand) as any).mockReturnValue({
         isCommand: true,
         command: 'project',
         args: ['remove', 'test-id']
       });
       vi.mocked(executeCommand).mockResolvedValue({
         content: 'Removed project: test-id',
-        shouldAddToHistory: true,
         success: true
       });
 
@@ -1427,14 +1412,13 @@ describe('useChat - Message State', () => {
 
     it('should not increment projectSwitchTrigger on failed project command', async () => {
       vi.mocked(loadChatHistory).mockResolvedValue([]);
-      vi.mocked(parseCommand).mockReturnValue({
+      (vi.mocked(parseCommand) as any).mockReturnValue({
         isCommand: true,
         command: 'project',
         args: ['remove', 'nonexistent']
       });
       vi.mocked(executeCommand).mockResolvedValue({
         content: 'Failed to remove project',
-        shouldAddToHistory: true,
         success: false
       });
 

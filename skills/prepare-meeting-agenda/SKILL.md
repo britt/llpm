@@ -1,6 +1,7 @@
 ---
 name: prepare-meeting-agenda
 description: "Generate meeting agendas from recent issues, PRs, and notes for sprint planning, retros, and standups"
+instructions: "When preparing a meeting agenda, planning a sprint review, organizing a retro, or setting up a standup"
 tags:
   - meeting
   - agenda

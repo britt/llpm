@@ -1,6 +1,7 @@
 ---
 name: build-faq-from-issues
 description: "Extract common questions from closed GitHub issues and generate an FAQ document with answers"
+instructions: "When building an FAQ from closed issues, extracting common questions, or generating support documentation from past issues"
 tags:
   - faq
   - issues

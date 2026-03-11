@@ -27,7 +27,7 @@ describe('chatConfig', () => {
 
   describe('getChatConfig', () => {
     it('should return default maxRenderedLines when not configured', async () => {
-      vi.mocked(loadProjectConfig).mockResolvedValue({});
+      (vi.mocked(loadProjectConfig) as any).mockResolvedValue({} as any);
 
       const config = await getChatConfig();
 
@@ -35,7 +35,7 @@ describe('chatConfig', () => {
     });
 
     it('should use config value when set', async () => {
-      vi.mocked(loadProjectConfig).mockResolvedValue({
+      (vi.mocked(loadProjectConfig) as any).mockResolvedValue({
         chat: { maxRenderedLines: 50 }
       });
 
@@ -46,7 +46,7 @@ describe('chatConfig', () => {
 
     it('should override with environment variable', async () => {
       process.env.LLPM_CHAT_MAX_RENDER_LINES = '200';
-      vi.mocked(loadProjectConfig).mockResolvedValue({
+      (vi.mocked(loadProjectConfig) as any).mockResolvedValue({
         chat: { maxRenderedLines: 50 }
       });
 
@@ -57,7 +57,7 @@ describe('chatConfig', () => {
 
     it('should ignore invalid environment variable', async () => {
       process.env.LLPM_CHAT_MAX_RENDER_LINES = 'invalid';
-      vi.mocked(loadProjectConfig).mockResolvedValue({
+      (vi.mocked(loadProjectConfig) as any).mockResolvedValue({
         chat: { maxRenderedLines: 50 }
       });
 
@@ -68,7 +68,7 @@ describe('chatConfig', () => {
 
     it('should ignore negative environment variable', async () => {
       process.env.LLPM_CHAT_MAX_RENDER_LINES = '-10';
-      vi.mocked(loadProjectConfig).mockResolvedValue({
+      (vi.mocked(loadProjectConfig) as any).mockResolvedValue({
         chat: { maxRenderedLines: 50 }
       });
 
@@ -79,7 +79,7 @@ describe('chatConfig', () => {
 
     it('should ignore zero environment variable', async () => {
       process.env.LLPM_CHAT_MAX_RENDER_LINES = '0';
-      vi.mocked(loadProjectConfig).mockResolvedValue({
+      (vi.mocked(loadProjectConfig) as any).mockResolvedValue({
         chat: { maxRenderedLines: 50 }
       });
 
@@ -91,7 +91,7 @@ describe('chatConfig', () => {
 
   describe('getMaxRenderedLines', () => {
     it('should return maxRenderedLines from config', async () => {
-      vi.mocked(loadProjectConfig).mockResolvedValue({
+      (vi.mocked(loadProjectConfig) as any).mockResolvedValue({
         chat: { maxRenderedLines: 75 }
       });
 
@@ -101,7 +101,7 @@ describe('chatConfig', () => {
     });
 
     it('should return default when not configured', async () => {
-      vi.mocked(loadProjectConfig).mockResolvedValue({});
+      (vi.mocked(loadProjectConfig) as any).mockResolvedValue({} as any);
 
       const result = await getMaxRenderedLines();
 

@@ -156,7 +156,7 @@ export const listAvailableSkillsTool = tool({
     if (filter_tags && filter_tags.length > 0) {
       skills = allSkills.filter(skill => {
         if (!skill.tags) return false;
-        return filter_tags.some(tag => skill.tags?.includes(tag));
+        return filter_tags.some((tag: string) => skill.tags?.includes(tag));
       });
     }
 

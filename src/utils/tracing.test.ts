@@ -19,7 +19,7 @@ vi.mock('@opentelemetry/api', async () => {
     trace: {
       getTracer: vi.fn(() => ({
         startSpan: (...args: any[]) => {
-          mockStartSpan(...args);
+          (mockStartSpan as any)(...args);
           return mockSpan;
         }
       })),

@@ -275,7 +275,7 @@ export function parseRequirementsTxt(content: string): ParsedDependency[] {
     // Handle formats: package==1.0.0, package>=1.0.0, package[extra]>=1.0.0
     const match = trimmed.match(/^([a-zA-Z0-9_-]+)(?:\[.*?\])?(.*)?$/);
     if (match) {
-      const name = match[1];
+      const name = match[1]!;
       const versionPart = match[2]?.trim();
 
       deps.push({
@@ -308,14 +308,14 @@ export function parsePyProjectToml(content: string): DependencyCategories {
     /\[tool\.poetry\.dependencies\]([\s\S]*?)(?=\[|$)/
   );
   if (poetryDepsMatch) {
-    const depsSection = poetryDepsMatch[1];
+    const depsSection = poetryDepsMatch[1]!;
     for (const line of depsSection.split('\n')) {
       const match = line.match(/^([a-zA-Z0-9_-]+)\s*=\s*["']?([^"'\s]+)/);
       if (match && match[1] !== 'python') {
         result.runtime.push({
-          name: match[1],
+          name: match[1]!,
           version: match[2],
-          purpose: inferDependencyPurpose(match[1]) ?? undefined,
+          purpose: inferDependencyPurpose(match[1]!) ?? undefined,
         });
       }
     }
@@ -326,14 +326,14 @@ export function parsePyProjectToml(content: string): DependencyCategories {
     /\[tool\.poetry\.dev-dependencies\]([\s\S]*?)(?=\[|$)/
   );
   if (poetryDevDepsMatch) {
-    const depsSection = poetryDevDepsMatch[1];
+    const depsSection = poetryDevDepsMatch[1]!;
     for (const line of depsSection.split('\n')) {
       const match = line.match(/^([a-zA-Z0-9_-]+)\s*=\s*["']?([^"'\s]+)/);
       if (match) {
         result.development.push({
-          name: match[1],
+          name: match[1]!,
           version: match[2],
-          purpose: inferDependencyPurpose(match[1]) ?? undefined,
+          purpose: inferDependencyPurpose(match[1]!) ?? undefined,
         });
       }
     }
@@ -344,14 +344,14 @@ export function parsePyProjectToml(content: string): DependencyCategories {
     /\[project\][\s\S]*?dependencies\s*=\s*\[([\s\S]*?)\]/
   );
   if (pep621DepsMatch) {
-    const depsArray = pep621DepsMatch[1];
+    const depsArray = pep621DepsMatch[1]!;
     for (const line of depsArray.split('\n')) {
       const match = line.match(/["']([a-zA-Z0-9_-]+)([><=!~]+[^"']+)?["']/);
       if (match) {
         result.runtime.push({
-          name: match[1],
+          name: match[1]!,
           version: match[2] || undefined,
-          purpose: inferDependencyPurpose(match[1]) ?? undefined,
+          purpose: inferDependencyPurpose(match[1]!) ?? undefined,
         });
       }
     }
@@ -362,14 +362,14 @@ export function parsePyProjectToml(content: string): DependencyCategories {
     /\[project\.optional-dependencies\][\s\S]*?dev\s*=\s*\[([\s\S]*?)\]/
   );
   if (pep621DevDepsMatch) {
-    const depsArray = pep621DevDepsMatch[1];
+    const depsArray = pep621DevDepsMatch[1]!;
     for (const line of depsArray.split('\n')) {
       const match = line.match(/["']([a-zA-Z0-9_-]+)([><=!~]+[^"']+)?["']/);
       if (match) {
         result.development.push({
-          name: match[1],
+          name: match[1]!,
           version: match[2] || undefined,
-          purpose: inferDependencyPurpose(match[1]) ?? undefined,
+          purpose: inferDependencyPurpose(match[1]!) ?? undefined,
         });
       }
     }
@@ -387,7 +387,7 @@ export function parseGoMod(content: string): ParsedDependency[] {
   // Parse require block
   const requireBlockMatch = content.match(/require\s*\(([\s\S]*?)\)/);
   if (requireBlockMatch) {
-    for (const line of requireBlockMatch[1].split('\n')) {
+    for (const line of requireBlockMatch[1]!.split('\n')) {
       const trimmed = line.trim();
       // Skip indirect dependencies
       if (trimmed.includes('// indirect')) continue;
@@ -395,9 +395,9 @@ export function parseGoMod(content: string): ParsedDependency[] {
       const match = trimmed.match(/^(\S+)\s+(\S+)/);
       if (match) {
         deps.push({
-          name: match[1],
+          name: match[1]!,
           version: match[2],
-          purpose: inferDependencyPurpose(match[1]) ?? undefined,
+          purpose: inferDependencyPurpose(match[1]!) ?? undefined,
         });
       }
     }
@@ -407,9 +407,9 @@ export function parseGoMod(content: string): ParsedDependency[] {
   const singleRequireMatches = content.matchAll(/^require\s+(\S+)\s+(\S+)$/gm);
   for (const match of singleRequireMatches) {
     deps.push({
-      name: match[1],
+      name: match[1]!,
       version: match[2],
-      purpose: inferDependencyPurpose(match[1]) ?? undefined,
+      purpose: inferDependencyPurpose(match[1]!) ?? undefined,
     });
   }
 
@@ -429,15 +429,15 @@ export function parseCargoToml(content: string): DependencyCategories {
   // Parse [dependencies] section
   const depsMatch = content.match(/\[dependencies\]([\s\S]*?)(?=\[|$)/);
   if (depsMatch) {
-    const depsSection = depsMatch[1];
+    const depsSection = depsMatch[1]!;
     for (const line of depsSection.split('\n')) {
       // Handle simple: serde = "1.0"
       let match = line.match(/^([a-zA-Z0-9_-]+)\s*=\s*"([^"]+)"/);
       if (match) {
         result.runtime.push({
-          name: match[1],
+          name: match[1]!,
           version: match[2],
-          purpose: inferDependencyPurpose(match[1]) ?? undefined,
+          purpose: inferDependencyPurpose(match[1]!) ?? undefined,
         });
         continue;
       }
@@ -446,9 +446,9 @@ export function parseCargoToml(content: string): DependencyCategories {
       match = line.match(/^([a-zA-Z0-9_-]+)\s*=\s*\{.*?version\s*=\s*"([^"]+)"/);
       if (match) {
         result.runtime.push({
-          name: match[1],
+          name: match[1]!,
           version: match[2],
-          purpose: inferDependencyPurpose(match[1]) ?? undefined,
+          purpose: inferDependencyPurpose(match[1]!) ?? undefined,
         });
         continue;
       }
@@ -457,8 +457,8 @@ export function parseCargoToml(content: string): DependencyCategories {
       match = line.match(/^([a-zA-Z0-9_-]+)\s*=\s*\{.*?git\s*=/);
       if (match) {
         result.runtime.push({
-          name: match[1],
-          purpose: inferDependencyPurpose(match[1]) ?? undefined,
+          name: match[1]!,
+          purpose: inferDependencyPurpose(match[1]!) ?? undefined,
         });
       }
     }
@@ -467,14 +467,14 @@ export function parseCargoToml(content: string): DependencyCategories {
   // Parse [dev-dependencies] section
   const devDepsMatch = content.match(/\[dev-dependencies\]([\s\S]*?)(?=\[|$)/);
   if (devDepsMatch) {
-    const depsSection = devDepsMatch[1];
+    const depsSection = devDepsMatch[1]!;
     for (const line of depsSection.split('\n')) {
-      let match = line.match(/^([a-zA-Z0-9_-]+)\s*=\s*"([^"]+)"/);
+      const match = line.match(/^([a-zA-Z0-9_-]+)\s*=\s*"([^"]+)"/);
       if (match) {
         result.development.push({
-          name: match[1],
+          name: match[1]!,
           version: match[2],
-          purpose: inferDependencyPurpose(match[1]) ?? undefined,
+          purpose: inferDependencyPurpose(match[1]!) ?? undefined,
         });
       }
     }

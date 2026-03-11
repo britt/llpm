@@ -8,7 +8,7 @@ vi.mock('../../utils/logger', () => ({
 
 describe('AnthropicAdapter', () => {
   let adapter: AnthropicAdapter;
-  let originalFetch: typeof global.fetch;
+  let originalFetch: any;
 
   beforeEach(() => {
     adapter = new AnthropicAdapter();
@@ -55,7 +55,7 @@ describe('AnthropicAdapter', () => {
       global.fetch = vi.fn().mockResolvedValue({
         ok: true,
         json: () => Promise.resolve(mockModels)
-      });
+      }) as any;
 
       const result = await adapter.fetchModels({ apiKey: 'test-key' });
 
@@ -86,7 +86,7 @@ describe('AnthropicAdapter', () => {
         status: 401,
         statusText: 'Unauthorized',
         text: () => Promise.resolve('Invalid API key')
-      });
+      }) as any;
 
       const result = await adapter.fetchModels({ apiKey: 'invalid-key' });
 
@@ -100,7 +100,7 @@ describe('AnthropicAdapter', () => {
         status: 429,
         statusText: 'Too Many Requests',
         text: () => Promise.resolve('Rate limited')
-      });
+      }) as any;
 
       const result = await adapter.fetchModels({ apiKey: 'test-key' });
 
@@ -114,7 +114,7 @@ describe('AnthropicAdapter', () => {
         status: 500,
         statusText: 'Internal Server Error',
         text: () => Promise.resolve('Server error')
-      });
+      }) as any;
 
       const result = await adapter.fetchModels({ apiKey: 'test-key' });
 
@@ -123,13 +123,13 @@ describe('AnthropicAdapter', () => {
     });
 
     it('should handle network errors', async () => {
-      global.fetch = vi.fn().mockRejectedValue(new Error('Network error'));
+      global.fetch = vi.fn().mockRejectedValue(new Error('Network error')) as any;
 
       const result = await adapter.fetchModels({ apiKey: 'test-key' });
 
       expect(result.success).toBe(false);
       expect(result.error).toContain('Network error');
-    });
+    }) as any;
 
     it('should filter to only model type entries', async () => {
       const mockModels = {
@@ -143,13 +143,13 @@ describe('AnthropicAdapter', () => {
       global.fetch = vi.fn().mockResolvedValue({
         ok: true,
         json: () => Promise.resolve(mockModels)
-      });
+      }) as any;
 
       const result = await adapter.fetchModels({ apiKey: 'test-key' });
 
       expect(result.success).toBe(true);
       expect(result.models.length).toBe(1);
-      expect(result.models[0].id).toContain('claude');
+      expect(result!.models[0]!.id).toContain('claude');
     });
 
     it('should deduplicate models by family, preferring non-dated versions', async () => {
@@ -164,16 +164,16 @@ describe('AnthropicAdapter', () => {
       global.fetch = vi.fn().mockResolvedValue({
         ok: true,
         json: () => Promise.resolve(mockModels)
-      });
+      }) as any;
 
       const result = await adapter.fetchModels({ apiKey: 'test-key' });
 
       expect(result.success).toBe(true);
       // Should have deduplicated to one model
-      const sonnetModels = result.models.filter(m => m.family.includes('claude-3-5-sonnet'));
+      const sonnetModels = result.models.filter(m => m!.family!.includes('claude-3-5-sonnet'));
       expect(sonnetModels.length).toBe(1);
       // Should prefer the non-dated version
-      expect(sonnetModels[0].id).toBe('claude-3-5-sonnet');
+      expect(sonnetModels![0]!.id).toBe('claude-3-5-sonnet');
     });
 
     it('should sort models by family ranking', async () => {
@@ -189,7 +189,7 @@ describe('AnthropicAdapter', () => {
       global.fetch = vi.fn().mockResolvedValue({
         ok: true,
         json: () => Promise.resolve(mockModels)
-      });
+      }) as any;
 
       const result = await adapter.fetchModels({ apiKey: 'test-key' });
 
@@ -215,7 +215,7 @@ describe('AnthropicAdapter', () => {
       global.fetch = vi.fn().mockResolvedValue({
         ok: true,
         json: () => Promise.resolve(mockModels)
-      });
+      }) as any;
 
       const result = await adapter.fetchModels({ apiKey: 'test-key' });
 
@@ -241,7 +241,7 @@ describe('AnthropicAdapter', () => {
       global.fetch = vi.fn().mockResolvedValue({
         ok: true,
         json: () => Promise.resolve(mockModels)
-      });
+      }) as any;
 
       const result = await adapter.fetchModels({ apiKey: 'test-key' });
 
@@ -267,16 +267,16 @@ describe('AnthropicAdapter', () => {
       global.fetch = vi.fn().mockResolvedValue({
         ok: true,
         json: () => Promise.resolve(mockModels)
-      });
+      }) as any;
 
       const result = await adapter.fetchModels({ apiKey: 'test-key' });
 
       expect(result.success).toBe(true);
       // Should have deduplicated to one model
-      const sonnetModels = result.models.filter(m => m.family.includes('claude-3-5-sonnet'));
+      const sonnetModels = result.models.filter(m => m!.family!.includes('claude-3-5-sonnet'));
       expect(sonnetModels.length).toBe(1);
       // Should prefer the newer dated version (by created_at)
-      expect(sonnetModels[0].id).toBe('claude-3-5-sonnet-20241122');
+      expect(sonnetModels![0]!.id).toBe('claude-3-5-sonnet-20241122');
     });
   });
 });

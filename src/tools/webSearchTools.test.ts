@@ -58,7 +58,7 @@ describe('Web Search Tools', () => {
 
   describe('webSearchTool execution', () => {
     it('should fail when no API key is configured', async () => {
-      vi.mocked(credentialManager.getArcadeAPIKey).mockResolvedValue(null);
+      vi.mocked(credentialManager.getArcadeAPIKey).mockResolvedValue(undefined as any);
 
       const result = await webSearchTool.execute({ query: 'test query' });
 
@@ -200,7 +200,7 @@ describe('Web Search Tools', () => {
           execute: vi.fn().mockResolvedValue({
             success: true,
             output: {
-              value: JSON.stringify(null)
+              value: JSON.stringify(undefined as any)
             }
           })
         }
@@ -305,8 +305,8 @@ describe('Web Search Tools', () => {
   describe('Tool Description', () => {
     it('should have a clear description', () => {
       expect(webSearchTool.description).toBeDefined();
-      expect(webSearchTool.description.length).toBeGreaterThan(20);
-      expect(webSearchTool.description.toLowerCase()).toContain('search');
+      expect(webSearchTool!.description!.length).toBeGreaterThan(20);
+      expect(webSearchTool!.description!.toLowerCase()).toContain('search');
     });
   });
 });

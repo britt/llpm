@@ -112,7 +112,7 @@ describe('notesSearch', () => {
 
       expect(mockExecute).toHaveBeenCalledTimes(2);
       // Second call should be the install command
-      expect(mockExecute.mock.calls[1][0]).toContain('ripgrep');
+      expect(mockExecute!.mock.calls[1]![0]).toContain('ripgrep');
     });
   });
 
@@ -201,7 +201,7 @@ REST endpoints documentation.
 
       // Check that -i flag is NOT included when caseSensitive is true
       const rgCall = mockExecute.mock.calls[1];
-      expect(rgCall[0]).not.toContain('-i');
+      expect(rgCall![0]).not.toContain('-i');
     });
 
     it('should respect limit option', async () => {
@@ -334,7 +334,7 @@ REST endpoints documentation.
 
       const results = await searchNotesWithRipgrep('test-project', 'JWT');
       expect(results).toHaveLength(1);
-      expect(results[0].matches).toHaveLength(1); // Should deduplicate
+      expect(results![0]!.matches).toHaveLength(1); // Should deduplicate
     });
   });
 });

@@ -70,7 +70,7 @@ describe('apiKeys step', () => {
       getSourceUrl: () => 'https://api.openai.com',
       fetchModels: vi.fn().mockResolvedValue({
         success: true,
-        models: [{ id: 'gpt-4o', name: 'GPT-4o', provider: 'openai' }],
+        models: [{ id: 'gpt-4o', displayName: 'GPT-4o', provider: 'openai' as const, recommendedRank: 1, supportsChat: true }],
         sourceUrl: 'https://api.openai.com',
       } satisfies FetchModelsResult),
     };
@@ -92,7 +92,7 @@ describe('apiKeys step', () => {
       getSourceUrl: () => 'https://api.openai.com',
       fetchModels: vi.fn().mockResolvedValue({
         success: true,
-        models: [{ id: 'gpt-4o', name: 'GPT-4o', provider: 'openai' }],
+        models: [{ id: 'gpt-4o', displayName: 'GPT-4o', provider: 'openai' as const, recommendedRank: 1, supportsChat: true }],
         sourceUrl: 'https://api.openai.com',
       }),
     };
@@ -118,7 +118,7 @@ describe('apiKeys step', () => {
         })
         .mockResolvedValueOnce({
           success: true,
-          models: [{ id: 'gpt-4o', name: 'GPT-4o', provider: 'openai' }],
+          models: [{ id: 'gpt-4o', displayName: 'GPT-4o', provider: 'openai' as const, recommendedRank: 1, supportsChat: true }],
           sourceUrl: 'https://api.openai.com',
         }),
     };
@@ -139,7 +139,7 @@ describe('apiKeys step', () => {
       getSourceUrl: () => 'https://api.openai.com',
       fetchModels: vi.fn().mockResolvedValue({
         success: true,
-        models: [{ id: 'gpt-4o', name: 'GPT-4o', provider: 'openai' }],
+        models: [{ id: 'gpt-4o', displayName: 'GPT-4o', provider: 'openai' as const, recommendedRank: 1, supportsChat: true }],
         sourceUrl: 'https://api.openai.com',
       }),
     };

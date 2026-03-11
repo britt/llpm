@@ -1,6 +1,7 @@
 ---
 name: context-aware-questions
 description: "Proactively identify information gaps in project context and generate actionable questions to surface missing requirements, unclear specifications, or documentation gaps"
+instructions: "When identifying gaps in project requirements, surfacing unclear specifications, or generating questions to fill missing context"
 tags:
   - questions
   - gaps

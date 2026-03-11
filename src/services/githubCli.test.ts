@@ -62,8 +62,8 @@ describe('GitHub CLI Service', () => {
       const result = await getUserReposViaGhCli();
 
       expect(result).toHaveLength(1);
-      expect(result[0].name).toBe('repo1');
-      expect(result[0].full_name).toBe('user/repo1');
+      expect(result![0]!.name).toBe('repo1');
+      expect(result![0]!.full_name).toBe('user/repo1');
     });
 
     it('should use provided options', async () => {
@@ -136,7 +136,7 @@ describe('GitHub CLI Service', () => {
       const result = await searchReposViaGhCli('test query');
 
       expect(result).toHaveLength(1);
-      expect(result[0].name).toBe('found-repo');
+      expect(result![0]!.name).toBe('found-repo');
     });
 
     it('should use provided options', async () => {

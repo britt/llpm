@@ -24,7 +24,7 @@ It has multiple lines.
 And should be handled properly.`;
 
 // Mock fetch for testing
-global.fetch = async (url: RequestInfo | URL): Promise<Response> => {
+(global.fetch as any) = async (url: string | URL): Promise<Response> => {
   const urlString = url.toString();
   
   if (urlString.includes('html-test')) {

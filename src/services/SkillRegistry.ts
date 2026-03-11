@@ -7,7 +7,6 @@
  * Responsibilities:
  * - Discover skills from configured paths
  * - Parse and validate SKILL.md files
- * - Select relevant skills based on context
  * - Enforce tool permissions
  * - Emit telemetry events
  */
@@ -18,8 +17,6 @@ import { homedir } from 'os';
 import type {
   Skill,
   SkillsConfig,
-  SkillActivationContext,
-  SkillActivationResult,
   SkillEvent,
   SkillMetadata,
   SkillSource
@@ -190,77 +187,6 @@ export class SkillRegistry extends EventEmitter {
       source: skill.source
     } as SkillEvent);
   }
-
-  /**
-   * Find skills relevant to the current context
-   *
-   * Uses binary matching: a skill either matches or doesn't (no scoring)
-   * Matching criteria:
-   * 1. User message contains skill name
-   * 2. User message contains any skill tag
-   */
-  findRelevant(context: SkillActivationContext): SkillActivationResult[] {
-    const results: SkillActivationResult[] = [];
-
-    for (const skill of this.skills.values()) {
-      if (!skill.enabled) continue;
-
-      const match = this.checkMatch(skill, context);
-      if (match) {
-        results.push({
-          skill,
-          rationale: match.reason
-        });
-      }
-    }
-
-    // Sort alphabetically (deterministic without scores)
-    results.sort((a, b) => a.skill.name.localeCompare(b.skill.name));
-
-    // Apply limit
-    return results.slice(0, this.config.maxSkillsPerPrompt);
-  }
-
-  /**
-   * Check if a skill matches the context (binary yes/no)
-   * Agent Skills spec relies on description keywords for matching
-   */
-  private checkMatch(
-    skill: Skill,
-    context: SkillActivationContext
-  ): { reason: string } | null {
-    const userMessageLower = context.userMessage.toLowerCase();
-
-    // Check 1: Skill name in message
-    if (userMessageLower.includes(skill.name.toLowerCase())) {
-      return { reason: 'name match' };
-    }
-
-    // Check 2: Description keyword overlap
-    // Extract meaningful words from description (>3 chars, not common words)
-    const commonWords = new Set(['the', 'this', 'that', 'with', 'from', 'have', 'been', 'will', 'when', 'what', 'which', 'your', 'they', 'them', 'then', 'than', 'into', 'some', 'such', 'only', 'also', 'over', 'more', 'most', 'just', 'each', 'both', 'here', 'there', 'where', 'about', 'after', 'before', 'because', 'through', 'should', 'could', 'would', 'these', 'those', 'other', 'first', 'second', 'third']);
-
-    const descriptionWords = skill.description
-      .toLowerCase()
-      .split(/\s+/)
-      .map(w => w.replace(/[^a-z]/g, ''))
-      .filter(w => w.length > 3 && !commonWords.has(w));
-
-    const messageWords = new Set(
-      userMessageLower
-        .split(/\s+/)
-        .map(w => w.replace(/[^a-z]/g, ''))
-        .filter(w => w.length > 3)
-    );
-
-    const matchedKeyword = descriptionWords.find(word => messageWords.has(word));
-    if (matchedKeyword) {
-      return { reason: `keyword: ${matchedKeyword}` };
-    }
-
-    return null;
-  }
-
 
   /**
    * Get all discovered skills

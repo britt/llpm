@@ -1,6 +1,7 @@
 ---
 name: project-analysis
 description: "Analyze project codebase structure, architecture, key files, and dependencies using scan and filesystem tools"
+instructions: "When analyzing a project's codebase structure, understanding its architecture, or mapping key files and dependencies"
 tags:
   - analysis
   - architecture

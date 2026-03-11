@@ -182,6 +182,49 @@ description: "Skill without tool restrictions"
       expect(result.skill?.allowedTools).toBeUndefined();
     });
 
+    it('should parse instructions field from frontmatter', async () => {
+      const skillPath = join(testDir, 'instructions-skill');
+      await mkdir(skillPath, { recursive: true });
+
+      const skillContent = `---
+name: instructions-skill
+description: "A skill with instructions"
+instructions: "When you need to do something specific"
+---
+
+# Instructions Skill
+
+This skill has instructions.
+`;
+
+      await writeFile(join(skillPath, 'SKILL.md'), skillContent, 'utf-8');
+
+      const result = await parseSkillFile(skillPath, 'user');
+
+      expect(result.valid).toBe(true);
+      expect(result.skill?.instructions).toBe('When you need to do something specific');
+    });
+
+    it('should handle skills without instructions field', async () => {
+      const skillPath = join(testDir, 'no-instructions');
+      await mkdir(skillPath, { recursive: true });
+
+      const skillContent = `---
+name: no-instructions
+description: "A skill without instructions"
+---
+
+# No Instructions Skill
+`;
+
+      await writeFile(join(skillPath, 'SKILL.md'), skillContent, 'utf-8');
+
+      const result = await parseSkillFile(skillPath, 'user');
+
+      expect(result.valid).toBe(true);
+      expect(result.skill?.instructions).toBeUndefined();
+    });
+
     it('should parse compatibility field', async () => {
       const skillPath = join(testDir, 'compat-skill');
       await mkdir(skillPath, { recursive: true });
@@ -619,6 +662,27 @@ allowed-tools: "Read Write Bash(git:*)"
       expect(result.valid).toBe(true);
       expect(result.skill).toBeDefined();
       expect(result.skill?.allowedTools).toEqual(['Read', 'Write', 'Bash(git:*)']);
+    });
+
+    it('should parse instructions field in validated skill', async () => {
+      const skillPath = join(testDir, 'validated-instructions');
+      await mkdir(skillPath, { recursive: true });
+
+      const skillContent = `---
+name: validated-instructions
+description: "A skill with instructions for validation"
+instructions: "When validating something"
+---
+
+# Validated Instructions
+`;
+
+      await writeFile(join(skillPath, 'SKILL.md'), skillContent, 'utf-8');
+
+      const result = await validateSkillDirectory(skillPath);
+
+      expect(result.valid).toBe(true);
+      expect(result.skill?.instructions).toBe('When validating something');
     });
 
     it('should detect optional directories (scripts, references, assets)', async () => {

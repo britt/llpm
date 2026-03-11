@@ -1,6 +1,7 @@
 ---
 name: dependency-mapping
 description: "Generate Mermaid dependency graphs showing issue relationships, blocking chains, and critical paths"
+instructions: "When mapping issue dependencies, visualizing blocking chains, or identifying the critical path through project work"
 allowed-tools: "list_github_issues get_github_issue_with_comments add_note search_github_issues"
 ---
 

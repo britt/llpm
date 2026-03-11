@@ -111,8 +111,8 @@ describe('GitHub Service', () => {
       const repos = await getUserRepos();
 
       expect(repos).toHaveLength(1);
-      expect(repos[0].name).toBe('repo1');
-      expect(repos[0].language).toBe('TypeScript');
+      expect(repos![0]!.name).toBe('repo1');
+      expect(repos![0]!.language).toBe('TypeScript');
     });
 
     it('should use default options', async () => {
@@ -277,7 +277,7 @@ describe('GitHub Service', () => {
       const repos = await searchRepos('typescript');
 
       expect(repos).toHaveLength(1);
-      expect(repos[0].name).toBe('typescript-repo');
+      expect(repos![0]!.name).toBe('typescript-repo');
     });
 
     it('should use custom search options', async () => {
@@ -409,7 +409,7 @@ describe('GitHub Service', () => {
       const issue = await createIssue('user', 'repo', 'Test Issue', undefined, ['bug']);
 
       expect(issue.labels).toHaveLength(1);
-      expect(issue.labels[0].name).toBe('bug');
+      expect(issue!.labels[0]!.name).toBe('bug');
     });
 
     it('should throw error on failure', async () => {
@@ -473,7 +473,7 @@ describe('GitHub Service', () => {
       const issues = await listIssues('user', 'repo');
 
       expect(issues).toHaveLength(1);
-      expect(issues[0].title).toBe('Issue 1');
+      expect(issues![0]!.title).toBe('Issue 1');
     });
 
     it('should use custom options', async () => {
@@ -545,10 +545,10 @@ describe('GitHub Service', () => {
 
       const issues = await listIssues('user', 'repo');
 
-      expect(issues[0].labels).toHaveLength(2);
-      expect(issues[0].labels[0].name).toBe('bug');
-      expect(issues[0].labels[0].color).toBe('');
-      expect(issues[0].labels[1].name).toBe('enhancement');
+      expect(issues![0]!.labels).toHaveLength(2);
+      expect(issues![0]!.labels[0]!.name).toBe('bug');
+      expect(issues![0]!.labels[0]!.color).toBe('');
+      expect(issues![0]!.labels[1]!.name).toBe('enhancement');
     });
   });
 
@@ -606,9 +606,9 @@ describe('GitHub Service', () => {
       const issue = await updateIssue('user', 'repo', 42, { title: 'Updated Title' });
 
       expect(issue.labels).toHaveLength(2);
-      expect(issue.labels[0].name).toBe('bug');
-      expect(issue.labels[0].color).toBe('');
-      expect(issue.labels[1].name).toBe('priority');
+      expect(issue!.labels[0]!.name).toBe('bug');
+      expect(issue!.labels[0]!.color).toBe('');
+      expect(issue!.labels[1]!.name).toBe('priority');
     });
 
     it('should log verbose output when updating issue', async () => {
@@ -855,8 +855,8 @@ describe('GitHub Service', () => {
       const result = await getIssueWithComments('user', 'repo', 42, { includeComments: false });
 
       expect(result.issue.labels).toHaveLength(2);
-      expect(result.issue.labels[0].name).toBe('bug');
-      expect(result.issue.labels[0].color).toBe('');
+      expect(result!.issue.labels[0]!.name).toBe('bug');
+      expect(result!.issue.labels[0]!.color).toBe('');
     });
   });
 
@@ -885,7 +885,7 @@ describe('GitHub Service', () => {
       const issues = await searchIssues('user', 'repo', 'bug');
 
       expect(issues).toHaveLength(1);
-      expect(issues[0].title).toBe('Bug report');
+      expect(issues![0]!.title).toBe('Bug report');
     });
 
     it('should include state and labels in query', async () => {
@@ -977,8 +977,8 @@ describe('GitHub Service', () => {
       const prs = await listPullRequests('user', 'repo');
 
       expect(prs).toHaveLength(1);
-      expect(prs[0].title).toBe('Feature PR');
-      expect(prs[0].state).toBe('open');
+      expect(prs![0]!.title).toBe('Feature PR');
+      expect(prs![0]!.state).toBe('open');
     });
 
     it('should mark merged PRs', async () => {
@@ -1004,7 +1004,7 @@ describe('GitHub Service', () => {
 
       const prs = await listPullRequests('user', 'repo');
 
-      expect(prs[0].state).toBe('merged');
+      expect(prs![0]!.state).toBe('merged');
     });
 
     it('should throw error on failure', async () => {

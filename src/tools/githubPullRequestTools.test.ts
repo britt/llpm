@@ -385,7 +385,7 @@ describe('GitHub Pull Request Tools', () => {
       });
 
       vi.mocked(githubAssets.uploadFilesToGitHub).mockResolvedValue([
-        { filename: 'screenshot.png', markdown: '![screenshot](https://example.com/screenshot.png)', gistUrl: 'https://gist.github.com/1' }
+        { url: 'https://gist.github.com/test', filename: 'screenshot.png', markdown: '![screenshot](https://example.com/screenshot.png)' }
       ]);
 
       vi.mocked(github.createPullRequest).mockResolvedValue({

@@ -168,6 +168,7 @@ describe('getCurrentProject', () => {
       name: 'Test Project',
       repository: 'https://github.com/test/project',
       github_repo: 'test/project',
+      path: '/tmp/test',
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };
@@ -209,6 +210,7 @@ describe('setCurrentProject', () => {
       name: 'Project to Set',
       repository: 'https://github.com/test/project',
       github_repo: 'test/project',
+      path: '/tmp/test',
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };
@@ -245,10 +247,11 @@ describe('addProject', () => {
   it('should add a new project and return it with generated id', async () => {
     const projectData = {
       name: 'New Project',
-      repository: 'https://github.com/test/new-project'
+      repository: 'https://github.com/test/new-project',
+      path: '/tmp/test'
     };
 
-    const newProject = await addProject(projectData);
+    const newProject = await addProject(projectData as any);
 
     expect(newProject.id).toMatch(/^new-project-\d+$/);
     expect(newProject.name).toBe('New Project');
@@ -261,7 +264,8 @@ describe('addProject', () => {
   it('should set first project as current', async () => {
     const projectData = {
       name: 'First Project',
-      repository: 'https://github.com/test/first-project'
+      repository: 'https://github.com/test/first-project',
+      path: '/tmp/test',
     };
 
     const newProject = await addProject(projectData);
@@ -274,7 +278,8 @@ describe('addProject', () => {
     const projectData = {
       name: 'Custom Repo Project',
       repository: 'https://github.com/test/repo',
-      github_repo: 'custom/repo'
+      github_repo: 'custom/repo',
+      path: '/tmp/test',
     };
 
     const newProject = await addProject(projectData);
@@ -317,12 +322,14 @@ describe('addProject', () => {
   it('should switch active project to newly created project', async () => {
     await addProject({
       name: 'First',
-      repository: 'https://github.com/test/first'
+      repository: 'https://github.com/test/first',
+      path: '/tmp/test'
     });
 
     const secondProject = await addProject({
       name: 'Second',
-      repository: 'https://github.com/test/second'
+      repository: 'https://github.com/test/second',
+      path: '/tmp/test'
     });
 
     const config = await loadProjectConfig();
@@ -350,6 +357,7 @@ describe('removeProject', () => {
       name: 'Project to Remove',
       repository: 'https://github.com/test/remove',
       github_repo: 'test/remove',
+      path: '/tmp/test',
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };
@@ -375,6 +383,7 @@ describe('removeProject', () => {
       name: 'Current Project',
       repository: 'https://github.com/test/current',
       github_repo: 'test/current',
+      path: '/tmp/test',
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };
@@ -417,6 +426,7 @@ describe('updateProject', () => {
       name: 'Original Name',
       repository: 'https://github.com/test/update',
       github_repo: 'test/update',
+      path: '/tmp/test',
       createdAt: originalDate,
       updatedAt: originalDate
     };
@@ -448,6 +458,7 @@ describe('updateProject', () => {
       repository: 'https://github.com/test/update',
       github_repo: 'test/update',
       description: 'Original description',
+      path: '/tmp/test',
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };
@@ -492,6 +503,7 @@ describe('listProjects', () => {
       name: 'Project 1',
       repository: 'https://github.com/test/p1',
       github_repo: 'test/p1',
+      path: '/tmp/test',
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };
@@ -501,6 +513,7 @@ describe('listProjects', () => {
       name: 'Project 2',
       repository: 'https://github.com/test/p2',
       github_repo: 'test/p2',
+      path: '/tmp/test',
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };
@@ -534,6 +547,7 @@ describe('Agent Config Functions', () => {
       name: 'Agent Test Project',
       repository: 'https://github.com/test/agent',
       github_repo: 'test/agent',
+      path: '/tmp/test',
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };
@@ -575,8 +589,8 @@ describe('Agent Config Functions', () => {
 
       const loadedConfig = await loadProjectAgentConfig(testProjectId);
       expect(loadedConfig).not.toBeNull();
-      expect(loadedConfig?.agents?.['claude-code']?.enabled).toBe(true);
-      expect(loadedConfig?.agents?.['claude-code']?.scale).toBe(2);
+      expect(((loadedConfig?.agents?.['claude-code'] as any))?.enabled).toBe(true);
+      expect(((loadedConfig?.agents?.['claude-code'] as any))?.scale).toBe(2);
     });
   });
 
@@ -594,7 +608,7 @@ describe('Agent Config Functions', () => {
       await saveProjectAgentConfig(testProjectId, agentConfig);
 
       const loadedConfig = await loadProjectAgentConfig(testProjectId);
-      expect(loadedConfig?.agents?.['aider']?.model).toBe('gpt-4');
+      expect((loadedConfig?.agents?.['aider'] as any)?.model).toBe('gpt-4');
     });
 
     it('should overwrite existing config', async () => {
@@ -608,7 +622,7 @@ describe('Agent Config Functions', () => {
 
       const loadedConfig = await loadProjectAgentConfig(testProjectId);
       expect(loadedConfig?.agents?.['agent1']).toBeUndefined();
-      expect(loadedConfig?.agents?.['agent2']?.enabled).toBe(false);
+      expect((loadedConfig?.agents?.['agent2'] as any)?.enabled).toBe(false);
     });
   });
 
@@ -702,8 +716,8 @@ describe('Agent Config Functions', () => {
     it('should skip projects without path', async () => {
       const project = await addProject({
         name: 'No Path Project',
-        repository: 'https://github.com/test/nopath'
-        // No path set
+        repository: 'https://github.com/test/nopath',
+        path: '/tmp/test',
       });
 
       // Should not find anything for a random path

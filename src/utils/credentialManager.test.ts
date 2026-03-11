@@ -554,10 +554,10 @@ describe('CredentialManager', () => {
 
       const status = await manager.getCredentialStatus();
 
-      expect(status.openai.apiKey).toBe(true);
-      expect(status.anthropic.apiKey).toBe(false);
-      expect(status.github.token).toBe(true);
-      expect(status.googleVertex.region).toBe(true); // Always has default
+      expect(status!.openai!.apiKey!).toBe(true);
+      expect(status!.anthropic!.apiKey!).toBe(false);
+      expect(status!.github!.token!).toBe(true);
+      expect(status!.googleVertex!.region!).toBe(true); // Always has default
     });
   });
 
