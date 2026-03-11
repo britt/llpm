@@ -28,7 +28,7 @@ The `SKILL.md` file has two parts:
 | `description` | Yes | Brief summary of what the skill does |
 | `instructions` | No | When to activate this skill (trigger phrases) |
 | `tags` | No | Array of tags for categorization and discovery |
-| `allowed_tools` | No | Array of AI tools this skill can use |
+| `allowed-tools` | No | Space-delimited list of AI tools this skill can use |
 | `vars` | No | Variables that can be customized per-project |
 | `resources` | No | External files or URLs the skill references |
 
@@ -43,10 +43,7 @@ tags:
   - review
   - code-quality
   - security
-allowed_tools:
-  - list_github_issues
-  - get_github_issue_with_comments
-  - add_note
+allowed-tools: "list_github_issues get_github_issue_with_comments add_note"
 vars:
   severity_threshold: "medium"
   focus_areas: ["security", "performance"]
@@ -126,10 +123,7 @@ tags:
   - release
   - changelog
   - documentation
-allowed_tools:
-  - list_github_issues
-  - search_github_issues
-  - add_note
+allowed-tools: "list_github_issues search_github_issues add_note"
 ---
 
 # Release Notes Skill
