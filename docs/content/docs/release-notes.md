@@ -8,7 +8,7 @@ weight: 99
 - **Date:** 2026-03-11
 - **Version:** 1.9.1
 
-**Summary:** This release covers project-switch chat state handling, schema alignment updates, and documentation refinements.
+**Summary:** This release includes project-switch chat state handling, schema alignment updates, and documentation refinements.
 
 ### New Features
 
@@ -16,7 +16,7 @@ weight: 99
 
 ### Breaking Changes
 
-- Updated internal data contracts to align with updated `model`, `project`, `skill`, `tool`, and `LLMResponse` schemas; update any custom integrations and test fixtures to match the new shapes.
+- Updated internal data contracts to align with updated `model`, `project`, `skill`, `tool`, and `LLMResponse` schemas; update custom integrations and test fixtures to match the new shapes.
 
 ### Additional Changes
 
