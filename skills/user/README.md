@@ -113,7 +113,7 @@ The `instructions` field appears in the system prompt to guide the AI on when to
 2. **System Prompt Injection**: All enabled skills with instructions are listed in the system prompt
 3. **AI Awareness**: The AI sees your instructions and knows when to load your skill
 4. **Loading**: When the AI loads your skill via the `load_skills` tool, the full content is added to its context
-5. **Tool Restrictions**: If `allowed_tools` is specified, only those tools can be used while the skill is active
+5. **Tool Restrictions**: If `allowed-tools` is specified, only those tools can be used while the skill is active
 
 ## Example Skill: API Documentation
 
