@@ -26,11 +26,10 @@ The `SKILL.md` file has two parts:
 |-------|----------|-------------|
 | `name` | Yes | Unique identifier for the skill (kebab-case) |
 | `description` | Yes | Brief summary of what the skill does |
-| `instructions` | No | When to activate this skill (trigger phrases) |
-| `tags` | No | Array of tags for categorization and discovery |
-| `allowed_tools` | No | Array of AI tools this skill can use |
-| `vars` | No | Variables that can be customized per-project |
-| `resources` | No | External files or URLs the skill references |
+| `license` | No | License identifier for the skill |
+| `compatibility` | No | Environment requirements (products, packages, network access) |
+| `metadata` | No | Arbitrary string-to-string mapping for additional properties |
+| `allowed-tools` | No | Space-delimited list of pre-approved tools (experimental) |
 
 ### Example Frontmatter
 
@@ -38,21 +37,11 @@ The `SKILL.md` file has two parts:
 ---
 name: code-review
 description: "Review code changes for quality, security, and best practices"
-instructions: "When reviewing PRs, diffs, or code changes"
-tags:
-  - review
-  - code-quality
-  - security
-allowed_tools:
-  - list_github_issues
-  - get_github_issue_with_comments
-  - add_note
-vars:
-  severity_threshold: "medium"
-  focus_areas: ["security", "performance"]
-resources:
-  - style-guide.md
-  - security-checklist.md
+license: "Apache-2.0"
+compatibility: "Requires network access"
+metadata:
+  category: "review"
+allowed-tools: "Read"
 ---
 ```
 
@@ -121,15 +110,7 @@ Here is a complete skill for generating release notes:
 ---
 name: release-notes
 description: "Generate release notes from merged PRs and closed issues"
-instructions: "When preparing a release, generating changelog, or summarizing changes"
-tags:
-  - release
-  - changelog
-  - documentation
-allowed_tools:
-  - list_github_issues
-  - search_github_issues
-  - add_note
+allowed-tools: "Read"
 ---
 
 # Release Notes Skill
@@ -147,9 +128,7 @@ Activate when:
 
 | Tool | Purpose |
 |------|---------|
-| `list_github_issues` | Get closed issues |
-| `search_github_issues` | Find PRs by label |
-| `add_note` | Save release notes |
+| `tool_name` | Description of what the tool does |
 
 ## Workflow
 
@@ -253,8 +232,7 @@ If the skill uses tools, document what each tool does and when to use it:
 
 | Tool | Purpose | When to Use |
 |------|---------|-------------|
-| `list_github_issues` | Get issues | Finding closed issues for changelog |
-| `add_note` | Save content | Storing generated release notes |
+| `tool_name` | What it does | When it is needed |
 ```
 
 ## Testing Skills

@@ -3,6 +3,28 @@ title: Updates
 weight: 99
 ---
 
+## 1.9.1 - project switch chat reload
+
+- **Date:** 2026-03-11
+- **Version:** 1.9.1
+
+**Summary:** This release includes project-switch chat state handling, schema alignment updates, and documentation refinements.
+
+### New Features
+
+- Added `ProjectEventBus` and a `project:switched` event so project switches clear stale chat content and reload history automatically.
+
+### Breaking Changes
+
+- Updated internal data contracts to align with updated `model`, `project`, `skill`, `tool`, and `LLMResponse` schemas; update custom integrations and test fixtures to match the new shapes.
+
+### Additional Changes
+
+- Updated the documentation structure to improve navigation and standardize page metadata across the docs site.
+- Updated command documentation to describe a unified `/delete` command across notes and projects and reduce duplicated guidance.
+- Updated release notes documentation to include recent versions and use a consistent Markdown structure.
+- Updated the package version from `1.9.0` to `1.9.1`.
+
 ## 1.9.0 - `/delete` command and docs site overhaul
 
 - **Date:** 2026-02-15

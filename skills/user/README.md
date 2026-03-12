@@ -18,9 +18,7 @@ instructions: "When asked to [action], [what to do]"  # REQUIRED!
 tags:
   - tag1
   - tag2
-allowed_tools:
-  - tool1
-  - tool2
+allowed-tools: "tool1 tool2"
 ---
 
 # My Skill Name
@@ -64,12 +62,12 @@ More guidance...
     - rest
   ```
 
-- **`allowed_tools`**: Restrict tool usage when this skill is active (optional)
+- **`allowed-tools`**: Space-delimited list of tools allowed while this skill is active
+  
+  Example:
+  
   ```yaml
-  allowed_tools:
-    - github
-    - notes
-    - search_notes
+  allowed-tools: "read_project_file get_project_scan add_note"
   ```
 
 - **`vars`**: Variables for content substitution using `{{varName}}` syntax
@@ -115,7 +113,7 @@ The `instructions` field appears in the system prompt to guide the AI on when to
 2. **System Prompt Injection**: All enabled skills with instructions are listed in the system prompt
 3. **AI Awareness**: The AI sees your instructions and knows when to load your skill
 4. **Loading**: When the AI loads your skill via the `load_skills` tool, the full content is added to its context
-5. **Tool Restrictions**: If `allowed_tools` is specified, only those tools can be used while the skill is active
+5. **Tool Restrictions**: If `allowed-tools` is specified, only those tools can be used while the skill is active
 
 ## Example Skill: API Documentation
 
@@ -129,9 +127,7 @@ tags:
   - documentation
   - rest
   - openapi
-allowed_tools:
-  - github
-  - notes
+allowed-tools: "github notes"
 ---
 
 # API Documentation Skill
