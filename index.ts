@@ -13,6 +13,8 @@ import { filterMessagesByLines } from './src/utils/messageLineCounter';
 import { getMaxRenderedLines } from './src/utils/chatConfig';
 import { getSkillRegistry } from './src/services/SkillRegistry';
 import { autoDetectProject } from './src/utils/projectConfig';
+import { shouldShowCLIHelp, getCommandFromArgs, generateCLIHelp } from './src/utils/cliHelp';
+import { executeCommand } from './src/commands/registry';
 
 // Re-export validateEnvironment for external use
 export { validateEnvironment } from './src/utils/validation';
@@ -165,6 +167,18 @@ function isRawModeSupported(): boolean {
       const profileName = args[profileFlagIndex + 1];
       credentialManager.setProfileOverride(profileName ?? '');
       debug(`Profile set to: ${profileName}`);
+    }
+
+    // Handle --help flag before launching Ink UI
+    if (shouldShowCLIHelp(args)) {
+      const commandName = getCommandFromArgs(args);
+      if (commandName) {
+        const result = await executeCommand(commandName, ['help']);
+        process.stdout.write(result.content + '\n');
+      } else {
+        process.stdout.write(generateCLIHelp() + '\n');
+      }
+      process.exit(0);
     }
 
     // Handle setup command before launching Ink UI

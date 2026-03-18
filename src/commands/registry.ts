@@ -74,8 +74,12 @@ export async function executeCommand(command: string, args: string[] = [], conte
     };
   }
 
+  const normalizedArgs = (args.includes('--help') || args.includes('-h'))
+    ? ['help']
+    : args;
+
   try {
-    const result = await cmd.execute(args, context);
+    const result = await cmd.execute(normalizedArgs, context);
     debug('Command execution result:', result.success ? 'success' : 'failure');
     return result;
   } catch (error) {
