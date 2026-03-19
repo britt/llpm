@@ -9,7 +9,7 @@ interface HistoryMessageProps {
   searchQuery?: string;
 }
 
-function formatTimestamp(ts: number): string {
+export function formatTimestamp(ts: number): string {
   const d = new Date(ts);
   const h = String(d.getHours()).padStart(2, '0');
   const m = String(d.getMinutes()).padStart(2, '0');
@@ -17,7 +17,7 @@ function formatTimestamp(ts: number): string {
   return `${h}:${m}:${s}`;
 }
 
-function getRoleColor(role: Message['role']): string {
+export function getRoleColor(role: Message['role']): string {
   switch (role) {
     case 'user': return 'cyan';
     case 'assistant': return 'green';
