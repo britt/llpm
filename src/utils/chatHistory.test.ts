@@ -371,6 +371,48 @@ describe('Timestamp serialization', () => {
     expect(loaded[0]!.timestamp).toBeUndefined();
   });
 
+  test('round-trips multiline content with timestamp', () => {
+    const message: Message = {
+      role: 'assistant',
+      content: 'Line 1\nLine 2\nLine 3',
+      timestamp: 1700000000000,
+    };
+    const serialized = MessageToLogString(message);
+    const deserialized = LogStringToMessage(serialized);
+    expect(deserialized.role).toBe('assistant');
+    expect(deserialized.content).toBe('Line 1\nLine 2\nLine 3');
+    expect(deserialized.timestamp).toBe(1700000000000);
+  });
+
+  test('handles content with pipe characters', () => {
+    const message: Message = {
+      role: 'user',
+      content: 'table | column | value',
+      timestamp: 1700000000000,
+    };
+    const serialized = MessageToLogString(message);
+    const deserialized = LogStringToMessage(serialized);
+    expect(deserialized.role).toBe('user');
+    expect(deserialized.content).toBe('table | column | value');
+    expect(deserialized.timestamp).toBe(1700000000000);
+  });
+
+  test('handles corrupted non-numeric timestamp', () => {
+    const logString = 'user|abc123: hello';
+    const message = LogStringToMessage(logString);
+    expect(message.role).toBe('user');
+    expect(message.content).toBe('hello');
+    expect(message.timestamp).toBeUndefined();
+  });
+
+  test('falls back to user role for invalid role string', () => {
+    const logString = 'invalidrole|1700000000000: hello';
+    const message = LogStringToMessage(logString);
+    expect(message.role).toBe('user');
+    expect(message.content).toBe('hello');
+    expect(message.timestamp).toBe(1700000000000);
+  });
+
   test('handles mixed messages with and without timestamps', async () => {
     const messages: Message[] = [
       { role: 'user', content: 'old message' },

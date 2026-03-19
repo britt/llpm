@@ -43,6 +43,11 @@ export function LogStringToMessage(logString: string): Message {
     role = logString.slice(0, colonIndex);
   }
 
+  const validRoles = ['user', 'assistant', 'system', 'ui-notification'];
+  if (!validRoles.includes(role)) {
+    role = 'user';
+  }
+
   const content = logString.slice(colonIndex + 2).replace(/\\n/g, '\n');
 
   const msg: Message = {
