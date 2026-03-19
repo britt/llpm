@@ -38,7 +38,7 @@ export const HistoryMessage = memo(function HistoryMessage({
   const roleColor = getRoleColor(message.role);
   const content = useMemo(
     () => getMessageDisplayContent(message),
-    [message.role, message.content]
+    [message]
   );
 
   return (
