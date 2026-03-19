@@ -16,6 +16,7 @@ import type { QueuedMessage } from '../hooks/useChat';
 import { RequestLogDisplay } from './RequestLogDisplay';
 import { useScreenSize } from "fullscreen-ink";
 import { getMessageDisplayContent, getMessageTextColor } from '../utils/messageDisplay';
+import { HistoryViewer } from './HistoryViewer';
 
 interface ChatInterfaceProps {
   completedMessages: Message[];
@@ -36,6 +37,8 @@ interface ChatInterfaceProps {
   isProcessing?: boolean;
   queuedMessages?: Array<QueuedMessage>;
   selectedSkills?: string[];
+  historyViewerMessages?: Message[] | null;
+  onCloseHistoryViewer?: () => void;
 }
 
 const ThinkingIndicator = memo(
@@ -191,13 +194,13 @@ function InputComponent({
   onInsertNote,
   setActiveInput
 }: {
-  activeInput: 'main' | 'project' | 'model' | 'notes';
+  activeInput: 'main' | 'project' | 'model' | 'notes' | 'history';
   onProjectSelect: (projectValue: { label: string; value: string }) => void;
   models: Model[];
   onModelSelect: (modelValue: string) => void;
   onSubmit: (input: string) => void;
   onInsertNote: (noteContent: string) => void;
-  setActiveInput: (input: 'main' | 'project' | 'model' | 'notes') => void;
+  setActiveInput: (input: 'main' | 'project' | 'model' | 'notes' | 'history') => void;
 }) {
   switch (activeInput) {
     case 'project':
@@ -297,11 +300,13 @@ export const ChatInterface = memo(function ChatInterface({
   projectSwitchTrigger,
   isProcessing = false,
   queuedMessages = [],
-  selectedSkills = []
+  selectedSkills = [],
+  historyViewerMessages,
+  onCloseHistoryViewer,
 }: ChatInterfaceProps) {
   const [currentProject, setCurrentProject] = useState<Project | null>(null);
   const [currentModel, setCurrentModel] = useState<ModelConfig | null>(null);
-  const [activeInput, setActiveInput] = useState<'main' | 'project' | 'model' | 'notes'>('main');
+  const [activeInput, setActiveInput] = useState<'main' | 'project' | 'model' | 'notes' | 'history'>('main');
 
   // Load current project on mount and when project mutations occur
   useEffect(() => {
@@ -339,6 +344,12 @@ export const ChatInterface = memo(function ChatInterface({
       onTriggerModelSelector?.();
     }
   }, [activeInput, onTriggerModelSelector]);
+
+  useEffect(() => {
+    if (historyViewerMessages && historyViewerMessages.length > 0) {
+      setActiveInput('history');
+    }
+  }, [historyViewerMessages]);
 
   // Handle project selection - memoized to prevent re-creation
   const handleProjectSelect = useCallback(
@@ -399,6 +410,18 @@ export const ChatInterface = memo(function ChatInterface({
     },
     [onSendMessage]
   );
+
+  if (activeInput === 'history' && historyViewerMessages) {
+    return (
+      <HistoryViewer
+        messages={historyViewerMessages}
+        onClose={() => {
+          setActiveInput('main');
+          onCloseHistoryViewer?.();
+        }}
+      />
+    );
+  }
 
   const { height } = useScreenSize();
   return (

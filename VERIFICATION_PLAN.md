@@ -231,213 +231,164 @@ Before running verification:
 
 ---
 
-### Scenario 10: Register Marketplace Repos
+### Scenario 10: History Viewer Opens and Displays Messages
 
-**Context**: LLPM is running. Network access to GitHub is available. No marketplaces are registered.
+**Context**: LLPM is running with at least 5 messages in conversation history (send a few messages to the AI first).
 
 **Steps**:
-1. Run `/skills marketplace list` — should show no marketplaces
-2. Run `/skills marketplace add obra/superpowers` — register first marketplace
-3. Run `/skills marketplace add anthropics/skills` — register second marketplace
-4. Run `/skills marketplace add phuryn/pm-skills` — register third marketplace
-5. Run `/skills marketplace list` — should show all three
+1. Send at least 5 messages to the AI so conversation history exists (e.g., "Hello", "What is 2+2?", "Tell me a joke", etc.)
+2. Run `/history`
+3. Observe the history viewer opens as a full-screen overlay
+4. Verify messages are displayed with role labels (user/assistant) and content
+5. Press `q` to close the viewer
+6. Verify the chat UI resumes normally
 
 **Success Criteria**:
-- [ ] Empty marketplace list handled gracefully (no error, clear message)
-- [ ] Each `/skills marketplace add` confirms registration with repo name
-- [ ] `/skills marketplace list` shows all three marketplaces with names and repos:
-  - `obra-superpowers` → `obra/superpowers`
-  - `anthropics-skills` → `anthropics/skills`
-  - `phuryn-pm-skills` → `phuryn/pm-skills`
-- [ ] Registering an already-registered repo returns a clear duplicate error
-- [ ] `~/.llpm/config.json` contains a `marketplaces` array with three entries
+- [ ] `/history` opens a full-screen viewer (replaces the chat UI)
+- [ ] Viewer shows a header with "History" title
+- [ ] Messages display with role labels (user, assistant)
+- [ ] Message content is fully visible (not truncated)
+- [ ] Keybinding hints are visible at the bottom
+- [ ] Pressing `q` closes the viewer and returns to normal chat
+- [ ] After closing, chat input is functional again
 
-**If Blocked**: Check network access to github.com. Verify `GITHUB_TOKEN` or `GH_TOKEN` is set.
+**If Blocked**: Check that the `/history` command returns an interactive result with `type: 'history-view'`
 
 ---
 
-### Scenario 11: Sync Marketplace Indexes
+### Scenario 11: History Viewer with Message Count Arguments
 
-**Context**: Three marketplaces are registered (from Scenario 10). Network access available.
+**Context**: LLPM is running with at least 10 messages in conversation history.
 
 **Steps**:
-1. Run `/skills sync obra-superpowers` — sync index from obra/superpowers
-2. Run `/skills sync anthropics-skills` — sync index from anthropics/skills
-3. Run `/skills sync phuryn-pm-skills` — sync index from phuryn/pm-skills
-4. Verify cached index files exist at `~/.llpm/cache/marketplaces/<name>/index.json`
+1. Ensure at least 10 messages exist in history
+2. Run `/history 3` — should show only the last 3 messages
+3. Press `q` to close
+4. Run `/history all` — should show all messages in history
+5. Press `q` to close
+6. Run `/history` (no args) — should show last 20 messages (or all if fewer than 20)
 
 **Success Criteria**:
-- [ ] Each sync completes without errors and reports number of skills found
-- [ ] `obra-superpowers` index contains skills (check: `cat ~/.llpm/cache/marketplaces/obra-superpowers/index.json`)
-- [ ] `anthropics-skills` index contains skills
-- [ ] `phuryn-pm-skills` index contains skills
-- [ ] Each index entry has `name`, `description`, and `marketplace` fields
-- [ ] Syncing a non-existent marketplace name returns a clear error
+- [ ] `/history 3` shows exactly 3 messages (the most recent ones)
+- [ ] `/history all` shows all messages in the conversation
+- [ ] `/history` (default) shows up to 20 messages
+- [ ] Message count indicator in header matches expected count
+- [ ] Each variant opens and closes cleanly
 
-**If Blocked**: Verify git is installed and repos are public. Try `git ls-remote https://github.com/obra/superpowers` to confirm access.
+**If Blocked**: Run `/history help` to confirm command syntax
 
 ---
 
-### Scenario 12: Search Across Marketplaces
+### Scenario 12: History Viewer Keyboard Navigation
 
-**Context**: All three marketplaces are synced (from Scenario 11).
+**Context**: History viewer is open with enough messages to require scrolling (at least 20+ messages, or messages with enough content to overflow the terminal height).
 
 **Steps**:
-1. Run `/skills search planning` — should match skills related to planning
-2. Run `/skills search review` — should match code review or similar skills
-3. Run `/skills search nonexistent-xyz-12345` — should return no results
-4. Run `/skills search` (no query) — should list all available skills from all marketplaces
+1. Build up history with at least 20 messages (ask the AI several questions)
+2. Run `/history all`
+3. Press `↓` arrow — view should scroll down one line
+4. Press `↑` arrow — view should scroll up one line
+5. Press `Page Down` — view should scroll down one page
+6. Press `Page Up` — view should scroll up one page
+7. Press `End` — view should jump to the last message
+8. Press `Home` — view should jump to the first message
+9. Press `Esc` — viewer should close
 
 **Success Criteria**:
-- [ ] Search results show skill name, description, and which marketplace it belongs to
-- [ ] Results span multiple marketplaces when matches exist in more than one
-- [ ] Empty search query lists all skills from all synced marketplaces
-- [ ] No-results query shows a clear "no skills found" message
-- [ ] Results include an install hint (e.g., "Install with: `/skills install <name>@<marketplace>`")
+- [ ] `↑`/`↓` scrolls one line at a time
+- [ ] `Page Up`/`Page Down` scrolls by a full page
+- [ ] `Home` jumps to the beginning (first message visible)
+- [ ] `End` jumps to the end (last message visible)
+- [ ] `Esc` closes the viewer (same as `q`)
+- [ ] Scroll position indicator updates as you navigate
 
-**If Blocked**: Verify indexes are cached. Run `/skills sync` for each marketplace.
+**If Blocked**: Ensure terminal supports raw input mode (required for arrow key detection)
 
 ---
 
-### Scenario 13: Install Skill from Marketplace
+### Scenario 13: History Viewer Search
 
-**Context**: Marketplaces are synced. No marketplace skills are installed yet.
+**Context**: History viewer is open with messages containing searchable content.
 
 **Steps**:
-1. Run `/skills search` to find a skill from `obra-superpowers` (pick one that does NOT conflict with bundled skills)
-2. Run `/skills install <skill-name>@obra-superpowers` — install it
-3. Run `/skills list` — verify the installed skill appears with marketplace provenance
-4. Run `/skills test <skill-name>` — verify skill content loaded correctly
-5. Repeat: install a skill from `anthropics-skills`
-6. Repeat: install a skill from `phuryn-pm-skills`
+1. Send a few distinct messages to the AI, including one containing the word "elephant" (e.g., "Tell me a fact about elephants")
+2. Wait for AI responses
+3. Run `/history all`
+4. Press `/` to enter search mode
+5. Type `elephant`
+6. Observe search results: match count should appear, viewer should jump to first match
+7. Press `Enter` to confirm search
+8. Press `n` to jump to the next match
+9. Press `N` to jump to the previous match
+10. Press `/` again, then `Esc` to cancel search
+11. Press `q` to close viewer
 
 **Success Criteria**:
-- [ ] Install completes without errors and reports success
-- [ ] Skill directory created at `~/.llpm/skills/<skill-name>/SKILL.md`
-- [ ] `/skills list` shows the skill under "Marketplace Skills" section with marketplace name
-- [ ] `/skills test <skill-name>` displays valid skill content and metadata
-- [ ] `~/.llpm/config.json` `installedSkills` array tracks provenance (name, marketplace, repo, installedAt)
-- [ ] Installing a skill that doesn't exist in the marketplace returns a clear error
-- [ ] Installing from a non-existent marketplace returns a clear error
+- [ ] `/` activates search mode (search bar appears at bottom)
+- [ ] Typing a query shows match count (e.g., "1 of 3")
+- [ ] Viewer auto-scrolls to first match
+- [ ] `Enter` exits search mode but preserves the query
+- [ ] `n` jumps to next match
+- [ ] `N` jumps to previous match
+- [ ] `Esc` in search mode cancels search and clears query
+- [ ] Searching for a term with no matches shows "No matches"
 
-**If Blocked**: Verify the marketplace has skills matching the Agent Skills spec (SKILL.md with frontmatter). Try a different skill.
+**If Blocked**: Ensure messages actually contain the search term by checking `/history all` content first
 
 ---
 
-### Scenario 14: Skill Install Conflict and Resolution
+### Scenario 14: History Viewer with Empty History
 
-**Context**: Bundled skill `user-story-template` exists. `phuryn/pm-skills` marketplace is synced and contains a skill that overlaps.
+**Context**: LLPM is running with a freshly cleared history.
 
 **Steps**:
-1. Run `/skills list` — confirm `user-story-template` exists as a bundled/user skill
-2. Run `/skills install user-story-template@phuryn-pm-skills` (or the equivalent skill name from pm-skills)
-3. Observe conflict prompt — should warn that `user-story-template` already exists and ask for confirmation
-4. Decline the install — skill should remain unchanged
-5. Run `/skills install --force user-story-template@phuryn-pm-skills` — force install
-6. Run `/skills list` — verify the skill now shows marketplace provenance
-7. Run `/skills test user-story-template` — verify content is from the marketplace version
+1. Run `/clear` to clear conversation history
+2. Run `/history`
+3. Observe the response
 
 **Success Criteria**:
-- [ ] Conflict detected: response clearly states skill already exists and shows existing path
-- [ ] Response suggests using `--force` to overwrite
-- [ ] Without `--force`, the existing skill is NOT overwritten
-- [ ] With `--force`, the marketplace version replaces the existing one
-- [ ] After force install, `/skills list` shows the skill with marketplace source
-- [ ] `/skills test` confirms content matches the marketplace version, not the original
-- [ ] Skill still functions correctly after overwrite (enable/disable works)
+- [ ] `/history` handles empty history gracefully (no crash)
+- [ ] A message like "No messages in history" is displayed
+- [ ] User can still return to normal chat
 
-**If Blocked**: If `phuryn/pm-skills` doesn't have a conflicting skill name, use `anthropics/skills` instead, or manually create a bundled skill with a matching name first.
+**If Blocked**: If `/clear` doesn't work, start LLPM fresh with a new session
 
 ---
 
-### Scenario 15: Remove Installed Skill
+### Scenario 15: History Viewer with Timestamps
 
-**Context**: At least one marketplace skill is installed (from Scenario 13).
+**Context**: LLPM is running and new messages have been sent (messages created after the timestamp feature is implemented).
 
 **Steps**:
-1. Run `/skills list` — note an installed marketplace skill
-2. Run `/skills remove <skill-name>` — remove the skill
-3. Run `/skills list` — verify it no longer appears
-4. Check `~/.llpm/config.json` — `installedSkills` should no longer contain the removed skill
-5. Verify directory `~/.llpm/skills/<skill-name>/` is deleted
+1. Send a new message: "Testing timestamps"
+2. Wait for AI response
+3. Run `/history 2`
+4. Observe the message labels in the viewer
 
 **Success Criteria**:
-- [ ] Remove completes with success message
-- [ ] Skill no longer appears in `/skills list`
-- [ ] `installedSkills` metadata entry is removed from config
-- [ ] Skill directory is deleted from disk
-- [ ] Removing a non-existent skill returns a clear error
+- [ ] New messages show a timestamp in `HH:MM:SS` format (e.g., `[14:32:15]`)
+- [ ] Old messages without timestamps show an index number (e.g., `[#1]`)
+- [ ] Timestamps are consistent with the actual time the message was sent
+- [ ] Both formats are visually clear and readable
 
-**If Blocked**: Check file permissions on `~/.llpm/skills/`.
+**If Blocked**: Check if messages in the conversation state have a `timestamp` field by examining AI tool debug output
 
 ---
 
-### Scenario 16: Remove Marketplace Registration
+### Scenario 16: History Help Subcommand
 
-**Context**: Three marketplaces are registered. At least one skill was installed from one of them.
-
-**Steps**:
-1. Run `/skills marketplace remove phuryn-pm-skills`
-2. Run `/skills marketplace list` — should show only two marketplaces
-3. Run `/skills search` — results should NOT include skills from `phuryn-pm-skills`
-4. Verify any previously installed skills from `phuryn-pm-skills` are still present on disk (removing a marketplace does not uninstall its skills)
-5. Run `/skills marketplace remove nonexistent-marketplace` — should return error
-
-**Success Criteria**:
-- [ ] Marketplace removed from list
-- [ ] Search no longer returns skills from removed marketplace
-- [ ] Previously installed skills from that marketplace remain installed and functional
-- [ ] Removing non-existent marketplace returns clear error
-- [ ] `~/.llpm/config.json` `marketplaces` array updated
-
-**If Blocked**: Check config file permissions.
-
----
-
-### Scenario 17: AI Tool — Search and Install Skills
-
-**Context**: LLPM is running with AI configured. At least one marketplace is registered and synced.
+**Context**: LLPM is running.
 
 **Steps**:
-1. Ask the AI: "Search for skills related to code review in the marketplace"
-2. Verify AI uses the `search_marketplace_skills` tool and presents results
-3. Ask the AI: "Install the <skill-name> skill from <marketplace>"
-4. Verify AI uses the `install_skill` tool and reports success
-5. Ask the AI: "What skills do I have installed?"
-6. Verify AI uses `list_available_skills` and shows the newly installed skill
+1. Run `/history help`
+2. Observe the output
 
 **Success Criteria**:
-- [ ] AI calls `search_marketplace_skills` tool with appropriate query
-- [ ] Search results are presented clearly to the user
-- [ ] AI calls `install_skill` tool with correct skill name and marketplace
-- [ ] Install result is reported to user with skill name
-- [ ] AI can list skills including the newly installed one
-- [ ] If install hits a conflict, AI communicates the conflict clearly
+- [ ] Help text displays all available subcommands (`/history`, `/history all`, `/history N`, `/history help`)
+- [ ] Navigation keybindings are documented (scroll, search, quit)
+- [ ] Output is well-formatted and readable
 
-**If Blocked**: Verify AI provider is responding. Try `/model` to confirm.
-
----
-
-### Scenario 18: Marketplace Cleanup
-
-**Context**: Verification scenarios 10-17 have been executed. Test data needs cleanup.
-
-**Steps**:
-1. Run `/skills remove` for each marketplace-installed skill
-2. Run `/skills marketplace remove` for each registered marketplace
-3. If the `user-story-template` was overwritten in Scenario 14, run `/skills reinstall` to restore bundled skills
-4. Run `/skills list` — should show only bundled/user skills, no marketplace skills
-5. Run `/skills marketplace list` — should show no marketplaces
-6. Verify `~/.llpm/config.json` has empty `marketplaces` and `installedSkills` arrays
-
-**Success Criteria**:
-- [ ] All marketplace skills removed
-- [ ] All marketplaces unregistered
-- [ ] Bundled skills restored if overwritten
-- [ ] Config file cleaned up
-- [ ] LLPM functions normally after cleanup (run `/skills list`, `/help`)
-
-**If Blocked**: Manually edit `~/.llpm/config.json` to remove `marketplaces` and `installedSkills` keys.
+**If Blocked**: Check command is registered in the command registry
 
 ---
 
@@ -498,43 +449,12 @@ bun run start
 # 3. Send a test message:
 "Hello, what model are you?"
 
-# 4. Exit
+# 4. Test history viewer:
+/history
+# (viewer should open — press q to close)
+
+# 5. Exit
 /exit
 ```
 
-**Pass criteria**: All commands return without errors, AI responds to message.
-
----
-
-## Marketplace Quick Verification (Smoke Test)
-
-Rapid check that marketplace features work:
-
-```bash
-# 1. Start LLPM
-bun run start
-
-# 2. Register a marketplace
-/skills marketplace add obra/superpowers
-
-# 3. Sync its index
-/skills sync obra-superpowers
-
-# 4. Search for a skill
-/skills search
-
-# 5. Install a skill (pick one from search results)
-/skills install <skill-name>@obra-superpowers
-
-# 6. Verify it shows up
-/skills list
-
-# 7. Clean up
-/skills remove <skill-name>
-/skills marketplace remove obra-superpowers
-
-# 8. Exit
-/exit
-```
-
-**Pass criteria**: All commands return without errors. Skill installs, appears in list, and removes cleanly.
+**Pass criteria**: All commands return without errors, AI responds to message, history viewer opens and closes cleanly.

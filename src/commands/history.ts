@@ -1,147 +1,90 @@
-import type { Command, CommandResult } from './types';
+import type { Command, CommandResult, CommandContext } from './types';
+import type { Message } from '../types';
 import { debug } from '../utils/logger';
-// import { writeFile } from 'fs/promises';
-// import { join } from 'path';
-// import { homedir } from 'os';
-// import type { Message } from '../types';
 
-/**
- * Convert messages to a text transcript format
- * TODO: Uncomment when exportTranscript is implemented
- */
-/* function messagesToTranscript(messages: Message[]): string {
-  return messages
-    .map((msg) => {
-      const role = msg.role === 'user' ? 'User' : msg.role === 'assistant' ? 'Assistant' : 'System';
-      const timestamp = new Date().toISOString();
-      return `[${timestamp}] ${role}:\n${msg.content}\n`;
-    })
-    .join('\n');
-} */
+const DEFAULT_MESSAGE_COUNT = 20;
 
-/**
- * Export transcript to a file
- * TODO: Implement this feature
- */
-/* async function exportTranscript(messages: Message[]): Promise<CommandResult> {
-  try {
-    const transcript = messagesToTranscript(messages);
-    const timestamp = new Date().toISOString().replace(/:/g, '-').split('.')[0];
-    const filename = `llpm-transcript-${timestamp}.txt`;
-    const filepath = join(homedir(), '.llpm', filename);
-
-    await writeFile(filepath, transcript, 'utf-8');
-
-    return {
-      content: `✅ Transcript exported to: ${filepath}\n\n📊 Total: ${messages.length} messages`,
-      success: true
-    };
-  } catch (error) {
-    return {
-      content: `❌ Error exporting transcript: ${error instanceof Error ? error.message : 'Unknown error'}`,
-      success: false
-    };
-  }
-} */
+function sliceMessages(messages: Message[], count: number): Message[] {
+  if (count >= messages.length) return [...messages];
+  return messages.slice(-count);
+}
 
 export const historyCommand: Command = {
   name: 'history',
-  description: 'Manage chat history display and export',
-  execute: async (args: string[], context?: import('./types').CommandContext): Promise<CommandResult> => {
+  description: 'View conversation history in a scrollable viewer',
+  execute: async (args: string[], context?: CommandContext): Promise<CommandResult> => {
     debug('Executing /history command with args:', args);
+    const messages = context?.messages ?? [];
 
-    // No arguments - show help
-    if (args.length === 0) {
+    // /history help
+    if (args[0]?.toLowerCase() === 'help') {
       return {
-        content: `📜 Chat History Commands:
+        content: `## /history — View Conversation History
 
-/history - Show this help message
-/history help - Show this help message
+**Usage:**
+- \`/history\` — View last ${DEFAULT_MESSAGE_COUNT} messages
+- \`/history all\` — View complete history
+- \`/history N\` — View last N messages
+- \`/history help\` — Show this help
 
-📋 Available Subcommands:
-• /history export - Export full transcript to a file
-• /history all - Toggle showing all history (⚠️  Not yet implemented - use collapse indicator)
-• /history tail <N> - Set number of lines to show (⚠️  Not yet implemented)
-
-💡 Current Status:
-The chat UI automatically shows only the last 300 lines of output by default.
-When history is collapsed, you'll see an indicator like:
-"Showing last 300 lines (1500 hidden) — /history all | /history export"
-
-📝 Examples:
-• /history export - Save full transcript to ~/.llpm/llpm-transcript-<timestamp>.txt`,
-        success: true
+**Navigation:**
+- \`↑/↓\` — Scroll one line
+- \`Page Up/Page Down\` — Scroll one page
+- \`Ctrl+A/Ctrl+E\` — Jump to start/end
+- \`/\` — Search
+- \`n/N\` — Next/previous match
+- \`q\` or \`Esc\` — Close viewer`,
+        success: true,
       };
     }
 
-    const subCommand = args[0]?.toLowerCase();
-
-    switch (subCommand) {
-      case 'help':
-        return historyCommand.execute([], context);
-
-      case 'export':
-        // TODO: Get actual messages from context
-        // For now, return a helpful message
-        return {
-          content: `⚠️  Export functionality requires message context.
-
-To export your chat history:
-1. The full transcript export feature is being implemented
-2. For now, you can see the collapse indicator when history is long
-3. The indicator shows: "Showing last N lines (H hidden) — /history export"
-
-💡 This feature will be available in the next update.`,
-          success: false
-        };
-
-      case 'all':
-        // TODO: This requires integration with App component state
-        return {
-          content: `⚠️  Toggle history view requires UI integration.
-
-The collapse/expand functionality is available through the UI indicator:
-• When you see "Showing last N lines (H hidden)" - history is collapsed
-• Click or use the /history all command to expand (coming soon)
-
-💡 For now, use the collapse indicator in the chat UI.`,
-          success: false
-        };
-
-      case 'tail': {
-        if (args.length < 2) {
-          return {
-            content: '❌ Usage: /history tail <number>\n\nExample: /history tail 500',
-            success: false
-          };
-        }
-
-        const tailSize = parseInt(args[1] || '', 10);
-        if (isNaN(tailSize) || tailSize <= 0) {
-          return {
-            content: '❌ Tail size must be a positive number',
-            success: false
-          };
-        }
-
-        // TODO: This requires integration with App component state
-        return {
-          content: `⚠️  Setting tail size requires UI integration.
-
-You tried to set tail size to: ${tailSize} lines
-
-💡 This feature is coming soon. For now, the default is 300 lines.
-You can override this with the environment variable:
-  LLPM_CHAT_MAX_RENDER_LINES=${tailSize}`,
-          success: false
-        };
+    // /history all
+    if (args[0]?.toLowerCase() === 'all') {
+      if (messages.length === 0) {
+        return { content: 'No messages in history.', success: true };
       }
-
-      default:
-        return {
-          content: `❌ Unknown subcommand: ${subCommand}\n\nUse /history help to see available commands.`,
-          success: false
-        };
+      return {
+        content: '',
+        success: true,
+        interactive: { type: 'history-view', messages: [...messages] },
+      };
     }
-  }
+
+    // /history (no args) — default
+    if (args.length === 0) {
+      if (messages.length === 0) {
+        return { content: 'No messages in history.', success: true };
+      }
+      return {
+        content: '',
+        success: true,
+        interactive: {
+          type: 'history-view',
+          messages: sliceMessages(messages, DEFAULT_MESSAGE_COUNT),
+        },
+      };
+    }
+
+    // /history N
+    const count = parseInt(args[0] ?? '', 10);
+    if (isNaN(count) || count <= 0) {
+      return {
+        content: `Usage: /history [all | N | help]\n\nExamples:\n  /history      — last ${DEFAULT_MESSAGE_COUNT} messages\n  /history 50   — last 50 messages\n  /history all  — everything`,
+        success: false,
+      };
+    }
+
+    if (messages.length === 0) {
+      return { content: 'No messages in history.', success: true };
+    }
+
+    return {
+      content: '',
+      success: true,
+      interactive: {
+        type: 'history-view',
+        messages: sliceMessages(messages, count),
+      },
+    };
+  },
 };

@@ -1,11 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-// Mock dependencies
 vi.mock('../utils/logger', () => ({
-  debug: vi.fn()
+  debug: vi.fn(),
 }));
 
 import { historyCommand } from './history';
+import type { CommandContext } from './types';
 
 describe('History Command', () => {
   beforeEach(() => {
@@ -16,94 +16,137 @@ describe('History Command', () => {
     it('should have correct name and description', () => {
       expect(historyCommand.name).toBe('history');
       expect(historyCommand.description).toBeDefined();
-      expect(historyCommand.description).toContain('history');
     });
   });
 
-  describe('No arguments (help)', () => {
-    it('should show help when no arguments', async () => {
-      const result = await historyCommand.execute([]);
+  describe('/history (no args) — default last 20', () => {
+    it('should return history-view interactive with last 20 messages', async () => {
+      const messages = Array.from({ length: 30 }, (_, i) => ({
+        role: 'user' as const,
+        content: `message ${i}`,
+      }));
+
+      const result = await historyCommand.execute([], { messages });
 
       expect(result.success).toBe(true);
-      expect(result.content).toContain('Chat History Commands');
-      expect(result.content).toContain('/history export');
-      expect(result.content).toContain('/history all');
-      expect(result.content).toContain('/history tail');
+      expect(result.interactive?.type).toBe('history-view');
+      if (result.interactive?.type === 'history-view') {
+        expect(result.interactive.messages).toHaveLength(20);
+        expect(result.interactive.messages[0]!.content).toBe('message 10');
+      }
     });
-  });
 
-  describe('Help subcommand', () => {
-    it('should show help when help argument is passed', async () => {
-      const result = await historyCommand.execute(['help']);
+    it('should return all messages when fewer than 20', async () => {
+      const messages = Array.from({ length: 5 }, (_, i) => ({
+        role: 'user' as const,
+        content: `message ${i}`,
+      }));
+
+      const result = await historyCommand.execute([], { messages });
 
       expect(result.success).toBe(true);
-      expect(result.content).toContain('Chat History Commands');
+      expect(result.interactive?.type).toBe('history-view');
+      if (result.interactive?.type === 'history-view') {
+        expect(result.interactive.messages).toHaveLength(5);
+      }
     });
   });
 
-  describe('Export subcommand', () => {
-    it('should return message about export functionality', async () => {
-      const result = await historyCommand.execute(['export']);
+  describe('/history all', () => {
+    it('should return all messages', async () => {
+      const messages = Array.from({ length: 50 }, (_, i) => ({
+        role: 'user' as const,
+        content: `message ${i}`,
+      }));
 
-      expect(result.success).toBe(false);
-      expect(result.content).toContain('Export functionality');
+      const result = await historyCommand.execute(['all'], { messages });
+
+      expect(result.success).toBe(true);
+      expect(result.interactive?.type).toBe('history-view');
+      if (result.interactive?.type === 'history-view') {
+        expect(result.interactive.messages).toHaveLength(50);
+      }
+    });
+
+    it('should handle empty messages for /history all', async () => {
+      const result = await historyCommand.execute(['all'], { messages: [] });
+      expect(result.success).toBe(true);
+      expect(result.interactive).toBeUndefined();
+      expect(result.content).toContain('No messages');
     });
   });
 
-  describe('All subcommand', () => {
-    it('should return message about UI integration', async () => {
-      const result = await historyCommand.execute(['all']);
+  describe('/history N', () => {
+    it('should return last N messages', async () => {
+      const messages = Array.from({ length: 30 }, (_, i) => ({
+        role: 'user' as const,
+        content: `message ${i}`,
+      }));
 
-      expect(result.success).toBe(false);
-      expect(result.content).toContain('UI integration');
+      const result = await historyCommand.execute(['10'], { messages });
+
+      expect(result.success).toBe(true);
+      expect(result.interactive?.type).toBe('history-view');
+      if (result.interactive?.type === 'history-view') {
+        expect(result.interactive.messages).toHaveLength(10);
+        expect(result.interactive.messages[0]!.content).toBe('message 20');
+      }
     });
-  });
 
-  describe('Tail subcommand', () => {
-    it('should fail when no size provided', async () => {
-      const result = await historyCommand.execute(['tail']);
-
+    it('should reject non-numeric argument', async () => {
+      const result = await historyCommand.execute(['abc'], { messages: [] });
       expect(result.success).toBe(false);
       expect(result.content).toContain('Usage');
     });
 
-    it('should fail when size is not a number', async () => {
-      const result = await historyCommand.execute(['tail', 'abc']);
-
+    it('should reject zero', async () => {
+      const result = await historyCommand.execute(['0'], { messages: [] });
       expect(result.success).toBe(false);
-      expect(result.content).toContain('positive number');
     });
 
-    it('should fail when size is zero', async () => {
-      const result = await historyCommand.execute(['tail', '0']);
-
+    it('should reject negative numbers', async () => {
+      const result = await historyCommand.execute(['-5'], { messages: [] });
       expect(result.success).toBe(false);
-      expect(result.content).toContain('positive number');
     });
 
-    it('should fail when size is negative', async () => {
-      const result = await historyCommand.execute(['tail', '-10']);
-
-      expect(result.success).toBe(false);
-      expect(result.content).toContain('positive number');
-    });
-
-    it('should return message with valid size', async () => {
-      const result = await historyCommand.execute(['tail', '500']);
-
-      expect(result.success).toBe(false);
-      expect(result.content).toContain('500');
-      expect(result.content).toContain('UI integration');
+    it('should handle empty messages for /history N', async () => {
+      const result = await historyCommand.execute(['10'], { messages: [] });
+      expect(result.success).toBe(true);
+      expect(result.interactive).toBeUndefined();
+      expect(result.content).toContain('No messages');
     });
   });
 
-  describe('Unknown subcommand', () => {
-    it('should fail for unknown subcommand', async () => {
-      const result = await historyCommand.execute(['unknown']);
+  describe('/history help', () => {
+    it('should show help text', async () => {
+      const result = await historyCommand.execute(['help'], { messages: [] });
+      expect(result.success).toBe(true);
+      expect(result.content).toContain('/history');
+    });
+  });
 
-      expect(result.success).toBe(false);
-      expect(result.content).toContain('Unknown subcommand');
-      expect(result.content).toContain('/history help');
+  describe('Empty history', () => {
+    it('should handle empty messages gracefully', async () => {
+      const result = await historyCommand.execute([], { messages: [] });
+
+      expect(result.success).toBe(true);
+      expect(result.content).toContain('No messages');
+    });
+  });
+
+  describe('Missing context', () => {
+    it('should handle undefined context gracefully', async () => {
+      const result = await historyCommand.execute([]);
+
+      expect(result.success).toBe(true);
+      expect(result.content).toContain('No messages');
+    });
+
+    it('should handle undefined context for /history all', async () => {
+      const result = await historyCommand.execute(['all']);
+
+      expect(result.success).toBe(true);
+      expect(result.content).toContain('No messages');
     });
   });
 });

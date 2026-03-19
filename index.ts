@@ -33,7 +33,9 @@ export function App() {
     projectSwitchTrigger,
     isProcessing,
     queuedMessages,
-    selectedSkills
+    selectedSkills,
+    historyViewerMessages,
+    closeHistoryViewer,
   } = useChat();
 
   // State to track whether to show all history or just the tail
@@ -135,7 +137,9 @@ export function App() {
     projectSwitchTrigger,
     isProcessing,
     queuedMessages,
-    selectedSkills
+    selectedSkills,
+    historyViewerMessages,
+    onCloseHistoryViewer: closeHistoryViewer,
   });
 }
 

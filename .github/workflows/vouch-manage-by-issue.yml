@@ -11,20 +11,19 @@ concurrency:
 permissions:
   contents: write
   issues: write
-  pull-requests: read
+  pull-requests: write
 
 jobs:
   manage:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with:
-          ssh-key: ${{ secrets.VOUCH_DEPLOY_KEY }}
 
       - uses: mitchellh/vouch/action/manage-by-issue@v1
         with:
           issue-id: ${{ github.event.issue.number }}
           comment-id: ${{ github.event.comment.id }}
           vouched-file: VOUCHED.td
+          pull-request: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
