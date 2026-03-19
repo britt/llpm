@@ -18,6 +18,7 @@ export interface CommandResult {
 
 export interface CommandContext {
   messageCount?: number;
+  messages?: Message[];
 }
 
 export interface Command {

@@ -206,7 +206,7 @@ export function useChat() {
             return await executeCommand(
               parsed.command as string,
               parsed.args as string[],
-              { messageCount: messagesRef.current.length }
+              { messageCount: messagesRef.current.length, messages: messagesRef.current }
             );
           });
 
