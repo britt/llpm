@@ -5,6 +5,17 @@ weight: 4
 
 LLPM provides slash commands for quick access to features.
 
+## Help
+
+Use `/help` to display available commands.
+
+Use `help` as a sub-command to display help for a specific command.
+
+```text
+/project help
+/model help
+```
+
 ## Slash Commands Overview
 
 | Command | Description |
