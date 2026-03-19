@@ -443,3 +443,62 @@ describe('getSkillRegistry', () => {
     expect(registry2.getConfig().maxSkillsPerPrompt).toBe(10);
   });
 });
+
+describe('SkillRegistry marketplace source support', () => {
+  let registry: SkillRegistry;
+
+  beforeEach(() => {
+    registry = new SkillRegistry({
+      enabled: true,
+      maxSkillsPerPrompt: 3,
+      paths: [],
+      enforceAllowedTools: false
+    });
+  });
+
+  function addSkill(skill: Partial<Skill>) {
+    const fullSkill: Skill = {
+      name: skill.name || 'test-skill',
+      description: skill.description || 'Test skill',
+      content: skill.content || '# Test',
+      source: skill.source || 'user',
+      path: skill.path || '/test/path',
+      enabled: skill.enabled !== undefined ? skill.enabled : true,
+    };
+    (registry as any).skills.set(fullSkill.name, fullSkill);
+  }
+
+  it('skills matching marketplaceSkillNames get source "marketplace"', () => {
+    registry.setMarketplaceSkillNames(new Set(['code-review', 'tdd-guide']));
+
+    addSkill({ name: 'code-review', source: 'user' });
+    addSkill({ name: 'my-custom-skill', source: 'user' });
+
+    registry.applyMarketplaceSources();
+
+    const codeReview = registry.getSkill('code-review');
+    expect(codeReview?.source).toBe('marketplace');
+
+    const custom = registry.getSkill('my-custom-skill');
+    expect(custom?.source).toBe('user');
+  });
+
+  it('applyMarketplaceSources only affects user-source skills', () => {
+    registry.setMarketplaceSkillNames(new Set(['project-skill']));
+
+    addSkill({ name: 'project-skill', source: 'project' });
+    registry.applyMarketplaceSources();
+
+    const skill = registry.getSkill('project-skill');
+    expect(skill?.source).toBe('project');
+  });
+
+  it('setMarketplaceSkillNames with empty set has no effect', () => {
+    addSkill({ name: 'my-skill', source: 'user' });
+    registry.setMarketplaceSkillNames(new Set());
+    registry.applyMarketplaceSources();
+
+    const skill = registry.getSkill('my-skill');
+    expect(skill?.source).toBe('user');
+  });
+});
