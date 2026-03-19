@@ -15,15 +15,44 @@ const MESSAGE_DELIMITER = '\n---MESSAGE---\n';
 export function MessageToLogString(message: Message): string {
   // Escape newlines in content to preserve message structure
   const escapedContent = message.content.replace(/\n/g, '\\n');
-  return `${message.role}: ${escapedContent}`;
+  const ts = message.timestamp != null ? String(message.timestamp) : '';
+  return `${message.role}|${ts}: ${escapedContent}`;
 }
 
 export function LogStringToMessage(logString: string): Message {
-  const [role, ...contentParts] = logString.split(': ');
-  const content = contentParts.join(': '); // Rejoin in case content had colons
-  // Unescape newlines in content
-  const unescapedContent = content.replace(/\\n/g, '\n');
-  return { role: role as Message['role'], content: unescapedContent };
+  // New format: role|timestamp: content
+  // Legacy format: role: content
+  const pipeIndex = logString.indexOf('|');
+  const colonIndex = logString.indexOf(': ');
+
+  if (colonIndex === -1) {
+    // Fallback: treat entire string as content with 'user' role
+    return { role: 'user', content: logString.replace(/\\n/g, '\n') };
+  }
+
+  let role: string;
+  let timestamp: number | undefined;
+
+  if (pipeIndex !== -1 && pipeIndex < colonIndex) {
+    // New format: role|timestamp: content
+    role = logString.slice(0, pipeIndex);
+    const tsStr = logString.slice(pipeIndex + 1, colonIndex);
+    timestamp = tsStr ? Number(tsStr) : undefined;
+  } else {
+    // Legacy format: role: content
+    role = logString.slice(0, colonIndex);
+  }
+
+  const content = logString.slice(colonIndex + 2).replace(/\\n/g, '\n');
+
+  const msg: Message = {
+    role: role as Message['role'],
+    content,
+  };
+  if (timestamp != null && !isNaN(timestamp)) {
+    msg.timestamp = timestamp;
+  }
+  return msg;
 }
 
 async function getChatHistoryPath(): Promise<string> {

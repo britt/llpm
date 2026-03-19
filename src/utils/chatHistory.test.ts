@@ -14,7 +14,7 @@ describe('Chat History Serialization', () => {
     };
 
     const result = MessageToLogString(message);
-    expect(result).toBe('user: Hello\\nWorld\\nThis is a\\nmulti-line message');
+    expect(result).toBe('user|: Hello\\nWorld\\nThis is a\\nmulti-line message');
   });
 
   test('LogStringToMessage unescapes newlines correctly', () => {
@@ -293,6 +293,97 @@ describe('Chat History Clear', () => {
     // Verify history is empty
     loaded = await loadChatHistory();
     expect(loaded.length).toBe(0);
+  });
+});
+
+describe('Timestamp serialization', () => {
+  const historyPath = join(getConfigDir(), 'global-chat-history.log');
+
+  afterEach(async () => {
+    if (existsSync(historyPath)) {
+      await unlink(historyPath);
+    }
+  });
+
+  test('MessageToLogString includes timestamp when present', () => {
+    const message: Message = {
+      role: 'user',
+      content: 'hello',
+      timestamp: 1700000000000,
+    };
+    const result = MessageToLogString(message);
+    expect(result).toBe('user|1700000000000: hello');
+  });
+
+  test('MessageToLogString uses empty timestamp when not present', () => {
+    const message: Message = {
+      role: 'user',
+      content: 'hello',
+    };
+    const result = MessageToLogString(message);
+    expect(result).toBe('user|: hello');
+  });
+
+  test('LogStringToMessage parses new format with timestamp', () => {
+    const logString = 'user|1700000000000: hello';
+    const result = LogStringToMessage(logString);
+    expect(result).toEqual({
+      role: 'user',
+      content: 'hello',
+      timestamp: 1700000000000,
+    });
+  });
+
+  test('LogStringToMessage parses new format without timestamp', () => {
+    const logString = 'user|: hello';
+    const result = LogStringToMessage(logString);
+    expect(result).toEqual({
+      role: 'user',
+      content: 'hello',
+    });
+  });
+
+  test('LogStringToMessage parses legacy format (backward compat)', () => {
+    const logString = 'user: hello';
+    const result = LogStringToMessage(logString);
+    expect(result).toEqual({
+      role: 'user',
+      content: 'hello',
+    });
+  });
+
+  test('preserves timestamp through save/load cycle', async () => {
+    const now = 1700000000000;
+    const messages: Message[] = [
+      { role: 'user', content: 'hello', timestamp: now },
+    ];
+    await saveChatHistory(messages);
+    const loaded = await loadChatHistory();
+    expect(loaded[0]!.timestamp).toBe(now);
+  });
+
+  test('handles messages without timestamp through save/load (backward compat)', async () => {
+    const messages: Message[] = [
+      { role: 'user', content: 'old message' },
+    ];
+    await saveChatHistory(messages);
+    const loaded = await loadChatHistory();
+    expect(loaded[0]!.timestamp).toBeUndefined();
+  });
+
+  test('handles mixed messages with and without timestamps', async () => {
+    const messages: Message[] = [
+      { role: 'user', content: 'old message' },
+      { role: 'assistant', content: 'old reply' },
+      { role: 'user', content: 'new message', timestamp: 1700000000000 },
+      { role: 'assistant', content: 'new reply', timestamp: 1700000001000 },
+    ];
+    await saveChatHistory(messages);
+    const loaded = await loadChatHistory();
+    expect(loaded[0]!.timestamp).toBeUndefined();
+    expect(loaded[1]!.timestamp).toBeUndefined();
+    expect(loaded[2]!.timestamp).toBe(1700000000000);
+    expect(loaded[3]!.timestamp).toBe(1700000001000);
   });
 });
 
