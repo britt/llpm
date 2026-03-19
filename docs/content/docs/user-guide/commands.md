@@ -16,6 +16,8 @@ Use `help` as a sub-command to display help for a specific command.
 /model help
 ```
 
+Note: Command help is implemented as a `help` sub-command (for example, `/project help`).
+
 ## Slash Commands Overview
 
 | Command | Description |
