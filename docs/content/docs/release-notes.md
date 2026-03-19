@@ -13,18 +13,18 @@ weight: 99
 ```json
 {
   "Additional Changes": [
-    "The skills guides and examples were updated to be less tied to specific vendors and to reflect the current set of built-in skills. The documentation now uses generic tool placeholders instead of GitHub-specific examples and updates the documented core skills count from 19 to 20.",
-    "The release documentation for v1.9.1 was rewritten for clarity and consistency. The v1.9.1 notes now use structured Markdown sections (with updated wording and summaries) and include an added v1.9.1 section in the release-notes documentation.",
-    "The package was released as v1.10.0 with maintenance improvements carried forward from the prior v1.9.1 work. The project version was bumped from 1.9.1 to 1.10.0 after prior tightening of TypeScript types, skill `instructions` metadata documentation, and runtime safety refinements."
+    "The skills guides and examples were updated to be less tied to specific vendors and to reflect the current set of built-in skills.",
+    "The release documentation for v1.9.1 was rewritten for clarity and consistency.",
+    "The package was released as v1.10.0 with maintenance improvements carried forward from the prior v1.9.1 work."
   ],
   "Breaking Changes": [
-    "Skill metadata now uses a single, consistent field name for tool permissions and a single value format. The skill frontmatter key has been standardized to `allowed-tools` and is documented as a space-delimited string (replacing `allowed_tools` and YAML-list variants), so existing skill files should be updated to match the new schema."
+    "Skill metadata now uses a single, consistent field name for tool permissions and a single value format."
   ],
   "Bug Fixes": [
-    "Skill documentation no longer references incorrect or unsupported metadata fields. The README/SKILL.md examples were corrected to use the current frontmatter schema (including `allowed-tools`) and to remove or replace unsupported fields with the newer metadata fields."
+    "Skill documentation no longer references incorrect or unsupported metadata fields."
   ],
   "New Features": [
-    "The command-line help output is now easier to read and more consistent across commands. The CLI now renders `/help` in Markdown and standardizes `--help`/`-h` handling across commands for unified help behavior."
+    "The command-line help output is now easier to read and more consistent across commands."
   ]
 }
 
