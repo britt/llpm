@@ -14,6 +14,12 @@ Before running verification:
 - [ ] **GitHub Token**: `GITHUB_TOKEN` or `GH_TOKEN` set with repo access
 - [ ] **Test Repository**: A GitHub repository available for testing issue/PR creation
 - [ ] **Skills Directory**: At least one skill file in `~/.llpm/skills/` or project `.skills/`
+- [ ] **Network Access**: Internet access to github.com (required for marketplace scenarios 10-18)
+- [ ] **Git Installed**: `git` available on PATH (required for marketplace sync/install)
+- [ ] **Test Marketplace Repos**: These public repos must be accessible:
+  - `obra/superpowers` — skill collection
+  - `anthropics/skills` — Anthropic's skills repo
+  - `phuryn/pm-skills` — PM skills collection
 - [ ] **LLPM Running**: Start with `bun run start` or `bun run dev`
 
 ---
@@ -225,6 +231,216 @@ Before running verification:
 
 ---
 
+### Scenario 10: Register Marketplace Repos
+
+**Context**: LLPM is running. Network access to GitHub is available. No marketplaces are registered.
+
+**Steps**:
+1. Run `/skills marketplace list` — should show no marketplaces
+2. Run `/skills marketplace add obra/superpowers` — register first marketplace
+3. Run `/skills marketplace add anthropics/skills` — register second marketplace
+4. Run `/skills marketplace add phuryn/pm-skills` — register third marketplace
+5. Run `/skills marketplace list` — should show all three
+
+**Success Criteria**:
+- [ ] Empty marketplace list handled gracefully (no error, clear message)
+- [ ] Each `/skills marketplace add` confirms registration with repo name
+- [ ] `/skills marketplace list` shows all three marketplaces with names and repos:
+  - `obra-superpowers` → `obra/superpowers`
+  - `anthropics-skills` → `anthropics/skills`
+  - `phuryn-pm-skills` → `phuryn/pm-skills`
+- [ ] Registering an already-registered repo returns a clear duplicate error
+- [ ] `~/.llpm/config.json` contains a `marketplaces` array with three entries
+
+**If Blocked**: Check network access to github.com. Verify `GITHUB_TOKEN` or `GH_TOKEN` is set.
+
+---
+
+### Scenario 11: Sync Marketplace Indexes
+
+**Context**: Three marketplaces are registered (from Scenario 10). Network access available.
+
+**Steps**:
+1. Run `/skills sync obra-superpowers` — sync index from obra/superpowers
+2. Run `/skills sync anthropics-skills` — sync index from anthropics/skills
+3. Run `/skills sync phuryn-pm-skills` — sync index from phuryn/pm-skills
+4. Verify cached index files exist at `~/.llpm/cache/marketplaces/<name>/index.json`
+
+**Success Criteria**:
+- [ ] Each sync completes without errors and reports number of skills found
+- [ ] `obra-superpowers` index contains skills (check: `cat ~/.llpm/cache/marketplaces/obra-superpowers/index.json`)
+- [ ] `anthropics-skills` index contains skills
+- [ ] `phuryn-pm-skills` index contains skills
+- [ ] Each index entry has `name`, `description`, and `marketplace` fields
+- [ ] Syncing a non-existent marketplace name returns a clear error
+
+**If Blocked**: Verify git is installed and repos are public. Try `git ls-remote https://github.com/obra/superpowers` to confirm access.
+
+---
+
+### Scenario 12: Search Across Marketplaces
+
+**Context**: All three marketplaces are synced (from Scenario 11).
+
+**Steps**:
+1. Run `/skills search planning` — should match skills related to planning
+2. Run `/skills search review` — should match code review or similar skills
+3. Run `/skills search nonexistent-xyz-12345` — should return no results
+4. Run `/skills search` (no query) — should list all available skills from all marketplaces
+
+**Success Criteria**:
+- [ ] Search results show skill name, description, and which marketplace it belongs to
+- [ ] Results span multiple marketplaces when matches exist in more than one
+- [ ] Empty search query lists all skills from all synced marketplaces
+- [ ] No-results query shows a clear "no skills found" message
+- [ ] Results include an install hint (e.g., "Install with: `/skills install <name>@<marketplace>`")
+
+**If Blocked**: Verify indexes are cached. Run `/skills sync` for each marketplace.
+
+---
+
+### Scenario 13: Install Skill from Marketplace
+
+**Context**: Marketplaces are synced. No marketplace skills are installed yet.
+
+**Steps**:
+1. Run `/skills search` to find a skill from `obra-superpowers` (pick one that does NOT conflict with bundled skills)
+2. Run `/skills install <skill-name>@obra-superpowers` — install it
+3. Run `/skills list` — verify the installed skill appears with marketplace provenance
+4. Run `/skills test <skill-name>` — verify skill content loaded correctly
+5. Repeat: install a skill from `anthropics-skills`
+6. Repeat: install a skill from `phuryn-pm-skills`
+
+**Success Criteria**:
+- [ ] Install completes without errors and reports success
+- [ ] Skill directory created at `~/.llpm/skills/<skill-name>/SKILL.md`
+- [ ] `/skills list` shows the skill under "Marketplace Skills" section with marketplace name
+- [ ] `/skills test <skill-name>` displays valid skill content and metadata
+- [ ] `~/.llpm/config.json` `installedSkills` array tracks provenance (name, marketplace, repo, installedAt)
+- [ ] Installing a skill that doesn't exist in the marketplace returns a clear error
+- [ ] Installing from a non-existent marketplace returns a clear error
+
+**If Blocked**: Verify the marketplace has skills matching the Agent Skills spec (SKILL.md with frontmatter). Try a different skill.
+
+---
+
+### Scenario 14: Skill Install Conflict and Resolution
+
+**Context**: Bundled skill `user-story-template` exists. `phuryn/pm-skills` marketplace is synced and contains a skill that overlaps.
+
+**Steps**:
+1. Run `/skills list` — confirm `user-story-template` exists as a bundled/user skill
+2. Run `/skills install user-story-template@phuryn-pm-skills` (or the equivalent skill name from pm-skills)
+3. Observe conflict prompt — should warn that `user-story-template` already exists and ask for confirmation
+4. Decline the install — skill should remain unchanged
+5. Run `/skills install --force user-story-template@phuryn-pm-skills` — force install
+6. Run `/skills list` — verify the skill now shows marketplace provenance
+7. Run `/skills test user-story-template` — verify content is from the marketplace version
+
+**Success Criteria**:
+- [ ] Conflict detected: response clearly states skill already exists and shows existing path
+- [ ] Response suggests using `--force` to overwrite
+- [ ] Without `--force`, the existing skill is NOT overwritten
+- [ ] With `--force`, the marketplace version replaces the existing one
+- [ ] After force install, `/skills list` shows the skill with marketplace source
+- [ ] `/skills test` confirms content matches the marketplace version, not the original
+- [ ] Skill still functions correctly after overwrite (enable/disable works)
+
+**If Blocked**: If `phuryn/pm-skills` doesn't have a conflicting skill name, use `anthropics/skills` instead, or manually create a bundled skill with a matching name first.
+
+---
+
+### Scenario 15: Remove Installed Skill
+
+**Context**: At least one marketplace skill is installed (from Scenario 13).
+
+**Steps**:
+1. Run `/skills list` — note an installed marketplace skill
+2. Run `/skills remove <skill-name>` — remove the skill
+3. Run `/skills list` — verify it no longer appears
+4. Check `~/.llpm/config.json` — `installedSkills` should no longer contain the removed skill
+5. Verify directory `~/.llpm/skills/<skill-name>/` is deleted
+
+**Success Criteria**:
+- [ ] Remove completes with success message
+- [ ] Skill no longer appears in `/skills list`
+- [ ] `installedSkills` metadata entry is removed from config
+- [ ] Skill directory is deleted from disk
+- [ ] Removing a non-existent skill returns a clear error
+
+**If Blocked**: Check file permissions on `~/.llpm/skills/`.
+
+---
+
+### Scenario 16: Remove Marketplace Registration
+
+**Context**: Three marketplaces are registered. At least one skill was installed from one of them.
+
+**Steps**:
+1. Run `/skills marketplace remove phuryn-pm-skills`
+2. Run `/skills marketplace list` — should show only two marketplaces
+3. Run `/skills search` — results should NOT include skills from `phuryn-pm-skills`
+4. Verify any previously installed skills from `phuryn-pm-skills` are still present on disk (removing a marketplace does not uninstall its skills)
+5. Run `/skills marketplace remove nonexistent-marketplace` — should return error
+
+**Success Criteria**:
+- [ ] Marketplace removed from list
+- [ ] Search no longer returns skills from removed marketplace
+- [ ] Previously installed skills from that marketplace remain installed and functional
+- [ ] Removing non-existent marketplace returns clear error
+- [ ] `~/.llpm/config.json` `marketplaces` array updated
+
+**If Blocked**: Check config file permissions.
+
+---
+
+### Scenario 17: AI Tool — Search and Install Skills
+
+**Context**: LLPM is running with AI configured. At least one marketplace is registered and synced.
+
+**Steps**:
+1. Ask the AI: "Search for skills related to code review in the marketplace"
+2. Verify AI uses the `search_marketplace_skills` tool and presents results
+3. Ask the AI: "Install the <skill-name> skill from <marketplace>"
+4. Verify AI uses the `install_skill` tool and reports success
+5. Ask the AI: "What skills do I have installed?"
+6. Verify AI uses `list_available_skills` and shows the newly installed skill
+
+**Success Criteria**:
+- [ ] AI calls `search_marketplace_skills` tool with appropriate query
+- [ ] Search results are presented clearly to the user
+- [ ] AI calls `install_skill` tool with correct skill name and marketplace
+- [ ] Install result is reported to user with skill name
+- [ ] AI can list skills including the newly installed one
+- [ ] If install hits a conflict, AI communicates the conflict clearly
+
+**If Blocked**: Verify AI provider is responding. Try `/model` to confirm.
+
+---
+
+### Scenario 18: Marketplace Cleanup
+
+**Context**: Verification scenarios 10-17 have been executed. Test data needs cleanup.
+
+**Steps**:
+1. Run `/skills remove` for each marketplace-installed skill
+2. Run `/skills marketplace remove` for each registered marketplace
+3. If the `user-story-template` was overwritten in Scenario 14, run `/skills reinstall` to restore bundled skills
+4. Run `/skills list` — should show only bundled/user skills, no marketplace skills
+5. Run `/skills marketplace list` — should show no marketplaces
+6. Verify `~/.llpm/config.json` has empty `marketplaces` and `installedSkills` arrays
+
+**Success Criteria**:
+- [ ] All marketplace skills removed
+- [ ] All marketplaces unregistered
+- [ ] Bundled skills restored if overwritten
+- [ ] Config file cleaned up
+- [ ] LLPM functions normally after cleanup (run `/skills list`, `/help`)
+
+**If Blocked**: Manually edit `~/.llpm/config.json` to remove `marketplaces` and `installedSkills` keys.
+
+---
+
 ## Verification Rules
 
 - **Never use mocks or fakes** - all tests use real APIs and services
@@ -287,3 +503,38 @@ bun run start
 ```
 
 **Pass criteria**: All commands return without errors, AI responds to message.
+
+---
+
+## Marketplace Quick Verification (Smoke Test)
+
+Rapid check that marketplace features work:
+
+```bash
+# 1. Start LLPM
+bun run start
+
+# 2. Register a marketplace
+/skills marketplace add obra/superpowers
+
+# 3. Sync its index
+/skills sync obra-superpowers
+
+# 4. Search for a skill
+/skills search
+
+# 5. Install a skill (pick one from search results)
+/skills install <skill-name>@obra-superpowers
+
+# 6. Verify it shows up
+/skills list
+
+# 7. Clean up
+/skills remove <skill-name>
+/skills marketplace remove obra-superpowers
+
+# 8. Exit
+/exit
+```
+
+**Pass criteria**: All commands return without errors. Skill installs, appears in list, and removes cleanly.
