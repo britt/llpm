@@ -1,7 +1,7 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { MarketplaceService } from './MarketplaceService';
 import { mkdtemp, rm, writeFile, mkdir } from 'fs/promises';
-import { existsSync } from 'fs';
+import { existsSync, mkdirSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import { tmpdir } from 'os';
 
@@ -49,7 +49,6 @@ describe('MarketplaceService config', () => {
 
   it('persists marketplaces to config.json', async () => {
     await service.addMarketplace('anthropics/skills');
-    // Create a new service reading same file
     const service2 = new MarketplaceService(configFile, join(tempDir, 'skills'));
     const list = await service2.listMarketplaces();
     expect(list).toHaveLength(1);
@@ -205,7 +204,6 @@ describe('MarketplaceService sync and search', () => {
       'description: A valid skill',
       '---',
     ].join('\n'));
-    // no-skill-md has no SKILL.md, .git starts with dot
 
     const index = await service.buildIndexFromDir(repoDir, 'test-marketplace');
     expect(index).toHaveLength(1);
@@ -222,7 +220,6 @@ describe('MarketplaceService sync and search', () => {
     const cached = await service.getCachedIndex('test');
     expect(cached).toEqual(entries);
 
-    // Verify file on disk
     expect(existsSync(join(cacheDir, 'test', 'index.json'))).toBe(true);
   });
 });
@@ -349,5 +346,257 @@ describe('MarketplaceService install/remove', () => {
   it('getInstalledSkills returns empty when none installed', async () => {
     const installed = await service.getInstalledSkills();
     expect(installed).toEqual([]);
+  });
+});
+
+describe('MarketplaceService input validation', () => {
+  let tempDir: string;
+  let configFile: string;
+  let skillsDir: string;
+  let service: MarketplaceService;
+
+  beforeEach(async () => {
+    tempDir = await mkdtemp(join(tmpdir(), 'llpm-marketplace-'));
+    configFile = join(tempDir, 'config.json');
+    skillsDir = join(tempDir, 'skills');
+    await writeFile(configFile, JSON.stringify({ projects: {} }));
+    service = new MarketplaceService(configFile, skillsDir);
+  });
+
+  afterEach(async () => {
+    await rm(tempDir, { recursive: true, force: true });
+  });
+
+  it('addMarketplace rejects repo with shell metacharacters', async () => {
+    await expect(service.addMarketplace('foo/bar"; rm -rf / #'))
+      .rejects.toThrow(/invalid repo/i);
+  });
+
+  it('addMarketplace rejects repo with $() subshell', async () => {
+    await expect(service.addMarketplace('foo/$(malicious-cmd)'))
+      .rejects.toThrow(/invalid repo/i);
+  });
+
+  it('addMarketplace rejects repo with backtick injection', async () => {
+    await expect(service.addMarketplace('foo/`whoami`'))
+      .rejects.toThrow(/invalid repo/i);
+  });
+
+  it('addMarketplace accepts valid owner/repo format', async () => {
+    const result = await service.addMarketplace('anthropics/skills');
+    expect(result.repo).toBe('anthropics/skills');
+  });
+
+  it('addMarketplace accepts repos with dots, hyphens, and underscores', async () => {
+    const result = await service.addMarketplace('my-org/my_skill.repo');
+    expect(result.repo).toBe('my-org/my_skill.repo');
+  });
+
+  it('addMarketplace rejects repo without slash', async () => {
+    await expect(service.addMarketplace('noslash'))
+      .rejects.toThrow(/invalid repo/i);
+  });
+
+  it('installSkillFromDir rejects skill name with path traversal', async () => {
+    const fakeRepoDir = join(tempDir, 'fake-repo');
+    await mkdir(fakeRepoDir, { recursive: true });
+
+    await expect(service.installSkillFromDir(
+      '../../etc', fakeRepoDir, 'test', 'test/repo',
+    )).rejects.toThrow(/invalid skill name/i);
+  });
+
+  it('installSkillFromDir rejects skill name with slash', async () => {
+    const fakeRepoDir = join(tempDir, 'fake-repo');
+    await mkdir(fakeRepoDir, { recursive: true });
+
+    await expect(service.installSkillFromDir(
+      'foo/bar', fakeRepoDir, 'test', 'test/repo',
+    )).rejects.toThrow(/invalid skill name/i);
+  });
+
+  it('removeSkill rejects skill name with path traversal', async () => {
+    await expect(service.removeSkill('../../etc'))
+      .rejects.toThrow(/invalid skill name/i);
+  });
+
+  it('removeSkill rejects skill name with shell metacharacters', async () => {
+    await expect(service.removeSkill('skill"; rm -rf /'))
+      .rejects.toThrow(/invalid skill name/i);
+  });
+});
+
+describe('MarketplaceService syncMarketplace', () => {
+  let tempDir: string;
+  let configFile: string;
+  let cacheDir: string;
+  let service: MarketplaceService;
+  let mockShellExec: ReturnType<typeof vi.fn>;
+
+  beforeEach(async () => {
+    tempDir = await mkdtemp(join(tmpdir(), 'llpm-marketplace-'));
+    configFile = join(tempDir, 'config.json');
+    cacheDir = join(tempDir, 'cache', 'marketplaces');
+    await writeFile(configFile, JSON.stringify({ projects: {} }));
+    mockShellExec = vi.fn();
+    service = new MarketplaceService(configFile, join(tempDir, 'skills'), cacheDir, mockShellExec);
+  });
+
+  afterEach(async () => {
+    await rm(tempDir, { recursive: true, force: true });
+  });
+
+  it('syncMarketplace throws for unknown marketplace', async () => {
+    await expect(service.syncMarketplace('nonexistent'))
+      .rejects.toThrow(/not found/);
+  });
+
+  it('syncMarketplace clones repo, builds index, and caches it', async () => {
+    await service.addMarketplace('anthropics/skills');
+
+    const fakeRepoDir = join(cacheDir, 'anthropics-skills', '_repo');
+    mockShellExec.mockImplementation((cmd: string) => {
+      if (cmd.includes('git clone')) {
+        mkdirSync(join(fakeRepoDir, 'code-review'), { recursive: true });
+        writeFileSync(join(fakeRepoDir, 'code-review', 'SKILL.md'), [
+          '---',
+          'name: code-review',
+          'description: Review code',
+          '---',
+        ].join('\n'));
+      }
+    });
+
+    const index = await service.syncMarketplace('anthropics-skills');
+    expect(index).toHaveLength(1);
+    expect(index[0]!.name).toBe('code-review');
+
+    const cached = await service.getCachedIndex('anthropics-skills');
+    expect(cached).toHaveLength(1);
+
+    expect(mockShellExec).toHaveBeenCalledTimes(3);
+    const cloneCall = mockShellExec.mock.calls[0]![0] as string;
+    expect(cloneCall).toContain('git clone');
+    expect(cloneCall).toContain('anthropics/skills');
+  });
+
+  it('syncMarketplace cleans up temp repo dir after completion', async () => {
+    await service.addMarketplace('anthropics/skills');
+    const repoDir = join(cacheDir, 'anthropics-skills', '_repo');
+
+    mockShellExec.mockImplementation(() => {});
+
+    try {
+      await service.syncMarketplace('anthropics-skills');
+    } catch {
+      // May fail since mock doesn't create files
+    }
+
+    expect(existsSync(repoDir)).toBe(false);
+  });
+
+  it('syncMarketplace cleans up temp repo dir on error', async () => {
+    await service.addMarketplace('anthropics/skills');
+    const repoDir = join(cacheDir, 'anthropics-skills', '_repo');
+
+    mockShellExec.mockImplementation(() => {
+      throw new Error('git clone failed');
+    });
+
+    await expect(service.syncMarketplace('anthropics-skills'))
+      .rejects.toThrow('git clone failed');
+    expect(existsSync(repoDir)).toBe(false);
+  });
+});
+
+describe('MarketplaceService installSkill', () => {
+  let tempDir: string;
+  let configFile: string;
+  let cacheDir: string;
+  let skillsDir: string;
+  let service: MarketplaceService;
+  let mockShellExec: ReturnType<typeof vi.fn>;
+
+  beforeEach(async () => {
+    tempDir = await mkdtemp(join(tmpdir(), 'llpm-marketplace-'));
+    configFile = join(tempDir, 'config.json');
+    cacheDir = join(tempDir, 'cache', 'marketplaces');
+    skillsDir = join(tempDir, 'skills');
+    await writeFile(configFile, JSON.stringify({ projects: {} }));
+    mockShellExec = vi.fn();
+    service = new MarketplaceService(configFile, skillsDir, cacheDir, mockShellExec);
+  });
+
+  afterEach(async () => {
+    await rm(tempDir, { recursive: true, force: true });
+  });
+
+  it('installSkill throws for unknown marketplace', async () => {
+    await expect(service.installSkill('some-skill', 'nonexistent'))
+      .rejects.toThrow(/not found/);
+  });
+
+  it('installSkill clones repo and installs skill to skillsDir', async () => {
+    await service.addMarketplace('anthropics/skills');
+    const installTempDir = join(cacheDir, '_install-temp');
+
+    mockShellExec.mockImplementation((cmd: string) => {
+      if (cmd.includes('git clone')) {
+        mkdirSync(join(installTempDir, 'code-review'), { recursive: true });
+        writeFileSync(join(installTempDir, 'code-review', 'SKILL.md'), [
+          '---',
+          'name: code-review',
+          'description: Review code',
+          '---',
+        ].join('\n'));
+      }
+    });
+
+    const result = await service.installSkill('code-review', 'anthropics-skills');
+    expect(result.installed).toBe(true);
+    expect(existsSync(join(skillsDir, 'code-review', 'SKILL.md'))).toBe(true);
+
+    const installed = await service.getInstalledSkills();
+    expect(installed).toHaveLength(1);
+    expect(installed[0]!.name).toBe('code-review');
+  });
+
+  it('installSkill cleans up temp dir after install', async () => {
+    await service.addMarketplace('anthropics/skills');
+    const installTempDir = join(cacheDir, '_install-temp');
+
+    mockShellExec.mockImplementation((cmd: string) => {
+      if (cmd.includes('git clone')) {
+        mkdirSync(join(installTempDir, 'code-review'), { recursive: true });
+        writeFileSync(join(installTempDir, 'code-review', 'SKILL.md'), '---\nname: code-review\ndescription: Test\n---\n');
+      }
+    });
+
+    await service.installSkill('code-review', 'anthropics-skills');
+    expect(existsSync(installTempDir)).toBe(false);
+  });
+
+  it('installSkill detects conflict without force', async () => {
+    await service.addMarketplace('anthropics/skills');
+    await mkdir(join(skillsDir, 'code-review'), { recursive: true });
+    await writeFile(join(skillsDir, 'code-review', 'SKILL.md'), '---\nname: code-review\ndescription: Existing\n---\n');
+
+    const installTempDir = join(cacheDir, '_install-temp');
+    mockShellExec.mockImplementation((cmd: string) => {
+      if (cmd.includes('git clone')) {
+        mkdirSync(join(installTempDir, 'code-review'), { recursive: true });
+        writeFileSync(join(installTempDir, 'code-review', 'SKILL.md'), '---\nname: code-review\ndescription: New\n---\n');
+      }
+    });
+
+    const result = await service.installSkill('code-review', 'anthropics-skills');
+    expect(result.installed).toBe(false);
+    expect(result.conflict).toBe(true);
+  });
+
+  it('installSkill rejects skill name with path traversal', async () => {
+    await service.addMarketplace('anthropics/skills');
+    await expect(service.installSkill('../../etc', 'anthropics-skills'))
+      .rejects.toThrow(/invalid skill name/i);
   });
 });

@@ -1,9 +1,14 @@
 import { readFile, writeFile, mkdir, readdir, cp, rm } from 'fs/promises';
 import { existsSync } from 'fs';
-import { dirname, join } from 'path';
+import { dirname, join, resolve } from 'path';
 import { execSync } from 'child_process';
 import matter from 'gray-matter';
 import type { MarketplaceConfig, MarketplaceSkillIndex, InstalledSkillMetadata } from '../types/skills';
+
+export type ShellExecutor = (command: string, options?: { stdio: string }) => void;
+
+const VALID_REPO_PATTERN = /^[a-zA-Z0-9._-]+\/[a-zA-Z0-9._-]+$/;
+const VALID_SKILL_NAME_PATTERN = /^[a-zA-Z0-9._-]+$/;
 
 export interface InstallResult {
   installed: boolean;
@@ -12,11 +17,36 @@ export interface InstallResult {
 }
 
 export class MarketplaceService {
+  private shellExec: ShellExecutor;
+
   constructor(
     private configFilePath: string,
     private skillsDir: string,
     private cacheDir: string = join(dirname(configFilePath), 'cache', 'marketplaces'),
-  ) {}
+    shellExec?: ShellExecutor,
+  ) {
+    this.shellExec = shellExec ?? ((cmd, opts) => execSync(cmd, opts as Parameters<typeof execSync>[1]));
+  }
+
+  private validateRepo(repo: string): void {
+    if (!VALID_REPO_PATTERN.test(repo)) {
+      throw new Error(`Invalid repo format: "${repo}". Must be "owner/repo" with alphanumeric characters, dots, hyphens, or underscores only.`);
+    }
+  }
+
+  private validateSkillName(name: string): void {
+    if (!VALID_SKILL_NAME_PATTERN.test(name)) {
+      throw new Error(`Invalid skill name: "${name}". Must contain only alphanumeric characters, dots, hyphens, or underscores.`);
+    }
+  }
+
+  private validatePathWithinDir(basePath: string, targetPath: string): void {
+    const resolvedBase = resolve(basePath);
+    const resolvedTarget = resolve(targetPath);
+    if (!resolvedTarget.startsWith(resolvedBase + '/') && resolvedTarget !== resolvedBase) {
+      throw new Error(`Invalid skill name: path "${resolvedTarget}" escapes base directory "${resolvedBase}".`);
+    }
+  }
 
   private async readConfig(): Promise<Record<string, unknown>> {
     try {
@@ -40,6 +70,7 @@ export class MarketplaceService {
   }
 
   async addMarketplace(repo: string): Promise<MarketplaceConfig> {
+    this.validateRepo(repo);
     const config = await this.readConfig();
     const marketplaces: MarketplaceConfig[] = (config.marketplaces as MarketplaceConfig[]) || [];
 
@@ -142,8 +173,10 @@ export class MarketplaceService {
     repo: string,
     options: { force?: boolean } = {},
   ): Promise<InstallResult> {
+    this.validateSkillName(skillName);
     const sourcePath = join(repoDir, skillName);
     const targetPath = join(this.skillsDir, skillName);
+    this.validatePathWithinDir(this.skillsDir, targetPath);
 
     if (!existsSync(sourcePath)) {
       throw new Error(`Skill "${skillName}" not found in repository`);
@@ -180,15 +213,15 @@ export class MarketplaceService {
         await rm(tempCloneDir, { recursive: true, force: true });
       }
 
-      execSync(
+      this.shellExec(
         `git clone --no-checkout --depth 1 https://github.com/${marketplace.repo}.git "${tempCloneDir}"`,
         { stdio: 'pipe' },
       );
-      execSync(
+      this.shellExec(
         `git -C "${tempCloneDir}" sparse-checkout set --no-cone "*/SKILL.md"`,
         { stdio: 'pipe' },
       );
-      execSync(
+      this.shellExec(
         `git -C "${tempCloneDir}" checkout`,
         { stdio: 'pipe' },
       );
@@ -208,6 +241,7 @@ export class MarketplaceService {
     marketplaceName: string,
     options: { force?: boolean } = {},
   ): Promise<InstallResult> {
+    this.validateSkillName(skillName);
     const marketplaces = await this.listMarketplaces();
     const marketplace = marketplaces.find(m => m.name === marketplaceName);
     if (!marketplace) throw new Error(`Marketplace "${marketplaceName}" not found`);
@@ -218,15 +252,15 @@ export class MarketplaceService {
         await rm(tempCloneDir, { recursive: true, force: true });
       }
 
-      execSync(
+      this.shellExec(
         `git clone --no-checkout --depth 1 https://github.com/${marketplace.repo}.git "${tempCloneDir}"`,
         { stdio: 'pipe' },
       );
-      execSync(
+      this.shellExec(
         `git -C "${tempCloneDir}" sparse-checkout set --no-cone "${skillName}"`,
         { stdio: 'pipe' },
       );
-      execSync(
+      this.shellExec(
         `git -C "${tempCloneDir}" checkout`,
         { stdio: 'pipe' },
       );
@@ -240,7 +274,9 @@ export class MarketplaceService {
   }
 
   async removeSkill(skillName: string): Promise<void> {
+    this.validateSkillName(skillName);
     const targetPath = join(this.skillsDir, skillName);
+    this.validatePathWithinDir(this.skillsDir, targetPath);
     if (!existsSync(targetPath)) {
       throw new Error(`Skill "${skillName}" is not installed`);
     }

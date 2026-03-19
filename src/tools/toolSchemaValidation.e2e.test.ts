@@ -9,7 +9,6 @@ import { describe, it, expect, beforeAll } from 'vitest';
 import { openai } from '@ai-sdk/openai';
 import { anthropic } from '@ai-sdk/anthropic';
 import { getToolRegistry } from './registry';
-import {  } from 'ai';
 
 describe('Tool Schema Validation E2E', () => {
   let tools: Awaited<ReturnType<typeof getToolRegistry>>;
@@ -27,59 +26,46 @@ describe('Tool Schema Validation E2E', () => {
       }
 
       const model = openai('gpt-4o-mini');
-      const errors: Array<{ toolName: string; error: string }> = [];
 
-      // Test each tool's schema with OpenAI
-      for (const [toolName, toolDef] of Object.entries(tools)) {
-        try {
-          // Convert to language model tool format
-          const convertedTool = (toolDef);
+      // Build all tool definitions and send in a single API call
+      const allTools = Object.entries(tools).map(([toolName, toolDef]) => {
+        const convertedTool = (toolDef);
+        return {
+          type: 'function' as const,
+          name: toolName,
+          description: convertedTool.description,
+          parameters: (convertedTool as any).parameters
+        };
+      });
 
-          // Make a minimal API call to validate the schema
-          // We don't actually execute the tool, just verify OpenAI accepts the schema
-          const result = await (model as any).doGenerate({
-            mode: {
-              type: 'regular',
-              tools: [
-                {
-                  type: 'function' as const,
-                  name: toolName,
-                  description: convertedTool.description,
-                  parameters: (convertedTool as any).parameters
-                }
-              ]
-            },
-            inputFormat: 'messages',
-            prompt: [
-              {
-                role: 'user',
-                content: [{ type: 'text', text: 'Test schema validation' }]
-              }
-            ]
-          });
+      try {
+        const result = await (model as any).doGenerate({
+          mode: {
+            type: 'regular',
+            tools: allTools
+          },
+          inputFormat: 'messages',
+          prompt: [
+            {
+              role: 'user',
+              content: [{ type: 'text', text: 'Test schema validation' }]
+            }
+          ]
+        });
 
-          // If we got here without an error, the schema is valid
-          expect(result).toBeDefined();
-        } catch (error) {
-          const errorMessage = error instanceof Error ? error.message : String(error);
+        expect(result).toBeDefined();
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : String(error);
 
-          // Only fail if it's a schema validation error
-          if (errorMessage.includes('schema') || errorMessage.includes('parameters')) {
-            errors.push({ toolName, error: errorMessage });
-          }
+        // Only fail if it's a schema validation error
+        if (errorMessage.includes('schema') || errorMessage.includes('parameters')) {
+          throw new Error(
+            `OpenAI schema validation failed: ${errorMessage}`
+          );
         }
+        // Non-schema errors (rate limits, network) are not test failures
       }
-
-      // Report all schema errors at once
-      if (errors.length > 0) {
-        const errorReport = errors
-          .map(({ toolName, error }) => `  - ${toolName}: ${error}`)
-          .join('\n');
-        throw new Error(
-          `OpenAI schema validation failed for ${errors.length} tool(s):\n${errorReport}`
-        );
-      }
-    }, 60000); // 60 second timeout for API calls
+    }, 30000);
   });
 
   describe('Anthropic Schema Validation', () => {
@@ -91,57 +77,46 @@ describe('Tool Schema Validation E2E', () => {
       }
 
       const model = anthropic('claude-3-5-haiku-20241022');
-      const errors: Array<{ toolName: string; error: string }> = [];
 
-      // Test each tool's schema with Anthropic
-      for (const [toolName, toolDef] of Object.entries(tools)) {
-        try {
-          // Convert to language model tool format
-          const convertedTool = (toolDef);
+      // Build all tool definitions and send in a single API call
+      const allTools = Object.entries(tools).map(([toolName, toolDef]) => {
+        const convertedTool = (toolDef);
+        return {
+          type: 'function' as const,
+          name: toolName,
+          description: convertedTool.description,
+          parameters: (convertedTool as any).parameters
+        };
+      });
 
-          // Make a minimal API call to validate the schema
-          const result = await (model as any).doGenerate({
-            mode: {
-              type: 'regular',
-              tools: [
-                {
-                  type: 'function' as const,
-                  name: toolName,
-                  description: convertedTool.description,
-                  parameters: (convertedTool as any).parameters
-                }
-              ]
-            },
-            inputFormat: 'messages',
-            prompt: [
-              {
-                role: 'user',
-                content: [{ type: 'text', text: 'Test schema validation' }]
-              }
-            ]
-          });
+      try {
+        const result = await (model as any).doGenerate({
+          mode: {
+            type: 'regular',
+            tools: allTools
+          },
+          inputFormat: 'messages',
+          prompt: [
+            {
+              role: 'user',
+              content: [{ type: 'text', text: 'Test schema validation' }]
+            }
+          ]
+        });
 
-          expect(result).toBeDefined();
-        } catch (error) {
-          const errorMessage = error instanceof Error ? error.message : String(error);
+        expect(result).toBeDefined();
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : String(error);
 
-          // Only fail if it's a schema validation error
-          if (errorMessage.includes('schema') || errorMessage.includes('parameters')) {
-            errors.push({ toolName, error: errorMessage });
-          }
+        // Only fail if it's a schema validation error
+        if (errorMessage.includes('schema') || errorMessage.includes('parameters')) {
+          throw new Error(
+            `Anthropic schema validation failed: ${errorMessage}`
+          );
         }
+        // Non-schema errors (rate limits, network) are not test failures
       }
-
-      // Report all schema errors at once
-      if (errors.length > 0) {
-        const errorReport = errors
-          .map(({ toolName, error }) => `  - ${toolName}: ${error}`)
-          .join('\n');
-        throw new Error(
-          `Anthropic schema validation failed for ${errors.length} tool(s):\n${errorReport}`
-        );
-      }
-    }, 60000); // 60 second timeout for API calls
+    }, 30000);
   });
 
   describe('Schema Format Validation', () => {
