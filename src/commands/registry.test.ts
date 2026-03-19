@@ -216,6 +216,66 @@ describe('commandRegistry', () => {
       expect(typeof result.content).toBe('string');
     }, 10000); // 10 second timeout
 
+    it('should normalize --help flag to help sub-command', async () => {
+      const registry = getCommandRegistry();
+      const mockExecute = vi.fn().mockResolvedValue({ content: 'help output', success: true });
+      const originalProject = registry.project!;
+
+      try {
+        registry.project = {
+          name: 'project',
+          description: 'Test mock command',
+          execute: mockExecute,
+        };
+
+        await executeCommand('project', ['--help']);
+
+        expect(mockExecute).toHaveBeenCalledWith(['help'], undefined);
+      } finally {
+        registry.project = originalProject;
+      }
+    }, 10000);
+
+    it('should normalize -h flag to help sub-command', async () => {
+      const registry = getCommandRegistry();
+      const mockExecute = vi.fn().mockResolvedValue({ content: 'help output', success: true });
+      const originalProject = registry.project!;
+
+      try {
+        registry.project = {
+          name: 'project',
+          description: 'Test mock command',
+          execute: mockExecute,
+        };
+
+        await executeCommand('project', ['-h']);
+
+        expect(mockExecute).toHaveBeenCalledWith(['help'], undefined);
+      } finally {
+        registry.project = originalProject;
+      }
+    }, 10000);
+
+    it('should normalize --help flag anywhere in args to help sub-command', async () => {
+      const registry = getCommandRegistry();
+      const mockExecute = vi.fn().mockResolvedValue({ content: 'help output', success: true });
+      const originalModel = registry.model!;
+
+      try {
+        registry.model = {
+          name: 'model',
+          description: 'Test mock command',
+          execute: mockExecute,
+        };
+
+        await executeCommand('model', ['list', '--help']);
+
+        expect(mockExecute).toHaveBeenCalledWith(['help'], undefined);
+      } finally {
+        registry.model = originalModel;
+      }
+    }, 10000);
+
     it('should default to empty args array when none provided', async () => {
       const result = await executeCommand('help');
       

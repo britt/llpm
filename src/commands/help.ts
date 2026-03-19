@@ -11,15 +11,16 @@ export const helpCommand: Command = {
     // Handle help subcommand
     if (args.length > 0 && args[0]?.toLowerCase() === 'help') {
       return {
-        content: `❓ Help Command:
+        content: `## Help Command
 
-/help - Show available commands and shortcuts
-/help help - Show this help message
+- \`/help\` — Show available commands and shortcuts
+- \`/help help\` — Show this help message
 
-📝 Description:
+### Description
+
 Displays a comprehensive list of all available commands, keyboard shortcuts, and usage information.
 
-💡 Most commands also support a 'help' subcommand (e.g., /project help).`,
+> Most commands also support a \`help\` subcommand (e.g., \`/project help\`).`,
         success: true
       };
     }
@@ -28,28 +29,32 @@ Displays a comprehensive list of all available commands, keyboard shortcuts, and
     const commands = Object.values(registry);
 
     const helpText = [
-      '🔧 Available Commands:',
+      '## Available Commands',
       '',
-      ...commands.map(cmd => `/${cmd.name} - ${cmd.description}`),
+      ...commands.map(cmd => `- \`/${cmd.name}\` — ${cmd.description}`),
       '',
-      '💡 Get detailed help for any command with: /<command> help',
-      '📋 Example sub-commands:',
-      '• /project help - Show project management help',
-      '• /model help - Show model configuration help',
-      '• /info prompt - Display the current system prompt',
+      '> **Tip:** Get detailed help for any command with `/<command> help` or `/<command> --help`',
       '',
-      '⌨️  Keyboard Shortcuts:',
-      '• Ctrl+A - Move cursor to beginning of input',
-      '• Ctrl+E - Move cursor to end of input',
-      '• Ctrl+U - Clear input line',
-      '• Ctrl+V - Paste from clipboard',
-      '• Shift+Tab - Switch project',
-      '• Option+M - Switch model',
-      '• Up/Down arrows - Navigate input history',
-      '• Ctrl+C - Exit application',
+      '### Examples',
       '',
-      '💬 Regular messages are sent to the AI assistant.',
-      '📝 Type /quit to exit gracefully'
+      '- `/project help` — Show project management help',
+      '- `/model help` — Show model configuration help',
+      '- `/info prompt` — Display the current system prompt',
+      '',
+      '## Keyboard Shortcuts',
+      '',
+      '| Key | Action |',
+      '| --- | --- |',
+      '| **Ctrl+A** | Move cursor to beginning of input |',
+      '| **Ctrl+E** | Move cursor to end of input |',
+      '| **Ctrl+U** | Clear input line |',
+      '| **Ctrl+V** | Paste from clipboard |',
+      '| **Shift+Tab** | Switch project |',
+      '| **Option+M** | Switch model |',
+      '| **Up/Down** | Navigate input history |',
+      '| **Ctrl+C** | Exit application |',
+      '',
+      'Regular messages are sent to the AI assistant. Type `/quit` to exit gracefully.'
     ].join('\n');
 
     debug('Help command result with', commands.length, 'commands');
