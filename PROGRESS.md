@@ -1,5 +1,23 @@
 # PROGRESS.md
 
+## Task 4 (History Viewer): Create HistoryMessage Component - COMPLETE
+- Started: 2026-03-19
+- Tests: 5 passing, 0 failing
+- Build: Successful
+- Linting: Clean (no new errors)
+- Completed: 2026-03-19
+- Notes:
+  - Created HistoryMessage component with memo wrapping for performance
+  - Shows role label with role-based colors (user=cyan, assistant=green, system=yellow, default=gray)
+  - Formats timestamp as HH:MM:SS when present, falls back to [#N] index label
+  - Uses getMessageDisplayContent for message rendering
+  - Accepts optional searchQuery prop (reserved for future highlight support)
+  - TDD: 5 tests written first covering role display, timestamp formatting, index fallback, searchQuery
+
+### Files Added
+- `src/components/HistoryMessage.tsx` - HistoryMessage component
+- `src/components/HistoryMessage.test.tsx` - 5 tests
+
 ## Task: Fix stale project context after switch (#304) - COMPLETE
 - Started: 2026-02-17
 - Tests: 1943 passing, 13 skipped (14 new tests added across 3 files)
