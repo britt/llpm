@@ -3,12 +3,12 @@ title: Updates
 weight: 99
 ---
 
-## 1.10.0 - cli help output and skill metadata schema
+## 1.10.0 - CLI help output and skill metadata schema
 
 - **Date:** 2026-03-19
 - **Version:** 1.10.0
 
-**Summary:** This release includes CLI help rendering improvements, standardized skill tool-permission metadata, and updates to skills documentation.
+**Summary:** This release includes CLI help rendering improvements, standardized skill tool-permission metadata (via `allowed-tools`), and updates to skills documentation.
 
 ### New Features
 
