@@ -6,8 +6,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { formatTimestamp, getRoleColor } from './HistoryMessage';
-import type { Message } from '../types';
+import { formatTimestamp, getRoleColor } from '../utils/historyFormatting';
 
 describe('HistoryMessage Logic', () => {
   describe('formatTimestamp', () => {
