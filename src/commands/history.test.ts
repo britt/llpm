@@ -32,7 +32,7 @@ describe('History Command', () => {
       expect(result.interactive?.type).toBe('history-view');
       if (result.interactive?.type === 'history-view') {
         expect(result.interactive.messages).toHaveLength(20);
-        expect(result.interactive.messages[0].content).toBe('message 10');
+        expect(result.interactive.messages[0]!.content).toBe('message 10');
       }
     });
 
@@ -79,7 +79,7 @@ describe('History Command', () => {
       expect(result.success).toBe(true);
       if (result.interactive?.type === 'history-view') {
         expect(result.interactive.messages).toHaveLength(10);
-        expect(result.interactive.messages[0].content).toBe('message 20');
+        expect(result.interactive.messages[0]!.content).toBe('message 20');
       }
     });
 

@@ -30,7 +30,7 @@ export const historyCommand: Command = {
 **Navigation:**
 - \`↑/↓\` — Scroll one line
 - \`Page Up/Page Down\` — Scroll one page
-- \`Home/End\` — Jump to start/end
+- \`Ctrl+A/Ctrl+E\` — Jump to start/end
 - \`/\` — Search
 - \`n/N\` — Next/previous match
 - \`q\` or \`Esc\` — Close viewer`,
@@ -66,7 +66,7 @@ export const historyCommand: Command = {
     }
 
     // /history N
-    const count = parseInt(args[0], 10);
+    const count = parseInt(args[0] ?? '', 10);
     if (isNaN(count) || count <= 0) {
       return {
         content: `Usage: /history [all | N | help]\n\nExamples:\n  /history      — last ${DEFAULT_MESSAGE_COUNT} messages\n  /history 50   — last 50 messages\n  /history all  — everything`,

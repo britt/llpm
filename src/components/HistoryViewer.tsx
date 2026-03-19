@@ -74,9 +74,9 @@ export function HistoryViewer({ messages, onClose }: HistoryViewerProps) {
       scrollTo(clampedOffset - viewportMessages);
     } else if (key.pageDown) {
       scrollTo(clampedOffset + viewportMessages);
-    } else if (key.home || (key.ctrl && inputChar === 'a')) {
+    } else if (key.ctrl && inputChar === 'a') {
       scrollTo(0);
-    } else if (key.end || (key.ctrl && inputChar === 'e')) {
+    } else if (key.ctrl && inputChar === 'e') {
       scrollTo(maxScroll);
     }
   }, { isActive: !searchMode });
@@ -144,7 +144,7 @@ export function HistoryViewer({ messages, onClose }: HistoryViewerProps) {
       ) : (
         <Box paddingX={1}>
           <Text dimColor>
-            ↑↓ scroll  PgUp/PgDn page  Home/End jump  / search  n/N next/prev  q quit
+            ↑↓ scroll  PgUp/PgDn page  ^A/^E jump  / search  n/N next/prev  q quit
           </Text>
         </Box>
       )}
