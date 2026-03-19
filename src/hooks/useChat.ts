@@ -31,6 +31,7 @@ export function useChat() {
   const [projectSwitchTrigger, setProjectSwitchTrigger] = useState(0);
   const [isProjectSwitching, setIsProjectSwitching] = useState(false);
   const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
+  const [historyViewerMessages, setHistoryViewerMessages] = useState<Message[] | null>(null);
 
   // Message queue state
   const [messageQueue, setMessageQueue] = useState<QueuedMessage[]>([]);
@@ -76,6 +77,7 @@ export function useChat() {
             role: 'assistant',
             content:
               "Hello! I'm LLPM, your AI-powered project manager. How can I help you today?\n\n💡 Type /help to see available commands.",
+            timestamp: Date.now(),
           };
           setMessages([welcomeMessage]);
           shouldSaveRef.current = true; // Mark that we need to save the welcome message
@@ -90,6 +92,7 @@ export function useChat() {
           role: 'assistant',
           content:
             "Hello! I'm LLPM, your AI-powered project manager. How can I help you today?\n\n💡 Type /help to see available commands.",
+          timestamp: Date.now(),
         };
         setMessages([welcomeMessage]);
         shouldSaveRef.current = true; // Mark that we need to save the fallback message
@@ -103,6 +106,7 @@ export function useChat() {
           const notification: Message = {
             role: 'ui-notification',
             content: notificationContent,
+            timestamp: Date.now(),
           };
           setMessages(prev => trimMessages([...prev, notification]));
           shouldSaveRef.current = true;
@@ -203,7 +207,7 @@ export function useChat() {
             return await executeCommand(
               parsed.command as string,
               parsed.args as string[],
-              { messageCount: messagesRef.current.length }
+              { messageCount: messagesRef.current.length, messages: messagesRef.current }
             );
           });
 
@@ -211,6 +215,12 @@ export function useChat() {
           if (result.interactive && result.interactive.type === 'model-select') {
             setModelSelectorModels(result.interactive.models);
             debug('Showing interactive model selector');
+            return;
+          }
+
+          if (result.interactive && result.interactive.type === 'history-view') {
+            setHistoryViewerMessages(result.interactive.messages);
+            debug('Showing history viewer');
             return;
           }
 
@@ -234,6 +244,7 @@ export function useChat() {
               role: 'assistant',
               content:
                 "Hello! I'm LLPM, your AI-powered project manager. How can I help you today?\n\n💡 Type /help to see available commands.",
+              timestamp: Date.now(),
             };
             setMessages([welcomeMessage]);
             shouldSaveRef.current = true; // Mark for saving
@@ -242,6 +253,7 @@ export function useChat() {
             const responseMessage: Message = {
               role: 'ui-notification',
               content: result.content,
+              timestamp: Date.now(),
             };
             setMessages(prev => trimMessages([...prev, responseMessage]));
             shouldSaveRef.current = true; // Mark for saving
@@ -262,6 +274,7 @@ export function useChat() {
           const errorMessage: Message = {
             role: 'ui-notification',
             content: errorContent,
+            timestamp: Date.now(),
           };
           setMessages(prev => trimMessages([...prev, errorMessage]));
           shouldSaveRef.current = true; // Mark for saving
@@ -272,7 +285,7 @@ export function useChat() {
       }
 
       // Handle regular chat messages - establish request context first, then trace
-      const userMessage: Message = { role: 'user', content };
+      const userMessage: Message = { role: 'user', content, timestamp: Date.now() };
 
       debug('Adding user message to state');
       setMessages(prev => trimMessages([...prev, userMessage]));
@@ -326,6 +339,7 @@ export function useChat() {
         const assistantMessage: Message = {
           role: 'assistant',
           content: responseContent,
+          timestamp: Date.now(),
         };
         setMessages(prev => trimMessages([...prev, assistantMessage]));
         shouldSaveRef.current = true; // Mark for saving
@@ -366,6 +380,7 @@ export function useChat() {
         const errorMessage: Message = {
           role: 'assistant',
           content: errorContent,
+          timestamp: Date.now(),
         };
         setMessages(prev => trimMessages([...prev, errorMessage]));
         shouldSaveRef.current = true; // Mark for saving
@@ -461,6 +476,7 @@ export function useChat() {
     const notification: Message = {
       role: 'ui-notification',
       content,
+      timestamp: Date.now(),
     };
     setMessages(prev => trimMessages([...prev, notification]));
     shouldSaveRef.current = true; // Mark for saving
@@ -478,6 +494,7 @@ export function useChat() {
       const responseMessage: Message = {
         role: 'ui-notification',
         content: result.content,
+        timestamp: Date.now(),
       };
       setMessages(prev => trimMessages([...prev, responseMessage]));
       shouldSaveRef.current = true; // Mark for saving
@@ -488,6 +505,7 @@ export function useChat() {
       const errorMessage: Message = {
         role: 'ui-notification',
         content: '❌ Failed to switch model. Please try again.',
+        timestamp: Date.now(),
       };
       setMessages(prev => trimMessages([...prev, errorMessage]));
       shouldSaveRef.current = true; // Mark for saving
@@ -500,6 +518,8 @@ export function useChat() {
     debug('Model selection cancelled');
     setModelSelectorModels(null);
   }, []);
+
+  const closeHistoryViewer = useCallback(() => setHistoryViewerMessages(null), []);
 
   const triggerModelSelector = useCallback(async () => {
     debug('Triggering model selector via hotkey');
@@ -517,6 +537,7 @@ export function useChat() {
         const responseMessage: Message = {
           role: 'ui-notification',
           content: result.content,
+          timestamp: Date.now(),
         };
         setMessages(prev => trimMessages([...prev, responseMessage]));
         shouldSaveRef.current = true; // Mark for saving
@@ -527,6 +548,7 @@ export function useChat() {
       const errorMessage: Message = {
         role: 'ui-notification',
         content: '❌ Failed to open model selector. Please try again.',
+        timestamp: Date.now(),
       };
       setMessages(prev => trimMessages([...prev, errorMessage]));
       shouldSaveRef.current = true; // Mark for saving
@@ -572,6 +594,8 @@ export function useChat() {
     queueLength: messageQueue.length,
     isProcessing,
     queuedMessages: messageQueue,
-    selectedSkills
+    selectedSkills,
+    historyViewerMessages,
+    closeHistoryViewer,
   };
 }

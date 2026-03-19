@@ -1,5 +1,59 @@
 # PROGRESS.md
 
+## Task: /history Command with Scrollable Viewer (Issue #256) - COMPLETE
+- Started: 2026-03-19
+- Tests: 1980 passing, 0 failing (1 pre-existing e2e timeout excluded)
+- Coverage (new files):
+  - history.ts: Stmts=93.5% Funcs=100% Branches=83.3%
+  - HistoryMessage.tsx: Stmts=100% Funcs=100% Branches=80%
+  - HistorySearchBar.tsx: Stmts=74.3% Funcs=100% Branches=100%
+  - HistoryViewer.tsx: Stmts=57.5% Funcs=40% Branches=58.3%
+- Coverage (overall): Stmts=83.5%, Functions=95.1%, Branches=85.5%
+- Build: Successful
+- Linting: Clean (0 errors, 571 pre-existing warnings)
+- Typecheck: Clean
+- Version: 1.10.0 -> 1.11.0 (MINOR bump for new feature)
+- Completed: 2026-03-19
+- Notes: Implemented scrollable history viewer with keyboard navigation (arrow keys, PgUp/PgDn, Ctrl+A/E) and search (/, n/N for next/prev match). Components: HistoryViewer, HistoryMessage, HistorySearchBar. Command supports `/history`, `/history all`, `/history N`, `/history help`.
+
+## Task 6 (History Viewer): Create HistoryViewer Component - COMPLETE
+- Started: 2026-03-19
+- Tests: 5 passing, 0 failing
+- Build: Successful
+- Linting: Clean (no new errors)
+- Completed: 2026-03-19
+- Notes:
+  - Created main scrollable HistoryViewer container component
+  - Manages scroll position, search mode, search query, and match navigation
+  - Uses useScreenSize from fullscreen-ink for viewport calculation
+  - Renders HistoryMessage for each visible message, HistorySearchBar when in search mode
+  - Keyboard: q/Esc close, arrows scroll, PgUp/PgDn page, Home/End jump, / search, n/N match nav
+  - Search: case-insensitive content match with auto-scroll to first match, wrapping navigation
+  - Empty state shows "No messages in history." with close hint
+  - TDD: 5 tests written first covering rendering, header, keybinds, close, empty state
+
+### Files Added
+- `src/components/HistoryViewer.tsx` - HistoryViewer component
+- `src/components/HistoryViewer.test.tsx` - 5 tests
+
+## Task 4 (History Viewer): Create HistoryMessage Component - COMPLETE
+- Started: 2026-03-19
+- Tests: 5 passing, 0 failing
+- Build: Successful
+- Linting: Clean (no new errors)
+- Completed: 2026-03-19
+- Notes:
+  - Created HistoryMessage component with memo wrapping for performance
+  - Shows role label with role-based colors (user=cyan, assistant=green, system=yellow, default=gray)
+  - Formats timestamp as HH:MM:SS when present, falls back to [#N] index label
+  - Uses getMessageDisplayContent for message rendering
+  - Accepts optional searchQuery prop (reserved for future highlight support)
+  - TDD: 5 tests written first covering role display, timestamp formatting, index fallback, searchQuery
+
+### Files Added
+- `src/components/HistoryMessage.tsx` - HistoryMessage component
+- `src/components/HistoryMessage.test.tsx` - 5 tests
+
 ## Task: Fix stale project context after switch (#304) - COMPLETE
 - Started: 2026-02-17
 - Tests: 1943 passing, 13 skipped (14 new tests added across 3 files)

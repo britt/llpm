@@ -505,9 +505,12 @@ describe('Model Command', () => {
       const result = await modelCommand.execute(['switch']);
 
       expect(result.success).toBe(true);
-      expect(result.interactive?.models).toBeDefined();
-      // Models should be sorted by recommendedRank
-      expect(result!.interactive!.models![0]!.id).toContain('gpt-4o');
+      expect(result.interactive?.type).toBe('model-select');
+      if (result.interactive?.type === 'model-select') {
+        expect(result.interactive.models).toBeDefined();
+        // Models should be sorted by recommendedRank
+        expect(result.interactive.models[0]!.id).toContain('gpt-4o');
+      }
     });
   });
 });
