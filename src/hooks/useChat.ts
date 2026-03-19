@@ -31,6 +31,7 @@ export function useChat() {
   const [projectSwitchTrigger, setProjectSwitchTrigger] = useState(0);
   const [isProjectSwitching, setIsProjectSwitching] = useState(false);
   const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
+  const [historyViewerMessages, setHistoryViewerMessages] = useState<Message[] | null>(null);
 
   // Message queue state
   const [messageQueue, setMessageQueue] = useState<QueuedMessage[]>([]);
@@ -214,6 +215,12 @@ export function useChat() {
           if (result.interactive && result.interactive.type === 'model-select') {
             setModelSelectorModels(result.interactive.models);
             debug('Showing interactive model selector');
+            return;
+          }
+
+          if (result.interactive && result.interactive.type === 'history-view') {
+            setHistoryViewerMessages(result.interactive.messages);
+            debug('Showing history viewer');
             return;
           }
 
@@ -512,6 +519,8 @@ export function useChat() {
     setModelSelectorModels(null);
   }, []);
 
+  const closeHistoryViewer = useCallback(() => setHistoryViewerMessages(null), []);
+
   const triggerModelSelector = useCallback(async () => {
     debug('Triggering model selector via hotkey');
     setIsLoading(true);
@@ -585,6 +594,8 @@ export function useChat() {
     queueLength: messageQueue.length,
     isProcessing,
     queuedMessages: messageQueue,
-    selectedSkills
+    selectedSkills,
+    historyViewerMessages,
+    closeHistoryViewer,
   };
 }
