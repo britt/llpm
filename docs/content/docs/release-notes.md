@@ -3,32 +3,30 @@ title: Updates
 weight: 99
 ---
 
-## 1.10.0 - release notes
+## 1.10.0 - cli help output and skill metadata schema
 
 - **Date:** 2026-03-19
 - **Version:** 1.10.0
 
-**Summary:** This release includes the updates listed below.
+**Summary:** This release includes CLI help rendering improvements, standardized skill tool-permission metadata, and updates to skills documentation.
 
-```json
-{
-  "Additional Changes": [
-    "The skills guides and examples were updated to be less tied to specific vendors and to reflect the current set of built-in skills.",
-    "The release documentation for v1.9.1 was rewritten for clarity and consistency.",
-    "The package was released as v1.10.0 with maintenance improvements carried forward from the prior v1.9.1 work."
-  ],
-  "Breaking Changes": [
-    "Skill metadata now uses a single, consistent field name for tool permissions and a single value format."
-  ],
-  "Bug Fixes": [
-    "Skill documentation no longer references incorrect or unsupported metadata fields."
-  ],
-  "New Features": [
-    "The command-line help output is now easier to read and more consistent across commands."
-  ]
-}
+### New Features
 
-```
+- Added Markdown rendering for `/help` output and standardized `--help`/`-h` handling across commands.
+
+### Breaking Changes
+
+- Updated skill frontmatter to require `allowed-tools` as a space-delimited string for tool permissions.
+
+### Bug Fixes
+
+- Fixed skills documentation examples to use the current frontmatter schema and to remove unsupported metadata fields.
+
+### Additional Changes
+
+- Updated skills guides to use vendor-neutral tool placeholders and to reflect the current set of built-in skills.
+- Updated v1.9.1 release notes to use structured Markdown sections and consistent wording.
+- Updated the package version from `1.9.1` to `1.10.0`.
 
 ## 1.9.1 - project switch chat reload
 
