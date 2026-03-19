@@ -45,6 +45,7 @@ describe('History Command', () => {
       const result = await historyCommand.execute([], { messages });
 
       expect(result.success).toBe(true);
+      expect(result.interactive?.type).toBe('history-view');
       if (result.interactive?.type === 'history-view') {
         expect(result.interactive.messages).toHaveLength(5);
       }
@@ -61,9 +62,17 @@ describe('History Command', () => {
       const result = await historyCommand.execute(['all'], { messages });
 
       expect(result.success).toBe(true);
+      expect(result.interactive?.type).toBe('history-view');
       if (result.interactive?.type === 'history-view') {
         expect(result.interactive.messages).toHaveLength(50);
       }
+    });
+
+    it('should handle empty messages for /history all', async () => {
+      const result = await historyCommand.execute(['all'], { messages: [] });
+      expect(result.success).toBe(true);
+      expect(result.interactive).toBeUndefined();
+      expect(result.content).toContain('No messages');
     });
   });
 
@@ -77,6 +86,7 @@ describe('History Command', () => {
       const result = await historyCommand.execute(['10'], { messages });
 
       expect(result.success).toBe(true);
+      expect(result.interactive?.type).toBe('history-view');
       if (result.interactive?.type === 'history-view') {
         expect(result.interactive.messages).toHaveLength(10);
         expect(result.interactive.messages[0]!.content).toBe('message 20');
@@ -93,6 +103,18 @@ describe('History Command', () => {
       const result = await historyCommand.execute(['0'], { messages: [] });
       expect(result.success).toBe(false);
     });
+
+    it('should reject negative numbers', async () => {
+      const result = await historyCommand.execute(['-5'], { messages: [] });
+      expect(result.success).toBe(false);
+    });
+
+    it('should handle empty messages for /history N', async () => {
+      const result = await historyCommand.execute(['10'], { messages: [] });
+      expect(result.success).toBe(true);
+      expect(result.interactive).toBeUndefined();
+      expect(result.content).toContain('No messages');
+    });
   });
 
   describe('/history help', () => {
@@ -106,6 +128,22 @@ describe('History Command', () => {
   describe('Empty history', () => {
     it('should handle empty messages gracefully', async () => {
       const result = await historyCommand.execute([], { messages: [] });
+
+      expect(result.success).toBe(true);
+      expect(result.content).toContain('No messages');
+    });
+  });
+
+  describe('Missing context', () => {
+    it('should handle undefined context gracefully', async () => {
+      const result = await historyCommand.execute([]);
+
+      expect(result.success).toBe(true);
+      expect(result.content).toContain('No messages');
+    });
+
+    it('should handle undefined context for /history all', async () => {
+      const result = await historyCommand.execute(['all']);
 
       expect(result.success).toBe(true);
       expect(result.content).toContain('No messages');
