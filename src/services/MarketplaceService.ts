@@ -1,8 +1,15 @@
-import { readFile, writeFile, mkdir, readdir } from 'fs/promises';
+import { readFile, writeFile, mkdir, readdir, cp, rm } from 'fs/promises';
 import { existsSync } from 'fs';
 import { dirname, join } from 'path';
+import { execSync } from 'child_process';
 import matter from 'gray-matter';
-import type { MarketplaceConfig, MarketplaceSkillIndex } from '../types/skills';
+import type { MarketplaceConfig, MarketplaceSkillIndex, InstalledSkillMetadata } from '../types/skills';
+
+export interface InstallResult {
+  installed: boolean;
+  conflict?: boolean;
+  existingPath?: string;
+}
 
 export class MarketplaceService {
   constructor(
@@ -126,5 +133,140 @@ export class MarketplaceService {
       s => s.name.toLowerCase().includes(lowerQuery) ||
            s.description.toLowerCase().includes(lowerQuery)
     );
+  }
+
+  async installSkillFromDir(
+    skillName: string,
+    repoDir: string,
+    marketplaceName: string,
+    repo: string,
+    options: { force?: boolean } = {},
+  ): Promise<InstallResult> {
+    const sourcePath = join(repoDir, skillName);
+    const targetPath = join(this.skillsDir, skillName);
+
+    if (!existsSync(sourcePath)) {
+      throw new Error(`Skill "${skillName}" not found in repository`);
+    }
+
+    if (existsSync(targetPath) && !options.force) {
+      return { installed: false, conflict: true, existingPath: targetPath };
+    }
+
+    if (!existsSync(this.skillsDir)) {
+      await mkdir(this.skillsDir, { recursive: true });
+    }
+    await cp(sourcePath, targetPath, { recursive: true, force: true });
+
+    await this.recordInstalledSkill({
+      name: skillName,
+      marketplace: marketplaceName,
+      repo,
+      installedAt: new Date().toISOString(),
+    });
+
+    return { installed: true };
+  }
+
+  async syncMarketplace(name: string): Promise<MarketplaceSkillIndex[]> {
+    const marketplaces = await this.listMarketplaces();
+    const marketplace = marketplaces.find(m => m.name === name);
+    if (!marketplace) throw new Error(`Marketplace "${name}" not found`);
+
+    const tempCloneDir = join(this.cacheDir, name, '_repo');
+
+    try {
+      if (existsSync(tempCloneDir)) {
+        await rm(tempCloneDir, { recursive: true, force: true });
+      }
+
+      execSync(
+        `git clone --no-checkout --depth 1 https://github.com/${marketplace.repo}.git "${tempCloneDir}"`,
+        { stdio: 'pipe' },
+      );
+      execSync(
+        `git -C "${tempCloneDir}" sparse-checkout set --no-cone "*/SKILL.md"`,
+        { stdio: 'pipe' },
+      );
+      execSync(
+        `git -C "${tempCloneDir}" checkout`,
+        { stdio: 'pipe' },
+      );
+
+      const index = await this.buildIndexFromDir(tempCloneDir, name);
+      await this.cacheIndex(name, index);
+      return index;
+    } finally {
+      if (existsSync(tempCloneDir)) {
+        await rm(tempCloneDir, { recursive: true, force: true });
+      }
+    }
+  }
+
+  async installSkill(
+    skillName: string,
+    marketplaceName: string,
+    options: { force?: boolean } = {},
+  ): Promise<InstallResult> {
+    const marketplaces = await this.listMarketplaces();
+    const marketplace = marketplaces.find(m => m.name === marketplaceName);
+    if (!marketplace) throw new Error(`Marketplace "${marketplaceName}" not found`);
+
+    const tempCloneDir = join(this.cacheDir, '_install-temp');
+    try {
+      if (existsSync(tempCloneDir)) {
+        await rm(tempCloneDir, { recursive: true, force: true });
+      }
+
+      execSync(
+        `git clone --no-checkout --depth 1 https://github.com/${marketplace.repo}.git "${tempCloneDir}"`,
+        { stdio: 'pipe' },
+      );
+      execSync(
+        `git -C "${tempCloneDir}" sparse-checkout set --no-cone "${skillName}"`,
+        { stdio: 'pipe' },
+      );
+      execSync(
+        `git -C "${tempCloneDir}" checkout`,
+        { stdio: 'pipe' },
+      );
+
+      return await this.installSkillFromDir(skillName, tempCloneDir, marketplaceName, marketplace.repo, options);
+    } finally {
+      if (existsSync(tempCloneDir)) {
+        await rm(tempCloneDir, { recursive: true, force: true });
+      }
+    }
+  }
+
+  async removeSkill(skillName: string): Promise<void> {
+    const targetPath = join(this.skillsDir, skillName);
+    if (!existsSync(targetPath)) {
+      throw new Error(`Skill "${skillName}" is not installed`);
+    }
+    await rm(targetPath, { recursive: true, force: true });
+
+    const config = await this.readConfig();
+    const installed: InstalledSkillMetadata[] = (config.installedSkills as InstalledSkillMetadata[]) || [];
+    config.installedSkills = installed.filter(s => s.name !== skillName);
+    await this.writeConfig(config);
+  }
+
+  async getInstalledSkills(): Promise<InstalledSkillMetadata[]> {
+    const config = await this.readConfig();
+    return (config.installedSkills as InstalledSkillMetadata[]) || [];
+  }
+
+  private async recordInstalledSkill(meta: InstalledSkillMetadata): Promise<void> {
+    const config = await this.readConfig();
+    const installed: InstalledSkillMetadata[] = (config.installedSkills as InstalledSkillMetadata[]) || [];
+    const idx = installed.findIndex(s => s.name === meta.name);
+    if (idx >= 0) {
+      installed[idx] = meta;
+    } else {
+      installed.push(meta);
+    }
+    config.installedSkills = installed;
+    await this.writeConfig(config);
   }
 }

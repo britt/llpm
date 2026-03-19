@@ -226,3 +226,128 @@ describe('MarketplaceService sync and search', () => {
     expect(existsSync(join(cacheDir, 'test', 'index.json'))).toBe(true);
   });
 });
+
+describe('MarketplaceService install/remove', () => {
+  let tempDir: string;
+  let configFile: string;
+  let skillsDir: string;
+  let service: MarketplaceService;
+
+  beforeEach(async () => {
+    tempDir = await mkdtemp(join(tmpdir(), 'llpm-marketplace-'));
+    configFile = join(tempDir, 'config.json');
+    skillsDir = join(tempDir, 'skills');
+    await writeFile(configFile, JSON.stringify({ projects: {} }));
+    service = new MarketplaceService(configFile, skillsDir);
+  });
+
+  afterEach(async () => {
+    await rm(tempDir, { recursive: true, force: true });
+  });
+
+  it('installSkillFromDir copies skill directory to skillsDir', async () => {
+    const fakeRepoDir = join(tempDir, 'fake-repo');
+    const skillDir = join(fakeRepoDir, 'code-review');
+    await mkdir(skillDir, { recursive: true });
+    await writeFile(join(skillDir, 'SKILL.md'), [
+      '---',
+      'name: code-review',
+      'description: Review code for quality',
+      '---',
+      '# Code Review',
+      'Instructions here.',
+    ].join('\n'));
+
+    const result = await service.installSkillFromDir(
+      'code-review', fakeRepoDir, 'anthropics-skills', 'anthropics/skills',
+    );
+
+    expect(result.installed).toBe(true);
+    expect(existsSync(join(skillsDir, 'code-review', 'SKILL.md'))).toBe(true);
+  });
+
+  it('installSkillFromDir detects conflict with existing skill', async () => {
+    const existingSkillDir = join(skillsDir, 'code-review');
+    await mkdir(existingSkillDir, { recursive: true });
+    await writeFile(join(existingSkillDir, 'SKILL.md'), '---\nname: code-review\ndescription: Existing\n---\n');
+
+    const fakeRepoDir = join(tempDir, 'fake-repo');
+    await mkdir(join(fakeRepoDir, 'code-review'), { recursive: true });
+    await writeFile(join(fakeRepoDir, 'code-review', 'SKILL.md'), '---\nname: code-review\ndescription: New\n---\n');
+
+    const result = await service.installSkillFromDir(
+      'code-review', fakeRepoDir, 'anthropics-skills', 'anthropics/skills',
+    );
+
+    expect(result.installed).toBe(false);
+    expect(result.conflict).toBe(true);
+    expect(result.existingPath).toBeTruthy();
+  });
+
+  it('installSkillFromDir with force overwrites existing', async () => {
+    const existingSkillDir = join(skillsDir, 'code-review');
+    await mkdir(existingSkillDir, { recursive: true });
+    await writeFile(join(existingSkillDir, 'SKILL.md'), '---\nname: code-review\ndescription: Existing\n---\n');
+
+    const fakeRepoDir = join(tempDir, 'fake-repo');
+    await mkdir(join(fakeRepoDir, 'code-review'), { recursive: true });
+    await writeFile(join(fakeRepoDir, 'code-review', 'SKILL.md'), '---\nname: code-review\ndescription: New version\n---\n');
+
+    const result = await service.installSkillFromDir(
+      'code-review', fakeRepoDir, 'anthropics-skills', 'anthropics/skills',
+      { force: true },
+    );
+
+    expect(result.installed).toBe(true);
+  });
+
+  it('installSkillFromDir records installed skill metadata', async () => {
+    const fakeRepoDir = join(tempDir, 'fake-repo');
+    await mkdir(join(fakeRepoDir, 'code-review'), { recursive: true });
+    await writeFile(join(fakeRepoDir, 'code-review', 'SKILL.md'), '---\nname: code-review\ndescription: Review\n---\n');
+
+    await service.installSkillFromDir(
+      'code-review', fakeRepoDir, 'anthropics-skills', 'anthropics/skills',
+    );
+
+    const installed = await service.getInstalledSkills();
+    expect(installed).toHaveLength(1);
+    expect(installed[0].name).toBe('code-review');
+    expect(installed[0].marketplace).toBe('anthropics-skills');
+    expect(installed[0].repo).toBe('anthropics/skills');
+    expect(installed[0].installedAt).toBeTruthy();
+  });
+
+  it('installSkillFromDir throws for missing skill in repo', async () => {
+    const fakeRepoDir = join(tempDir, 'fake-repo');
+    await mkdir(fakeRepoDir, { recursive: true });
+
+    await expect(service.installSkillFromDir(
+      'nonexistent', fakeRepoDir, 'test', 'test/repo',
+    )).rejects.toThrow(/not found in repository/);
+  });
+
+  it('removeSkill removes installed skill and metadata', async () => {
+    const fakeRepoDir = join(tempDir, 'fake-repo');
+    await mkdir(join(fakeRepoDir, 'code-review'), { recursive: true });
+    await writeFile(join(fakeRepoDir, 'code-review', 'SKILL.md'), '---\nname: code-review\ndescription: Review\n---\n');
+
+    await service.installSkillFromDir('code-review', fakeRepoDir, 'anthropics-skills', 'anthropics/skills');
+
+    await service.removeSkill('code-review');
+    expect(existsSync(join(skillsDir, 'code-review'))).toBe(false);
+
+    const installed = await service.getInstalledSkills();
+    expect(installed.find(s => s.name === 'code-review')).toBeUndefined();
+  });
+
+  it('removeSkill throws for non-installed skill', async () => {
+    await expect(service.removeSkill('nonexistent'))
+      .rejects.toThrow(/not installed/);
+  });
+
+  it('getInstalledSkills returns empty when none installed', async () => {
+    const installed = await service.getInstalledSkills();
+    expect(installed).toEqual([]);
+  });
+});
