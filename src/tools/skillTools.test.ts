@@ -2,7 +2,7 @@
  * Tests for skill management tools
  */
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { loadSkillsTool, listAvailableSkillsTool } from './skillTools';
+import { loadSkillsTool, listAvailableSkillsTool, installSkillTool, searchMarketplaceSkillsTool } from './skillTools';
 import type { Skill } from '../types/skills';
 
 // Mock the SkillRegistry
@@ -401,8 +401,6 @@ vi.mock('../utils/config', () => ({
   CONFIG_FILE: '/tmp/test-config.json',
   CONFIG_DIR: '/tmp/test-config',
 }));
-
-import { installSkillTool, searchMarketplaceSkillsTool } from './skillTools';
 
 describe('Marketplace Skill Tools', () => {
   beforeEach(() => {

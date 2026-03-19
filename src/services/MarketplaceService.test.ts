@@ -25,8 +25,8 @@ describe('MarketplaceService config', () => {
     await service.addMarketplace('anthropics/skills');
     const list = await service.listMarketplaces();
     expect(list).toHaveLength(1);
-    expect(list[0].repo).toBe('anthropics/skills');
-    expect(list[0].name).toBe('anthropics-skills');
+    expect(list[0]!.repo).toBe('anthropics/skills');
+    expect(list[0]!.name).toBe('anthropics-skills');
   });
 
   it('addMarketplace rejects duplicate repos', async () => {
@@ -53,7 +53,7 @@ describe('MarketplaceService config', () => {
     const service2 = new MarketplaceService(configFile, join(tempDir, 'skills'));
     const list = await service2.listMarketplaces();
     expect(list).toHaveLength(1);
-    expect(list[0].repo).toBe('anthropics/skills');
+    expect(list[0]!.repo).toBe('anthropics/skills');
   });
 
   it('addMarketplace returns the created config', async () => {
@@ -107,8 +107,8 @@ describe('MarketplaceService sync and search', () => {
 
     const index = await service.getCachedIndex('anthropics-skills');
     expect(index).toHaveLength(2);
-    expect(index[0].name).toBe('code-review');
-    expect(index[1].name).toBe('tdd');
+    expect(index[0]!.name).toBe('code-review');
+    expect(index[1]!.name).toBe('tdd');
   });
 
   it('searchSkills searches across all cached indexes', async () => {
@@ -129,7 +129,7 @@ describe('MarketplaceService sync and search', () => {
 
     const results = await service.searchSkills('review');
     expect(results).toHaveLength(1);
-    expect(results[0].name).toBe('code-review');
+    expect(results[0]!.name).toBe('code-review');
   });
 
   it('searchSkills returns all skills with empty query', async () => {
@@ -162,7 +162,7 @@ describe('MarketplaceService sync and search', () => {
 
     const results = await service.searchSkills('pull requests');
     expect(results).toHaveLength(1);
-    expect(results[0].name).toBe('code-review');
+    expect(results[0]!.name).toBe('code-review');
   });
 
   it('buildIndexFromDir parses SKILL.md frontmatter', async () => {
@@ -190,7 +190,7 @@ describe('MarketplaceService sync and search', () => {
     const index = await service.buildIndexFromDir(repoDir, 'test-marketplace');
     expect(index).toHaveLength(2);
     expect(index.map(s => s.name).sort()).toEqual(['another-skill', 'my-skill']);
-    expect(index[0].marketplace).toBe('test-marketplace');
+    expect(index[0]!.marketplace).toBe('test-marketplace');
   });
 
   it('buildIndexFromDir skips directories without SKILL.md', async () => {
@@ -209,7 +209,7 @@ describe('MarketplaceService sync and search', () => {
 
     const index = await service.buildIndexFromDir(repoDir, 'test-marketplace');
     expect(index).toHaveLength(1);
-    expect(index[0].name).toBe('valid-skill');
+    expect(index[0]!.name).toBe('valid-skill');
   });
 
   it('cacheIndex writes and getCachedIndex reads', async () => {
@@ -312,10 +312,10 @@ describe('MarketplaceService install/remove', () => {
 
     const installed = await service.getInstalledSkills();
     expect(installed).toHaveLength(1);
-    expect(installed[0].name).toBe('code-review');
-    expect(installed[0].marketplace).toBe('anthropics-skills');
-    expect(installed[0].repo).toBe('anthropics/skills');
-    expect(installed[0].installedAt).toBeTruthy();
+    expect(installed[0]!.name).toBe('code-review');
+    expect(installed[0]!.marketplace).toBe('anthropics-skills');
+    expect(installed[0]!.repo).toBe('anthropics/skills');
+    expect(installed[0]!.installedAt).toBeTruthy();
   });
 
   it('installSkillFromDir throws for missing skill in repo', async () => {
