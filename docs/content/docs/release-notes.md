@@ -20,7 +20,7 @@ weight: 99
 
 ### Bug Fixes
 
-- Fixed skills documentation examples to use the current frontmatter schema and to remove unsupported metadata fields.
+- Corrected skills documentation examples to use the current frontmatter schema and to remove unsupported metadata fields.
 
 ### Additional Changes
 
