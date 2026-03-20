@@ -3,35 +3,36 @@ title: Updates
 weight: 99
 ---
 
-## 1.11.1 - maintenance update
+## 1.11.1 - `/history` viewer and marketplace skills
 
 - **Date:** 2026-03-19
 - **Version:** 1.11.1
 
-**Summary:** This release includes maintenance updates and stability improvements.
+**Summary:** This release includes an interactive `/history` viewer, marketplace-backed skill discovery and installation, and related documentation, refactors, and security hardening.
 
-{
-  "Additional Changes": [
-    "The history viewer rollout is now fully documented with updated keybindings and expanded manual verification guidance. This updates `/history` documentation, records completion status in `PROGRESS.md`, and adds detailed verification scenarios (including quick smoke test updates and scenarios 10–14 in `VERIFICATION_PLAN.md`) to cover both history viewing and marketplace prerequisites.",
-    "History formatting logic has been refactored into a shared module to simplify maintenance and testing. This extracts history formatting utilities into a separate module, updates imports, exports HistoryMessage helper functions, and rewrites tests to exercise the extracted logic rather than rendering.",
-    "The project versioning and TypeScript build hygiene have been updated to reflect the latest release state. This bumps the package version through `1.11.0` to `1.11.1` and includes TypeScript typecheck fixes and test cleanup (including non-null assertions and consolidated imports) to keep CI stable.",
-    "Planning for upcoming help system work is now captured to guide future implementation and testing. This adds a planning document describing intended help-system improvements and associated test coverage expectations."
-  ],
-  "Bug Fixes": [
-    "The `/history` command now handles more edge cases and invalid inputs more reliably when generating interactive output. This tightens argument validation, adds stricter interactive type checks, and expands tests for help/empty-history behavior and slicing boundaries.",
-    "History message rendering logic now updates consistently when the underlying message object changes to prevent stale UI output. This updates the `HistoryMessage` hook to depend on the full message object in `useMemo` rather than partial fields and adds regression coverage.",
-    "History parsing now rejects invalid roles and better handles timestamp and content edge cases to avoid malformed entries in the viewer. This adds role validation in `LogStringToMessage` and extends tests for timestamp parsing and content boundary conditions."
-  ],
-  "New Features": [
-    "Users can now browse prior chat output in an interactive history viewer that supports scrolling and searching from the command line. This adds Ink components (HistoryViewer, HistorySearchBar, and HistoryMessage) with keyboard navigation, match indicators, role-colored labels, and an interactive `history-view` `CommandResult` returned by `/history` through `useChat` into `ChatInterface`.",
-    "The CLI can now install and discover skills from a configured marketplace instead of relying only on local sources. This introduces marketplace-backed tools (`search_marketplace_skills`, `install_skill`), adds `SkillSource.marketplace` and marketplace-aware source tagging in `SkillRegistry`, and implements a JSON-configured `MarketplaceService` with index caching/building and cross-marketplace search tests.",
-    "Messages can now optionally include timestamps so history and other views can present more contextual metadata to the user. This adds an optional `timestamp` field and begins wiring it through message creation and serialization paths with supporting type updates."
-  ],
-  "Security": [
-    "Automation workflows that create or manage pull requests now use a GitHub token with pull-request write permissions instead of an SSH deploy key. This updates the vouch manage-by-issue and manage-by-discussion workflows to run in PR mode with `pull-requests: write` and removes SSH deploy key usage.",
-    "Marketplace syncing and skill install/remove flows now validate inputs more strictly to reduce the risk of unsafe repository or skill name usage. This adds strict validation for marketplace repo and skill names and introduces fully mocked, injectable shell-execution tests covering marketplace sync and skill installation/removal."
-  ]
-}
+### New Features
+
+- Added an interactive `/history` viewer with scrolling and search using Ink components (`HistoryViewer`, `HistorySearchBar`, `HistoryMessage`) and keyboard navigation.
+- Added marketplace-backed skill discovery and installation via `search_marketplace_skills` and `install_skill`, including `SkillSource.marketplace` and a JSON-configured `MarketplaceService` with caching.
+- Added an optional `timestamp` field to messages and began wiring it through creation and serialization paths.
+
+### Bug Fixes
+
+- Fixed `/history` argument validation and interactive output edge cases, with expanded tests for empty history and slicing boundaries.
+- Fixed stale history message rendering by updating the `HistoryMessage` hook `useMemo` dependency to the full message object and adding regression coverage.
+- Fixed history parsing by validating roles in `LogStringToMessage` and improving timestamp and content edge-case handling with additional tests.
+
+### Security
+
+- Updated PR automation workflows to use a GitHub token with `pull-requests: write` permissions and removed SSH deploy key usage.
+- Hardened marketplace sync and skill install and remove flows by adding strict marketplace repository and skill name validation with fully mocked shell-execution tests.
+
+### Additional Changes
+
+- Updated `/history` documentation with keybindings and expanded manual verification guidance.
+- Refactored history formatting into a shared module and updated tests to target the extracted utilities.
+- Updated package versioning to `1.11.1` and tightened TypeScript typecheck and test hygiene to keep CI stable.
+- Added a help-system planning document outlining intended improvements and test coverage expectations.
 
 
 ## 1.10.0 - CLI help output and skill metadata schema
