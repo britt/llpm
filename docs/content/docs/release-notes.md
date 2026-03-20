@@ -8,7 +8,7 @@ weight: 99
 - **Date:** 2026-03-19
 - **Version:** 1.11.1
 
-**Summary:** This release includes an interactive `/history` viewer, marketplace-backed skill discovery and installation, and related documentation, refactors, and security hardening.
+**Summary:** This release includes an interactive `/history` viewer, marketplace-backed skill discovery and installation, and related documentation, refactors, and security updates.
 
 ### New Features
 
