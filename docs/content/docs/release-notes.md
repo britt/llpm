@@ -3,6 +3,37 @@ title: Updates
 weight: 99
 ---
 
+## 1.11.1 - `/history` viewer and marketplace skills
+
+- **Date:** 2026-03-19
+- **Version:** 1.11.1
+
+**Summary:** This release includes an interactive `/history` viewer, marketplace-backed skill discovery and installation, and related documentation, refactors, and security updates.
+
+### New Features
+
+- Added an interactive `/history` viewer with scrolling and search using Ink components (`HistoryViewer`, `HistorySearchBar`, `HistoryMessage`) and keyboard navigation.
+- Added marketplace-backed skill discovery and installation via `search_marketplace_skills` and `install_skill`, including `SkillSource.marketplace` and a JSON-configured `MarketplaceService` with caching.
+- Added an optional `timestamp` field to messages and began wiring it through creation and serialization paths.
+
+### Bug Fixes
+
+- Fixed `/history` argument validation and interactive output edge cases, with expanded tests for empty history and slicing boundaries.
+- Fixed stale history message rendering by updating the `HistoryMessage` hook `useMemo` dependency to the full message object and adding regression coverage.
+- Fixed history parsing by validating roles in `LogStringToMessage` and improving timestamp and content edge-case handling with additional tests.
+
+### Security
+
+- Updated PR automation workflows to use a GitHub token with `pull-requests: write` permissions and removed SSH deploy key usage.
+- Updated marketplace sync and skill install and remove flows to add strict marketplace repository and skill name validation with fully mocked shell-execution tests.
+
+### Additional Changes
+
+- Updated `/history` documentation with keybindings and expanded manual verification guidance.
+- Updated history formatting by extracting shared utilities into a separate module and updating tests to target the extracted utilities.
+- Updated package versioning to `1.11.1` and tightened TypeScript typecheck and test hygiene to keep CI stable.
+- Added a help-system planning document outlining intended improvements and test coverage expectations.
+
 ## 1.10.0 - CLI help output and skill metadata schema
 
 - **Date:** 2026-03-19

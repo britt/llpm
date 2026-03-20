@@ -62,6 +62,7 @@ Skills with the same name are loaded based on priority (higher priority wins).
 ## Learn More
 
 - [Creating Skills](creating-skills) - How to create custom skills
+- [Skill Marketplace](skill-marketplace) - Install skills from marketplace repositories
 - [Planning Skills](planning-skills) - Project planning and decomposition
 - [Visualization Skills](visualization-skills) - Diagrams and visual representations
 - [Communication Skills](communication-skills) - Stakeholder updates and meetings
