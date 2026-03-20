@@ -25,15 +25,14 @@ weight: 99
 ### Security
 
 - Updated PR automation workflows to use a GitHub token with `pull-requests: write` permissions and removed SSH deploy key usage.
-- Hardened marketplace sync and skill install and remove flows by adding strict marketplace repository and skill name validation with fully mocked shell-execution tests.
+- Updated marketplace sync and skill install and remove flows to add strict marketplace repository and skill name validation with fully mocked shell-execution tests.
 
 ### Additional Changes
 
 - Updated `/history` documentation with keybindings and expanded manual verification guidance.
-- Refactored history formatting into a shared module and updated tests to target the extracted utilities.
+- Updated history formatting by extracting shared utilities into a separate module and updating tests to target the extracted utilities.
 - Updated package versioning to `1.11.1` and tightened TypeScript typecheck and test hygiene to keep CI stable.
 - Added a help-system planning document outlining intended improvements and test coverage expectations.
-
 
 ## 1.10.0 - CLI help output and skill metadata schema
 
