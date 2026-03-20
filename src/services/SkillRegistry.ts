@@ -48,6 +48,7 @@ export class SkillRegistry extends EventEmitter {
   private skills: Map<string, Skill> = new Map();
   private skillMetadata: Map<string, SkillMetadata> = new Map();
   private config: SkillsConfig;
+  private marketplaceSkillNames: Set<string> = new Set();
 
   constructor(config: Partial<SkillsConfig> = {}) {
     super();
@@ -368,6 +369,26 @@ export class SkillRegistry extends EventEmitter {
     } as SkillEvent);
 
     return result.skill;
+  }
+
+  /**
+   * Set the names of skills installed from marketplaces.
+   * Called before scan or after install to tag user-dir skills as marketplace-sourced.
+   */
+  setMarketplaceSkillNames(names: Set<string>): void {
+    this.marketplaceSkillNames = names;
+  }
+
+  /**
+   * Re-tag user-source skills that were installed from marketplaces.
+   * Only changes source from 'user' to 'marketplace' — does not affect project/system skills.
+   */
+  applyMarketplaceSources(): void {
+    for (const [name, skill] of this.skills) {
+      if (skill.source === 'user' && this.marketplaceSkillNames.has(name)) {
+        skill.source = 'marketplace';
+      }
+    }
   }
 
   /**

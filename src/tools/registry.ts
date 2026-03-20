@@ -49,7 +49,7 @@ import {
   removeProjectAgentConfigTool
 } from './projectAgentConfigTools';
 import { askUserTool } from './askUserTool';
-import { loadSkillsTool, listAvailableSkillsTool } from './skillTools';
+import { loadSkillsTool, listAvailableSkillsTool, installSkillTool, searchMarketplaceSkillsTool } from './skillTools';
 import { runShellCommandTool } from './shellTools';
 
 const toolRegistry: ToolRegistry = {
@@ -100,6 +100,8 @@ const toolRegistry: ToolRegistry = {
   // Skills Management
   load_skills: loadSkillsTool,
   list_available_skills: listAvailableSkillsTool,
+  install_skill: installSkillTool,
+  search_marketplace_skills: searchMarketplaceSkillsTool,
   // Shell execution
   run_shell_command: runShellCommandTool,
 };

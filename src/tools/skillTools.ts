@@ -7,8 +7,11 @@
  * also @prompt content that guide the LLM on parameter usage.
  */
 import { z } from 'zod';
+import { join } from 'path';
 import { tool } from './instrumentedTool';
 import { getSkillRegistry } from '../services/SkillRegistry';
+import { MarketplaceService } from '../services/MarketplaceService';
+import { CONFIG_FILE, CONFIG_DIR } from '../utils/config';
 import { debug } from '../utils/logger';
 
 /**
@@ -207,5 +210,114 @@ export const listAvailableSkillsTool = tool({
       })),
       message: lines.join('\n')
     };
+  }
+});
+
+function getMarketplaceService(): MarketplaceService {
+  return new MarketplaceService(CONFIG_FILE, join(CONFIG_DIR, 'skills'));
+}
+
+/**
+ * @prompt Tool: install_skill
+ * Install a skill from a registered marketplace into the user's skills directory.
+ */
+export const installSkillTool = tool({
+  name: 'install_skill',
+  description: `Install a skill from a registered marketplace repository.
+
+Use this when:
+- The user asks to install a skill from a marketplace
+- You want to add new capabilities by installing a marketplace skill
+
+The skill will be copied from the marketplace repo into the user's skills directory.`,
+
+  inputSchema: z.object({
+    skill_name: z.string().describe('Name of the skill to install'),
+    marketplace: z.string().describe('Name of the marketplace to install from'),
+    force: z.boolean().optional().describe('Overwrite existing skill if it already exists')
+  }),
+
+  execute: async ({ skill_name, marketplace, force }) => {
+    debug('install_skill called with:', { skill_name, marketplace, force });
+
+    const service = getMarketplaceService();
+    try {
+      const result = await service.installSkill(skill_name, marketplace, { force: force || false });
+
+      if (result.conflict) {
+        return {
+          success: false,
+          message: `Skill "${skill_name}" already exists at ${result.existingPath}. Use force: true to overwrite.`
+        };
+      }
+
+      // Reload skills so the new one appears
+      const registry = getSkillRegistry();
+      await registry.scan();
+
+      return {
+        success: true,
+        message: `Installed "${skill_name}" from ${marketplace}. Use load_skills to activate it.`
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: `Failed to install: ${error instanceof Error ? error.message : String(error)}`
+      };
+    }
+  }
+});
+
+/**
+ * @prompt Tool: search_marketplace_skills
+ * Search across all registered marketplace indexes for skills matching a query.
+ */
+export const searchMarketplaceSkillsTool = tool({
+  name: 'search_marketplace_skills',
+  description: `Search for skills across all registered marketplaces.
+
+Use this when:
+- The user wants to find skills available for installation
+- You want to discover marketplace skills matching a topic or keyword
+
+Searches locally cached marketplace indexes (run /skills sync first to update).`,
+
+  inputSchema: z.object({
+    query: z.string().optional().describe('Search query to filter skills by name or description. Omit to list all.')
+  }),
+
+  execute: async ({ query }) => {
+    debug('search_marketplace_skills called with:', { query });
+
+    const service = getMarketplaceService();
+    try {
+      const results = await service.searchSkills(query || '');
+
+      const lines: string[] = [];
+      if (results.length === 0) {
+        lines.push('No skills found' + (query ? ` matching "${query}"` : '') + '.');
+        lines.push('Run `/skills sync <marketplace>` to update indexes.');
+      } else {
+        lines.push(`Found ${results.length} skill(s)${query ? ` matching "${query}"` : ''}:`);
+        lines.push('');
+        for (const skill of results) {
+          lines.push(`  • **${skill.name}** (${skill.marketplace}): ${skill.description}`);
+        }
+        lines.push('');
+        lines.push('Install with: `/skills install <name>@<marketplace>` or use the install_skill tool.');
+      }
+
+      return {
+        success: true,
+        results,
+        message: lines.join('\n')
+      };
+    } catch (error) {
+      return {
+        success: false,
+        results: [],
+        message: `Search failed: ${error instanceof Error ? error.message : String(error)}`
+      };
+    }
   }
 });

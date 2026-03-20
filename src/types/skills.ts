@@ -100,7 +100,7 @@ export interface Skill {
 /**
  * Source types for skills (where they were discovered)
  */
-export type SkillSource = 'user' | 'project' | 'system';
+export type SkillSource = 'user' | 'project' | 'system' | 'marketplace';
 
 /**
  * Result of skill validation
@@ -138,6 +138,44 @@ export interface SkillMetadata {
 }
 
 /**
+ * Marketplace registration stored in config.json
+ */
+export interface MarketplaceConfig {
+  /** Display name for this marketplace */
+  name: string;
+  /** GitHub owner/repo (e.g., "anthropics/skills") */
+  repo: string;
+  /** ISO timestamp when marketplace was registered */
+  addedAt: string;
+}
+
+/**
+ * Lightweight skill entry from a marketplace index (cached locally)
+ */
+export interface MarketplaceSkillIndex {
+  /** Skill name (directory name in the repo) */
+  name: string;
+  /** Skill description from SKILL.md frontmatter */
+  description: string;
+  /** Which marketplace this skill belongs to */
+  marketplace: string;
+}
+
+/**
+ * Provenance metadata for an installed marketplace skill
+ */
+export interface InstalledSkillMetadata {
+  /** Skill name */
+  name: string;
+  /** Marketplace name it was installed from */
+  marketplace: string;
+  /** GitHub owner/repo */
+  repo: string;
+  /** ISO timestamp when installed */
+  installedAt: string;
+}
+
+/**
  * Configuration for skills system
  */
 export interface SkillsConfig {
@@ -158,6 +196,12 @@ export interface SkillsConfig {
 
   /** Whether to enforce allowed-tools restrictions */
   enforceAllowedTools: boolean;
+
+  /** Registered marketplace repos */
+  marketplaces?: MarketplaceConfig[];
+
+  /** Metadata for skills installed from marketplaces */
+  installedSkills?: InstalledSkillMetadata[];
 }
 
 /**

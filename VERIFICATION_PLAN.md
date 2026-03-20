@@ -14,6 +14,12 @@ Before running verification:
 - [ ] **GitHub Token**: `GITHUB_TOKEN` or `GH_TOKEN` set with repo access
 - [ ] **Test Repository**: A GitHub repository available for testing issue/PR creation
 - [ ] **Skills Directory**: At least one skill file in `~/.llpm/skills/` or project `.skills/`
+- [ ] **Network Access**: Internet access to github.com (required for marketplace scenarios 10-18)
+- [ ] **Git Installed**: `git` available on PATH (required for marketplace sync/install)
+- [ ] **Test Marketplace Repos**: These public repos must be accessible:
+  - `obra/superpowers` — skill collection
+  - `anthropics/skills` — Anthropic's skills repo
+  - `phuryn/pm-skills` — PM skills collection
 - [ ] **LLPM Running**: Start with `bun run start` or `bun run dev`
 
 ---
