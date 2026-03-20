@@ -3,7 +3,7 @@ title: Updates
 weight: 99
 ---
 
-## 1.11.1 - `/history` viewer and marketplace Skills
+## 1.11.1 - `/history` viewer and marketplace skills
 
 - **Date:** 2026-03-19
 - **Version:** 1.11.1
