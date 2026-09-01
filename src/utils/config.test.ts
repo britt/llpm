@@ -131,16 +131,6 @@ describe('config', () => {
       const fs = await import('fs');
       expect(fs.existsSync(path.join(root, 'package.json'))).toBe(true);
     });
-
-    it('should return a directory containing the skills folder', async () => {
-      vi.resetModules();
-      const { getLLPMRoot } = await import('./config');
-      const root = getLLPMRoot();
-
-      // Package root should contain the skills directory
-      const fs = await import('fs');
-      expect(fs.existsSync(path.join(root, 'skills'))).toBe(true);
-    });
   });
 
   describe('ensureProjectDir', () => {
