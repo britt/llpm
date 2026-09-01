@@ -1,14 +1,16 @@
 # Retiring the LLPM CLI and Publishing Its Skills as an `llpm` Bundle
 
 **Date:** 2026-09-01
-**Status:** Design — approved in outline, one open decision
+**Status:** Implemented, except the personal-site update and the archive itself
+**Amended:** 2026-09-01 — decisions 2 and 4 were superseded during implementation; see
+"Amendment" below
 **Supersedes:** the approach described in issue #322
 
 ## Summary
 
-Archive the `britt/llpm` repository. Rename the catch-all `agent-skills` plugin in
-`britt/agent-skills` to `llpm`, so the LLPM name survives as the skills bundle it
-became. Update the personal site to point at the successor.
+Archive the `britt/llpm` repository. Add an `llpm` bundle to `britt/agent-skills`, so
+the LLPM name survives as the skills bundle it became. Update the personal site to point
+at the successor.
 
 No code moves between repositories. No installer, adapter, or MCP server gets built.
 
@@ -48,16 +50,38 @@ Nothing worth preserving remains in `britt/llpm` except the name.
 
 1. **Retire `britt/llpm`.** Archive it read-only on GitHub. Do not delete it; git history
    is the archive.
-2. **Rename the plugin only.** The `agent-skills` plugin becomes `llpm`. The repository
-   stays `britt/agent-skills` and the marketplace stays `britt`. Install becomes
+2. ~~**Rename the plugin only.** The `agent-skills` plugin becomes `llpm`.~~
+   **Superseded — see Amendment.** A new `llpm` bundle was added instead. The repository
+   stays `britt/agent-skills` and the marketplace stays `britt`. Install is
    `/plugin install llpm@britt`.
 3. **Do not rename the repository.** Its content is skills, and "Agent Skills" is the
    ecosystem's term for them. "Plugin" names the packaging, not the substance. A rename
    would also break `britt.github.io/agent-skills/`, because GitHub Pages URLs do not
    redirect. Revisit when the repository ships non-skill plugins — MCP servers, slash
    commands, or hooks.
-4. **Leave the other plugins alone.** The 21 per-skill plugins and `project-foundations`
-   keep their names. Only the catch-all is renamed.
+4. ~~**Leave the other plugins alone.** Only the catch-all is renamed.~~
+   **Superseded — see Amendment.** Nothing was renamed. The catch-all `agent-skills`,
+   `project-foundations`, and the 21 per-skill plugins are all untouched.
+
+## Amendment (2026-09-01)
+
+Decisions 2 and 4 assumed the `llpm` bundle would be made by *renaming* the catch-all
+`agent-skills` plugin. Implementation took a better route: `britt/agent-skills` added a
+**new** bundle at `bundles/llpm/`, following the existing `bundles/project-foundations/`
+pattern, with skills single-sourced through symlinks into `skills/`.
+
+This is strictly better than the design, for three reasons:
+
+- **Nothing breaks.** No rename means existing `agent-skills@britt` installs keep
+  resolving, which retires the alias-versus-hard-break question entirely.
+- **The bundle means something.** A rename would have made `llpm` a synonym for "all 27
+  skills," including general utilities like `markdown-formatting` and `mermaid-diagrams`.
+  The new bundle holds only the project- and product-management skills that actually
+  trace back to the CLI, which is what the name should denote.
+- **It matches an established pattern** in that repository rather than introducing a
+  one-off.
+
+Shipped as marketplace v4.3.0 with `llpm` v1.0.0. See britt/agent-skills#71.
 
 ## Non-goals
 
@@ -87,20 +111,17 @@ existing lockfiles keep resolving.
 
 ### `britt/agent-skills`
 
-Rename `agent-skills` to `llpm` in:
+**Done** — shipped as marketplace v4.3.0, `llpm` v1.0.0. Per the Amendment, a new
+bundle was added rather than renaming the catch-all:
 
-- `.claude-plugin/plugin.json`
-- `.codex-plugin/plugin.json`
-- `.cursor-plugin/plugin.json` — also update `displayName` from "Agent Skills" to "LLPM"
-- `.claude-plugin/marketplace.json` — the entry with `"source": "./"`
-- `.cursor-plugin/marketplace.json`
-- `README.md` — the `/plugin install agent-skills@britt` line
-- `site/content/` — pages referencing the bundle name
+- `bundles/llpm/` created following the `bundles/project-foundations/` pattern, with
+  `.claude-plugin/`, `.cursor-plugin/`, and `.codex-plugin/` manifests and skills
+  symlinked into `../../../skills/`
+- `llpm` entries added to `.claude-plugin/marketplace.json` and
+  `.cursor-plugin/marketplace.json` with `"source": "./bundles/llpm"`, alongside the
+  untouched `agent-skills` and `project-foundations` entries
 
-Bump 4.1.0 to **5.0.0**. The rename breaks existing installs.
-
-Update the plugin description to say what the bundle is: LLPM's product-management
-skills for coding agents.
+No version bump was needed on the catch-all, because nothing about it changed.
 
 ### `britt/britt.github.com`
 
@@ -143,8 +164,8 @@ Each closure should say why, and link here.
 
 ## Risks
 
-**Renaming breaks existing installs.** Claude Code has no alias mechanism, so
-`agent-skills@britt` stops resolving. See the open decision below.
+~~**Renaming breaks existing installs.**~~ Resolved by the Amendment: nothing was
+renamed, so no install stops resolving.
 
 **GitHub redirects apply to the repository, not GitHub Pages.** This design renames no
 repository, so nothing breaks. It is the reason decision 3 stands.
@@ -152,19 +173,7 @@ repository, so nothing breaks. It is the reason decision 3 stands.
 **Archiving is reversible but noisy.** Unarchiving is one click if something surfaces
 later.
 
-## Open decision
+## Resolved decision
 
-**Hard break, or a deprecated alias?**
-
-A deprecated alias means keeping an `agent-skills` entry in both `marketplace.json` files
-pointing at the same `./` source, described as "DEPRECATED — install `llpm@britt`", and
-removing it in 6.0.0. It costs about four lines. Its one drawback: a user who installs
-both bundles gets 27 duplicated skill names.
-
-A hard break costs nothing and avoids the duplication, but existing installs stop
-resolving silently.
-
-**Recommendation: keep the alias for one release.** A silent break is worse than a
-temporary duplicate. If the install base is only you, take the hard break instead.
-
-This design assumes the alias. Changing it edits one section.
+**Hard break, or a deprecated alias?** Moot. The Amendment removed the rename, so no
+existing install breaks and no alias is needed.
